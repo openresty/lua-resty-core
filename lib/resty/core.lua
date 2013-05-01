@@ -2,6 +2,7 @@
 
 
 require "resty.core.hash"
+require "resty.core.base64"
 
 
 module(...)
