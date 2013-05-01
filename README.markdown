@@ -53,6 +53,11 @@ API Implemented
 * [ngx.encode_base64](http://wiki.nginx.org/HttpLuaModule#ngx.encode_base64)
 * [ngx.decode_base64](http://wiki.nginx.org/HttpLuaModule#ngx.decode_base64)
 
+### resty.core.uri
+
+* [ngx.escape_uri](http://wiki.nginx.org/HttpLuaModule#ngx.escape_uri)
+* [ngx.unescape_uri](http://wiki.nginx.org/HttpLuaModule#ngx.unescape_uri)
+
 Author
 ======
 
