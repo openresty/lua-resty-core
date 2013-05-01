@@ -10,6 +10,7 @@ local setmetatable = setmetatable
 local ngx = ngx
 local type = type
 local tostring = tostring
+local error = error
 
 
 module(...)
@@ -25,13 +26,13 @@ ffi.cdef[[
     void ngx_http_lua_ffi_md5(const unsigned char *src, size_t len,
                               unsigned char *dst);
 
-    void ngx_http_lua_ffi_sha1_bin(const unsigned char *src, size_t len,
-                                   unsigned char *dst);
+    int ngx_http_lua_ffi_sha1_bin(const unsigned char *src, size_t len,
+                                  unsigned char *dst);
 ]]
 
 
 if not ngx then
-    ngx = _M
+    return error("no existing ngx. table found")
 end
 
 
@@ -78,7 +79,10 @@ ngx.sha1_bin = function (s)
             s = tostring(s)
         end
     end
-    C.ngx_http_lua_ffi_sha1_bin(s, strlen(s), sha_buf)
+    local ok = C.ngx_http_lua_ffi_sha1_bin(s, strlen(s), sha_buf)
+    if ok == 0 then
+        return error("SHA-1 support missing in Nginx")
+    end
     return ffi_string(sha_buf, SHA_DIGEST_LEN)
 end
 
