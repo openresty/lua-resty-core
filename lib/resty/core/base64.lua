@@ -10,6 +10,7 @@ local setmetatable = setmetatable
 local ngx = ngx
 local type = type
 local tostring = tostring
+local error = error
 
 
 module(...)
