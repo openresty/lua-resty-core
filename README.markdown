@@ -47,6 +47,9 @@ API Implemented
 * [ngx.md5](http://wiki.nginx.org/HttpLuaModule#ngx.md5)
 * [ngx.md5_bin](http://wiki.nginx.org/HttpLuaModule#ngx.md5_bin)
 * [ngx.sha1_bin](http://wiki.nginx.org/HttpLuaModule#ngx.sha1_bin)
+
+### resty.core.base64
+
 * [ngx.encode_base64](http://wiki.nginx.org/HttpLuaModule#ngx.encode_base64)
 * [ngx.decode_base64](http://wiki.nginx.org/HttpLuaModule#ngx.decode_base64)
 
