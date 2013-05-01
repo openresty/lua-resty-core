@@ -39,15 +39,15 @@ local MD5_DIGEST_LEN = 16
 local md5_buf = ffi_new("unsigned char[?]", MD5_DIGEST_LEN)
 
 ngx.md5_bin = function (s)
-   if type(s) ~= 'string' then
-       if not s then
-           s = ''
-       else
-           s = tostring(s)
-       end
-   end
-   C.ngx_http_lua_ffi_md5_bin(s, strlen(s), md5_buf)
-   return ffi_string(md5_buf, MD5_DIGEST_LEN)
+    if type(s) ~= 'string' then
+        if not s then
+            s = ''
+        else
+            s = tostring(s)
+        end
+    end
+    C.ngx_http_lua_ffi_md5_bin(s, strlen(s), md5_buf)
+    return ffi_string(md5_buf, MD5_DIGEST_LEN)
 end
 
 
@@ -55,15 +55,15 @@ local MD5_HEX_DIGEST_LEN = MD5_DIGEST_LEN * 2
 local md5_hex_buf = ffi_new("unsigned char[?]", MD5_HEX_DIGEST_LEN)
 
 ngx.md5 = function (s)
-   if type(s) ~= 'string' then
-       if not s then
-           s = ''
-       else
-           s = tostring(s)
-       end
-   end
-   C.ngx_http_lua_ffi_md5(s, strlen(s), md5_hex_buf)
-   return ffi_string(md5_hex_buf, MD5_HEX_DIGEST_LEN)
+    if type(s) ~= 'string' then
+        if not s then
+            s = ''
+        else
+            s = tostring(s)
+        end
+    end
+    C.ngx_http_lua_ffi_md5(s, strlen(s), md5_hex_buf)
+    return ffi_string(md5_hex_buf, MD5_HEX_DIGEST_LEN)
 end
 
 
@@ -71,15 +71,15 @@ local SHA_DIGEST_LEN = 20
 local sha_buf = ffi_new("unsigned char[?]", SHA_DIGEST_LEN)
 
 ngx.sha1_bin = function (s)
-   if type(s) ~= 'string' then
-       if not s then
-           s = ''
-       else
-           s = tostring(s)
-       end
-   end
-   C.ngx_http_lua_ffi_sha1_bin(s, strlen(s), sha_buf)
-   return ffi_string(sha_buf, SHA_DIGEST_LEN)
+    if type(s) ~= 'string' then
+        if not s then
+            s = ''
+        else
+            s = tostring(s)
+        end
+    end
+    C.ngx_http_lua_ffi_sha1_bin(s, strlen(s), sha_buf)
+    return ffi_string(sha_buf, SHA_DIGEST_LEN)
 end
 
 
