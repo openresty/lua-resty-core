@@ -37,7 +37,7 @@ Prerequisites
 =============
 
 * LuaJIT 2.1 (for now, it is the v2.1 git branch in the official luajit-2.0 git repository: http://luajit.org/download.html )
-* The "ffi" git branch in the lua-nginx-module repository on GitHub: https://github.com/chaoslawful/lua-nginx-module
+* The "ffi" git branch in the lua-nginx-module repository on GitHub: https://github.com/chaoslawful/lua-nginx-module/tree/ffi
 
 API Implemented
 ===============
