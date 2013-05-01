@@ -31,8 +31,8 @@ This pure Lua library reimplements part of the ngx_lua's
 with LuaJIT FFI and installs the new FFI-based Lua API into the ngx.* and ndk.* namespaces
 used by the ngx_lua module.
 
-The FFI-based Lua API can work with LuaJIT's JIT compiler. Lua code using
-ngx_lua's default API will based on the standard Lua C API never be JIT compiled and is always interpreted (slowly).
+The FFI-based Lua API can work with LuaJIT's JIT compiler. User Lua code using
+ngx_lua's default API based on the standard Lua C API will never be JIT compiled and is always interpreted (slowly).
 
 Prerequisites
 =============
