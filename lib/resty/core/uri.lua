@@ -11,6 +11,9 @@ local ngx = ngx
 local type = type
 local tostring = tostring
 local error = error
+local base = require "resty.core.base"
+local get_string_buf = base.get_string_buf
+local get_size_ptr = base.get_size_ptr
 -- local print = print
 -- local tonumber = tonumber
 
@@ -48,7 +51,7 @@ ngx.escape_uri = function (s)
     if dlen == slen then
         return s
     end
-    local dst = ffi_new("unsigned char[?]", dlen)
+    local dst = get_string_buf(dlen)
     C.ngx_http_lua_ffi_escape_uri(s, slen, dst)
     return ffi_string(dst, dlen)
 end
@@ -64,7 +67,7 @@ ngx.unescape_uri = function (s)
     end
     local slen = strlen(s)
     local dlen = slen
-    local dst = ffi_new("unsigned char[?]", dlen)
+    local dst = get_string_buf(dlen)
     dlen = C.ngx_http_lua_ffi_unescape_uri(s, slen, dst)
     return ffi_string(dst, dlen)
 end

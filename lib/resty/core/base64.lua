@@ -11,6 +11,12 @@ local ngx = ngx
 local type = type
 local tostring = tostring
 local error = error
+local base = require "resty.core.base"
+local get_string_buf = base.get_string_buf
+local get_size_ptr = base.get_size_ptr
+local floor = math.floor
+local print = print
+local tonumber = tonumber
 
 
 module(...)
@@ -31,7 +37,7 @@ _VERSION = '0.0.1'
 
 
 local function base64_encoded_length(len)
-    return ((len + 2) / 3) * 4
+    return floor((len + 2) / 3) * 4
 end
 
 
@@ -45,14 +51,15 @@ ngx.encode_base64 = function (s)
     end
     local slen = strlen(s)
     local dlen = base64_encoded_length(slen)
-    local dst = ffi_new("unsigned char[?]", dlen)
+    -- print("dlen: ", tonumber(dlen))
+    local dst = get_string_buf(dlen)
     dlen = C.ngx_http_lua_ffi_encode_base64(s, slen, dst)
     return ffi_string(dst, dlen)
 end
 
 
 local function base64_decoded_length(len)
-    return ((len + 3) / 4) * 3
+    return floor((len + 3) / 4) * 3
 end
 
 
@@ -66,8 +73,9 @@ ngx.decode_base64 = function (s)
     end
     local slen = strlen(s)
     local dlen = base64_decoded_length(slen)
-    local dst = ffi_new("unsigned char[?]", dlen)
-    local pdlen = ffi_new("size_t[1]")
+    -- print("dlen: ", tonumber(dlen))
+    local dst = get_string_buf(dlen)
+    local pdlen = get_size_ptr()
     local ok = C.ngx_http_lua_ffi_decode_base64(s, slen, dst, pdlen)
     if ok == 0 then
         return nil

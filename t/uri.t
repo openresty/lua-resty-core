@@ -193,3 +193,69 @@ qr/\[TRACE   \d+ "content_by_lua":3 loop\]/
 --- no_error_log
 [error]
 
+
+
+=== TEST 8: escape_uri (larger than 4k, nothing to be escaped)
+--- http_config eval: $::HttpConfig
+--- config
+    location = /uri {
+        content_by_lua '
+            local s
+            for i = 1, 100 do
+                s = ngx.escape_uri(string.rep("a", 4097))
+            end
+            ngx.say(s)
+        ';
+    }
+--- request
+GET /uri
+--- response_body eval: "a" x 4097 . "\n"
+--- error_log eval
+qr/\[TRACE   \d+ "content_by_lua":3 loop\]/
+--- no_error_log
+[error]
+
+
+
+=== TEST 9: escape_uri (a little smaller than 4k, need to be escaped)
+--- http_config eval: $::HttpConfig
+--- config
+    location = /uri {
+        content_by_lua '
+            local s
+            for i = 1, 100 do
+                s = ngx.escape_uri(string.rep(" ", 1365))
+            end
+            ngx.say(s)
+        ';
+    }
+--- request
+GET /uri
+--- response_body eval: "%20" x 1365 . "\n"
+--- error_log eval
+qr/\[TRACE   \d+ "content_by_lua":3 loop\]/
+--- no_error_log
+[error]
+
+
+
+=== TEST 10: escape_uri (a little bigger than 4k, need to be escaped)
+--- http_config eval: $::HttpConfig
+--- config
+    location = /uri {
+        content_by_lua '
+            local s
+            for i = 1, 100 do
+                s = ngx.escape_uri(string.rep(" ", 1366))
+            end
+            ngx.say(s)
+        ';
+    }
+--- request
+GET /uri
+--- response_body eval: "%20" x 1366 . "\n"
+--- error_log eval
+qr/\[TRACE   \d+ "content_by_lua":3 loop\]/
+--- no_error_log
+[error]
+

@@ -129,3 +129,59 @@ qr/\[TRACE   \d+ "content_by_lua":3 loop\]/
 [error]
  -- NYI:
 
+
+
+=== TEST 5: string (buf size just smaller than 4096)
+--- http_config eval: $::HttpConfig
+--- config
+    location = /base64 {
+        content_by_lua '
+            local s
+            for i = 1, 100 do
+                s = ngx.decode_base64(string.rep("a", 5460))
+            end
+            if not s then
+                ngx.say("bad base64 string")
+            else
+                ngx.say(string.len(s))
+            end
+        ';
+    }
+--- request
+GET /base64
+--- response_body
+4095
+--- error_log eval
+qr/\[TRACE   \d+ "content_by_lua":3 loop\]/
+--- no_error_log
+[error]
+ -- NYI:
+
+
+
+=== TEST 6: string (buf size just a bit bigger than 4096)
+--- http_config eval: $::HttpConfig
+--- config
+    location = /base64 {
+        content_by_lua '
+            local s
+            for i = 1, 100 do
+                s = ngx.decode_base64(string.rep("a", 5462))
+            end
+            if not s then
+                ngx.say("bad base64 string")
+            else
+                ngx.say(string.len(s))
+            end
+        ';
+    }
+--- request
+GET /base64
+--- response_body
+4096
+--- error_log eval
+qr/\[TRACE   \d+ "content_by_lua":3 loop\]/
+--- no_error_log
+[error]
+ -- NYI:
+
