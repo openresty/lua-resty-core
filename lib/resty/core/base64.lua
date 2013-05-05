@@ -17,9 +17,7 @@ local get_size_ptr = base.get_size_ptr
 local floor = math.floor
 local print = print
 local tonumber = tonumber
-
-
-module(...)
+local base = require "resty.core.base"
 
 
 ffi.cdef[[
@@ -30,10 +28,6 @@ ffi.cdef[[
                                        size_t len, unsigned char *dst,
                                        size_t *dlen);
 ]]
-
-
-
-_VERSION = '0.0.1'
 
 
 local function base64_encoded_length(len)
@@ -84,11 +78,6 @@ ngx.decode_base64 = function (s)
 end
 
 
-local class_mt = {
-    -- to prevent use of casual module global variables
-    __newindex = function (table, key, val)
-        error('attempt to write to undeclared variable "' .. key .. '"')
-    end
+return {
+    version = base.version
 }
-
-setmetatable(_M, class_mt)

@@ -14,11 +14,8 @@ local error = error
 local base = require "resty.core.base"
 local get_string_buf = base.get_string_buf
 local get_size_ptr = base.get_size_ptr
--- local print = print
--- local tonumber = tonumber
-
-
-module(...)
+local print = print
+local tonumber = tonumber
 
 
 ffi.cdef[[
@@ -31,10 +28,6 @@ ffi.cdef[[
     size_t ngx_http_lua_ffi_unescape_uri(const unsigned char *src,
                                          size_t len, unsigned char *dst);
 ]]
-
-
-
-_VERSION = '0.0.1'
 
 
 ngx.escape_uri = function (s)
@@ -73,11 +66,6 @@ ngx.unescape_uri = function (s)
 end
 
 
-local class_mt = {
-    -- to prevent use of casual module global variables
-    __newindex = function (table, key, val)
-        error('attempt to write to undeclared variable "' .. key .. '"')
-    end
+return {
+    version = base.version,
 }
-
-setmetatable(_M, class_mt)

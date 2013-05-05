@@ -25,7 +25,7 @@ our $HttpConfig = <<_EOC_;
             v.on("$Test::Nginx::Util::ErrLogFile")
         end
 
-        require "resty.core.hash"
+        require "resty.core"
         -- jit.off()
     ';
 _EOC_

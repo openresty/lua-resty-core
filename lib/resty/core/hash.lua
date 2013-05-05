@@ -11,12 +11,7 @@ local ngx = ngx
 local type = type
 local tostring = tostring
 local error = error
-
-
-module(...)
-
-
-_VERSION = '0.0.1'
+local base = require "resty.core.base"
 
 
 ffi.cdef[[
@@ -29,11 +24,6 @@ ffi.cdef[[
     int ngx_http_lua_ffi_sha1_bin(const unsigned char *src, size_t len,
                                   unsigned char *dst);
 ]]
-
-
-if not ngx then
-    return error("no existing ngx. table found")
-end
 
 
 local MD5_DIGEST_LEN = 16
@@ -87,11 +77,6 @@ ngx.sha1_bin = function (s)
 end
 
 
-local class_mt = {
-    -- to prevent use of casual module global variables
-    __newindex = function (table, key, val)
-        error('attempt to write to undeclared variable "' .. key .. '"')
-    end
+return {
+    version = base.version
 }
-
-setmetatable(_M, class_mt)

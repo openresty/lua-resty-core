@@ -18,7 +18,7 @@ our $HttpConfig = <<_EOC_;
     init_by_lua '
         local v = require "jit.v"
         v.on("$Test::Nginx::Util::ErrLogFile")
-        require "resty.core.hash"
+        require "resty.core"
     ';
 _EOC_
 

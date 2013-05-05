@@ -8,15 +8,22 @@ local setmetatable = setmetatable
 local floor = math.floor
 
 
-module(...)
-
-
 local str_buf_size = 4096
 local str_buf
 local size_ptr
 
 
-function set_string_buf_size(size)
+local M = {
+    version = "0.0.1"
+}
+
+
+if not ngx then
+    return error("no existing ngx. table found")
+end
+
+
+function M.set_string_buf_size(size)
     if size <= 0 then
         return
     end
@@ -27,7 +34,7 @@ function set_string_buf_size(size)
 end
 
 
-function get_size_ptr()
+function M.get_size_ptr()
     if not size_ptr then
         size_ptr = ffi_new("size_t[1]")
     end
@@ -35,7 +42,8 @@ function get_size_ptr()
     return size_ptr
 end
 
-function get_string_buf(size)
+
+function M.get_string_buf(size)
     if size > str_buf_size then
         return ffi_new("unsigned char[?]", size)
     end
@@ -48,11 +56,4 @@ function get_string_buf(size)
 end
 
 
-local class_mt = {
-    -- to prevent use of casual module global variables
-    __newindex = function (table, key, val)
-        error('attempt to write to undeclared variable "' .. key .. '"')
-    end
-}
-
-setmetatable(_M, class_mt)
+return M
