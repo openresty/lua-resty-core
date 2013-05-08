@@ -62,6 +62,13 @@ API Implemented
 
 * [ngx.re.match](http://wiki.nginx.org/HttpLuaModule#ngx.re.match)
 
+Caveat
+======
+
+If the user Lua code is not JIT compiled, then use of this library may
+lead to performance drop in interpreted mode. You will only observe
+speedup when you get a good part of your user Lua code JIT compiled.
+
 Author
 ======
 
