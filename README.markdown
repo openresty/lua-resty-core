@@ -58,10 +58,14 @@ API Implemented
 * [ngx.escape_uri](http://wiki.nginx.org/HttpLuaModule#ngx.escape_uri)
 * [ngx.unescape_uri](http://wiki.nginx.org/HttpLuaModule#ngx.unescape_uri)
 
+### resty.core.regex
+
+* [ngx.re.match](http://wiki.nginx.org/HttpLuaModule#ngx.re.match)
+
 Author
 ======
 
-Yichun "agentzh" Zhang (章亦春) <agentzh@gmail.com>
+Yichun "agentzh" Zhang (章亦春) <agentzh@gmail.com>, CloudFlare Inc.
 
 Copyright and License
 =====================
