@@ -9,7 +9,7 @@ use Cwd qw(cwd);
 
 repeat_each(2);
 
-plan tests => repeat_each() * (blocks() * 4 + 5);
+plan tests => repeat_each() * (blocks() * 5 + 2);
 
 my $pwd = cwd();
 
@@ -220,11 +220,10 @@ matched: 1234
 $1: 1
 $2: 234
 $3: nil
---- error_log eval
-qr/\[TRACE   \d+ "content_by_lua":4 loop\]/
 --- no_error_log
 [error]
 bad argument type
+NYI
 
 
 
