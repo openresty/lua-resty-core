@@ -13,6 +13,16 @@ local str_buf
 local size_ptr
 
 
+if not pcall(ffi.typeof, "ngx_str_t") then
+    ffi.cdef[[
+        typedef struct {
+            size_t           len;
+            unsigned char   *data;
+        } ngx_str_t;
+    ]]
+end
+
+
 local M = {
     version = "0.0.1"
 }

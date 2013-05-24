@@ -14,6 +14,7 @@ local strlen = string.len
 local substr = string.sub
 local byte = string.byte
 local setmetatable = setmetatable
+local concat = table.concat
 local ngx = ngx
 local type = type
 local tostring = tostring
@@ -54,7 +55,18 @@ local PCRE_JAVASCRIPT_COMPAT = 0x2000000
 local PCRE_ERROR_NOMATCH = -1
 
 
+local regex_cache = {}
+local regex_cache_size = 0
+local script_engine
+
+
 ffi.cdef[[
+    typedef struct {
+        ngx_str_t                   value;
+        void                       *lengths;
+        void                       *values;
+    } ngx_http_lua_complex_value_t;
+
     typedef struct {
         void                         *pool;
         unsigned char                *name_table;
@@ -67,7 +79,7 @@ ffi.cdef[[
         void                         *regex;
         void                         *regex_sd;
 
-        void                         *replace;
+        ngx_http_lua_complex_value_t *replace;
     } ngx_http_lua_regex_t;
 
     ngx_http_lua_regex_t *
@@ -80,6 +92,31 @@ ffi.cdef[[
         const unsigned char *s, size_t len, int pos);
 
     void ngx_http_lua_ffi_destroy_regex(ngx_http_lua_regex_t *re);
+
+    int ngx_http_lua_ffi_compile_replace_template(ngx_http_lua_regex_t *re,
+                                                  const unsigned char
+                                                  *replace_data,
+                                                  size_t replace_len);
+
+    struct ngx_http_lua_script_engine_s;
+    typedef struct ngx_http_lua_script_engine_s  *ngx_http_lua_script_engine_t;
+
+    ngx_http_lua_script_engine_t *ngx_http_lua_ffi_create_script_engine(void);
+
+    void ngx_http_lua_ffi_init_script_engine(ngx_http_lua_script_engine_t *e,
+                                             const unsigned char *subj,
+                                             ngx_http_lua_regex_t *compiled,
+                                             int count);
+
+    void ngx_http_lua_ffi_destroy_script_engine(
+        ngx_http_lua_script_engine_t *e);
+
+    size_t ngx_http_lua_ffi_script_eval_len(ngx_http_lua_script_engine_t *e,
+                                            ngx_http_lua_complex_value_t *cv);
+
+    size_t ngx_http_lua_ffi_script_eval_data(ngx_http_lua_script_engine_t *e,
+                                             ngx_http_lua_complex_value_t *cv,
+                                             unsigned char *dst, size_t len);
 ]]
 
 
@@ -135,10 +172,6 @@ local function parse_regex_opts(opts)
 
     return flags, pcre_opts
 end
-
-
-local regex_cache = {}
-local regex_cache_size = 0
 
 
 local function collect_captures(compiled, rc, subj)
@@ -204,7 +237,7 @@ local function collect_named_captures(compiled, flags, res)
 end
 
 
-ngx.re.match = function(subj, regex, opts, ctx)
+local function re_match(subj, regex, opts, ctx)
     local flags = 0
     local pcre_opts = 0
     local pos
@@ -224,7 +257,7 @@ ngx.re.match = function(subj, regex, opts, ctx)
     local key, compiled
     local compile_once = (band(flags, FLAG_COMPILE_ONCE) == 1)
     if compile_once then
-        key = regex .. ":" .. pcre_opts
+        key = regex .. "\0" .. pcre_opts
         -- print("key: ", key)
         compiled = regex_cache[key]
     end
@@ -305,6 +338,216 @@ ngx.re.match = function(subj, regex, opts, ctx)
 
     return res
 end
+
+
+local function new_script_engine(subj, compiled, count)
+    if not script_engine then
+        script_engine = C.ngx_http_lua_ffi_create_script_engine()
+        if script_engine == nil then
+            return nil
+        end
+        ffi_gc(script_engine, C.ngx_http_lua_ffi_destroy_script_engine)
+    end
+
+    C.ngx_http_lua_ffi_init_script_engine(script_engine, subj, compiled,
+                                          count)
+    return script_engine
+end
+
+
+local function re_sub_helper(subj, regex, replace, opts, global)
+    local flags = 0
+    local pcre_opts = 0
+    local pos
+
+    if opts then
+        flags, pcre_opts = parse_regex_opts(opts)
+    else
+        opts = ""
+    end
+
+    local func
+    local repl_type = type(replace)
+    if repl_type == "function" then
+        func = replace
+
+    elseif repl_type ~= "string" then
+        replace = tostring(replace)
+    end
+
+    local key, compiled
+    local compile_once = (band(flags, FLAG_COMPILE_ONCE) == 1)
+    if compile_once then
+        if func then
+            key = regex .. "\0" .. pcre_opts
+        else
+            key = regex .. "\0" .. pcre_opts .. "\0" .. replace
+        end
+        -- print("key: ", key)
+        compiled = regex_cache[key]
+    end
+
+    -- compile the regex
+
+    if compiled == nil then
+        -- print("compiled regex not found, compiling regex...")
+        local errbuf = get_string_buf(MAX_ERR_MSG_LEN)
+
+        compiled = C.ngx_http_lua_ffi_compile_regex(regex, strlen(regex),
+                                                    flags, pcre_opts,
+                                                    errbuf, MAX_ERR_MSG_LEN)
+
+        if compiled == nil then
+            return nil, nil, ffi_string(errbuf)
+        end
+
+        ffi_gc(compiled, C.ngx_http_lua_ffi_destroy_regex)
+
+        if func == nil then
+            local rc =
+                C.ngx_http_lua_ffi_compile_replace_template(compiled, replace,
+                                                            strlen(replace))
+            if rc ~= 0 then
+                if not compile_once then
+                    destroy_compiled_regex(compiled)
+                end
+                return nil, nil, "failed to compile the replacement template"
+            end
+        end
+
+        -- print("ncaptures: ", compiled.ncaptures)
+
+        if compile_once then
+            -- TODO: add support for lua_regex_cache_max_entries.
+            if regex_cache_size < 1024 then
+                -- print("inserting compiled regex into cache")
+                regex_cache[key] = compiled
+                regex_cache_size = regex_cache_size + 1
+            else
+                compile_once = false
+            end
+        end
+    end
+
+    -- exec the compiled regex
+
+    local name_count = compiled.name_count
+    local new_bits = {}
+
+    local subj_len = strlen(subj)
+    local count = 0
+    local pos = 0
+    local cp_pos = 0
+
+    local replace_literal
+
+    while true do
+        local rc = C.ngx_http_lua_ffi_exec_regex(compiled, flags, subj,
+                                                 subj_len, pos)
+        if rc == PCRE_ERROR_NOMATCH then
+            break
+        end
+
+        if rc < 0 then
+            if not compile_once then
+                destroy_compiled_regex(compiled)
+            end
+            return nil, nil, "pcre_exec() failed: " .. rc
+        end
+
+        if rc == 0 then
+            if band(flags, FLAG_DFA) == 0 then
+                return nil, nil, "capture size too small"
+            end
+
+            rc = 1
+        end
+
+        count = count + 1
+
+        if func ~= nil then
+            local res = collect_captures(compiled, rc, subj)
+
+            if name_count > 0 then
+                collect_named_captures(compiled, flags, res)
+            end
+
+            local bit = func(res)
+            local n = #new_bits
+            new_bits[n + 1] = substr(subj, cp_pos + 1, compiled.captures[0])
+            new_bits[n + 2] = bit
+
+        else
+            local cv = compiled.replace
+            if cv.lengths ~= nil then
+                local e = new_script_engine(subj, compiled, rc)
+                if e == nil then
+                    return nil, nil, "failed to create script engine"
+                end
+
+                local len = C.ngx_http_lua_ffi_script_eval_len(e, cv)
+                local dst = get_string_buf(len)
+                C.ngx_http_lua_ffi_script_eval_data(e, cv, dst, len)
+
+                local n = #new_bits
+                new_bits[n + 1] = substr(subj, cp_pos + 1, compiled.captures[0])
+                new_bits[n + 2] = ffi_string(dst, len)
+
+            else
+                -- compiled.replace.lengths == nil
+                local n = #new_bits
+
+                new_bits[n + 1] = substr(subj, cp_pos + 1, compiled.captures[0])
+
+                if replace_literal == nil then
+                    replace_literal = ffi_string(cv.value.data, cv.value.len)
+                end
+                new_bits[n + 2] = replace_literal
+            end
+        end
+
+        cp_pos = compiled.captures[1]
+        pos = cp_pos
+        if pos == compiled.captures[0] then
+            pos = pos + 1
+            if pos > subj_len then
+                break
+            end
+        end
+
+        if not global then
+            break
+        end
+    end
+
+    if not compile_once then
+        destroy_compiled_regex(compiled)
+    end
+
+    if count > 0 then
+        if pos < subj_len then
+            new_bits[#new_bits + 1] = substr(subj, cp_pos + 1)
+        end
+        return concat(new_bits), count
+    end
+
+    return subj, 0
+end
+
+
+local function re_sub(subj, regex, replace, opts)
+    return re_sub_helper(subj, regex, replace, opts, false)
+end
+
+
+local function re_gsub(subj, regex, replace, opts)
+    return re_sub_helper(subj, regex, replace, opts, true)
+end
+
+
+ngx.re.match = re_match
+ngx.re.sub = re_sub
+ngx.re.gsub = re_gsub
 
 
 return {

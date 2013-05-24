@@ -61,6 +61,8 @@ API Implemented
 ### resty.core.regex
 
 * [ngx.re.match](http://wiki.nginx.org/HttpLuaModule#ngx.re.match)
+* [ngx.re.sub](http://wiki.nginx.org/HttpLuaModule#ngx.re.sub)
+* [ngx.re.gsub](http://wiki.nginx.org/HttpLuaModule#ngx.re.gsub)
 
 Caveat
 ======
