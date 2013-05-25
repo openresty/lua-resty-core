@@ -433,6 +433,7 @@ local function re_sub_helper(subj, regex, replace, opts, global)
 
     local name_count = compiled.name_count
     local new_bits = {}
+    local n = 0
 
     local subj_len = strlen(subj)
     local count = 0
@@ -473,9 +474,9 @@ local function re_sub_helper(subj, regex, replace, opts, global)
             end
 
             local bit = func(res)
-            local n = #new_bits
             new_bits[n + 1] = substr(subj, cp_pos + 1, compiled.captures[0])
             new_bits[n + 2] = bit
+            n = n + 2
 
         else
             local cv = compiled.replace
@@ -489,20 +490,19 @@ local function re_sub_helper(subj, regex, replace, opts, global)
                 local dst = get_string_buf(len)
                 C.ngx_http_lua_ffi_script_eval_data(e, cv, dst, len)
 
-                local n = #new_bits
                 new_bits[n + 1] = substr(subj, cp_pos + 1, compiled.captures[0])
                 new_bits[n + 2] = ffi_string(dst, len)
+                n = n + 2
 
             else
                 -- compiled.replace.lengths == nil
-                local n = #new_bits
-
                 new_bits[n + 1] = substr(subj, cp_pos + 1, compiled.captures[0])
 
                 if replace_literal == nil then
                     replace_literal = ffi_string(cv.value.data, cv.value.len)
                 end
                 new_bits[n + 2] = replace_literal
+                n = n + 2
             end
         end
 
@@ -526,7 +526,7 @@ local function re_sub_helper(subj, regex, replace, opts, global)
 
     if count > 0 then
         if pos < subj_len then
-            new_bits[#new_bits + 1] = substr(subj, cp_pos + 1)
+            new_bits[n + 1] = substr(subj, cp_pos + 1)
         end
         return concat(new_bits), count
     end
