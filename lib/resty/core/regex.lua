@@ -5,6 +5,8 @@ local ffi = require 'ffi'
 local ffi_string = ffi.string
 local ffi_new = ffi.new
 local ffi_gc = ffi.gc
+local ffi_copy = ffi.copy
+local ffi_cast = ffi.cast
 local C = ffi.C
 local bit = require "bit"
 local bor = bit.bor
@@ -21,6 +23,7 @@ local tostring = tostring
 local error = error
 local base = require "resty.core.base"
 local get_string_buf = base.get_string_buf
+local get_string_buf_size = base.get_string_buf_size
 local get_size_ptr = base.get_size_ptr
 local floor = math.floor
 local print = print
@@ -355,6 +358,21 @@ local function new_script_engine(subj, compiled, count)
 end
 
 
+local function check_buf_size(buf, buf_size, len, new_len, pos)
+    if new_len > buf_size then
+        buf_size = buf_size * 2
+        if buf_size < new_len then
+            buf_size = new_len
+        end
+        local new_buf = get_string_buf(buf_size)
+        ffi_copy(new_buf, buf, len)
+        buf = new_buf
+        pos = buf + len
+    end
+    return buf, buf_size, new_len, pos
+end
+
+
 local function re_sub_helper(subj, regex, replace, opts, global)
     local flags = 0
     local pcre_opts = 0
@@ -432,15 +450,16 @@ local function re_sub_helper(subj, regex, replace, opts, global)
     -- exec the compiled regex
 
     local name_count = compiled.name_count
-    local new_bits = {}
-    local n = 0
 
     local subj_len = strlen(subj)
     local count = 0
     local pos = 0
     local cp_pos = 0
 
-    local replace_literal
+    local dst_buf_size = get_string_buf_size()
+    local dst_buf = get_string_buf(dst_buf_size)
+    local dst_pos = dst_buf
+    local dst_len = 0
 
     while true do
         local rc = C.ngx_http_lua_ffi_exec_regex(compiled, flags, subj,
@@ -465,6 +484,7 @@ local function re_sub_helper(subj, regex, replace, opts, global)
         end
 
         count = count + 1
+        local prefix_len = compiled.captures[0] - cp_pos
 
         if func ~= nil then
             local res = collect_captures(compiled, rc, subj)
@@ -474,9 +494,24 @@ local function re_sub_helper(subj, regex, replace, opts, global)
             end
 
             local bit = func(res)
-            new_bits[n + 1] = substr(subj, cp_pos + 1, compiled.captures[0])
-            new_bits[n + 2] = bit
-            n = n + 2
+            local bit_len = strlen(bit)
+
+            local new_dst_len = dst_len + prefix_len + bit_len
+            dst_buf, dst_buf_size, new_dst_len, dst_pos =
+                check_buf_size(dst_buf, dst_buf_size, dst_len, new_dst_len,
+                               dst_pos)
+            dst_len = new_dst_len
+
+            if prefix_len > 0 then
+                ffi_copy(dst_pos, ffi_cast("const char *", subj) + cp_pos,
+                         prefix_len)
+                dst_pos = dst_pos + prefix_len
+            end
+
+            if bit_len > 0 then
+                ffi_copy(dst_pos, bit, bit_len)
+                dst_pos = dst_pos + bit_len
+            end
 
         else
             local cv = compiled.replace
@@ -486,23 +521,44 @@ local function re_sub_helper(subj, regex, replace, opts, global)
                     return nil, nil, "failed to create script engine"
                 end
 
-                local len = C.ngx_http_lua_ffi_script_eval_len(e, cv)
-                local dst = get_string_buf(len)
-                C.ngx_http_lua_ffi_script_eval_data(e, cv, dst, len)
+                local bit_len = C.ngx_http_lua_ffi_script_eval_len(e, cv)
+                local new_dst_len = dst_len + prefix_len + bit_len
+                dst_buf, dst_buf_size, new_dst_len, dst_pos =
+                    check_buf_size(dst_buf, dst_buf_size, dst_len,
+                                   new_dst_len, dst_pos)
+                dst_len = new_dst_len
 
-                new_bits[n + 1] = substr(subj, cp_pos + 1, compiled.captures[0])
-                new_bits[n + 2] = ffi_string(dst, len)
-                n = n + 2
+                if prefix_len > 0 then
+                    ffi_copy(dst_pos, ffi_cast("const char *", subj) + cp_pos,
+                             prefix_len)
+                    dst_pos = dst_pos + prefix_len
+                end
+
+                if bit_len > 0 then
+                    C.ngx_http_lua_ffi_script_eval_data(e, cv, dst_pos,
+                                                        prefix_len)
+                    dst_pos = dst_pos + bit_len
+                end
 
             else
-                -- compiled.replace.lengths == nil
-                new_bits[n + 1] = substr(subj, cp_pos + 1, compiled.captures[0])
+                local bit_len = cv.value.len
 
-                if replace_literal == nil then
-                    replace_literal = ffi_string(cv.value.data, cv.value.len)
+                local new_dst_len = dst_len + prefix_len + bit_len
+                dst_buf, dst_buf_size, new_dst_len, dst_pos =
+                    check_buf_size(dst_buf, dst_buf_size, dst_len,
+                                   new_dst_len, dst_pos)
+                dst_len = new_dst_len
+
+                if prefix_len > 0 then
+                    ffi_copy(dst_pos, ffi_cast("const char *", subj) + cp_pos,
+                             prefix_len)
+                    dst_pos = dst_pos + prefix_len
                 end
-                new_bits[n + 2] = replace_literal
-                n = n + 2
+
+                if bit_len > 0 then
+                    ffi_copy(dst_pos, cv.value.data, bit_len)
+                    dst_pos = dst_pos + bit_len
+                end
             end
         end
 
@@ -526,9 +582,18 @@ local function re_sub_helper(subj, regex, replace, opts, global)
 
     if count > 0 then
         if pos < subj_len then
-            new_bits[n + 1] = substr(subj, cp_pos + 1)
+            local suffix_len = subj_len - cp_pos
+
+            local new_dst_len = dst_len + suffix_len
+            dst_buf, dst_buf_size, new_dst_len, dst_pos =
+                check_buf_size(dst_buf, dst_buf_size, dst_len, new_dst_len,
+                               dst_pos)
+            dst_len = new_dst_len
+
+            ffi_copy(dst_pos, ffi_cast("const char *", subj) + cp_pos,
+                     suffix_len)
         end
-        return concat(new_bits), count
+        return ffi_string(dst_buf, dst_len), count
     end
 
     return subj, 0

@@ -171,3 +171,35 @@ qr/\[TRACE   \d+ "content_by_lua":4 loop\]/
 bad argument type
 NYI
 
+
+
+=== TEST 5: replace template + submatches (exceeding buffers)
+--- http_config eval: $::HttpConfig
+--- config
+    location = /re {
+        access_log off;
+        content_by_lua '
+            local m, err
+            local gsub = ngx.re.gsub
+            local subj = string.rep("bcbd", 2048)
+            for i = 1, 10 do
+                s, n, err = gsub(subj, "b(c)", "[$0($1)]", "jo")
+            end
+            if not s then
+                ngx.log(ngx.ERR, "failed: ", err)
+                return
+            end
+            ngx.say("s: ", s)
+            ngx.say("n: ", n)
+        ';
+    }
+--- request
+GET /re
+--- response_body eval
+"s: " . ("[bc(c)]bd" x 2048) .
+"\nn: 2048\n"
+
+--- no_error_log
+[error]
+bad argument type
+

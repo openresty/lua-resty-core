@@ -44,6 +44,11 @@ function M.set_string_buf_size(size)
 end
 
 
+function M.get_string_buf_size()
+    return str_buf_size
+end
+
+
 function M.get_size_ptr()
     if not size_ptr then
         size_ptr = ffi_new("size_t[1]")
