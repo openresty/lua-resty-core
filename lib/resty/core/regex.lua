@@ -12,7 +12,6 @@ local bit = require "bit"
 local bor = bit.bor
 local band = bit.band
 local lshift = bit.lshift
-local strlen = string.len
 local substr = string.sub
 local byte = string.byte
 local setmetatable = setmetatable
@@ -126,7 +125,7 @@ ffi.cdef[[
 local function parse_regex_opts(opts)
     local flags = 0
     local pcre_opts = 0
-    local len = strlen(opts)
+    local len = #opts
 
     for i = 1, len do
         local opt = byte(opts, i)
@@ -271,7 +270,7 @@ local function re_match(subj, regex, opts, ctx)
         -- print("compiled regex not found, compiling regex...")
         local errbuf = get_string_buf(MAX_ERR_MSG_LEN)
 
-        compiled = C.ngx_http_lua_ffi_compile_regex(regex, strlen(regex),
+        compiled = C.ngx_http_lua_ffi_compile_regex(regex, #regex,
                                                     flags, pcre_opts,
                                                     errbuf, MAX_ERR_MSG_LEN)
 
@@ -297,8 +296,7 @@ local function re_match(subj, regex, opts, ctx)
 
     -- exec the compiled regex
 
-    local rc = C.ngx_http_lua_ffi_exec_regex(compiled, flags, subj,
-                                             strlen(subj), pos)
+    local rc = C.ngx_http_lua_ffi_exec_regex(compiled, flags, subj, #subj, pos)
     if rc == PCRE_ERROR_NOMATCH then
         if not compile_once then
             destroy_compiled_regex(compiled)
@@ -411,9 +409,9 @@ local function re_sub_helper(subj, regex, replace, opts, global)
         -- print("compiled regex not found, compiling regex...")
         local errbuf = get_string_buf(MAX_ERR_MSG_LEN)
 
-        compiled = C.ngx_http_lua_ffi_compile_regex(regex, strlen(regex),
-                                                    flags, pcre_opts,
-                                                    errbuf, MAX_ERR_MSG_LEN)
+        compiled = C.ngx_http_lua_ffi_compile_regex(regex, #regex, flags,
+                                                    pcre_opts, errbuf,
+                                                    MAX_ERR_MSG_LEN)
 
         if compiled == nil then
             return nil, nil, ffi_string(errbuf)
@@ -423,8 +421,8 @@ local function re_sub_helper(subj, regex, replace, opts, global)
 
         if func == nil then
             local rc =
-                C.ngx_http_lua_ffi_compile_replace_template(compiled, replace,
-                                                            strlen(replace))
+                C.ngx_http_lua_ffi_compile_replace_template(compiled,
+                                                            replace, #replace)
             if rc ~= 0 then
                 if not compile_once then
                     destroy_compiled_regex(compiled)
@@ -451,7 +449,7 @@ local function re_sub_helper(subj, regex, replace, opts, global)
 
     local name_count = compiled.name_count
 
-    local subj_len = strlen(subj)
+    local subj_len = #subj
     local count = 0
     local pos = 0
     local cp_pos = 0
@@ -494,7 +492,7 @@ local function re_sub_helper(subj, regex, replace, opts, global)
             end
 
             local bit = func(res)
-            local bit_len = strlen(bit)
+            local bit_len = #bit
 
             local new_dst_len = dst_len + prefix_len + bit_len
             dst_buf, dst_buf_size, new_dst_len, dst_pos =

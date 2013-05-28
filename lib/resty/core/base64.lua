@@ -5,7 +5,6 @@ local ffi = require 'ffi'
 local ffi_string = ffi.string
 local ffi_new = ffi.new
 local C = ffi.C
-local strlen = string.len
 local setmetatable = setmetatable
 local ngx = ngx
 local type = type
@@ -43,7 +42,7 @@ ngx.encode_base64 = function (s)
             s = tostring(s)
         end
     end
-    local slen = strlen(s)
+    local slen = #s
     local dlen = base64_encoded_length(slen)
     -- print("dlen: ", tonumber(dlen))
     local dst = get_string_buf(dlen)
@@ -65,7 +64,7 @@ ngx.decode_base64 = function (s)
             s = tostring(s)
         end
     end
-    local slen = strlen(s)
+    local slen = #s
     local dlen = base64_decoded_length(slen)
     -- print("dlen: ", tonumber(dlen))
     local dst = get_string_buf(dlen)

@@ -5,7 +5,6 @@ local ffi = require 'ffi'
 local ffi_string = ffi.string
 local ffi_new = ffi.new
 local C = ffi.C
-local strlen = string.len
 local setmetatable = setmetatable
 local ngx = ngx
 local type = type
@@ -38,7 +37,7 @@ ngx.escape_uri = function (s)
             s = tostring(s)
         end
     end
-    local slen = strlen(s)
+    local slen = #s
     local dlen = C.ngx_http_lua_ffi_uri_escaped_length(s, slen)
     -- print("dlen: ", tonumber(dlen))
     if dlen == slen then
@@ -58,7 +57,7 @@ ngx.unescape_uri = function (s)
             s = tostring(s)
         end
     end
-    local slen = strlen(s)
+    local slen = #s
     local dlen = slen
     local dst = get_string_buf(dlen)
     dlen = C.ngx_http_lua_ffi_unescape_uri(s, slen, dst)

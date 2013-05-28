@@ -5,7 +5,6 @@ local ffi = require 'ffi'
 local ffi_string = ffi.string
 local ffi_new = ffi.new
 local C = ffi.C
-local strlen = string.len
 local setmetatable = setmetatable
 local ngx = ngx
 local type = type
@@ -37,7 +36,7 @@ ngx.md5_bin = function (s)
             s = tostring(s)
         end
     end
-    C.ngx_http_lua_ffi_md5_bin(s, strlen(s), md5_buf)
+    C.ngx_http_lua_ffi_md5_bin(s, #s, md5_buf)
     return ffi_string(md5_buf, MD5_DIGEST_LEN)
 end
 
@@ -53,7 +52,7 @@ ngx.md5 = function (s)
             s = tostring(s)
         end
     end
-    C.ngx_http_lua_ffi_md5(s, strlen(s), md5_hex_buf)
+    C.ngx_http_lua_ffi_md5(s, #s, md5_hex_buf)
     return ffi_string(md5_hex_buf, MD5_HEX_DIGEST_LEN)
 end
 
@@ -69,7 +68,7 @@ ngx.sha1_bin = function (s)
             s = tostring(s)
         end
     end
-    local ok = C.ngx_http_lua_ffi_sha1_bin(s, strlen(s), sha_buf)
+    local ok = C.ngx_http_lua_ffi_sha1_bin(s, #s, sha_buf)
     if ok == 0 then
         return error("SHA-1 support missing in Nginx")
     end
