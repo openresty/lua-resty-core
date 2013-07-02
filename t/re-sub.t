@@ -9,7 +9,7 @@ use Cwd qw(cwd);
 
 repeat_each(2);
 
-plan tests => repeat_each() * (blocks() * 4 + 5);
+plan tests => repeat_each() * (blocks() * 4 + 6);
 
 my $pwd = cwd();
 
@@ -49,7 +49,7 @@ __DATA__
         content_by_lua '
             local m, err
             local sub = ngx.re.sub
-            for i = 1, 200 do
+            for i = 1, 250 do
                 s, n, err = sub("abcbd", "b", "B", "jo")
             end
             if not s then
@@ -70,6 +70,7 @@ qr/\[TRACE   \d+ "content_by_lua":4 loop\]/
 --- no_error_log
 [error]
 bad argument type
+NYI
 
 
 
@@ -147,7 +148,7 @@ NYI
         content_by_lua '
             local m, err
             local sub = ngx.re.sub
-            for i = 1, 200 do
+            for i = 1, 250 do
                 s, n, err = sub("abcbd", "b(c)", "[$0($1)]", "jo")
             end
             if not s then
