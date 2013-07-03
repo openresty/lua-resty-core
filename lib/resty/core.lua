@@ -5,6 +5,7 @@ require "resty.core.uri"
 require "resty.core.hash"
 require "resty.core.base64"
 require "resty.core.regex"
+require "resty.core.exit"
 
 
 local base = require "resty.core.base"

@@ -64,6 +64,10 @@ API Implemented
 * [ngx.re.sub](http://wiki.nginx.org/HttpLuaModule#ngx.re.sub)
 * [ngx.re.gsub](http://wiki.nginx.org/HttpLuaModule#ngx.re.gsub)
 
+### resty.core.exit
+
+* [ngx.exit](http://wiki.nginx.org/HttpLuaModule#ngx.exit)
+
 Caveat
 ======
 
