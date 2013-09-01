@@ -107,6 +107,73 @@ local function shdict_get(zone, key)
 end
 
 
+local function shdict_get_stale(zone, key)
+    if not zone and type(zone) ~= "userdata" then
+        return error("bad \"zone\" argument")
+    end
+
+    if type(key) ~= "string" then
+        key = tostring(key)
+    end
+
+    local key_len = #key
+    if key_len == 0 then
+        return nil
+    end
+    if key_len > 65535 then
+        return error("the key argument is more than 65535 bytes: " .. key_len)
+    end
+
+    local size = get_string_buf_size()
+    local buf = get_string_buf(size)
+    str_value_buf[0] = buf
+    value_len[0] = size
+
+    local rc = C.ngx_http_lua_ffi_shdict_get(zone, key, key_len, value_type,
+                                             str_value_buf, value_len,
+                                             num_value, user_flags, 1,
+                                             is_stale)
+    if rc ~= 0 then
+        return error("failed to get the key")
+    end
+
+    local typ = value_type[0]
+
+    if typ == 0 then -- LUA_TNIL
+        return nil
+    end
+
+    local flags = tonumber(user_flags[0])
+    local val
+
+    if typ == 4 then -- LUA_TSTRING
+        if str_value_buf[0] ~= buf then
+            -- ngx.say("len: ", tonumber(value_len[0]))
+            buf = str_value_buf[0]
+            val = ffi_str(buf, value_len[0])
+            C.free(buf)
+        else
+            val = ffi_str(buf, value_len[0])
+        end
+
+    elseif typ == 3 then -- LUA_TNUMBER
+        val = tonumber(num_value[0])
+
+    elseif typ == 1 then -- LUA_TBOOLEAN
+        val = (tonumber(buf[0]) ~= 0)
+
+    else
+        return error("unknown value type: " .. typ)
+    end
+
+    if flags ~= 0 then
+        return val, flags, is_stale[0] == 1
+    end
+
+    return val, nil, is_stale[0] == 1
+end
+
+
 if ngx.shared then
     local name, dict = next(ngx.shared, nil)
     if dict then
@@ -115,6 +182,7 @@ if ngx.shared then
             mt = mt.__index
             if mt then
                 mt.get = shdict_get
+                mt.get_stale = shdict_get_stale
             end
         end
     end

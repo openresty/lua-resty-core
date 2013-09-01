@@ -260,3 +260,72 @@ qr/\[TRACE   \d+ "content_by_lua":7 loop\]/
 [error]
  -- NYI:
 
+
+
+=== TEST 8: get_stale (false)
+--- http_config eval: $::HttpConfig
+--- config
+    location = /t {
+        content_by_lua '
+            local ffi = require "ffi"
+            local val, flags, stale
+            local dogs = ngx.shared.dogs
+            -- local cd = ffi.cast("void *", dogs)
+            dogs:set("foo", "bar", 0, 72)
+            for i = 1, 100 do
+                val, flags, stale = dogs:get_stale("foo")
+            end
+            ngx.say("value type: ", type(val))
+            ngx.say("value: ", val)
+            ngx.say("flags: ", flags)
+            ngx.say("stale: ", stale)
+        ';
+    }
+--- request
+GET /t
+--- response_body
+value type: string
+value: bar
+flags: 72
+stale: false
+--- error_log eval
+qr/\[TRACE   \d+ "content_by_lua":7 loop\]/
+--- no_error_log
+[error]
+ -- NYI:
+
+
+
+=== TEST 9: get_stale (true)
+--- http_config eval: $::HttpConfig
+--- config
+    location = /t {
+        content_by_lua '
+            local ffi = require "ffi"
+            local val, flags, stale
+            local dogs = ngx.shared.dogs
+            -- local cd = ffi.cast("void *", dogs)
+            dogs:set("foo", "bar", 0.001, 72)
+            ngx.sleep(0.002)
+            for i = 1, 100 do
+                val, flags, stale = dogs:get_stale("foo")
+            end
+            ngx.say("value type: ", type(val))
+            ngx.say("value: ", val)
+            ngx.say("flags: ", flags)
+            ngx.say("stale: ", stale)
+        ';
+    }
+--- request
+GET /t
+--- response_body
+value type: string
+value: bar
+flags: 72
+stale: true
+--- error_log eval
+qr/\[TRACE   \d+ "content_by_lua":8 loop\]/
+--- no_error_log
+[error]
+ -- NYI:
+
