@@ -2,13 +2,15 @@
 
 
 local ffi = require 'ffi'
+local base = require "resty.core.base"
+local bit = require "bit"
+
 local ffi_string = ffi.string
 local ffi_new = ffi.new
 local ffi_gc = ffi.gc
 local ffi_copy = ffi.copy
 local ffi_cast = ffi.cast
 local C = ffi.C
-local bit = require "bit"
 local bor = bit.bor
 local band = bit.band
 local lshift = bit.lshift
@@ -20,7 +22,6 @@ local ngx = ngx
 local type = type
 local tostring = tostring
 local error = error
-local base = require "resty.core.base"
 local get_string_buf = base.get_string_buf
 local get_string_buf_size = base.get_string_buf_size
 local get_size_ptr = base.get_size_ptr
