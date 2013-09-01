@@ -68,6 +68,10 @@ API Implemented
 
 * [ngx.exit](http://wiki.nginx.org/HttpLuaModule#ngx.exit)
 
+### resty.shdict
+
+* [ngx.shared.DICT.get](http://wiki.nginx.org/HttpLuaModule#ngx.shared.DICT.get)
+
 Caveat
 ======
 
