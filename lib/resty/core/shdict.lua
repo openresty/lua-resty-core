@@ -40,7 +40,7 @@ local str_value_buf = ffi_new("unsigned char *[1]")
 
 
 local function shdict_get(zone, key)
-    if not zone then
+    if not zone and type(zone) ~= "userdata" then
         return error("bad \"zone\" argument")
     end
 

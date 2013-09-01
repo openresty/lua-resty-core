@@ -45,10 +45,10 @@ __DATA__
             local ffi = require "ffi"
             local val, flags
             local dogs = ngx.shared.dogs
-            local cd = ffi.cast("void *", dogs)
+            -- local cd = ffi.cast("void *", dogs)
             dogs:set("foo", "bar", 0, 72)
             for i = 1, 100 do
-                val, flags = dogs.get(cd, "foo")
+                val, flags = dogs:get("foo")
             end
             ngx.say("value type: ", type(val))
             ngx.say("value: ", val)
@@ -77,10 +77,10 @@ qr/\[TRACE   \d+ "content_by_lua":7 loop\]/
             local ffi = require "ffi"
             local val, flags
             local dogs = ngx.shared.dogs
-            local cd = ffi.cast("void *", dogs)
+            -- local cd = ffi.cast("void *", dogs)
             -- dogs:set("foo", "bar")
             for i = 1, 100 do
-                val, flags = dogs.get(cd, "foo")
+                val, flags = dogs:get("foo")
             end
             ngx.say("value type: ", type(val))
             ngx.say("value: ", val)
@@ -109,10 +109,10 @@ qr/\[TRACE   \d+ "content_by_lua":7 loop\]/
             local ffi = require "ffi"
             local val, flags
             local dogs = ngx.shared.dogs
-            local cd = ffi.cast("void *", dogs)
+            -- local cd = ffi.cast("void *", dogs)
             dogs:set("foo", true, 0, 5678)
             for i = 1, 100 do
-                val, flags = dogs.get(cd, "foo")
+                val, flags = dogs:get("foo")
             end
             ngx.say("value type: ", type(val))
             ngx.say("value: ", val)
@@ -141,10 +141,10 @@ qr/\[TRACE   \d+ "content_by_lua":7 loop\]/
             local ffi = require "ffi"
             local val, flags
             local dogs = ngx.shared.dogs
-            local cd = ffi.cast("void *", dogs)
+            -- local cd = ffi.cast("void *", dogs)
             dogs:set("foo", false, 0, 777)
             for i = 1, 100 do
-                val, flags = dogs.get(cd, "foo")
+                val, flags = dogs:get("foo")
             end
             ngx.say("value type: ", type(val))
             ngx.say("value: ", val)
@@ -173,10 +173,10 @@ qr/\[TRACE   \d+ "content_by_lua":7 loop\]/
             local ffi = require "ffi"
             local val, flags
             local dogs = ngx.shared.dogs
-            local cd = ffi.cast("void *", dogs)
+            -- local cd = ffi.cast("void *", dogs)
             dogs:set("foo", 51203)
             for i = 1, 100 do
-                val, flags = dogs.get(cd, "foo")
+                val, flags = dogs:get("foo")
             end
             ngx.say("value type: ", type(val))
             ngx.say("value: ", val)
@@ -205,10 +205,10 @@ qr/\[TRACE   \d+ "content_by_lua":7 loop\]/
             local ffi = require "ffi"
             local val, flags
             local dogs = ngx.shared.dogs
-            local cd = ffi.cast("void *", dogs)
+            -- local cd = ffi.cast("void *", dogs)
             dogs:set("foo", 3.1415926, 0, 78)
             for i = 1, 100 do
-                val, flags = dogs.get(cd, "foo")
+                val, flags = dogs:get("foo")
             end
             ngx.say("value type: ", type(val))
             ngx.say("value: ", val)
@@ -237,10 +237,10 @@ qr/\[TRACE   \d+ "content_by_lua":7 loop\]/
             local ffi = require "ffi"
             local val, flags
             local dogs = ngx.shared.dogs
-            local cd = ffi.cast("void *", dogs)
+            -- local cd = ffi.cast("void *", dogs)
             dogs:set("foo", string.rep("bbbb", 1024) .. "a", 0, 912)
             for i = 1, 100 do
-                val, flags = dogs.get(cd, "foo")
+                val, flags = dogs:get("foo")
             end
             ngx.say("value type: ", type(val))
             ngx.say("value: ", val)
