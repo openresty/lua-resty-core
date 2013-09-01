@@ -30,6 +30,7 @@ do
     getfenv(0).require = my_require
 end
 
+
 if not pcall(ffi.typeof, "ngx_str_t") then
     ffi.cdef[[
         typedef struct {
