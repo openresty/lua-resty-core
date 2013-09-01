@@ -49,7 +49,7 @@ __DATA__
         content_by_lua '
             local m, err
             local sub = ngx.re.sub
-            for i = 1, 250 do
+            for i = 1, 350 do
                 s, n, err = sub("abcbd", "b", "B", "jo")
             end
             if not s then
@@ -148,7 +148,7 @@ NYI
         content_by_lua '
             local m, err
             local sub = ngx.re.sub
-            for i = 1, 250 do
+            for i = 1, 350 do
                 s, n, err = sub("abcbd", "b(c)", "[$0($1)]", "jo")
             end
             if not s then
