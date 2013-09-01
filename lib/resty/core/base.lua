@@ -20,7 +20,7 @@ local size_ptr
 do
     local orig_require = require
     local pkg_loaded = package.loaded
-    local function my_require (name)
+    local function my_require(name)
         local mod = pkg_loaded[name]
         if mod then
             return mod
