@@ -13,6 +13,23 @@ local str_buf
 local size_ptr
 
 
+-- XXX for now LuaJIT 2.1 cannot compile require()
+-- so we make the fast code path Lua only in our own
+-- wrapper so that most of the require() calls in hot
+-- Lua code paths can be JIT compiled.
+do
+    local orig_require = require
+    local pkg_loaded = package.loaded
+    local function my_require (name)
+        local mod = pkg_loaded[name]
+        if mod then
+            return mod
+        end
+        return orig_require(name)
+    end
+    getfenv(0).require = my_require
+end
+
 if not pcall(ffi.typeof, "ngx_str_t") then
     ffi.cdef[[
         typedef struct {
