@@ -11,8 +11,12 @@ local get_string_buf = base.get_string_buf
 local get_string_buf_size = base.get_string_buf_size
 local get_size_ptr = base.get_size_ptr
 local tonumber = tonumber
+local tostring = tostring
 local next = next
 local type = type
+local error = error
+local ngx_shared = ngx.shared
+local getmetatable = getmetatable
 
 
 ffi.cdef[[
@@ -210,8 +214,8 @@ local function shdict_incr(zone, key, value)
 end
 
 
-if ngx.shared then
-    local name, dict = next(ngx.shared, nil)
+if ngx_shared then
+    local name, dict = next(ngx_shared, nil)
     if dict then
         local mt = getmetatable(dict)
         if mt then
