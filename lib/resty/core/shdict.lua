@@ -61,7 +61,7 @@ local function shdict_get(zone, key)
     local size = get_string_buf_size()
     local buf = get_string_buf(size)
     str_value_buf[0] = buf
-    value_len = get_size_ptr()
+    local value_len = get_size_ptr()
     value_len[0] = size
 
     local rc = C.ngx_http_lua_ffi_shdict_get(zone, key, key_len, value_type,
@@ -130,7 +130,7 @@ local function shdict_get_stale(zone, key)
     local size = get_string_buf_size()
     local buf = get_string_buf(size)
     str_value_buf[0] = buf
-    value_len = get_size_ptr()
+    local value_len = get_size_ptr()
     value_len[0] = size
 
     local rc = C.ngx_http_lua_ffi_shdict_get(zone, key, key_len, value_type,
