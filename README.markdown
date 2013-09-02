@@ -76,7 +76,7 @@ API Implemented
 
 ### resty.core.var
 
-* [ngx.var.VARIABLE](http://wiki.nginx.org/HttpLuaModule#ngx.var.VARIABLE)
+* [ngx.var.VARIABLE](http://wiki.nginx.org/HttpLuaModule#ngx.var.VARIABLE)  (read-only)
 
 Caveat
 ======
