@@ -9,6 +9,7 @@ local ffi_str = ffi.string
 local C = ffi.C
 local get_string_buf = base.get_string_buf
 local get_string_buf_size = base.get_string_buf_size
+local get_size_ptr = base.get_size_ptr
 local tonumber = tonumber
 local next = next
 local type = type
@@ -32,7 +33,6 @@ if not pcall(function () return C.free end) then
 end
 
 
-local value_len = ffi_new("size_t[1]")
 local value_type = ffi_new("int[1]")
 local user_flags = ffi_new("int[1]")
 local num_value = ffi_new("double[1]")
@@ -61,6 +61,7 @@ local function shdict_get(zone, key)
     local size = get_string_buf_size()
     local buf = get_string_buf(size)
     str_value_buf[0] = buf
+    value_len = get_size_ptr()
     value_len[0] = size
 
     local rc = C.ngx_http_lua_ffi_shdict_get(zone, key, key_len, value_type,
@@ -129,6 +130,7 @@ local function shdict_get_stale(zone, key)
     local size = get_string_buf_size()
     local buf = get_string_buf(size)
     str_value_buf[0] = buf
+    value_len = get_size_ptr()
     value_len[0] = size
 
     local rc = C.ngx_http_lua_ffi_shdict_get(zone, key, key_len, value_type,
