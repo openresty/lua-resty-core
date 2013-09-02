@@ -11,6 +11,7 @@ local get_string_buf = base.get_string_buf
 local get_string_buf_size = base.get_string_buf_size
 local tonumber = tonumber
 local next = next
+local type = type
 
 
 ffi.cdef[[
