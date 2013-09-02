@@ -16,11 +16,9 @@ local type = type
 
 ffi.cdef[[
     int ngx_http_lua_ffi_shdict_get(void *zone, const unsigned char *key,
-                                    size_t key_len, int *value_type,
-                                    unsigned char **str_value_buf,
-                                    size_t *str_value_len, double *num_value,
-                                    int *user_flags, int get_stale,
-                                    int *is_stale);
+        size_t key_len, int *value_type, unsigned char **str_value_buf,
+        size_t *str_value_len, double *num_value, int *user_flags,
+        int get_stale, int *is_stale);
 
     int ngx_http_lua_ffi_shdict_incr(void *zone, const unsigned char *key,
         size_t key_len, double *value, char **err);
