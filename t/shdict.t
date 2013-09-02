@@ -329,3 +329,63 @@ qr/\[TRACE   \d+ "content_by_lua":8 loop\]/
 [error]
  -- NYI:
 
+
+
+=== TEST 10: incr int
+--- http_config eval: $::HttpConfig
+--- config
+    location = /t {
+        content_by_lua '
+            local ffi = require "ffi"
+            local val
+            local dogs = ngx.shared.dogs
+            -- local cd = ffi.cast("void *", dogs)
+            dogs:set("foo", 56)
+            for i = 1, 100 do
+                val, err = dogs:incr("foo", 2)
+            end
+            ngx.say("value: ", val)
+            ngx.say("err: ", err)
+        ';
+    }
+--- request
+GET /t
+--- response_body
+value: 256
+err: nil
+--- error_log eval
+qr/\[TRACE   \d+ "content_by_lua":7 loop\]/
+--- no_error_log
+[error]
+ -- NYI:
+
+
+
+=== TEST 11: incr double
+--- http_config eval: $::HttpConfig
+--- config
+    location = /t {
+        content_by_lua '
+            local ffi = require "ffi"
+            local val
+            local dogs = ngx.shared.dogs
+            -- local cd = ffi.cast("void *", dogs)
+            dogs:set("foo", 56)
+            for i = 1, 100 do
+                val, err = dogs:incr("foo", 2.1)
+            end
+            ngx.say("value: ", val)
+            ngx.say("err: ", err)
+        ';
+    }
+--- request
+GET /t
+--- response_body
+value: 266
+err: nil
+--- error_log eval
+qr/\[TRACE   \d+ "content_by_lua":7 loop\]/
+--- no_error_log
+[error]
+ -- NYI:
+

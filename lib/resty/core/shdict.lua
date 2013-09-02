@@ -14,13 +14,15 @@ local next = next
 
 
 ffi.cdef[[
-    typedef struct foo foo_t;
     int ngx_http_lua_ffi_shdict_get(void *zone, const unsigned char *key,
                                     size_t key_len, int *value_type,
                                     unsigned char **str_value_buf,
                                     size_t *str_value_len, double *num_value,
                                     int *user_flags, int get_stale,
                                     int *is_stale);
+
+    int ngx_http_lua_ffi_shdict_incr(void *zone, const unsigned char *key,
+        size_t key_len, double *value, char **err);
 ]]
 
 
@@ -37,6 +39,7 @@ local user_flags = ffi_new("int[1]")
 local num_value = ffi_new("double[1]")
 local is_stale = ffi_new("int[1]")
 local str_value_buf = ffi_new("unsigned char *[1]")
+local errmsg = ffi_new("char *[1]")
 
 
 local function shdict_get(zone, key)
@@ -174,6 +177,38 @@ local function shdict_get_stale(zone, key)
 end
 
 
+local function shdict_incr(zone, key, value)
+    if not zone or type(zone) ~= "userdata" then
+        return error("bad \"zone\" argument")
+    end
+
+    if type(key) ~= "string" then
+        key = tostring(key)
+    end
+
+    local key_len = #key
+    if key_len == 0 then
+        return nil
+    end
+    if key_len > 65535 then
+        return error("the key argument is more than 65535 bytes: " .. key_len)
+    end
+
+    if type(value) ~= "number" then
+        value = tonumber(value)
+    end
+    num_value[0] = value
+
+    local rc = C.ngx_http_lua_ffi_shdict_incr(zone, key, key_len, num_value,
+                                             errmsg)
+    if rc ~= 0 then  -- ~= NGX_OK
+        return nil, ffi_str(errmsg[0])
+    end
+
+    return tonumber(num_value[0])
+end
+
+
 if ngx.shared then
     local name, dict = next(ngx.shared, nil)
     if dict then
@@ -183,6 +218,7 @@ if ngx.shared then
             if mt then
                 mt.get = shdict_get
                 mt.get_stale = shdict_get_stale
+                mt.incr = shdict_incr
             end
         end
     end

@@ -72,6 +72,7 @@ API Implemented
 
 * [ngx.shared.DICT.get](http://wiki.nginx.org/HttpLuaModule#ngx.shared.DICT.get)
 * [ngx.shared.DICT.get_stale](http://wiki.nginx.org/HttpLuaModule#ngx.shared.DICT.get_stale)
+* [ngx.shared.DICT.incr](http://wiki.nginx.org/HttpLuaModule#ngx.shared.DICT.incr)
 
 Caveat
 ======
