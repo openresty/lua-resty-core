@@ -74,6 +74,10 @@ API Implemented
 * [ngx.shared.DICT.get_stale](http://wiki.nginx.org/HttpLuaModule#ngx.shared.DICT.get_stale)
 * [ngx.shared.DICT.incr](http://wiki.nginx.org/HttpLuaModule#ngx.shared.DICT.incr)
 
+### resty.core.var
+
+* [ngx.var.VARIABLE](http://wiki.nginx.org/HttpLuaModule#ngx.var.VARIABLE)
+
 Caveat
 ======
 
