@@ -34,7 +34,7 @@ ngx.exit = function (rc)
     errlen[0] = ERR_BUF_SIZE
     local ok = C.ngx_http_lua_ffi_exit(r, rc, err, errlen)
     if ok == 0 then
-        print("yielding...")
+        -- print("yielding...")
         return co_yield()
     end
     return error(ffi_string(err, errlen[0]))
