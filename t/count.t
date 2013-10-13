@@ -9,7 +9,7 @@ use Cwd qw(cwd);
 
 repeat_each(2);
 
-plan tests => repeat_each() * (blocks() * 5 + 2);
+plan tests => repeat_each() * (blocks() * 3);
 
 my $pwd = cwd();
 
@@ -58,7 +58,7 @@ __DATA__
 --- request
 GET /re
 
---- stap
+--- stap2
 global c
 probe process("$LIBLUA_PATH").function("rehashtab") {
     c++
