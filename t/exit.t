@@ -5,7 +5,7 @@ use Cwd qw(cwd);
 
 #worker_connections(1014);
 #master_process_enabled(1);
-#log_level('warn');
+log_level('warn');
 
 repeat_each(120);
 #repeat_each(2);
@@ -49,10 +49,10 @@ __DATA__
 GET /t
 --- response_body_like: 403 Forbidden
 --- error_code: 403
---- no_error_log
-[error]
- -- NYI:
- bad argument
+--- no_error_log eval
+["[error]",
+qr/ -- NYI: (?!FastFunc coroutine\.yield)/,
+" bad argument"]
 
 
 
@@ -79,8 +79,8 @@ return { go = go }
 GET /t
 --- response_body_like: 403 Forbidden
 --- error_code: 403
---- no_error_log
-[error]
- -- NYI:
- bad argument
+--- no_error_log eval
+["[error]",
+qr/ -- NYI: (?!FastFunc coroutine\.yield)/,
+" bad argument"]
 
