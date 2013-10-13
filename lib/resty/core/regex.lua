@@ -25,6 +25,7 @@ local error = error
 local get_string_buf = base.get_string_buf
 local get_string_buf_size = base.get_string_buf_size
 local get_size_ptr = base.get_size_ptr
+local new_tab = base.new_tab
 local floor = math.floor
 local print = print
 local tonumber = tonumber
@@ -58,7 +59,7 @@ local PCRE_JAVASCRIPT_COMPAT = 0x2000000
 local PCRE_ERROR_NOMATCH = -1
 
 
-local regex_cache = {}
+local regex_cache = new_tab(0, 4)
 local regex_cache_size = 0
 local script_engine
 
@@ -177,39 +178,6 @@ local function parse_regex_opts(opts)
 end
 
 
-local function collect_captures(compiled, rc, subj)
-    local cap = compiled.captures
-
-    if rc == 1 then
-        local from = cap[0]
-        if from >= 0 then
-            return {[0] = substr(subj, from + 1, cap[1])}
-        end
-        return nil
-    end
-
-    local m = {}
-    local i = 0
-    local n = 0
-    while i < rc do
-        local from = cap[n]
-        if from >= 0 then
-            local to = cap[n + 1]
-            m[i] = substr(subj, from + 1, to)
-        end
-        i = i + 1
-        n = n + 2
-    end
-
-    return m
-end
-
-
-local function destroy_compiled_regex(compiled)
-    C.ngx_http_lua_ffi_destroy_regex(ffi_gc(compiled, nil))
-end
-
-
 local function collect_named_captures(compiled, flags, res)
     local name_count = compiled.name_count
     local name_table = compiled.name_table
@@ -237,6 +205,36 @@ local function collect_named_captures(compiled, flags, res)
 
         ind = ind + entry_size
     end
+end
+
+
+local function collect_captures(compiled, rc, subj, flags)
+    local cap = compiled.captures
+    local name_count = compiled.name_count
+
+    local m = new_tab(rc - 1, name_count)
+    local i = 0
+    local n = 0
+    while i < rc do
+        local from = cap[n]
+        if from >= 0 then
+            local to = cap[n + 1]
+            m[i] = substr(subj, from + 1, to)
+        end
+        i = i + 1
+        n = n + 2
+    end
+
+    if name_count > 0 then
+        collect_named_captures(compiled, flags, m)
+    end
+
+    return m
+end
+
+
+local function destroy_compiled_regex(compiled)
+    C.ngx_http_lua_ffi_destroy_regex(ffi_gc(compiled, nil))
 end
 
 
@@ -323,12 +321,7 @@ local function re_match(subj, regex, opts, ctx)
     -- print("cap 0: ", compiled.captures[0])
     -- print("cap 1: ", compiled.captures[1])
 
-    local res = collect_captures(compiled, rc, subj)
-
-    local name_count = compiled.name_count
-    if name_count > 0 then
-        collect_named_captures(compiled, flags, res)
-    end
+    local res = collect_captures(compiled, rc, subj, flags)
 
     if ctx then
         ctx.pos = compiled.captures[1]
@@ -486,11 +479,7 @@ local function re_sub_helper(subj, regex, replace, opts, global)
         local prefix_len = compiled.captures[0] - cp_pos
 
         if func ~= nil then
-            local res = collect_captures(compiled, rc, subj)
-
-            if name_count > 0 then
-                collect_named_captures(compiled, flags, res)
-            end
+            local res = collect_captures(compiled, rc, subj, flags)
 
             local bit = func(res)
             local bit_len = #bit

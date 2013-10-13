@@ -9,7 +9,7 @@ use Cwd qw(cwd);
 
 repeat_each(2);
 
-plan tests => repeat_each() * (blocks() * 5 + 2);
+plan tests => repeat_each() * (blocks() * 5 + 3);
 
 my $pwd = cwd();
 
@@ -113,6 +113,7 @@ $1: nil
 qr/\[TRACE   \d+ "content_by_lua":4 loop\]/
 --- no_error_log
 [error]
+NYI
 
 
 
