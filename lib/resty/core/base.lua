@@ -13,6 +13,12 @@ local str_buf
 local size_ptr
 
 
+local ok, new_tab = pcall(require, "table.new")
+if not ok then
+    new_tab = function (narr, nrec) return {} end
+end
+
+
 -- XXX for now LuaJIT 2.1 cannot compile require()
 -- so we make the fast code path Lua only in our own
 -- wrapper so that most of the require() calls in hot
@@ -44,9 +50,11 @@ if not pcall(ffi.typeof, "ngx_str_t") then
 end
 
 
-local M = {
-    version = "0.0.1"
-}
+local _M = new_tab(0, 6)
+
+
+_M.version = "0.0.1"
+_M.new_tab = new_tab
 
 
 if not ngx then
@@ -54,7 +62,7 @@ if not ngx then
 end
 
 
-function M.set_string_buf_size(size)
+function _M.set_string_buf_size(size)
     if size <= 0 then
         return
     end
@@ -65,12 +73,12 @@ function M.set_string_buf_size(size)
 end
 
 
-function M.get_string_buf_size()
+function _M.get_string_buf_size()
     return str_buf_size
 end
 
 
-function M.get_size_ptr()
+function _M.get_size_ptr()
     if not size_ptr then
         size_ptr = ffi_new("size_t[1]")
     end
@@ -79,7 +87,7 @@ function M.get_size_ptr()
 end
 
 
-function M.get_string_buf(size)
+function _M.get_string_buf(size)
     if size > str_buf_size then
         return ffi_new("unsigned char[?]", size)
     end
@@ -92,4 +100,4 @@ function M.get_string_buf(size)
 end
 
 
-return M
+return _M
