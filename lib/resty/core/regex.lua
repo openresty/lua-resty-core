@@ -212,7 +212,7 @@ local function collect_captures(compiled, rc, subj, flags)
     local cap = compiled.captures
     local name_count = compiled.name_count
 
-    local m = new_tab(rc - 1, name_count)
+    local m = new_tab(rc, name_count)
     local i = 0
     local n = 0
     while i < rc do
