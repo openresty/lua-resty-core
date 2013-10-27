@@ -11,6 +11,7 @@ This library is still under early development and is still incomplete.
 Synopsis
 ========
 
+```nginx
     # nginx.conf
 
     http {
@@ -22,6 +23,7 @@ Synopsis
 
         ...
     }
+```
 
 Description
 ===========
