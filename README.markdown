@@ -3,6 +3,27 @@ Name
 
 lua-resty-core - New FFI-based Lua API for the ngx_lua module
 
+Table of Contents
+=================
+
+* [Name](#name)
+* [Status](#status)
+* [Synopsis](#synopsis)
+* [Description](#description)
+* [Prerequisites](#prerequisites)
+* [API Implemented](#api-implemented)
+        * [resty.core.hash](#restycorehash)
+        * [resty.core.base64](#restycorebase64)
+        * [resty.core.uri](#restycoreuri)
+        * [resty.core.regex](#restycoreregex)
+        * [resty.core.exit](#restycoreexit)
+        * [resty.core.shdict](#restycoreshdict)
+        * [resty.core.var](#restycorevar)
+* [Caveat](#caveat)
+* [Author](#author)
+* [Copyright and License](#copyright-and-license)
+* [See Also](#see-also)
+
 Status
 ======
 
@@ -35,14 +56,20 @@ used by the ngx_lua module.
 
 The FFI-based Lua API can work with LuaJIT's JIT compiler. ngx_lua's default API is based on the standard Lua C API, which will never be JIT compiled and the user Lua code is always interpreted (slowly).
 
+[Back to TOC](#table-of-contents)
+
 Prerequisites
 =============
 
 * LuaJIT 2.1 (for now, it is the v2.1 git branch in the official luajit-2.0 git repository: http://luajit.org/download.html )
 * The "ffi" git branch in the lua-nginx-module repository on GitHub: https://github.com/chaoslawful/lua-nginx-module/tree/ffi
 
+[Back to TOC](#table-of-contents)
+
 API Implemented
 ===============
+
+[Back to TOC](#table-of-contents)
 
 ### resty.core.hash
 
@@ -50,15 +77,21 @@ API Implemented
 * [ngx.md5_bin](http://wiki.nginx.org/HttpLuaModule#ngx.md5_bin)
 * [ngx.sha1_bin](http://wiki.nginx.org/HttpLuaModule#ngx.sha1_bin)
 
+[Back to TOC](#table-of-contents)
+
 ### resty.core.base64
 
 * [ngx.encode_base64](http://wiki.nginx.org/HttpLuaModule#ngx.encode_base64)
 * [ngx.decode_base64](http://wiki.nginx.org/HttpLuaModule#ngx.decode_base64)
 
+[Back to TOC](#table-of-contents)
+
 ### resty.core.uri
 
 * [ngx.escape_uri](http://wiki.nginx.org/HttpLuaModule#ngx.escape_uri)
 * [ngx.unescape_uri](http://wiki.nginx.org/HttpLuaModule#ngx.unescape_uri)
+
+[Back to TOC](#table-of-contents)
 
 ### resty.core.regex
 
@@ -66,9 +99,13 @@ API Implemented
 * [ngx.re.sub](http://wiki.nginx.org/HttpLuaModule#ngx.re.sub)
 * [ngx.re.gsub](http://wiki.nginx.org/HttpLuaModule#ngx.re.gsub)
 
+[Back to TOC](#table-of-contents)
+
 ### resty.core.exit
 
 * [ngx.exit](http://wiki.nginx.org/HttpLuaModule#ngx.exit)
+
+[Back to TOC](#table-of-contents)
 
 ### resty.core.shdict
 
@@ -76,9 +113,13 @@ API Implemented
 * [ngx.shared.DICT.get_stale](http://wiki.nginx.org/HttpLuaModule#ngx.shared.DICT.get_stale)
 * [ngx.shared.DICT.incr](http://wiki.nginx.org/HttpLuaModule#ngx.shared.DICT.incr)
 
+[Back to TOC](#table-of-contents)
+
 ### resty.core.var
 
 * [ngx.var.VARIABLE](http://wiki.nginx.org/HttpLuaModule#ngx.var.VARIABLE)  (read-only)
+
+[Back to TOC](#table-of-contents)
 
 Caveat
 ======
@@ -87,10 +128,14 @@ If the user Lua code is not JIT compiled, then use of this library may
 lead to performance drop in interpreted mode. You will only observe
 speedup when you get a good part of your user Lua code JIT compiled.
 
+[Back to TOC](#table-of-contents)
+
 Author
 ======
 
 Yichun "agentzh" Zhang (章亦春) <agentzh@gmail.com>, CloudFlare Inc.
+
+[Back to TOC](#table-of-contents)
 
 Copyright and License
 =====================
@@ -109,8 +154,12 @@ Redistribution and use in source and binary forms, with or without modification,
 
 THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+[Back to TOC](#table-of-contents)
+
 See Also
 ========
 * the ngx_lua module: http://wiki.nginx.org/HttpLuaModule
 * LuaJIT FFI: http://luajit.org/ext_ffi.html
+
+[Back to TOC](#table-of-contents)
 
