@@ -12,13 +12,13 @@ Table of Contents
 * [Description](#description)
 * [Prerequisites](#prerequisites)
 * [API Implemented](#api-implemented)
-        * [resty.core.hash](#restycorehash)
-        * [resty.core.base64](#restycorebase64)
-        * [resty.core.uri](#restycoreuri)
-        * [resty.core.regex](#restycoreregex)
-        * [resty.core.exit](#restycoreexit)
-        * [resty.core.shdict](#restycoreshdict)
-        * [resty.core.var](#restycorevar)
+    * [resty.core.hash](#restycorehash)
+    * [resty.core.base64](#restycorebase64)
+    * [resty.core.uri](#restycoreuri)
+    * [resty.core.regex](#restycoreregex)
+    * [resty.core.exit](#restycoreexit)
+    * [resty.core.shdict](#restycoreshdict)
+    * [resty.core.var](#restycorevar)
 * [Caveat](#caveat)
 * [Author](#author)
 * [Copyright and License](#copyright-and-license)
@@ -71,7 +71,7 @@ API Implemented
 
 [Back to TOC](#table-of-contents)
 
-### resty.core.hash
+## resty.core.hash
 
 * [ngx.md5](http://wiki.nginx.org/HttpLuaModule#ngx.md5)
 * [ngx.md5_bin](http://wiki.nginx.org/HttpLuaModule#ngx.md5_bin)
@@ -79,21 +79,21 @@ API Implemented
 
 [Back to TOC](#table-of-contents)
 
-### resty.core.base64
+## resty.core.base64
 
 * [ngx.encode_base64](http://wiki.nginx.org/HttpLuaModule#ngx.encode_base64)
 * [ngx.decode_base64](http://wiki.nginx.org/HttpLuaModule#ngx.decode_base64)
 
 [Back to TOC](#table-of-contents)
 
-### resty.core.uri
+## resty.core.uri
 
 * [ngx.escape_uri](http://wiki.nginx.org/HttpLuaModule#ngx.escape_uri)
 * [ngx.unescape_uri](http://wiki.nginx.org/HttpLuaModule#ngx.unescape_uri)
 
 [Back to TOC](#table-of-contents)
 
-### resty.core.regex
+## resty.core.regex
 
 * [ngx.re.match](http://wiki.nginx.org/HttpLuaModule#ngx.re.match)
 * [ngx.re.sub](http://wiki.nginx.org/HttpLuaModule#ngx.re.sub)
@@ -101,13 +101,13 @@ API Implemented
 
 [Back to TOC](#table-of-contents)
 
-### resty.core.exit
+## resty.core.exit
 
 * [ngx.exit](http://wiki.nginx.org/HttpLuaModule#ngx.exit)
 
 [Back to TOC](#table-of-contents)
 
-### resty.core.shdict
+## resty.core.shdict
 
 * [ngx.shared.DICT.get](http://wiki.nginx.org/HttpLuaModule#ngx.shared.DICT.get)
 * [ngx.shared.DICT.get_stale](http://wiki.nginx.org/HttpLuaModule#ngx.shared.DICT.get_stale)
@@ -115,7 +115,7 @@ API Implemented
 
 [Back to TOC](#table-of-contents)
 
-### resty.core.var
+## resty.core.var
 
 * [ngx.var.VARIABLE](http://wiki.nginx.org/HttpLuaModule#ngx.var.VARIABLE)  (read-only)
 
