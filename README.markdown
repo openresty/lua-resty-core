@@ -50,7 +50,7 @@ Description
 ===========
 
 This pure Lua library reimplements part of the ngx_lua's
-[Nginx API for Lua](http://wiki.nginx.org/HttpLuaModule#Nginx_API_for_Lua)
+[Nginx API for Lua](https://github.com/chaoslawful/lua-nginx-module#nginx-api-for-lua)
 with LuaJIT FFI and installs the new FFI-based Lua API into the ngx.* and ndk.* namespaces
 used by the ngx_lua module.
 
@@ -73,51 +73,51 @@ API Implemented
 
 ## resty.core.hash
 
-* [ngx.md5](http://wiki.nginx.org/HttpLuaModule#ngx.md5)
-* [ngx.md5_bin](http://wiki.nginx.org/HttpLuaModule#ngx.md5_bin)
-* [ngx.sha1_bin](http://wiki.nginx.org/HttpLuaModule#ngx.sha1_bin)
+* [ngx.md5](https://github.com/chaoslawful/lua-nginx-module#ngxmd5)
+* [ngx.md5_bin](https://github.com/chaoslawful/lua-nginx-module#ngxmd5_bin)
+* [ngx.sha1_bin](https://github.com/chaoslawful/lua-nginx-module#ngxsha1_bin)
 
 [Back to TOC](#table-of-contents)
 
 ## resty.core.base64
 
-* [ngx.encode_base64](http://wiki.nginx.org/HttpLuaModule#ngx.encode_base64)
-* [ngx.decode_base64](http://wiki.nginx.org/HttpLuaModule#ngx.decode_base64)
+* [ngx.encode_base64](https://github.com/chaoslawful/lua-nginx-module#ngxencode_base64)
+* [ngx.decode_base64](https://github.com/chaoslawful/lua-nginx-module#ngxdecode_base64)
 
 [Back to TOC](#table-of-contents)
 
 ## resty.core.uri
 
-* [ngx.escape_uri](http://wiki.nginx.org/HttpLuaModule#ngx.escape_uri)
-* [ngx.unescape_uri](http://wiki.nginx.org/HttpLuaModule#ngx.unescape_uri)
+* [ngx.escape_uri](https://github.com/chaoslawful/lua-nginx-module#ngxescape_uri)
+* [ngx.unescape_uri](https://github.com/chaoslawful/lua-nginx-module#ngxunescape_uri)
 
 [Back to TOC](#table-of-contents)
 
 ## resty.core.regex
 
-* [ngx.re.match](http://wiki.nginx.org/HttpLuaModule#ngx.re.match)
-* [ngx.re.sub](http://wiki.nginx.org/HttpLuaModule#ngx.re.sub)
-* [ngx.re.gsub](http://wiki.nginx.org/HttpLuaModule#ngx.re.gsub)
+* [ngx.re.match](https://github.com/chaoslawful/lua-nginx-module#ngxrematch)
+* [ngx.re.sub](https://github.com/chaoslawful/lua-nginx-module#ngxresub)
+* [ngx.re.gsub](https://github.com/chaoslawful/lua-nginx-module#ngxregsub)
 
 [Back to TOC](#table-of-contents)
 
 ## resty.core.exit
 
-* [ngx.exit](http://wiki.nginx.org/HttpLuaModule#ngx.exit)
+* [ngx.exit](https://github.com/chaoslawful/lua-nginx-module#ngxexit)
 
 [Back to TOC](#table-of-contents)
 
 ## resty.core.shdict
 
-* [ngx.shared.DICT.get](http://wiki.nginx.org/HttpLuaModule#ngx.shared.DICT.get)
-* [ngx.shared.DICT.get_stale](http://wiki.nginx.org/HttpLuaModule#ngx.shared.DICT.get_stale)
-* [ngx.shared.DICT.incr](http://wiki.nginx.org/HttpLuaModule#ngx.shared.DICT.incr)
+* [ngx.shared.DICT.get](https://github.com/chaoslawful/lua-nginx-module#ngxshareddictget)
+* [ngx.shared.DICT.get_stale](https://github.com/chaoslawful/lua-nginx-module#ngxshareddictget_stale)
+* [ngx.shared.DICT.incr](https://github.com/chaoslawful/lua-nginx-module#ngxshareddictincr)
 
 [Back to TOC](#table-of-contents)
 
 ## resty.core.var
 
-* [ngx.var.VARIABLE](http://wiki.nginx.org/HttpLuaModule#ngx.var.VARIABLE)  (read-only)
+* [ngx.var.VARIABLE](https://github.com/chaoslawful/lua-nginx-module#ngxvarvariable)  (read-only)
 
 [Back to TOC](#table-of-contents)
 
@@ -158,7 +158,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 
 See Also
 ========
-* the ngx_lua module: http://wiki.nginx.org/HttpLuaModule
+* the ngx_lua module: http://github.com/chaoslawful/lua-nginx-module#readme
 * LuaJIT FFI: http://luajit.org/ext_ffi.html
 
 [Back to TOC](#table-of-contents)
