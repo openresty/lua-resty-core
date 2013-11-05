@@ -238,7 +238,7 @@ local function destroy_compiled_regex(compiled)
 end
 
 
-local function re_match(subj, regex, opts, ctx)
+local function re_match_helper(subj, regex, opts, ctx, want_caps)
     local flags = 0
     local pcre_opts = 0
     local pos
@@ -280,6 +280,9 @@ local function re_match(subj, regex, opts, ctx)
                                                     errbuf, MAX_ERR_MSG_LEN)
 
         if compiled == nil then
+            if not want_caps then
+                return nil, nil, ffi_string(errbuf)
+            end
             return nil, ffi_string(errbuf)
         end
 
@@ -313,11 +316,17 @@ local function re_match(subj, regex, opts, ctx)
         if not compile_once then
             destroy_compiled_regex(compiled)
         end
+        if not want_caps then
+            return nil, nil, "pcre_exec() failed: " .. rc
+        end
         return nil, "pcre_exec() failed: " .. rc
     end
 
     if rc == 0 then
         if band(flags, FLAG_DFA) == 0 then
+            if not want_caps then
+                return nil, nil, "capture size too small"
+            end
             return nil, "capture size too small"
         end
 
@@ -327,17 +336,31 @@ local function re_match(subj, regex, opts, ctx)
     -- print("cap 0: ", compiled.captures[0])
     -- print("cap 1: ", compiled.captures[1])
 
-    local res = collect_captures(compiled, rc, subj, flags)
-
     if ctx then
         ctx.pos = compiled.captures[1] + 1
     end
+
+    if not want_caps then
+        return compiled.captures[0] + 1, compiled.captures[1]
+    end
+
+    local res = collect_captures(compiled, rc, subj, flags)
 
     if not compile_once then
         destroy_compiled_regex(compiled)
     end
 
     return res
+end
+
+
+function ngx.re.match(subj, regex, opts, ctx)
+    return re_match_helper(subj, regex, opts, ctx, true)
+end
+
+
+function ngx.re.find(subj, regex, opts, ctx)
+    return re_match_helper(subj, regex, opts, ctx, false)
 end
 
 
@@ -594,19 +617,14 @@ local function re_sub_helper(subj, regex, replace, opts, global)
 end
 
 
-local function re_sub(subj, regex, replace, opts)
+function ngx.re.sub(subj, regex, replace, opts)
     return re_sub_helper(subj, regex, replace, opts, false)
 end
 
 
-local function re_gsub(subj, regex, replace, opts)
+function ngx.re.gsub(subj, regex, replace, opts)
     return re_sub_helper(subj, regex, replace, opts, true)
 end
-
-
-ngx.re.match = re_match
-ngx.re.sub = re_sub
-ngx.re.gsub = re_gsub
 
 
 return {
