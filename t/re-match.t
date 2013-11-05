@@ -88,7 +88,7 @@ bad argument type
         content_by_lua '
             local m, err
             local match = ngx.re.match
-            for i = 1, 100 do
+            for i = 1, 200 do
                 m, err = match("a", "a", "jo")
             end
             if err then
