@@ -96,6 +96,7 @@ API Implemented
 ## resty.core.regex
 
 * [ngx.re.match](https://github.com/chaoslawful/lua-nginx-module#ngxrematch)
+* [ngx.re.find](https://github.com/chaoslawful/lua-nginx-module#ngxrefind)
 * [ngx.re.sub](https://github.com/chaoslawful/lua-nginx-module#ngxresub)
 * [ngx.re.gsub](https://github.com/chaoslawful/lua-nginx-module#ngxregsub)
 
