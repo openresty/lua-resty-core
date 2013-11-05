@@ -250,7 +250,13 @@ local function re_match(subj, regex, opts, ctx)
     end
 
     if ctx then
-        pos = ctx.pos or 0
+        pos = ctx.pos
+        if not pos or pos <= 0 then
+            pos = 0
+        else
+            pos = pos - 1
+        end
+
     else
         pos = 0
     end
@@ -324,7 +330,7 @@ local function re_match(subj, regex, opts, ctx)
     local res = collect_captures(compiled, rc, subj, flags)
 
     if ctx then
-        ctx.pos = compiled.captures[1]
+        ctx.pos = compiled.captures[1] + 1
     end
 
     if not compile_once then
