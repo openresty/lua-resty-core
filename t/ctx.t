@@ -10,7 +10,7 @@ log_level('warn');
 #repeat_each(120);
 repeat_each(2);
 
-plan tests => repeat_each() * (blocks() * 5);
+plan tests => repeat_each() * (blocks() * 6);
 
 my $pwd = cwd();
 
@@ -56,6 +56,9 @@ ctx.foo = 100
 [error]
  -- NYI:
  bad argument
+--- error_log eval
+qr/\[TRACE\s+\d+\s+"content_by_lua":2 loop\]/
+
 
 
 
@@ -78,4 +81,6 @@ ctx.foo = 100
 [error]
  -- NYI:
  bad argument
+--- error_log eval
+qr/\[TRACE\s+\d+\s+"content_by_lua":2 loop\]/
 
