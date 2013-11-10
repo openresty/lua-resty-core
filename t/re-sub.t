@@ -82,7 +82,7 @@ NYI
         content_by_lua '
             local m, err
             local sub = ngx.re.sub
-            for i = 1, 200 do
+            for i = 1, 400 do
                 s, n, err = sub("abcbd", "b", "B")
             end
             if not s then
