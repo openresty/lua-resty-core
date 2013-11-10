@@ -19,6 +19,7 @@ Table of Contents
     * [resty.core.exit](#restycoreexit)
     * [resty.core.shdict](#restycoreshdict)
     * [resty.core.var](#restycorevar)
+    * [resty.core.ctx](#restycorectx)
 * [Caveat](#caveat)
 * [Author](#author)
 * [Copyright and License](#copyright-and-license)
@@ -119,6 +120,12 @@ API Implemented
 ## resty.core.var
 
 * [ngx.var.VARIABLE](https://github.com/chaoslawful/lua-nginx-module#ngxvarvariable)  (read-only)
+
+[Back to TOC](#table-of-contents)
+
+## resty.core.ctx
+
+* [ngx.ctx](https://github.com/chaoslawful/lua-nginx-module#ngxctx)
 
 [Back to TOC](#table-of-contents)
 

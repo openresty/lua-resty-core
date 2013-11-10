@@ -11,6 +11,7 @@ local floor = math.floor
 local str_buf_size = 4096
 local str_buf
 local size_ptr
+local FREE_LIST_REF = 0
 
 
 local ok, new_tab = pcall(require, "table.new")
@@ -50,7 +51,7 @@ if not pcall(ffi.typeof, "ngx_str_t") then
 end
 
 
-local _M = new_tab(0, 6)
+local _M = new_tab(0, 7)
 
 
 _M.version = "0.0.1"
@@ -97,6 +98,24 @@ function _M.get_string_buf(size)
     end
 
     return str_buf
+end
+
+
+function _M.ref_in_table(tb, key)
+    if key == nil then
+        return -1
+    end
+    local ref = tb[FREE_LIST_REF]
+    if ref and ref ~= 0 then
+         tb[FREE_LIST_REF] = tb[ref]
+
+    else
+        ref = #tb + 1
+    end
+    tb[ref] = key
+
+    -- print("ref key_id returned ", ref)
+    return ref
 end
 
 

@@ -8,6 +8,7 @@ require "resty.core.regex"
 require "resty.core.exit"
 require "resty.core.shdict"
 require "resty.core.var"
+require "resty.core.ctx"
 
 
 local base = require "resty.core.base"
