@@ -10,7 +10,7 @@ log_level('warn');
 #repeat_each(120);
 repeat_each(2);
 
-plan tests => repeat_each() * (blocks() * 6);
+plan tests => repeat_each() * (blocks() * 7);
 
 my $pwd = cwd();
 
@@ -37,49 +37,55 @@ run_tests();
 
 __DATA__
 
-=== TEST 1: get ngx.ctx
+=== TEST 1: get ngx.status
 --- http_config eval: $::HttpConfig
 --- config
     location = /t {
-        content_by_lua '
+        return 201;
+        header_filter_by_lua '
+            local sum = 0
             for i = 1, 100 do
-                ngx.ctx.foo = i
+                sum = sum + ngx.status
             end
-            ngx.say("ctx.foo = ", ngx.ctx.foo)
+            ngx.log(ngx.WARN, "sum: ", sum)
         ';
     }
 --- request
 GET /t
 --- response_body
-ctx.foo = 100
+--- error_code: 201
 --- no_error_log
 [error]
  -- NYI:
  bad argument
 --- error_log eval
-qr/\[TRACE\s+\d+\s+"content_by_lua":2 loop\]/
+["sum: 20100,",
+qr/\[TRACE\s+\d+\s+"header_filter_by_lua":3 loop\]/
+]
 
 
 
-=== TEST 2: set ngx.ctx
+=== TEST 2: set ngx.status
 --- http_config eval: $::HttpConfig
 --- config
     location = /t {
-        content_by_lua '
-            for i = 1, 100 do
-                ngx.ctx = {foo = i}
+        return 201;
+        header_filter_by_lua '
+            for i = 100, 200 do
+                ngx.status = i
             end
-            ngx.say("ctx.foo = ", ngx.ctx.foo)
+            ngx.log(ngx.WARN, "status: ", ngx.status)
         ';
     }
 --- request
 GET /t
 --- response_body
-ctx.foo = 100
 --- no_error_log
 [error]
  -- NYI:
  bad argument
 --- error_log eval
-qr/\[TRACE\s+\d+\s+"content_by_lua":2 loop\]/
+["status: 200,",
+qr/\[TRACE\s+\d+\s+"header_filter_by_lua":2 loop\]/
+]
 

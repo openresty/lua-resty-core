@@ -66,7 +66,7 @@ probe process("$LIBLUA_PATH").function("rehashtab") {
 }
 
 --- response_body
-base size: 7
+base size: 9
 --- no_error_log
 [error]
 

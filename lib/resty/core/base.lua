@@ -51,7 +51,7 @@ if not pcall(ffi.typeof, "ngx_str_t") then
 end
 
 
-local _M = new_tab(0, 7)
+local _M = new_tab(0, 9)
 
 
 _M.version = "0.0.1"
@@ -117,6 +117,10 @@ function _M.ref_in_table(tb, key)
     -- print("ref key_id returned ", ref)
     return ref
 end
+
+
+_M.FFI_NO_REQ_CTX = -1
+_M.FFI_BAD_CONTEXT = -2
 
 
 return _M
