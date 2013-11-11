@@ -342,7 +342,7 @@ local function re_match_helper(subj, regex, opts, ctx, want_caps, nth)
     end
 
     if not want_caps then
-        if compiled.captures[n*2] and compiled.captures[n*2+1] then
+        if n < rc and compiled.captures[n*2] >= 0 then
             return compiled.captures[n*2] + 1, compiled.captures[n*2+1]
         else
             return nil, "the n-th is too large"
