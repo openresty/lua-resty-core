@@ -35,6 +35,10 @@ local errmsg = ffi_new("char *[1]")
 
 local function var_get(self, name)
     local r = getfenv(0).__ngx_req
+    if not r then
+        return error("no request found")
+    end
+
     local value_len = get_size_ptr()
     local rc
     if type(name) == "number" then
@@ -71,6 +75,9 @@ end
 
 local function var_set(self, name, value)
     local r = getfenv(0).__ngx_req
+    if not r then
+        return error("no request found")
+    end
 
     if type(name) ~= "string" then
         name = tostring(name)
