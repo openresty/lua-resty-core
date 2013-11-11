@@ -120,7 +120,7 @@ API Implemented
 
 ## resty.core.var
 
-* [ngx.var.VARIABLE](https://github.com/chaoslawful/lua-nginx-module#ngxvarvariable)  (read-only)
+* [ngx.var.VARIABLE](https://github.com/chaoslawful/lua-nginx-module#ngxvarvariable)
 
 [Back to TOC](#table-of-contents)
 

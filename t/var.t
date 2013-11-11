@@ -139,3 +139,79 @@ qr/\[TRACE   \d+ "content_by_lua":4 loop\]/
 [error]
  -- NYI:
 
+
+
+=== TEST 5: set normal var (string value)
+--- http_config eval: $::HttpConfig
+--- config
+    location = /t {
+        set $foo hello;
+        content_by_lua '
+            local ffi = require "ffi"
+            local val = "hello"
+            for i = 1, 100 do
+                ngx.var.foo = val
+            end
+            ngx.say("value: ", val)
+        ';
+    }
+--- request
+GET /t
+--- response_body
+value: hello
+--- error_log eval
+qr/\[TRACE   \d+ "content_by_lua":4 loop\]/
+--- no_error_log
+[error]
+ -- NYI:
+
+
+
+=== TEST 6: set normal var (nil value)
+--- http_config eval: $::HttpConfig
+--- config
+    location = /t {
+        set $foo hello;
+        content_by_lua '
+            local ffi = require "ffi"
+            for i = 1, 100 do
+                ngx.var.foo = nil
+            end
+            ngx.say("value: ", ngx.var.foo)
+        ';
+    }
+--- request
+GET /t
+--- response_body
+value: nil
+--- error_log eval
+qr/\[TRACE   \d+ "content_by_lua":3 loop\]/
+--- no_error_log
+[error]
+ -- NYI:
+
+
+
+=== TEST 7: set normal var (number value)
+--- http_config eval: $::HttpConfig
+--- config
+    location = /t {
+        set $foo hello;
+        content_by_lua '
+            local ffi = require "ffi"
+            for i = 1, 100 do
+                ngx.var.foo = i
+            end
+            ngx.say("value: ", ngx.var.foo)
+        ';
+    }
+--- request
+GET /t
+--- response_body
+value: 100
+--- error_log eval
+qr/\[TRACE   \d+ "content_by_lua":3 loop\]/
+--- no_error_log
+[error]
+ -- NYI:
+

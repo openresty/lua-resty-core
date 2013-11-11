@@ -21,6 +21,11 @@ ffi.cdef[[
     int ngx_http_lua_ffi_var_get(ngx_http_request_t *r,
         const char *name_data, size_t name_len, char *lowcase_buf,
         int capture_id, char **value, size_t *value_len, char **err);
+
+    int ngx_http_lua_ffi_var_set(ngx_http_request_t *r,
+        const unsigned char *name_data, size_t name_len,
+        unsigned char *lowcase_buf, const unsigned char *value,
+        size_t value_len, unsigned char *errbuf, size_t errlen);
 ]]
 
 
@@ -64,10 +69,49 @@ local function var_get(self, name)
 end
 
 
+local function var_set(self, name, value)
+    local r = getfenv(0).__ngx_req
+
+    if type(name) ~= "string" then
+        name = tostring(name)
+    end
+    local name_len = #name
+
+    local errlen = 256
+    local lowcase_buf = get_string_buf(name_len + errlen)
+
+    local value_len
+    if value == nil then
+        value_len = 0
+    else
+        if type(value) ~= 'string' then
+            value = tostring(value)
+        end
+        value_len = #value
+    end
+
+    local errbuf = lowcase_buf + name_len
+    local rc = C.ngx_http_lua_ffi_var_set(r, name, name_len, lowcase_buf,
+                                          value, value_len, errbuf, errlen)
+
+    -- ngx.log(ngx.WARN, "rc = ", rc)
+
+    if rc == 0 then -- NGX_OK
+        return
+    end
+
+    if rc == -1 then  -- NGX_ERROR
+        print("rc = ", rc)
+        return error(ffi_str(errbuf, errlen))
+    end
+end
+
+
 if ngx_var then
     local mt = getmetatable(ngx_var)
     if mt then
         mt.__index = var_get
+        mt.__newindex = var_set
     end
 end
 
