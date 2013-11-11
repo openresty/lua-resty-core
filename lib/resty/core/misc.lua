@@ -56,6 +56,7 @@ end
 ffi.cdef[[
     int ngx_http_lua_ffi_get_resp_status(ngx_http_request_t *r);
     int ngx_http_lua_ffi_set_resp_status(ngx_http_request_t *r, int r);
+    int ngx_http_lua_ffi_is_subrequest(ngx_http_request_t *r);
 ]]
 
 
@@ -99,6 +100,26 @@ local function set_status(status)
     return
 end
 register_setter("status", set_status)
+
+
+-- ngx.is_subrequest
+
+local function is_subreq()
+    local r = getfenv(0).__ngx_req
+
+    if not r then
+        return error("no request found")
+    end
+
+    local rc = C.ngx_http_lua_ffi_is_subrequest(r)
+
+    if rc == FFI_BAD_CONTEXT then
+        return error("API disabled in the current context")
+    end
+
+    return rc == 1 and true or false
+end
+register_getter("is_subrequest", is_subreq)
 
 
 return _M

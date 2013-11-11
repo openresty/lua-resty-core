@@ -133,6 +133,7 @@ API Implemented
 ## resty.core.misc
 
 * [ngx.status](https://github.com/chaoslawful/lua-nginx-module#ngxstatus)
+* [ngx.is_subrequest](https://github.com/chaoslawful/lua-nginx-module#ngxis_subrequest)
 
 [Back to TOC](#table-of-contents)
 
