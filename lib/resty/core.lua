@@ -9,6 +9,7 @@ require "resty.core.exit"
 require "resty.core.shdict"
 require "resty.core.var"
 require "resty.core.ctx"
+require "resty.core.misc"
 
 
 local base = require "resty.core.base"
