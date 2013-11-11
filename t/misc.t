@@ -10,7 +10,7 @@ log_level('warn');
 #repeat_each(120);
 repeat_each(2);
 
-plan tests => repeat_each() * (blocks() * 7);
+plan tests => repeat_each() * (blocks() * 6 + 1);
 
 my $pwd = cwd();
 
@@ -62,4 +62,55 @@ GET /t
 ["is subrequest: false,",
 qr/\[TRACE\s+\d+\s+"header_filter_by_lua":3 loop\]/
 ]
+
+
+
+=== TEST 2: ngx.headers_sent (false)
+--- http_config eval: $::HttpConfig
+--- config
+    location = /t {
+        content_by_lua '
+            local rc
+            for i = 1, 100 do
+                rc = ngx.headers_sent
+            end
+            ngx.say("headers sent: ", rc)
+        ';
+    }
+--- request
+GET /t
+--- response_body
+headers sent: false
+--- no_error_log
+[error]
+ -- NYI:
+ bad argument
+--- error_log eval
+qr/\[TRACE\s+\d+\s+"content_by_lua":3 loop\]/
+
+
+
+=== TEST 3: ngx.headers_sent (true)
+--- http_config eval: $::HttpConfig
+--- config
+    location = /t {
+        content_by_lua '
+            ngx.send_headers()
+            local rc
+            for i = 1, 100 do
+                rc = ngx.headers_sent
+            end
+            ngx.say("headers sent: ", rc)
+        ';
+    }
+--- request
+GET /t
+--- response_body
+headers sent: true
+--- no_error_log
+[error]
+ -- NYI:
+ bad argument
+--- error_log eval
+qr/\[TRACE\s+\d+\s+"content_by_lua":4 loop\]/
 

@@ -134,6 +134,7 @@ API Implemented
 
 * [ngx.status](https://github.com/chaoslawful/lua-nginx-module#ngxstatus)
 * [ngx.is_subrequest](https://github.com/chaoslawful/lua-nginx-module#ngxis_subrequest)
+* [ngx.headers_sent](https://github.com/chaoslawful/lua-nginx-module#ngxheaders_sent)
 
 [Back to TOC](#table-of-contents)
 
