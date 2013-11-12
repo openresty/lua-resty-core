@@ -20,6 +20,7 @@ Table of Contents
     * [resty.core.shdict](#restycoreshdict)
     * [resty.core.var](#restycorevar)
     * [resty.core.ctx](#restycorectx)
+    * [resty.core.request](#restycorerequest)
     * [resty.core.misc](#restycoremisc)
 * [Caveat](#caveat)
 * [Author](#author)
@@ -133,6 +134,12 @@ API Implemented
 ## resty.core.ctx
 
 * [ngx.ctx](https://github.com/chaoslawful/lua-nginx-module#ngxctx)
+
+[Back to TOC](#table-of-contents)
+
+## resty.core.request
+
+* [ngx.req.get_headers](https://github.com/chaoslawful/lua-nginx-module#ngxreqget_headers)
 
 [Back to TOC](#table-of-contents)
 
