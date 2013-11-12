@@ -27,6 +27,12 @@ ffi.cdef[[
 
     int ngx_http_lua_ffi_shdict_incr(void *zone, const unsigned char *key,
         size_t key_len, double *value, char **err);
+
+    int ngx_http_lua_ffi_shdict_store(void *zone, int op,
+        const unsigned char *key, size_t key_len, int value_type,
+        const unsigned char *str_value_buf, size_t str_value_len,
+        double num_value, int exptime, int user_flags, char **errmsg,
+        int *forcible);
 ]]
 
 
@@ -41,8 +47,110 @@ local value_type = ffi_new("int[1]")
 local user_flags = ffi_new("int[1]")
 local num_value = ffi_new("double[1]")
 local is_stale = ffi_new("int[1]")
+local forcible = ffi_new("int[1]")
 local str_value_buf = ffi_new("unsigned char *[1]")
 local errmsg = ffi_new("char *[1]")
+
+
+local function shdict_store(zone, op, key, value, exptime, flags)
+    if not zone or type(zone) ~= "userdata" then
+        return error("bad \"zone\" argument")
+    end
+
+    if not exptime then
+        exptime = 0
+    end
+
+    if not flags then
+        flags = 0
+    end
+
+    if type(key) ~= "string" then
+        key = tostring(key)
+    end
+
+    local key_len = #key
+    if key_len == 0 then
+        return nil
+    end
+    if key_len > 65535 then
+        return error("the key argument is more than 65535 bytes: " .. key_len)
+    end
+
+    local str_value_buf
+    local str_value_len = 0
+    local num_value = 0
+    local valtyp = type(value)
+
+    -- print("value type: ", valtyp)
+    -- print("exptime: ", exptime)
+
+    if valtyp == "string" then
+        valtyp = 4  -- LUA_TSTRING
+        str_value_buf = value
+        str_value_len = #value
+
+    elseif valtyp == "number" then
+        valtyp = 3  -- LUA_TNUMBER
+        num_value = value
+
+    elseif value == nil then
+        valtyp = 0  -- LUA_TNIL
+
+    elseif valtyp == "boolean" then
+        valtyp = 1  -- LUA_TBOOLEAN
+        num_value = value and 1 or 0
+
+    else
+        return error("unsupported value type for key \"" .. key
+                     .. "\" in shared_dict: " .. valtyp)
+    end
+
+    local rc = C.ngx_http_lua_ffi_shdict_store(zone, op, key, key_len,
+                                               valtyp, str_value_buf,
+                                               str_value_len, num_value,
+                                               exptime * 1000, flags, errmsg,
+                                               forcible)
+
+    -- print("rc == ", rc)
+
+    if rc == 0 then  -- NGX_OK
+        return true, nil, forcible[0] == 1
+    end
+
+    -- NGX_DECLINED or NGX_ERROR
+    return false, ffi_str(errmsg[0]), forcible[0] == 1
+end
+
+
+local function shdict_set(zone, key, value, exptime, flags)
+    return shdict_store(zone, 0, key, value, exptime, flags)
+end
+
+
+local function shdict_safe_set(zone, key, value, exptime, flags)
+    return shdict_store(zone, 0x0004, key, value, exptime, flags)
+end
+
+
+local function shdict_add(zone, key, value, exptime, flags)
+    return shdict_store(zone, 0x0001, key, value, exptime, flags)
+end
+
+
+local function shdict_safe_add(zone, key, value, exptime, flags)
+    return shdict_store(zone, 0x0005, key, value, exptime, flags)
+end
+
+
+local function shdict_replace(zone, key, value, exptime, flags)
+    return shdict_store(zone, 0x0002, key, value, exptime, flags)
+end
+
+
+local function shdict_delete(zone, key)
+    return shdict_set(zone, key, nil)
+end
 
 
 local function shdict_get(zone, key)
@@ -224,6 +332,12 @@ if ngx_shared then
                 mt.get = shdict_get
                 mt.get_stale = shdict_get_stale
                 mt.incr = shdict_incr
+                mt.set = shdict_set
+                mt.safe_set = shdict_safe_set
+                mt.add = shdict_add
+                mt.safe_add = shdict_safe_add
+                mt.replace = shdict_replace
+                mt.delete = shdict_delete
             end
         end
     end

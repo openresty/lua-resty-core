@@ -46,7 +46,11 @@ __DATA__
             local val, flags
             local dogs = ngx.shared.dogs
             -- local cd = ffi.cast("void *", dogs)
-            dogs:set("foo", "bar", 0, 72)
+            local ok, err, forcible = dogs:set("foo", "bar", 0, 72)
+            if not ok then
+                ngx.say("failed to set: ", err)
+                return
+            end
             for i = 1, 100 do
                 val, flags = dogs:get("foo")
             end
@@ -62,7 +66,7 @@ value type: string
 value: bar
 flags: 72
 --- error_log eval
-qr/\[TRACE   \d+ "content_by_lua":7 loop\]/
+qr/\[TRACE   \d+ "content_by_lua":11 loop\]/
 --- no_error_log
 [error]
  -- NYI:
@@ -305,7 +309,11 @@ qr/\[TRACE   \d+ "content_by_lua":7 loop\]/
             local val, flags, stale
             local dogs = ngx.shared.dogs
             -- local cd = ffi.cast("void *", dogs)
-            dogs:set("foo", "bar", 0.001, 72)
+            local ok, err, forcible = dogs:set("foo", "bar", 0.001, 72)
+            if not ok then
+                ngx.say("failed to set: ", err)
+                return
+            end
             ngx.sleep(0.002)
             for i = 1, 100 do
                 val, flags, stale = dogs:get_stale("foo")
@@ -324,7 +332,7 @@ value: bar
 flags: 72
 stale: true
 --- error_log eval
-qr/\[TRACE   \d+ "content_by_lua":8 loop\]/
+qr/\[TRACE   \d+ "content_by_lua":12 loop\]/
 --- no_error_log
 [error]
  -- NYI:
@@ -340,7 +348,11 @@ qr/\[TRACE   \d+ "content_by_lua":8 loop\]/
             local val
             local dogs = ngx.shared.dogs
             -- local cd = ffi.cast("void *", dogs)
-            dogs:set("foo", 56)
+            local ok, err, foricible = dogs:set("foo", 56)
+            if not ok then
+                ngx.say("failed to set: ", err)
+                return
+            end
             for i = 1, 100 do
                 val, err = dogs:incr("foo", 2)
             end
@@ -354,7 +366,7 @@ GET /t
 value: 256
 err: nil
 --- error_log eval
-qr/\[TRACE   \d+ "content_by_lua":7 loop\]/
+qr/\[TRACE   \d+ "content_by_lua":11 loop\]/
 --- no_error_log
 [error]
  -- NYI:
@@ -385,6 +397,386 @@ value: 266
 err: nil
 --- error_log eval
 qr/\[TRACE   \d+ "content_by_lua":7 loop\]/
+--- no_error_log
+[error]
+ -- NYI:
+
+
+
+=== TEST 12: set a string value
+--- http_config eval: $::HttpConfig
+--- config
+    location = /t {
+        content_by_lua '
+            local ffi = require "ffi"
+            local val, flags
+            local dogs = ngx.shared.dogs
+            -- local cd = ffi.cast("void *", dogs)
+            local ok, err, forcible
+            for i = 1, 100 do
+                ok, err, forcible = dogs:set("foo", "bar", 0, 72)
+            end
+            if not ok then
+                ngx.say("failed to set: ", err)
+                return
+            end
+            val, flags = dogs:get("foo")
+            ngx.say("value type: ", type(val))
+            ngx.say("value: ", val)
+            ngx.say("flags: ", flags)
+        ';
+    }
+--- request
+GET /t
+--- response_body
+value type: string
+value: bar
+flags: 72
+--- error_log eval
+qr/\[TRACE   \d+ "content_by_lua":7 loop\]/
+--- no_error_log
+[error]
+ -- NYI:
+
+
+
+=== TEST 13: set a boolean value (true)
+--- http_config eval: $::HttpConfig
+--- config
+    location = /t {
+        content_by_lua '
+            local ffi = require "ffi"
+            local val, flags
+            local dogs = ngx.shared.dogs
+            -- local cd = ffi.cast("void *", dogs)
+            local ok, err, forcible
+            for i = 1, 100 do
+                ok, err, forcible = dogs:set("foo", true, 0, 5678)
+            end
+            if not ok then
+                ngx.say("failed to set: ", err)
+                return
+            end
+            val, flags = dogs:get("foo")
+            ngx.say("value type: ", type(val))
+            ngx.say("value: ", val)
+            ngx.say("flags: ", flags)
+        ';
+    }
+--- request
+GET /t
+--- response_body
+value type: boolean
+value: true
+flags: 5678
+--- error_log eval
+qr/\[TRACE   \d+ "content_by_lua":7 loop\]/
+--- no_error_log
+[error]
+ -- NYI:
+
+
+
+=== TEST 14: set a boolean value (false)
+--- http_config eval: $::HttpConfig
+--- config
+    location = /t {
+        content_by_lua '
+            local ffi = require "ffi"
+            local val, flags
+            local dogs = ngx.shared.dogs
+            -- local cd = ffi.cast("void *", dogs)
+            for i = 1, 100 do
+                dogs:set("foo", false, 0, 777)
+            end
+            val, flags = dogs:get("foo")
+            ngx.say("value type: ", type(val))
+            ngx.say("value: ", val)
+            ngx.say("flags: ", flags)
+        ';
+    }
+--- request
+GET /t
+--- response_body
+value type: boolean
+value: false
+flags: 777
+--- error_log eval
+qr/\[TRACE   \d+ "content_by_lua":6 loop\]/
+--- no_error_log
+[error]
+ -- NYI:
+
+
+
+=== TEST 15: set a number value (int)
+--- http_config eval: $::HttpConfig
+--- config
+    location = /t {
+        content_by_lua '
+            local ffi = require "ffi"
+            local val, flags
+            local dogs = ngx.shared.dogs
+            -- local cd = ffi.cast("void *", dogs)
+            for i = 1, 100 do
+                dogs:set("foo", 51203)
+            end
+            val, flags = dogs:get("foo")
+            ngx.say("value type: ", type(val))
+            ngx.say("value: ", val)
+            ngx.say("flags: ", flags)
+        ';
+    }
+--- request
+GET /t
+--- response_body
+value type: number
+value: 51203
+flags: nil
+--- error_log eval
+qr/\[TRACE   \d+ "content_by_lua":6 loop\]/
+--- no_error_log
+[error]
+ -- NYI:
+
+
+
+=== TEST 16: set a number value (double)
+--- http_config eval: $::HttpConfig
+--- config
+    location = /t {
+        content_by_lua '
+            local ffi = require "ffi"
+            local val, flags
+            local dogs = ngx.shared.dogs
+            -- local cd = ffi.cast("void *", dogs)
+            for i = 1, 100 do
+                dogs:set("foo", 3.1415926, 0, 78)
+            end
+            val, flags = dogs:get("foo")
+            ngx.say("value type: ", type(val))
+            ngx.say("value: ", val)
+            ngx.say("flags: ", flags)
+        ';
+    }
+--- request
+GET /t
+--- response_body
+value type: number
+value: 3.1415926
+flags: 78
+--- error_log eval
+qr/\[TRACE   \d+ "content_by_lua":6 loop\]/
+--- no_error_log
+[error]
+ -- NYI:
+
+
+
+=== TEST 17: set a number value and a nil
+--- http_config eval: $::HttpConfig
+--- config
+    location = /t {
+        content_by_lua '
+            local ffi = require "ffi"
+            local val, flags
+            local dogs = ngx.shared.dogs
+            -- local cd = ffi.cast("void *", dogs)
+            for i = 1, 150 do
+                dogs:set("foo", 3.1415926, 0, 78)
+                dogs:set("foo", nil)
+            end
+            val, flags = dogs:get("foo")
+            ngx.say("value type: ", type(val))
+            ngx.say("value: ", val)
+            ngx.say("flags: ", flags)
+        ';
+    }
+--- request
+GET /t
+--- response_body
+value type: nil
+value: nil
+flags: nil
+--- error_log eval
+qr/\[TRACE   \d+ "content_by_lua":6 loop\]/
+--- no_error_log
+[error]
+ -- NYI:
+
+
+
+=== TEST 18: safe set a number value
+--- http_config eval: $::HttpConfig
+--- config
+    location = /t {
+        content_by_lua '
+            local ffi = require "ffi"
+            local val, flags
+            local dogs = ngx.shared.dogs
+            -- local cd = ffi.cast("void *", dogs)
+            for i = 1, 100 do
+                dogs:safe_set("foo", 3.1415926, 0, 78)
+            end
+            val, flags = dogs:get("foo")
+            ngx.say("value type: ", type(val))
+            ngx.say("value: ", val)
+            ngx.say("flags: ", flags)
+        ';
+    }
+--- request
+GET /t
+--- response_body
+value type: number
+value: 3.1415926
+flags: 78
+--- error_log eval
+qr/\[TRACE   \d+ "content_by_lua":6 loop\]/
+--- no_error_log
+[error]
+ -- NYI:
+
+
+
+=== TEST 19: add a string value
+--- http_config eval: $::HttpConfig
+--- config
+    location = /t {
+        content_by_lua '
+            local ffi = require "ffi"
+            local val, flags
+            local dogs = ngx.shared.dogs
+            -- local cd = ffi.cast("void *", dogs)
+            local ok, err, forcible
+            for i = 1, 100 do
+                ok, err, forcible = dogs:add("foo" .. i, "bar", 0, 72)
+            end
+            if not ok then
+                ngx.say("failed to set: ", err)
+                return
+            end
+            val, flags = dogs:get("foo100")
+            ngx.say("value type: ", type(val))
+            ngx.say("value: ", val)
+            ngx.say("flags: ", flags)
+        ';
+    }
+--- request
+GET /t
+--- response_body
+value type: string
+value: bar
+flags: 72
+--- error_log eval
+qr/\[TRACE   \d+ "content_by_lua":7 loop\]/
+--- no_error_log
+[error]
+ -- NYI:
+
+
+
+=== TEST 20: safe add a string value
+--- http_config eval: $::HttpConfig
+--- config
+    location = /t {
+        content_by_lua '
+            local ffi = require "ffi"
+            local val, flags
+            local dogs = ngx.shared.dogs
+            -- local cd = ffi.cast("void *", dogs)
+            local ok, err, forcible
+            for i = 1, 100 do
+                ok, err, forcible = dogs:safe_add("foo" .. i, "bar", 0, 72)
+            end
+            if not ok then
+                ngx.say("failed to set: ", err)
+                return
+            end
+            val, flags = dogs:get("foo100")
+            ngx.say("value type: ", type(val))
+            ngx.say("value: ", val)
+            ngx.say("flags: ", flags)
+        ';
+    }
+--- request
+GET /t
+--- response_body
+value type: string
+value: bar
+flags: 72
+--- error_log eval
+qr/\[TRACE   \d+ "content_by_lua":7 loop\]/
+--- no_error_log
+[error]
+ -- NYI:
+
+
+
+=== TEST 21: replace a string value
+--- http_config eval: $::HttpConfig
+--- config
+    location = /t {
+        content_by_lua '
+            local ffi = require "ffi"
+            local val, flags
+            local dogs = ngx.shared.dogs
+            -- local cd = ffi.cast("void *", dogs)
+            dogs:set("foo", "hello")
+            local ok, err, forcible
+            for i = 1, 100 do
+                ok, err, forcible = dogs:replace("foo", "bar" .. i, 0, 72)
+            end
+            if not ok then
+                ngx.say("failed to set: ", err)
+                return
+            end
+            val, flags = dogs:get("foo")
+            ngx.say("value type: ", type(val))
+            ngx.say("value: ", val)
+            ngx.say("flags: ", flags)
+        ';
+    }
+--- request
+GET /t
+--- response_body
+value type: string
+value: bar100
+flags: 72
+--- error_log eval
+qr/\[TRACE   \d+ "content_by_lua":8 loop\]/
+--- no_error_log
+[error]
+ -- NYI:
+
+
+
+=== TEST 22: set a number value and delete
+--- http_config eval: $::HttpConfig
+--- config
+    location = /t {
+        content_by_lua '
+            local ffi = require "ffi"
+            local val, flags
+            local dogs = ngx.shared.dogs
+            -- local cd = ffi.cast("void *", dogs)
+            for i = 1, 150 do
+                dogs:set("foo", 3.1415926, 0, 78)
+                dogs:delete("foo")
+            end
+            val, flags = dogs:get("foo")
+            ngx.say("value type: ", type(val))
+            ngx.say("value: ", val)
+            ngx.say("flags: ", flags)
+        ';
+    }
+--- request
+GET /t
+--- response_body
+value type: nil
+value: nil
+flags: nil
+--- error_log eval
+qr/\[TRACE   \d+ "content_by_lua":6 loop\]/
 --- no_error_log
 [error]
  -- NYI:

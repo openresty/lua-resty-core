@@ -115,6 +115,12 @@ API Implemented
 * [ngx.shared.DICT.get](https://github.com/chaoslawful/lua-nginx-module#ngxshareddictget)
 * [ngx.shared.DICT.get_stale](https://github.com/chaoslawful/lua-nginx-module#ngxshareddictget_stale)
 * [ngx.shared.DICT.incr](https://github.com/chaoslawful/lua-nginx-module#ngxshareddictincr)
+* [ngx.shared.DICT.set](https://github.com/chaoslawful/lua-nginx-module#ngxshareddictset)
+* [ngx.shared.DICT.safe_set](https://github.com/chaoslawful/lua-nginx-module#ngxshareddictsafe_set)
+* [ngx.shared.DICT.add](https://github.com/chaoslawful/lua-nginx-module#ngxshareddictadd)
+* [ngx.shared.DICT.safe_add](https://github.com/chaoslawful/lua-nginx-module#ngxshareddictsafe_add)
+* [ngx.shared.DICT.replace](https://github.com/chaoslawful/lua-nginx-module#ngxshareddictreplace)
+* [ngx.shared.DICT.delete](https://github.com/chaoslawful/lua-nginx-module#ngxshareddictdelete)
 
 [Back to TOC](#table-of-contents)
 
