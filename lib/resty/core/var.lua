@@ -108,7 +108,6 @@ local function var_set(self, name, value)
     end
 
     if rc == -1 then  -- NGX_ERROR
-        print("rc = ", rc)
         return error(ffi_str(errbuf, errlen))
     end
 end
