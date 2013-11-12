@@ -647,6 +647,7 @@ qr/\[TRACE   \d+ "content_by_lua":6 loop\]/
             local val, flags
             local dogs = ngx.shared.dogs
             -- local cd = ffi.cast("void *", dogs)
+            dogs:flush_all()
             local ok, err, forcible
             for i = 1, 100 do
                 ok, err, forcible = dogs:add("foo" .. i, "bar", 0, 72)
@@ -668,7 +669,7 @@ value type: string
 value: bar
 flags: 72
 --- error_log eval
-qr/\[TRACE   \d+ "content_by_lua":7 loop\]/
+qr/\[TRACE   \d+ "content_by_lua":8 loop\]/
 --- no_error_log
 [error]
  -- NYI:
@@ -684,6 +685,7 @@ qr/\[TRACE   \d+ "content_by_lua":7 loop\]/
             local val, flags
             local dogs = ngx.shared.dogs
             -- local cd = ffi.cast("void *", dogs)
+            dogs:flush_all()
             local ok, err, forcible
             for i = 1, 100 do
                 ok, err, forcible = dogs:safe_add("foo" .. i, "bar", 0, 72)
@@ -705,7 +707,7 @@ value type: string
 value: bar
 flags: 72
 --- error_log eval
-qr/\[TRACE   \d+ "content_by_lua":7 loop\]/
+qr/\[TRACE   \d+ "content_by_lua":8 loop\]/
 --- no_error_log
 [error]
  -- NYI:
