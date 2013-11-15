@@ -74,8 +74,13 @@ function ngx.req.get_headers(max_headers, raw)
         local headers = new_tab(0, n)
         for i = 0, n - 1 do
             local h = buf[i]
-            local key = ffi_str(h.key.data, h.key.len)
-            local value = ffi_str(h.value.data, h.value.len)
+
+            local key = h.key
+            key = ffi_str(key.data, key.len)
+
+            local value = h.value
+            value = ffi_str(value.data, value.len)
+
             local existing = headers[key]
             if existing then
                 if type(existing) == "table" then
