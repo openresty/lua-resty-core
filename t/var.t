@@ -59,7 +59,7 @@ value: hello
 qr/\[TRACE   \d+ "content_by_lua":4 loop\]/
 --- no_error_log
 [error]
- -- NYI:
+ -- NYI: (?!return to lower frame)
 
 
 
@@ -85,7 +85,7 @@ value: hello
 qr/\[TRACE   \d+ "content_by_lua":4 loop\]/
 --- no_error_log
 [error]
- -- NYI:
+ -- NYI: (?!return to lower frame)
 
 
 
@@ -137,7 +137,7 @@ value: /t
 qr/\[TRACE   \d+ "content_by_lua":4 loop\]/
 --- no_error_log
 [error]
- -- NYI:
+ -- NYI: (?!return to lower frame)
 
 
 
