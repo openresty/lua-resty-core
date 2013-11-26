@@ -20,6 +20,16 @@ if not ok then
 end
 
 
+local ok, clear_tab = pcall(require, "table.clear")
+if not ok then
+    clear_tab = function (tab)
+                    for k, _ in pairs(tab) do
+                        tab[k] = nil
+                    end
+                end
+end
+
+
 -- XXX for now LuaJIT 2.1 cannot compile require()
 -- so we make the fast code path Lua only in our own
 -- wrapper so that most of the require() calls in hot
@@ -51,11 +61,12 @@ if not pcall(ffi.typeof, "ngx_str_t") then
 end
 
 
-local _M = new_tab(0, 9)
+local _M = new_tab(0, 10)
 
 
 _M.version = "0.0.1"
 _M.new_tab = new_tab
+_M.clear_tab = clear_tab
 
 
 if not ngx then

@@ -396,3 +396,44 @@ qr/\[TRACE   \d+/
 bad argument type
 NYI
 
+
+
+=== TEST 10: captures input table in ngx.re.match
+--- http_config eval: $::HttpConfig
+--- config
+    location /re {
+        content_by_lua '
+            local new_tab = require "table.new"
+            local m = new_tab(5, 0)
+            m[5] = "hello"
+            for i = 1, 100 do
+                m = ngx.re.match("hello, 1234", "([0-9])([0-9])([0-9])([0-9])", "jo", nil, m)
+            end
+
+            if m then
+                ngx.say(m[0])
+                ngx.say(m[1])
+                ngx.say(m[2])
+                ngx.say(m[3])
+                ngx.say(m[4])
+                ngx.say(m[5])
+            else
+                ngx.say("not matched!")
+            end
+        ';
+    }
+--- request
+    GET /re
+--- response_body
+1234
+1
+2
+3
+4
+nil
+--- no_error_log
+[error]
+NYI
+--- error_log eval
+qr/\[TRACE\s+\d+\s+/
+

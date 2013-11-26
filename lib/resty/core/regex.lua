@@ -29,6 +29,7 @@ local new_tab = base.new_tab
 local floor = math.floor
 local print = print
 local tonumber = tonumber
+local clear_tab = base.clear_tab
 
 
 if not ngx.re then
@@ -208,28 +209,33 @@ local function collect_named_captures(compiled, flags, res)
 end
 
 
-local function collect_captures(compiled, rc, subj, flags)
+local function collect_captures(compiled, rc, subj, flags, res)
     local cap = compiled.captures
     local name_count = compiled.name_count
 
-    local m = new_tab(rc, name_count)
+    if res then
+        clear_tab(res)
+    else
+        res = new_tab(rc, name_count)
+    end
+
     local i = 0
     local n = 0
     while i < rc do
         local from = cap[n]
         if from >= 0 then
             local to = cap[n + 1]
-            m[i] = substr(subj, from + 1, to)
+            res[i] = substr(subj, from + 1, to)
         end
         i = i + 1
         n = n + 2
     end
 
     if name_count > 0 then
-        collect_named_captures(compiled, flags, m)
+        collect_named_captures(compiled, flags, res)
     end
 
-    return m
+    return res
 end
 
 
@@ -238,7 +244,7 @@ local function destroy_compiled_regex(compiled)
 end
 
 
-local function re_match_helper(subj, regex, opts, ctx, want_caps)
+local function re_match_helper(subj, regex, opts, ctx, want_caps, res)
     local flags = 0
     local pcre_opts = 0
     local pos
@@ -344,7 +350,7 @@ local function re_match_helper(subj, regex, opts, ctx, want_caps)
         return compiled.captures[0] + 1, compiled.captures[1]
     end
 
-    local res = collect_captures(compiled, rc, subj, flags)
+    res = collect_captures(compiled, rc, subj, flags, res)
 
     if not compile_once then
         destroy_compiled_regex(compiled)
@@ -354,8 +360,8 @@ local function re_match_helper(subj, regex, opts, ctx, want_caps)
 end
 
 
-function ngx.re.match(subj, regex, opts, ctx)
-    return re_match_helper(subj, regex, opts, ctx, true)
+function ngx.re.match(subj, regex, opts, ctx, res)
+    return re_match_helper(subj, regex, opts, ctx, true, res)
 end
 
 
