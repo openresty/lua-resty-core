@@ -32,6 +32,7 @@ _EOC_
 
 #no_diff();
 #no_long_string();
+check_accum_error_log();
 run_tests();
 
 __DATA__
