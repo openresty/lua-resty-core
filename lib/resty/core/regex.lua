@@ -351,16 +351,22 @@ local function re_match_helper(subj, regex, opts, ctx, want_caps, res, nth)
             nth = 0
         end
 
-        if nth <= compiled.ncaptures then
-            local from = compiled.captures[nth * 2] + 1
-            local to = compiled.captures[nth * 2 + 1]
-            if from < 0 or to < 0 then
-                return nil, nil
-            end
-            return from, to
+        if nth > compiled.ncaptures then
+            return nil, nil, "nth out of bound"
         end
 
-        return nil, nil, "nth out of bound"
+        if nth >= rc then
+            return nil, nil
+        end
+
+        local from = compiled.captures[nth * 2] + 1
+        local to = compiled.captures[nth * 2 + 1]
+
+        if from < 0 or to < 0 then
+            return nil, nil
+        end
+
+        return from, to
     end
 
     res = collect_captures(compiled, rc, subj, flags, res)
