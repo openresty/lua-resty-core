@@ -193,7 +193,7 @@ host: localhost
 Foo-Bar: foo
 Baz: baz
 --- error_log eval
-qr/\[TRACE   \d+ .*? -> 1\]/
+qr/\[TRACE   \d+ .*? -> \d\]/
 --- no_error_log
 [error]
  -- NYI:
