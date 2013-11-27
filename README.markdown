@@ -140,6 +140,7 @@ API Implemented
 ## resty.core.request
 
 * [ngx.req.get_headers](https://github.com/chaoslawful/lua-nginx-module#ngxreqget_headers)
+* [ngx.req.get_uri_args](https://github.com/chaoslawful/lua-nginx-module#ngxreqget_uri_args)
 
 [Back to TOC](#table-of-contents)
 

@@ -17,6 +17,7 @@ local lower = string.lower
 local rawget = rawget
 local ngx = ngx
 local getfenv = getfenv
+local type = type
 
 
 ffi.cdef[[
@@ -30,6 +31,14 @@ ffi.cdef[[
 
     int ngx_http_lua_ffi_req_get_headers(ngx_http_request_t *r,
         ngx_http_lua_ffi_table_elt_t *out, int count, int raw);
+
+    int ngx_http_lua_ffi_req_get_uri_args_count(ngx_http_request_t *r,
+        int max);
+
+    size_t ngx_http_lua_ffi_req_get_querystring_len(ngx_http_request_t *r);
+
+    int ngx_http_lua_ffi_req_get_uri_args(ngx_http_request_t *r,
+        unsigned char *buf, ngx_http_lua_ffi_table_elt_t *out, int count);
 ]]
 
 
@@ -100,6 +109,63 @@ function ngx.req.get_headers(max_headers, raw)
     end
 
     return nil
+end
+
+
+function ngx.req.get_uri_args(max_args)
+    local r = getfenv(0).__ngx_req
+    if not r then
+        return error("no request found")
+    end
+
+    if not max_args then
+        max_args = -1
+    end
+
+    local n = C.ngx_http_lua_ffi_req_get_uri_args_count(r, max_args)
+    if n == FFI_BAD_CONTEXT then
+        return error("API disabled in the current context")
+    end
+
+    if n == 0 then
+        return {}
+    end
+
+    local args_len = C.ngx_http_lua_ffi_req_get_querystring_len(r)
+
+    local strbuf = get_string_buf(args_len + n * table_elt_size)
+    local kvbuf = ffi_cast(table_elt_type, strbuf + args_len)
+
+    local nargs = C.ngx_http_lua_ffi_req_get_uri_args(r, strbuf, kvbuf, n)
+
+    local args = new_tab(0, nargs)
+    for i = 0, nargs - 1 do
+        local arg = kvbuf[i]
+
+        local key = arg.key
+        key = ffi_str(key.data, key.len)
+
+        local value = arg.value
+        local len = value.len
+        if len == -1 then
+            value = true
+        else
+            value = ffi_str(value.data, len)
+        end
+
+        local existing = args[key]
+        if existing then
+            if type(existing) == "table" then
+                existing[#existing + 1] = value
+            else
+                args[key] = {existing, value}
+            end
+
+        else
+            args[key] = value
+        end
+    end
+    return args
 end
 
 
