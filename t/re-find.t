@@ -9,7 +9,7 @@ use Cwd qw(cwd);
 
 repeat_each(2);
 
-plan tests => repeat_each() * (blocks() * 5 - 1);
+plan tests => repeat_each() * (blocks() * 5);
 
 my $pwd = cwd();
 
@@ -153,4 +153,111 @@ no match
 qr/\[TRACE   \d+ "content_by_lua":5 loop\]/
 --- no_error_log
 [error]
+NYI
+
+
+
+=== TEST 4: nil submatch (2nd)
+--- http_config eval: $::HttpConfig
+--- config
+    location /re {
+        content_by_lua '
+            local s = "hello, 1234"
+            local from, to, err
+            for i = 1, 100 do
+                from, to, err = ngx.re.find(s, "([0-9])|(hello world)", "jo", nil, 2)
+            end
+            if from or to then
+                ngx.say("from: ", from)
+                ngx.say("to: ", to)
+                ngx.say("matched: ", string.sub(s, from, to))
+            else
+                if err then
+                    ngx.say("error: ", err)
+                    return
+                end
+                ngx.say("not matched!")
+            end
+        ';
+    }
+--- request
+    GET /re
+--- response_body
+not matched!
+--- no_error_log
+[error]
+NYI
+--- error_log eval
+qr/\[TRACE   \d+ "content_by_lua":4 loop\]/
+
+
+
+=== TEST 5: nil submatch (1st)
+--- http_config eval: $::HttpConfig
+--- config
+    location /re {
+        content_by_lua '
+            local s = "hello, 1234"
+            local from, to, err
+            for i = 1, 100 do
+                from, to, err = ngx.re.find(s, "(hello world)|([0-9])", "jo", nil, 1)
+            end
+            if from or to then
+                ngx.say("from: ", from)
+                ngx.say("to: ", to)
+                ngx.say("matched: ", string.sub(s, from, to))
+            else
+                if err then
+                    ngx.say("error: ", err)
+                    return
+                end
+                ngx.say("not matched!")
+            end
+        ';
+    }
+--- request
+    GET /re
+--- response_body
+not matched!
+--- no_error_log
+[error]
+NYI
+--- error_log eval
+qr/\[TRACE   \d+ "content_by_lua":4 loop\]/
+
+
+
+=== TEST 6: specify the group (2)
+--- http_config eval: $::HttpConfig
+--- config
+    location /re {
+        content_by_lua '
+            local s = "hello, 1234"
+            local from, to, err
+            for i = 1, 100 do
+                from, to, err = ngx.re.find(s, "([0-9])([0-9]+)", "jo", nil, 2)
+            end
+            if from then
+                ngx.say("from: ", from)
+                ngx.say("to: ", to)
+                ngx.say("matched: ", string.sub(s, from, to))
+            else
+                if err then
+                    ngx.say("error: ", err)
+                end
+                ngx.say("not matched!")
+            end
+        ';
+    }
+--- request
+    GET /re
+--- response_body
+from: 9
+to: 11
+matched: 234
+--- no_error_log
+[error]
+NYI
+--- error_log eval
+qr/\[TRACE   \d+ "content_by_lua":4 loop\]/
 

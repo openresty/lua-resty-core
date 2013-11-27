@@ -244,7 +244,7 @@ local function destroy_compiled_regex(compiled)
 end
 
 
-local function re_match_helper(subj, regex, opts, ctx, want_caps, res)
+local function re_match_helper(subj, regex, opts, ctx, want_caps, res, nth)
     local flags = 0
     local pcre_opts = 0
     local pos
@@ -347,7 +347,20 @@ local function re_match_helper(subj, regex, opts, ctx, want_caps, res)
     end
 
     if not want_caps then
-        return compiled.captures[0] + 1, compiled.captures[1]
+        if not nth or nth < 0 then
+            nth = 0
+        end
+
+        if nth <= compiled.ncaptures then
+            local from = compiled.captures[nth * 2] + 1
+            local to = compiled.captures[nth * 2 + 1]
+            if from < 0 or to < 0 then
+                return nil, nil
+            end
+            return from, to
+        end
+
+        return nil, nil, "nth out of bound"
     end
 
     res = collect_captures(compiled, rc, subj, flags, res)
@@ -365,8 +378,8 @@ function ngx.re.match(subj, regex, opts, ctx, res)
 end
 
 
-function ngx.re.find(subj, regex, opts, ctx)
-    return re_match_helper(subj, regex, opts, ctx, false)
+function ngx.re.find(subj, regex, opts, ctx, nth)
+    return re_match_helper(subj, regex, opts, ctx, false, nil, nth)
 end
 
 
