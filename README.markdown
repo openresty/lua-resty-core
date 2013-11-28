@@ -21,6 +21,7 @@ Table of Contents
     * [resty.core.var](#restycorevar)
     * [resty.core.ctx](#restycorectx)
     * [resty.core.request](#restycorerequest)
+    * [resty.core.response](#restycoreresponse)
     * [resty.core.misc](#restycoremisc)
 * [Caveat](#caveat)
 * [Author](#author)
@@ -141,6 +142,12 @@ API Implemented
 
 * [ngx.req.get_headers](https://github.com/chaoslawful/lua-nginx-module#ngxreqget_headers)
 * [ngx.req.get_uri_args](https://github.com/chaoslawful/lua-nginx-module#ngxreqget_uri_args)
+
+[Back to TOC](#table-of-contents)
+
+## resty.core.response
+
+* [ngx.header.HEADER](https://github.com/chaoslawful/lua-nginx-module#ngxheaderheader) (write part)
 
 [Back to TOC](#table-of-contents)
 

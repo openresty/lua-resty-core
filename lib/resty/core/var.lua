@@ -30,7 +30,7 @@ ffi.cdef[[
 
 
 local value_ptr = ffi_new("unsigned char *[1]")
-local errmsg = ffi_new("char *[1]")
+local errmsg = base.get_errmsg_ptr()
 
 
 local function var_get(self, name)

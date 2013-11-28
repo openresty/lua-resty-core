@@ -49,7 +49,7 @@ local num_value = ffi_new("double[1]")
 local is_stale = ffi_new("int[1]")
 local forcible = ffi_new("int[1]")
 local str_value_buf = ffi_new("unsigned char *[1]")
-local errmsg = ffi_new("char *[1]")
+local errmsg = base.get_errmsg_ptr()
 
 
 local function shdict_store(zone, op, key, value, exptime, flags)

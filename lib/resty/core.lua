@@ -11,6 +11,7 @@ require "resty.core.var"
 require "resty.core.ctx"
 require "resty.core.misc"
 require "resty.core.request"
+require "resty.core.response"
 
 
 local base = require "resty.core.base"

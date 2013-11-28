@@ -51,8 +51,8 @@ end
 if not pcall(ffi.typeof, "ngx_str_t") then
     ffi.cdef[[
         typedef struct {
-            size_t           len;
-            unsigned char   *data;
+            size_t                 len;
+            const unsigned char   *data;
         } ngx_str_t;
 
         struct ngx_http_request_s;
@@ -61,12 +61,23 @@ if not pcall(ffi.typeof, "ngx_str_t") then
 end
 
 
-local _M = new_tab(0, 10)
+local _M = new_tab(0, 13)
 
 
 _M.version = "0.0.1"
 _M.new_tab = new_tab
 _M.clear_tab = clear_tab
+
+
+local errmsg
+
+
+function _M.get_errmsg_ptr()
+    if not errmsg then
+        errmsg = ffi_new("char *[1]")
+    end
+    return errmsg
+end
 
 
 if not ngx then
@@ -130,8 +141,10 @@ function _M.ref_in_table(tb, key)
 end
 
 
-_M.FFI_NO_REQ_CTX = -1
-_M.FFI_BAD_CONTEXT = -2
+_M.FFI_NO_REQ_CTX = -100
+_M.FFI_BAD_CONTEXT = -101
+_M.FFI_ERROR = -1
+_M.FFI_DECLINED = -5
 
 
 return _M
