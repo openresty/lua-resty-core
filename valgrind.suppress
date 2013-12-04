@@ -31,3 +31,10 @@
    fun:ngx_alloc
    fun:ngx_event_process_init
 }
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Param
+   epoll_ctl(event)
+   fun:epoll_ctl
+   fun:ngx_epoll_add_event
+}
