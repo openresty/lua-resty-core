@@ -61,6 +61,16 @@ if not pcall(ffi.typeof, "ngx_str_t") then
 end
 
 
+if not pcall(ffi.typeof, "ngx_http_lua_ffi_str_t") then
+    ffi.cdef[[
+        typedef struct {
+            int                       len;
+            const unsigned char      *data;
+        } ngx_http_lua_ffi_str_t;
+    ]]
+end
+
+
 local _M = new_tab(0, 13)
 
 

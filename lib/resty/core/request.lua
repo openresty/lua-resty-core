@@ -22,8 +22,8 @@ local type = type
 
 ffi.cdef[[
     typedef struct {
-        ngx_str_t   key;
-        ngx_str_t   value;
+        ngx_http_lua_ffi_str_t   key;
+        ngx_http_lua_ffi_str_t   value;
     } ngx_http_lua_ffi_table_elt_t;
 
     int ngx_http_lua_ffi_req_get_headers_count(ngx_http_request_t *r,
