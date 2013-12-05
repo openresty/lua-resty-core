@@ -523,6 +523,9 @@ local function re_sub_helper(subj, regex, replace, opts, global)
 
         if rc == 0 then
             if band(flags, FLAG_DFA) == 0 then
+                if not compile_once then
+                    destroy_compiled_regex(compiled)
+                end
                 return nil, nil, "capture size too small"
             end
 
