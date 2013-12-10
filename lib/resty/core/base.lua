@@ -14,6 +14,14 @@ local size_ptr
 local FREE_LIST_REF = 0
 
 
+if not ngx.config
+   or not ngx.config.ngx_lua_version
+   or ngx.config.ngx_lua_version < 9003
+then
+    error("ngx_lua 0.9.3+ required")
+end
+
+
 local ok, new_tab = pcall(require, "table.new")
 if not ok then
     new_tab = function (narr, nrec) return {} end
