@@ -22,6 +22,12 @@ then
 end
 
 
+if string.find(jit.version, " 2.0") then
+    ngx.log(ngx.WARN, "use of lua-resty-core with LuaJIT 2.0 is "
+            .. "not recommended; use LuaJIT 2.1+ instead")
+end
+
+
 local ok, new_tab = pcall(require, "table.new")
 if not ok then
     new_tab = function (narr, nrec) return {} end
