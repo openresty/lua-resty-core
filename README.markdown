@@ -31,7 +31,7 @@ Table of Contents
 Status
 ======
 
-This library is still under early development and is still incomplete.
+This library is production ready and under active development.
 
 Synopsis
 ========
