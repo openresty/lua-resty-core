@@ -40,6 +40,8 @@ Synopsis
     # nginx.conf
 
     http {
+        # you do NOT need to configure the following line when you
+        # are using the ngx_openresty bundle 1.4.3.9+.
         lua_package_path "/path/to/lua-resty-core/lib/?.lua;;";
 
         init_by_lua '
@@ -67,6 +69,8 @@ Prerequisites
 
 * LuaJIT 2.1 (for now, it is the v2.1 git branch in the official luajit-2.0 git repository: http://luajit.org/download.html )
 * [ngx_lua](https://github.com/chaoslawful/lua-nginx-module) v0.9.3 or later.
+
+Note that if you are using the ngx_openresty bundle version 1.4.3.9+, then just build it with `--with-luajit` and you have everything including this library itself.
 
 [Back to TOC](#table-of-contents)
 
