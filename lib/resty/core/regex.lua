@@ -125,6 +125,9 @@ ffi.cdef[[
 ]]
 
 
+local c_str_type = ffi.typeof("const char *")
+
+
 local function parse_regex_opts(opts)
     local flags = 0
     local pcre_opts = 0
@@ -548,7 +551,7 @@ local function re_sub_helper(subj, regex, replace, opts, global)
             dst_len = new_dst_len
 
             if prefix_len > 0 then
-                ffi_copy(dst_pos, ffi_cast("const char *", subj) + cp_pos,
+                ffi_copy(dst_pos, ffi_cast(c_str_type, subj) + cp_pos,
                          prefix_len)
                 dst_pos = dst_pos + prefix_len
             end
@@ -574,7 +577,7 @@ local function re_sub_helper(subj, regex, replace, opts, global)
                 dst_len = new_dst_len
 
                 if prefix_len > 0 then
-                    ffi_copy(dst_pos, ffi_cast("const char *", subj) + cp_pos,
+                    ffi_copy(dst_pos, ffi_cast(c_str_type, subj) + cp_pos,
                              prefix_len)
                     dst_pos = dst_pos + prefix_len
                 end
@@ -595,7 +598,7 @@ local function re_sub_helper(subj, regex, replace, opts, global)
                 dst_len = new_dst_len
 
                 if prefix_len > 0 then
-                    ffi_copy(dst_pos, ffi_cast("const char *", subj) + cp_pos,
+                    ffi_copy(dst_pos, ffi_cast(c_str_type, subj) + cp_pos,
                              prefix_len)
                     dst_pos = dst_pos + prefix_len
                 end
@@ -635,7 +638,7 @@ local function re_sub_helper(subj, regex, replace, opts, global)
                                dst_pos)
             dst_len = new_dst_len
 
-            ffi_copy(dst_pos, ffi_cast("const char *", subj) + cp_pos,
+            ffi_copy(dst_pos, ffi_cast(c_str_type, subj) + cp_pos,
                      suffix_len)
         end
         return ffi_string(dst_buf, dst_len), count
