@@ -277,8 +277,8 @@ qr/\[TRACE   \d+ .*? -> 1\]/
 --- request
 GET /t?
 --- response_body
---- error_log
-[TRACE   1 "content_by_lua":4 loop]
+--- error_log eval
+qr/\[TRACE   \d+ "content_by_lua":4 loop\]/
 --- no_error_log
 [error]
  -- NYI:
