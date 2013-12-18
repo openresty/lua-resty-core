@@ -252,7 +252,7 @@ qr/\[TRACE   \d+ .*? -> 1\]/
         content_by_lua '
             local ffi = require "ffi"
             local args
-            for i = 1, 100 do
+            for i = 1, 200 do
                 args = ngx.req.get_uri_args()
             end
             if type(args) ~= "table" then
