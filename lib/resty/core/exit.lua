@@ -22,6 +22,7 @@ ffi.cdef[[
 
 
 local ERR_BUF_SIZE = 128
+local FFI_DONE = base.FFI_DONE
 
 
 ngx.exit = function (rc)
@@ -32,10 +33,13 @@ ngx.exit = function (rc)
         return error("no request found")
     end
     errlen[0] = ERR_BUF_SIZE
-    local ok = C.ngx_http_lua_ffi_exit(r, rc, err, errlen)
-    if ok == 0 then
+    local rc = C.ngx_http_lua_ffi_exit(r, rc, err, errlen)
+    if rc == 0 then
         -- print("yielding...")
         return co_yield()
+    end
+    if rc == FFI_DONE then
+        return
     end
     return error(ffi_string(err, errlen[0]))
 end
