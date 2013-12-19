@@ -237,7 +237,7 @@ a: 3 0, hello
 blah: true
 foo bar: 
 --- error_log eval
-qr/\[TRACE   \d+ .*? -> 1\]/
+qr/\[TRACE   \d+ .*? -> \d+\]/
 --- no_error_log
 [error]
  -- NYI:
