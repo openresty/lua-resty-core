@@ -784,3 +784,99 @@ qr/\[TRACE   \d+ "content_by_lua":6 loop\]/
 [error]
  -- NYI:
 
+
+
+=== TEST 23: set nil key
+--- http_config eval: $::HttpConfig
+--- config
+    location = /t {
+        content_by_lua '
+            local val, flags
+            local dogs = ngx.shared.dogs
+            local ok, err = dogs:set(nil, "bar")
+            if not ok then
+                ngx.say("failed to set: ", err)
+            end
+        ';
+    }
+--- request
+GET /t
+--- response_body
+failed to set: nil key
+--- no_error_log
+[error]
+[alert]
+[crit]
+
+
+
+=== TEST 24: get nil key
+--- http_config eval: $::HttpConfig
+--- config
+    location = /t {
+        content_by_lua '
+            local val, flags
+            local dogs = ngx.shared.dogs
+            local value, err = dogs:get(nil, "bar")
+            if not ok then
+                ngx.say("failed to get: ", err)
+            end
+        ';
+    }
+--- request
+GET /t
+--- response_body
+failed to get: nil key
+--- no_error_log
+[error]
+[alert]
+[crit]
+
+
+
+=== TEST 25: get stale key
+--- http_config eval: $::HttpConfig
+--- config
+    location = /t {
+        content_by_lua '
+            local val, flags
+            local dogs = ngx.shared.dogs
+            local value, err = dogs:get_stale(nil, "bar")
+            if not ok then
+                ngx.say("failed to get stale: ", err)
+            end
+        ';
+    }
+--- request
+GET /t
+--- response_body
+failed to get stale: nil key
+--- no_error_log
+[error]
+[alert]
+[crit]
+
+
+
+=== TEST 26: incr key
+--- http_config eval: $::HttpConfig
+--- config
+    location = /t {
+        content_by_lua '
+            local val, flags
+            local dogs = ngx.shared.dogs
+            local value, err = dogs:incr(nil, 32)
+            if not ok then
+                ngx.say("failed to incr: ", err)
+            end
+        ';
+    }
+--- request
+GET /t
+--- response_body
+failed to incr: nil key
+--- no_error_log
+[error]
+[alert]
+[crit]
+

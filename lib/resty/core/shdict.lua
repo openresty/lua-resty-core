@@ -65,6 +65,10 @@ local function shdict_store(zone, op, key, value, exptime, flags)
         flags = 0
     end
 
+    if key == nil then
+        return nil, "nil key"
+    end
+
     if type(key) ~= "string" then
         key = tostring(key)
     end
@@ -158,6 +162,10 @@ local function shdict_get(zone, key)
         return error("bad \"zone\" argument")
     end
 
+    if key == nil then
+        return nil, "nil key"
+    end
+
     if type(key) ~= "string" then
         key = tostring(key)
     end
@@ -227,6 +235,10 @@ local function shdict_get_stale(zone, key)
         return error("bad \"zone\" argument")
     end
 
+    if key == nil then
+        return nil, "nil key"
+    end
+
     if type(key) ~= "string" then
         key = tostring(key)
     end
@@ -293,6 +305,10 @@ end
 local function shdict_incr(zone, key, value)
     if not zone or type(zone) ~= "userdata" then
         return error("bad \"zone\" argument")
+    end
+
+    if key == nil then
+        return nil, "nil key"
     end
 
     if type(key) ~= "string" then
