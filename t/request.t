@@ -46,7 +46,7 @@ __DATA__
         content_by_lua '
             local ffi = require "ffi"
             local headers
-            for i = 1, 100 do
+            for i = 1, 200 do
                 headers = ngx.req.get_headers()
             end
             local keys = {}
@@ -87,7 +87,7 @@ qr/\[TRACE   \d+ .*? -> 1\]/
         content_by_lua '
             local ffi = require "ffi"
             local headers
-            for i = 1, 100 do
+            for i = 1, 200 do
                 headers = ngx.req.get_headers(100, true)
             end
             local keys = {}

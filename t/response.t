@@ -95,7 +95,7 @@ qr/\[TRACE   \d+ "content_by_lua":2 loop\]/
     location = /t {
         set $foo hello;
         content_by_lua '
-            for i = 1, 100 do
+            for i = 1, 200 do
                 ngx.header["Foo"] = {i, i + 1}
             end
             local v = ngx.header["Foo"]
@@ -109,7 +109,7 @@ qr/\[TRACE   \d+ "content_by_lua":2 loop\]/
 --- request
 GET /t
 --- response_body
-Foo: 100, 101
+Foo: 200, 201
 
 --- error_log eval
 qr/\[TRACE   \d+ "content_by_lua":2 loop\]/

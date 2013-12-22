@@ -50,7 +50,7 @@ __DATA__
         content_by_lua '
             local m, err
             local match = ngx.re.match
-            for i = 1, 100 do
+            for i = 1, 200 do
                 m, err = match("a", "a")
             end
             if err then
@@ -126,7 +126,7 @@ NYI
         content_by_lua '
             local m, err
             local match = ngx.re.match
-            for i = 1, 100 do
+            for i = 1, 200 do
                 m, err = match("b", "a", "jo")
             end
             if err then
@@ -320,7 +320,7 @@ NYI
         content_by_lua '
             local m, err
             local match = ngx.re.match
-            for i = 1, 100 do
+            for i = 1, 200 do
                 m, err = match("hello, 1234", "(?<first>[a-z])(?<first>[a-z]+), [0-9]+", "jo")
             end
             if m then
