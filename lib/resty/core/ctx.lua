@@ -14,6 +14,7 @@ local new_tab = base.new_tab
 local ref_in_table = base.ref_in_table
 local getfenv = getfenv
 local C = ffi.C
+local FFI_NO_REQ_CTX = base.FFI_NO_REQ_CTX
 
 
 ffi.cdef[[
@@ -35,7 +36,7 @@ local function get_ctx_table()
     end
 
     local ctx_ref = C.ngx_http_lua_ffi_get_ctx_ref(r)
-    if ctx_ref == -3 then
+    if ctx_ref == FFI_NO_REQ_CTX then
         return error("no request ctx found")
     end
 
