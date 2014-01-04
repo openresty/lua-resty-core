@@ -63,6 +63,7 @@ local PCRE_ERROR_NOMATCH = -1
 
 
 local regex_cache = new_tab(0, 4)
+local max_regex_cache_size
 local regex_cache_size = 0
 local script_engine
 
@@ -124,10 +125,21 @@ ffi.cdef[[
     size_t ngx_http_lua_ffi_script_eval_data(ngx_http_lua_script_engine_t *e,
                                              ngx_http_lua_complex_value_t *cv,
                                              unsigned char *dst, size_t len);
+
+    uint32_t ngx_http_lua_ffi_max_regex_cache_size(void);
 ]]
 
 
 local c_str_type = ffi.typeof("const char *")
+
+
+local function get_max_regex_cache_size()
+    if max_regex_cache_size then
+        return max_regex_cache_size
+    end
+    max_regex_cache_size = C.ngx_http_lua_ffi_max_regex_cache_size()
+    return max_regex_cache_size
+end
 
 
 local function parse_regex_opts(opts)
@@ -308,8 +320,7 @@ local function re_match_helper(subj, regex, opts, ctx, want_caps, res, nth)
         -- print("ncaptures: ", compiled.ncaptures)
 
         if compile_once then
-            -- TODO: add support for lua_regex_cache_max_entries.
-            if regex_cache_size < 1024 then
+            if regex_cache_size < get_max_regex_cache_size() then
                 -- print("inserting compiled regex into cache")
                 regex_cache[key] = compiled
                 regex_cache_size = regex_cache_size + 1
@@ -493,8 +504,7 @@ local function re_sub_helper(subj, regex, replace, opts, global)
         -- print("ncaptures: ", compiled.ncaptures)
 
         if compile_once then
-            -- TODO: add support for lua_regex_cache_max_entries.
-            if regex_cache_size < 1024 then
+            if regex_cache_size < get_max_regex_cache_size() then
                 -- print("inserting compiled regex into cache")
                 regex_cache[key] = compiled
                 regex_cache_size = regex_cache_size + 1
