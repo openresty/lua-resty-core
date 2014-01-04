@@ -50,7 +50,7 @@ __DATA__
         content_by_lua '
             local m, err
             local match = ngx.re.match
-            for i = 1, 200 do
+            for i = 1, 400 do
                 m, err = match("a", "a")
             end
             if err then
