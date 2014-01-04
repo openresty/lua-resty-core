@@ -58,11 +58,7 @@ end
 
 ngx.decode_base64 = function (s)
     if type(s) ~= 'string' then
-        if not s then
-            s = ''
-        else
-            s = tostring(s)
-        end
+        return error("string argument only")
     end
     local slen = #s
     local dlen = base64_decoded_length(slen)
