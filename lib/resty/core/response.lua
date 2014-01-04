@@ -69,7 +69,11 @@ local function set_resp_header(tb, key, value)
             sval_len = 0
 
         else
-            sval = tostring(value)
+            if type(value) ~= "string" then
+                sval = tostring(value)
+            else
+                sval = value
+            end
             sval_len = #sval
 
             mvals_len = 0
