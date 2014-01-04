@@ -85,7 +85,7 @@ if not pcall(ffi.typeof, "ngx_http_lua_ffi_str_t") then
 end
 
 
-local _M = new_tab(0, 14)
+local _M = new_tab(0, 15)
 
 
 _M.version = "0.0.2"
@@ -165,6 +165,7 @@ function _M.ref_in_table(tb, key)
 end
 
 
+_M.FFI_OK = 0
 _M.FFI_NO_REQ_CTX = -100
 _M.FFI_BAD_CONTEXT = -101
 _M.FFI_ERROR = -1
