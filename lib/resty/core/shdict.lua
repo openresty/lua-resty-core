@@ -54,7 +54,7 @@ local errmsg = base.get_errmsg_ptr()
 
 local function shdict_store(zone, op, key, value, exptime, flags)
     if not zone or type(zone) ~= "userdata" then
-        return error("bad \"zone\" argument")
+        return error('bad "zone" argument')
     end
 
     if not exptime then
@@ -75,10 +75,10 @@ local function shdict_store(zone, op, key, value, exptime, flags)
 
     local key_len = #key
     if key_len == 0 then
-        return nil
+        return nil, "empty key"
     end
     if key_len > 65535 then
-        return error("the key argument is more than 65535 bytes: " .. key_len)
+        return nil, "key too long"
     end
 
     local str_value_buf
@@ -106,8 +106,7 @@ local function shdict_store(zone, op, key, value, exptime, flags)
         num_value = value and 1 or 0
 
     else
-        return error("unsupported value type for key \"" .. key
-                     .. "\" in shared_dict: " .. valtyp)
+        return nil, "bad value type"
     end
 
     local rc = C.ngx_http_lua_ffi_shdict_store(zone, op, key, key_len,
@@ -159,7 +158,7 @@ end
 
 local function shdict_get(zone, key)
     if not zone or type(zone) ~= "userdata" then
-        return error("bad \"zone\" argument")
+        return error('bad "zone" argument')
     end
 
     if key == nil then
@@ -172,10 +171,10 @@ local function shdict_get(zone, key)
 
     local key_len = #key
     if key_len == 0 then
-        return nil
+        return nil, "empty key"
     end
     if key_len > 65535 then
-        return error("the key argument is more than 65535 bytes: " .. key_len)
+        return nil, "key too long"
     end
 
     local size = get_string_buf_size()
@@ -245,10 +244,10 @@ local function shdict_get_stale(zone, key)
 
     local key_len = #key
     if key_len == 0 then
-        return nil
+        return nil, "empty key"
     end
     if key_len > 65535 then
-        return error("the key argument is more than 65535 bytes: " .. key_len)
+        return nil, "key too long"
     end
 
     local size = get_string_buf_size()
@@ -317,10 +316,10 @@ local function shdict_incr(zone, key, value)
 
     local key_len = #key
     if key_len == 0 then
-        return nil
+        return nil, "empty key"
     end
     if key_len > 65535 then
-        return error("the key argument is more than 65535 bytes: " .. key_len)
+        return nil, "key too long"
     end
 
     if type(value) ~= "number" then
