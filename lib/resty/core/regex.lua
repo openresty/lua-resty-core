@@ -15,6 +15,7 @@ local bor = bit.bor
 local band = bit.band
 local lshift = bit.lshift
 local sub = string.sub
+local fmt = string.format
 local byte = string.byte
 local setmetatable = setmetatable
 local concat = table.concat
@@ -188,7 +189,8 @@ local function parse_regex_opts(opts)
             pcre_opts = bor(pcre_opts, PCRE_JAVASCRIPT_COMPAT)
 
         else
-            return error("unknown flag \"" .. sub(opts, i, i) .. "\"")
+            return error(fmt('unknown flag "%s" (flags "%s")',
+                             sub(opts, i, i), opts))
         end
     end
 
