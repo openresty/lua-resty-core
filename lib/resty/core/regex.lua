@@ -14,7 +14,7 @@ local C = ffi.C
 local bor = bit.bor
 local band = bit.band
 local lshift = bit.lshift
-local substr = string.sub
+local sub = string.sub
 local byte = string.byte
 local setmetatable = setmetatable
 local concat = table.concat
@@ -188,7 +188,7 @@ local function parse_regex_opts(opts)
             pcre_opts = bor(pcre_opts, PCRE_JAVASCRIPT_COMPAT)
 
         else
-            return error("unknown flag \"" .. substr(opts, i, i) .. "\"")
+            return error("unknown flag \"" .. sub(opts, i, i) .. "\"")
         end
     end
 
@@ -242,7 +242,7 @@ local function collect_captures(compiled, rc, subj, flags, res)
         local from = cap[n]
         if from >= 0 then
             local to = cap[n + 1]
-            res[i] = substr(subj, from + 1, to)
+            res[i] = sub(subj, from + 1, to)
         end
         i = i + 1
         n = n + 2
