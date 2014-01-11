@@ -184,7 +184,7 @@ Copyright and License
 
 This module is licensed under the BSD license.
 
-Copyright (C) 2013, by Yichun "agentzh" Zhang, CloudFlare Inc.
+Copyright (C) 2013-2014, by Yichun "agentzh" Zhang, CloudFlare Inc.
 
 All rights reserved.
 
