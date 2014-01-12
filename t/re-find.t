@@ -199,7 +199,7 @@ qr/\[TRACE   \d+ "content_by_lua":4 loop\]/
         content_by_lua '
             local s = "hello, 1234"
             local from, to, err
-            for i = 1, 100 do
+            for i = 1, 400 do
                 from, to, err = ngx.re.find(s, "(hello world)|([0-9])", "jo", nil, 1)
             end
             if from or to then
