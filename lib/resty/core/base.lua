@@ -88,7 +88,7 @@ end
 local _M = new_tab(0, 15)
 
 
-_M.version = "0.0.3"
+_M.version = "0.0.4"
 _M.new_tab = new_tab
 _M.clear_tab = clear_tab
 
