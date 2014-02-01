@@ -6,6 +6,7 @@ local ffi_new = ffi.new
 local error = error
 local setmetatable = setmetatable
 local floor = math.floor
+local ceil = math.ceil
 
 
 local str_buf_size = 4096
@@ -85,6 +86,9 @@ if not pcall(ffi.typeof, "ngx_http_lua_ffi_str_t") then
 end
 
 
+local c_buf_type = ffi.typeof("char[?]")
+
+
 local _M = new_tab(0, 15)
 
 
@@ -116,7 +120,7 @@ function _M.set_string_buf_size(size)
     if str_buf then
         str_buf = nil
     end
-    str_buf_size = floor(size)
+    str_buf_size = ceil(size)
 end
 
 
@@ -136,11 +140,11 @@ end
 
 function _M.get_string_buf(size)
     if size > str_buf_size then
-        return ffi_new("unsigned char[?]", size)
+        return ffi_new(c_buf_type, size)
     end
 
     if not str_buf then
-        str_buf = ffi_new("unsigned char[4096]")
+        str_buf = ffi_new(c_buf_type, str_buf_size)
     end
 
     return str_buf
