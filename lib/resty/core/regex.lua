@@ -134,6 +134,18 @@ ffi.cdef[[
 local c_str_type = ffi.typeof("const char *")
 
 
+local _M = {
+    version = base.version
+}
+
+
+local buf_grow_ratio = 2
+
+function _M.set_buf_grow_ratio(ratio)
+    buf_grow_ratio = ratio
+end
+
+
 local function get_max_regex_cache_size()
     if max_regex_cache_size then
         return max_regex_cache_size
@@ -430,7 +442,7 @@ end
 
 local function check_buf_size(buf, buf_size, len, new_len, pos)
     if new_len > buf_size then
-        buf_size = buf_size * 2
+        buf_size = buf_size * buf_grow_ratio
         if buf_size < new_len then
             buf_size = new_len
         end
@@ -678,6 +690,4 @@ function ngx.re.gsub(subj, regex, replace, opts)
 end
 
 
-return {
-    version = base.version
-}
+return _M
