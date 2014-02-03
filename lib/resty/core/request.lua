@@ -76,7 +76,8 @@ function ngx.req.get_headers(max_headers, raw)
         return {}
     end
 
-    local buf = ffi_cast(table_elt_type, get_string_buf(n * table_elt_size))
+    local raw_buf = get_string_buf(n * table_elt_size)
+    local buf = ffi_cast(table_elt_type, raw_buf)
 
     local rc = C.ngx_http_lua_ffi_req_get_headers(r, buf, n, raw)
     if rc == 0 then
