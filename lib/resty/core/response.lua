@@ -50,16 +50,17 @@ local function set_resp_header(tb, key, value)
         rc = C.ngx_http_lua_ffi_set_resp_header(r, key, #key, true, nil, 0,
                                                 nil, 0, errmsg)
     else
-        local sval, sval_len, mvals, mvals_len
+        local sval, sval_len, mvals, mvals_len, buf
 
         if type(value) == "table" then
             mvals_len = #value
-            mvals = ffi_cast(ngx_str_type,
-                             get_string_buf(ngx_str_size * mvals_len))
+            buf = get_string_buf(ngx_str_size * mvals_len)
+            mvals = ffi_cast(ngx_str_type, buf)
             for i = 1, mvals_len do
                 local s = value[i]
                 if type(s) ~= "string" then
                     s = tostring(s)
+                    value[i] = s
                 end
                 local str = mvals[i - 1]
                 str.data = s
