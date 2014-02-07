@@ -125,7 +125,7 @@ ffi.cdef[[
 
     size_t ngx_http_lua_ffi_script_eval_data(ngx_http_lua_script_engine_t *e,
                                              ngx_http_lua_complex_value_t *cv,
-                                             unsigned char *dst, size_t len);
+                                             unsigned char *dst);
 
     uint32_t ngx_http_lua_ffi_max_regex_cache_size(void);
 ]]
@@ -440,7 +440,7 @@ local function new_script_engine(subj, compiled, count)
 end
 
 
-local function check_buf_size(buf, buf_size, len, new_len, pos)
+local function check_buf_size(buf, buf_size, pos, len, new_len)
     if new_len > buf_size then
         buf_size = buf_size * buf_grow_ratio
         if buf_size < new_len then
@@ -451,7 +451,7 @@ local function check_buf_size(buf, buf_size, len, new_len, pos)
         buf = new_buf
         pos = buf + len
     end
-    return buf, buf_size, new_len, pos
+    return buf, buf_size, pos, new_len
 end
 
 
@@ -577,10 +577,9 @@ local function re_sub_helper(subj, regex, replace, opts, global)
             local bit_len = #bit
 
             local new_dst_len = dst_len + prefix_len + bit_len
-            dst_buf, dst_buf_size, new_dst_len, dst_pos =
-                check_buf_size(dst_buf, dst_buf_size, dst_len, new_dst_len,
-                               dst_pos)
-            dst_len = new_dst_len
+            dst_buf, dst_buf_size, dst_pos, dst_len =
+                check_buf_size(dst_buf, dst_buf_size, dst_pos, dst_len,
+                               new_dst_len)
 
             if prefix_len > 0 then
                 ffi_copy(dst_pos, ffi_cast(c_str_type, subj) + cp_pos,
@@ -603,10 +602,9 @@ local function re_sub_helper(subj, regex, replace, opts, global)
 
                 local bit_len = C.ngx_http_lua_ffi_script_eval_len(e, cv)
                 local new_dst_len = dst_len + prefix_len + bit_len
-                dst_buf, dst_buf_size, new_dst_len, dst_pos =
-                    check_buf_size(dst_buf, dst_buf_size, dst_len,
-                                   new_dst_len, dst_pos)
-                dst_len = new_dst_len
+                dst_buf, dst_buf_size, dst_pos, dst_len =
+                    check_buf_size(dst_buf, dst_buf_size, dst_pos, dst_len,
+                                   new_dst_len)
 
                 if prefix_len > 0 then
                     ffi_copy(dst_pos, ffi_cast(c_str_type, subj) + cp_pos,
@@ -615,8 +613,7 @@ local function re_sub_helper(subj, regex, replace, opts, global)
                 end
 
                 if bit_len > 0 then
-                    C.ngx_http_lua_ffi_script_eval_data(e, cv, dst_pos,
-                                                        prefix_len)
+                    C.ngx_http_lua_ffi_script_eval_data(e, cv, dst_pos)
                     dst_pos = dst_pos + bit_len
                 end
 
@@ -624,10 +621,9 @@ local function re_sub_helper(subj, regex, replace, opts, global)
                 local bit_len = cv.value.len
 
                 local new_dst_len = dst_len + prefix_len + bit_len
-                dst_buf, dst_buf_size, new_dst_len, dst_pos =
-                    check_buf_size(dst_buf, dst_buf_size, dst_len,
-                                   new_dst_len, dst_pos)
-                dst_len = new_dst_len
+                dst_buf, dst_buf_size, dst_pos, dst_len =
+                    check_buf_size(dst_buf, dst_buf_size, dst_pos, dst_len,
+                                   new_dst_len)
 
                 if prefix_len > 0 then
                     ffi_copy(dst_pos, ffi_cast(c_str_type, subj) + cp_pos,
@@ -665,10 +661,9 @@ local function re_sub_helper(subj, regex, replace, opts, global)
             local suffix_len = subj_len - cp_pos
 
             local new_dst_len = dst_len + suffix_len
-            dst_buf, dst_buf_size, new_dst_len, dst_pos =
-                check_buf_size(dst_buf, dst_buf_size, dst_len, new_dst_len,
-                               dst_pos)
-            dst_len = new_dst_len
+            dst_buf, dst_buf_size, dst_pos, dst_len =
+                check_buf_size(dst_buf, dst_buf_size, dst_pos, dst_len,
+                               new_dst_len)
 
             ffi_copy(dst_pos, ffi_cast(c_str_type, subj) + cp_pos,
                      suffix_len)
