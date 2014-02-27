@@ -133,6 +133,7 @@ ffi.cdef[[
 
 local c_str_type = ffi.typeof("const char *")
 
+local cached_re_opts = new_tab(0, 4)
 
 local _M = {
     version = base.version
@@ -156,6 +157,11 @@ end
 
 
 local function parse_regex_opts(opts)
+    local t = cached_re_opts[opts]
+    if t then
+        return t[1], t[2]
+    end
+
     local flags = 0
     local pcre_opts = 0
     local len = #opts
@@ -206,6 +212,7 @@ local function parse_regex_opts(opts)
         end
     end
 
+    cached_re_opts[opts] = {flags, pcre_opts}
     return flags, pcre_opts
 end
 
