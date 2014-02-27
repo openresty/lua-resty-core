@@ -288,27 +288,14 @@ local function destroy_compiled_regex(compiled)
 end
 
 
-local function re_match_helper(subj, regex, opts, ctx, want_caps, res, nth)
+local function re_match_compile(regex, opts)
     local flags = 0
     local pcre_opts = 0
-    local pos
 
     if opts then
         flags, pcre_opts = parse_regex_opts(opts)
     else
         opts = ""
-    end
-
-    if ctx then
-        pos = ctx.pos
-        if not pos or pos <= 0 then
-            pos = 0
-        else
-            pos = pos - 1
-        end
-
-    else
-        pos = 0
     end
 
     local key, compiled
@@ -330,9 +317,6 @@ local function re_match_helper(subj, regex, opts, ctx, want_caps, res, nth)
                                                     errbuf, MAX_ERR_MSG_LEN)
 
         if compiled == nil then
-            if not want_caps then
-                return nil, nil, ffi_string(errbuf)
-            end
             return nil, ffi_string(errbuf)
         end
 
@@ -351,9 +335,40 @@ local function re_match_helper(subj, regex, opts, ctx, want_caps, res, nth)
         end
     end
 
+    return compiled, compile_once, flags
+end
+
+
+local function re_match_helper(subj, regex, opts, ctx, want_caps, res, nth)
+    local compiled, compile_once, flags = re_match_compile(regex, opts)
+    if compiled == nil then
+        -- compiled_once holds the error string
+        if not want_caps then
+            return nil, nil, compile_once
+        end
+        return nil, compile_once
+    end
+
     -- exec the compiled regex
 
-    local rc = C.ngx_http_lua_ffi_exec_regex(compiled, flags, subj, #subj, pos)
+    local rc
+    do
+        local pos
+        if ctx then
+            pos = ctx.pos
+            if not pos or pos <= 0 then
+                pos = 0
+            else
+                pos = pos - 1
+            end
+
+        else
+            pos = 0
+        end
+
+        rc = C.ngx_http_lua_ffi_exec_regex(compiled, flags, subj, #subj, pos)
+    end
+
     if rc == PCRE_ERROR_NOMATCH then
         if not compile_once then
             destroy_compiled_regex(compiled)
@@ -462,24 +477,14 @@ local function check_buf_size(buf, buf_size, pos, len, new_len)
 end
 
 
-local function re_sub_helper(subj, regex, replace, opts, global)
+local function re_sub_compile(regex, opts, replace, func)
     local flags = 0
     local pcre_opts = 0
-    local pos
 
     if opts then
         flags, pcre_opts = parse_regex_opts(opts)
     else
         opts = ""
-    end
-
-    local func
-    local repl_type = type(replace)
-    if repl_type == "function" then
-        func = replace
-
-    elseif repl_type ~= "string" then
-        replace = tostring(replace)
     end
 
     local key, compiled
@@ -505,7 +510,7 @@ local function re_sub_helper(subj, regex, replace, opts, global)
                                                     MAX_ERR_MSG_LEN)
 
         if compiled == nil then
-            return nil, nil, ffi_string(errbuf)
+            return nil, ffi_string(errbuf)
         end
 
         ffi_gc(compiled, C.ngx_http_lua_ffi_destroy_regex)
@@ -518,7 +523,7 @@ local function re_sub_helper(subj, regex, replace, opts, global)
                 if not compile_once then
                     destroy_compiled_regex(compiled)
                 end
-                return nil, nil, "failed to compile the replacement template"
+                return nil, "failed to compile the replacement template"
             end
         end
 
@@ -535,9 +540,19 @@ local function re_sub_helper(subj, regex, replace, opts, global)
         end
     end
 
-    -- exec the compiled regex
+    return compiled, compile_once, flags
+end
 
-    local name_count = compiled.name_count
+
+local function re_sub_func_helper(subj, regex, replace, opts, global)
+    local compiled, compile_once, flags =
+                                    re_sub_compile(regex, opts, nil, replace)
+    if not compiled then
+        -- error string is in compile_once
+        return nil, nil, compile_once
+    end
+
+    -- exec the compiled regex
 
     local subj_len = #subj
     local count = 0
@@ -577,12 +592,120 @@ local function re_sub_helper(subj, regex, replace, opts, global)
         count = count + 1
         local prefix_len = compiled.captures[0] - cp_pos
 
-        if func ~= nil then
-            local res = collect_captures(compiled, rc, subj, flags)
+        local res = collect_captures(compiled, rc, subj, flags)
 
-            local bit = func(res)
-            local bit_len = #bit
+        local bit = replace(res)
+        local bit_len = #bit
 
+        local new_dst_len = dst_len + prefix_len + bit_len
+        dst_buf, dst_buf_size, dst_pos, dst_len =
+            check_buf_size(dst_buf, dst_buf_size, dst_pos, dst_len,
+                           new_dst_len)
+
+        if prefix_len > 0 then
+            ffi_copy(dst_pos, ffi_cast(c_str_type, subj) + cp_pos,
+                     prefix_len)
+            dst_pos = dst_pos + prefix_len
+        end
+
+        if bit_len > 0 then
+            ffi_copy(dst_pos, bit, bit_len)
+            dst_pos = dst_pos + bit_len
+        end
+
+        cp_pos = compiled.captures[1]
+        pos = cp_pos
+        if pos == compiled.captures[0] then
+            pos = pos + 1
+            if pos > subj_len then
+                break
+            end
+        end
+
+        if not global then
+            break
+        end
+    end
+
+    if not compile_once then
+        destroy_compiled_regex(compiled)
+    end
+
+    if count > 0 then
+        if pos < subj_len then
+            local suffix_len = subj_len - cp_pos
+
+            local new_dst_len = dst_len + suffix_len
+            dst_buf, dst_buf_size, dst_pos, dst_len =
+                check_buf_size(dst_buf, dst_buf_size, dst_pos, dst_len,
+                               new_dst_len)
+
+            ffi_copy(dst_pos, ffi_cast(c_str_type, subj) + cp_pos,
+                     suffix_len)
+        end
+        return ffi_string(dst_buf, dst_len), count
+    end
+
+    return subj, 0
+end
+
+
+local function re_sub_str_helper(subj, regex, replace, opts, global)
+    local compiled, compile_once, flags =
+                                    re_sub_compile(regex, opts, replace, nil)
+    if not compiled then
+        -- error string is in compile_once
+        return nil, nil, compile_once
+    end
+
+    -- exec the compiled regex
+
+    local subj_len = #subj
+    local count = 0
+    local pos = 0
+    local cp_pos = 0
+
+    local dst_buf_size = get_string_buf_size()
+    local dst_buf = get_string_buf(dst_buf_size)
+    local dst_pos = dst_buf
+    local dst_len = 0
+
+    while true do
+        local rc = C.ngx_http_lua_ffi_exec_regex(compiled, flags, subj,
+                                                 subj_len, pos)
+        if rc == PCRE_ERROR_NOMATCH then
+            break
+        end
+
+        if rc < 0 then
+            if not compile_once then
+                destroy_compiled_regex(compiled)
+            end
+            return nil, nil, "pcre_exec() failed: " .. rc
+        end
+
+        if rc == 0 then
+            if band(flags, FLAG_DFA) == 0 then
+                if not compile_once then
+                    destroy_compiled_regex(compiled)
+                end
+                return nil, nil, "capture size too small"
+            end
+
+            rc = 1
+        end
+
+        count = count + 1
+        local prefix_len = compiled.captures[0] - cp_pos
+
+        local cv = compiled.replace
+        if cv.lengths ~= nil then
+            local e = new_script_engine(subj, compiled, rc)
+            if e == nil then
+                return nil, nil, "failed to create script engine"
+            end
+
+            local bit_len = C.ngx_http_lua_ffi_script_eval_len(e, cv)
             local new_dst_len = dst_len + prefix_len + bit_len
             dst_buf, dst_buf_size, dst_pos, dst_len =
                 check_buf_size(dst_buf, dst_buf_size, dst_pos, dst_len,
@@ -595,53 +718,26 @@ local function re_sub_helper(subj, regex, replace, opts, global)
             end
 
             if bit_len > 0 then
-                ffi_copy(dst_pos, bit, bit_len)
+                C.ngx_http_lua_ffi_script_eval_data(e, cv, dst_pos)
                 dst_pos = dst_pos + bit_len
             end
 
         else
-            local cv = compiled.replace
-            if cv.lengths ~= nil then
-                local e = new_script_engine(subj, compiled, rc)
-                if e == nil then
-                    return nil, nil, "failed to create script engine"
-                end
+            local bit_len = cv.value.len
 
-                local bit_len = C.ngx_http_lua_ffi_script_eval_len(e, cv)
-                local new_dst_len = dst_len + prefix_len + bit_len
-                dst_buf, dst_buf_size, dst_pos, dst_len =
-                    check_buf_size(dst_buf, dst_buf_size, dst_pos, dst_len,
-                                   new_dst_len)
+            dst_buf, dst_buf_size, dst_pos, dst_len =
+                check_buf_size(dst_buf, dst_buf_size, dst_pos, dst_len,
+                               dst_len + prefix_len + bit_len)
 
-                if prefix_len > 0 then
-                    ffi_copy(dst_pos, ffi_cast(c_str_type, subj) + cp_pos,
-                             prefix_len)
-                    dst_pos = dst_pos + prefix_len
-                end
+            if prefix_len > 0 then
+                ffi_copy(dst_pos, ffi_cast(c_str_type, subj) + cp_pos,
+                         prefix_len)
+                dst_pos = dst_pos + prefix_len
+            end
 
-                if bit_len > 0 then
-                    C.ngx_http_lua_ffi_script_eval_data(e, cv, dst_pos)
-                    dst_pos = dst_pos + bit_len
-                end
-
-            else
-                local bit_len = cv.value.len
-
-                local new_dst_len = dst_len + prefix_len + bit_len
-                dst_buf, dst_buf_size, dst_pos, dst_len =
-                    check_buf_size(dst_buf, dst_buf_size, dst_pos, dst_len,
-                                   new_dst_len)
-
-                if prefix_len > 0 then
-                    ffi_copy(dst_pos, ffi_cast(c_str_type, subj) + cp_pos,
-                             prefix_len)
-                    dst_pos = dst_pos + prefix_len
-                end
-
-                if bit_len > 0 then
-                    ffi_copy(dst_pos, cv.value.data, bit_len)
-                    dst_pos = dst_pos + bit_len
-                end
+            if bit_len > 0 then
+                ffi_copy(dst_pos, cv.value.data, bit_len)
+                dst_pos = dst_pos + bit_len
             end
         end
 
@@ -679,6 +775,20 @@ local function re_sub_helper(subj, regex, replace, opts, global)
     end
 
     return subj, 0
+end
+
+
+local function re_sub_helper(subj, regex, replace, opts, global)
+    local repl_type = type(replace)
+    if repl_type == "function" then
+        return re_sub_func_helper(subj, regex, replace, opts, global)
+    end
+
+    if repl_type ~= "string" then
+        replace = tostring(replace)
+    end
+
+    return re_sub_str_helper(subj, regex, replace, opts, global)
 end
 
 
