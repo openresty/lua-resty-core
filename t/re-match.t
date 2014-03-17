@@ -404,10 +404,12 @@ NYI
     location /re {
         content_by_lua '
             local new_tab = require "table.new"
-            local m = new_tab(5, 0)
-            m[5] = "hello"
+            local clear_tab = require "table.clear"
+            local m
+            local res = new_tab(5, 0)
+            res[5] = "hello"
             for i = 1, 100 do
-                m = ngx.re.match("hello, 1234", "([0-9])([0-9])([0-9])([0-9])", "jo", nil, m)
+                m = ngx.re.match("hello, 1234", "([0-9])([0-9])([0-9])([0-9])", "jo", nil, res)
             end
 
             if m then
@@ -430,7 +432,7 @@ NYI
 2
 3
 4
-nil
+hello
 --- no_error_log
 [error]
 NYI

@@ -30,7 +30,6 @@ local new_tab = base.new_tab
 local floor = math.floor
 local print = print
 local tonumber = tonumber
-local clear_tab = base.clear_tab
 local ngx_log = ngx.log
 local ngx_ERR = ngx.ERR
 
@@ -252,9 +251,7 @@ local function collect_captures(compiled, rc, subj, flags, res)
     local cap = compiled.captures
     local name_count = compiled.name_count
 
-    if res then
-        clear_tab(res)
-    else
+    if not res then
         res = new_tab(rc, name_count)
     end
 
