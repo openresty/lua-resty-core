@@ -56,7 +56,7 @@ GET /t
 Foo: 100
 
 --- error_log eval
-qr/\[TRACE   \d+ "content_by_lua":2 loop\]/
+qr/\[TRACE   \d+ content_by_lua:2 loop\]/
 --- no_error_log
 [error]
  -- NYI:
@@ -82,7 +82,7 @@ GET /t
 Foo: nil
 
 --- error_log eval
-qr/\[TRACE   \d+ "content_by_lua":2 loop\]/
+qr/\[TRACE   \d+ content_by_lua:2 loop\]/
 --- no_error_log
 [error]
  -- NYI:
@@ -112,7 +112,7 @@ GET /t
 Foo: 200, 201
 
 --- error_log eval
-qr/\[TRACE   \d+ "content_by_lua":2 loop\]/
+qr/\[TRACE   \d+ content_by_lua:2 loop\]/
 --- no_error_log
 [error]
  -- NYI:

@@ -58,7 +58,7 @@ ctx.foo = 100
  -- NYI:
  bad argument
 --- error_log eval
-qr/\[TRACE\s+\d+\s+"content_by_lua":2 loop\]/
+qr/\[TRACE\s+\d+\s+content_by_lua:2 loop\]/
 
 
 
@@ -82,5 +82,5 @@ ctx.foo = 100
  -- NYI:
  bad argument
 --- error_log eval
-qr/\[TRACE\s+\d+\s+"content_by_lua":2 loop\]/
+qr/\[TRACE\s+\d+\s+content_by_lua:2 loop\]/
 

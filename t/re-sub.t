@@ -67,7 +67,7 @@ GET /re
 s: aBcbd
 n: 1
 --- error_log eval
-qr/\[TRACE   \d+ "content_by_lua":4 loop\]/
+qr/\[TRACE   \d+ content_by_lua:4 loop\]/
 --- no_error_log
 [error]
 bad argument type
@@ -100,7 +100,7 @@ GET /re
 s: aBcbd
 n: 1
 --- error_log eval
-qr/\[TRACE   \d+ "content_by_lua":4 loop\]/
+qr/\[TRACE   \d+ content_by_lua:4 loop\]/
 --- no_error_log
 [error]
 bad argument type
@@ -166,7 +166,7 @@ GET /re
 s: a[bc(c)]bd
 n: 1
 --- error_log eval
-qr/\[TRACE   \d+ "content_by_lua":4 loop\]/
+qr/\[TRACE   \d+ content_by_lua:4 loop\]/
 
 --- no_error_log
 [error]

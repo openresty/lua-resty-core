@@ -46,7 +46,7 @@ GET /md5
 --- response_body
 5d41402abc4b2a76b9719d911017c592
 --- error_log
-[TRACE   1 "content_by_lua":3 loop]
+[TRACE   1 content_by_lua:3 loop]
 --- no_error_log
 [error]
 
@@ -69,7 +69,7 @@ GET /md5
 --- response_body
 d41d8cd98f00b204e9800998ecf8427e
 --- error_log
-[TRACE   1 "content_by_lua":3 loop]
+[TRACE   1 content_by_lua:3 loop]
 --- no_error_log
 [error]
 
@@ -92,7 +92,7 @@ GET /md5
 --- response_body
 d41d8cd98f00b204e9800998ecf8427e
 --- error_log
-[TRACE   1 "content_by_lua":3 loop]
+[TRACE   1 content_by_lua:3 loop]
 --- no_error_log
 [error]
 
@@ -115,7 +115,7 @@ GET /md5
 --- response_body
 4beed3b9c4a886067de0e3a094246f78
 --- error_log
-[TRACE   1 "content_by_lua":3 loop]
+[TRACE   1 content_by_lua:3 loop]
 --- no_error_log
 [error]
 

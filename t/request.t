@@ -151,7 +151,7 @@ Foo: foo
 Bar: bar
 Baz: baz
 --- error_log eval
-qr/\[TRACE   \d+ "content_by_lua":4 loop\]/
+qr/\[TRACE   \d+ content_by_lua:4 loop\]/
 --- no_error_log
 [error]
  -- NYI:
@@ -279,7 +279,7 @@ qr/\[TRACE   \d+ .*? -> \d+\]/
 GET /t?
 --- response_body
 --- error_log eval
-qr/\[TRACE   \d+ "content_by_lua":4 loop\]/
+qr/\[TRACE   \d+ content_by_lua:4 loop\]/
 --- no_error_log
 [error]
  -- NYI:

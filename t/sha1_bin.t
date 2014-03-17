@@ -54,7 +54,7 @@ GET /sha1_bin
 --- response_body
 20
 --- error_log eval
-qr/\[TRACE   \d+ "content_by_lua":3 loop\]/
+qr/\[TRACE   \d+ content_by_lua:3 loop\]/
 --- no_error_log
 [error]
 
@@ -77,7 +77,7 @@ GET /sha1_bin
 --- response_body
 20
 --- error_log eval
-qr/\[TRACE   \d+ "content_by_lua":3 loop\]/
+qr/\[TRACE   \d+ content_by_lua:3 loop\]/
 --- no_error_log
 [error]
 
@@ -100,7 +100,7 @@ GET /sha1_bin
 --- response_body
 20
 --- error_log eval
-qr/\[TRACE   \d+ "content_by_lua":3 loop\]/
+qr/\[TRACE   \d+ content_by_lua:3 loop\]/
 --- no_error_log
 [error]
 
@@ -123,7 +123,7 @@ GET /sha1_bin
 --- response_body
 20
 --- error_log eval
-qr/\[TRACE   \d+ "content_by_lua":3 loop\]/
+qr/\[TRACE   \d+ content_by_lua:3 loop\]/
 --- no_error_log
 [error]
 
