@@ -68,7 +68,7 @@ Prerequisites
 =============
 
 * LuaJIT 2.1 (for now, it is the v2.1 git branch in the official luajit-2.0 git repository: http://luajit.org/download.html )
-* [ngx_lua](https://github.com/chaoslawful/lua-nginx-module) v0.9.3 or later.
+* [ngx_lua](https://github.com/chaoslawful/lua-nginx-module) v0.9.6 or later.
 
 Note that if you are using the ngx_openresty bundle version 1.4.3.9, then just build it with `--with-luajit` and you have everything including this library itself. Since ngx_openresty 1.5.8.1, the `--with-luajit` option is now the default and you no longer need to explicitly specify the `--with-luajit` option.
 
