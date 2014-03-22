@@ -62,7 +62,9 @@ local PCRE_JAVASCRIPT_COMPAT = 0x2000000
 local PCRE_ERROR_NOMATCH = -1
 
 
-local regex_cache = new_tab(0, 4)
+local regex_match_cache = new_tab(0, 4)
+local regex_sub_func_cache = new_tab(0, 4)
+local regex_sub_str_cache = new_tab(0, 4)
 local max_regex_cache_size
 local regex_cache_size = 0
 local script_engine
@@ -299,7 +301,7 @@ local function re_match_compile(regex, opts)
     local compiled
     local compile_once = (band(flags, FLAG_COMPILE_ONCE) == 1)
     if compile_once then
-        local subcache = regex_cache[opts]
+        local subcache = regex_match_cache[opts]
         if subcache then
             compiled = subcache[regex]
         end
@@ -326,13 +328,14 @@ local function re_match_compile(regex, opts)
         if compile_once then
             if regex_cache_size < get_max_regex_cache_size() then
                 -- print("inserting compiled regex into cache")
-                local subcache = regex_cache[opts]
+                local subcache = regex_match_cache[opts]
                 if not subcache then
-                    subcache = {[regex] = compiled}
-                    regex_cache[opts] = subcache
+                    regex_match_cache[opts] = {[regex] = compiled}
+
                 else
                     subcache[regex] = compiled
                 end
+
                 regex_cache_size = regex_cache_size + 1
             else
                 compile_once = false
@@ -492,16 +495,26 @@ local function re_sub_compile(regex, opts, replace, func)
         opts = ""
     end
 
-    local key, compiled
+    local compiled
     local compile_once = (band(flags, FLAG_COMPILE_ONCE) == 1)
     if compile_once then
         if func then
-            key = regex .. "\0" .. pcre_opts
+            local subcache = regex_sub_func_cache[opts]
+            if subcache then
+                -- print("cache hit!")
+                compiled = subcache[regex]
+            end
+
         else
-            key = regex .. "\0" .. pcre_opts .. "\0" .. replace
+            local subcache = regex_sub_str_cache[opts]
+            if subcache then
+                local subsubcache = subcache[regex]
+                if subsubcache then
+                    -- print("cache hit!")
+                    compiled = subsubcache[replace]
+                end
+            end
         end
-        -- print("key: ", key)
-        compiled = regex_cache[key]
     end
 
     -- compile the regex
@@ -537,7 +550,32 @@ local function re_sub_compile(regex, opts, replace, func)
         if compile_once then
             if regex_cache_size < get_max_regex_cache_size() then
                 -- print("inserting compiled regex into cache")
-                regex_cache[key] = compiled
+                if func then
+                    local subcache = regex_sub_func_cache[opts]
+                    if not subcache then
+                        regex_sub_func_cache[opts] = {[regex] = compiled}
+
+                    else
+                        subcache[regex] = compiled
+                    end
+
+                else
+                    local subcache = regex_sub_str_cache[opts]
+                    if not subcache then
+                        regex_sub_str_cache[opts] =
+                            {[regex] = {[replace] = compiled}}
+
+                    else
+                        local subsubcache = subcache[regex]
+                        if not subsubcache then
+                            subcache[regex] = {[replace] = compiled}
+
+                        else
+                            subsubcache[replace] = compiled
+                        end
+                    end
+                end
+
                 regex_cache_size = regex_cache_size + 1
             else
                 compile_once = false
