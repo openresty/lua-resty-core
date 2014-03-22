@@ -296,12 +296,13 @@ local function re_match_compile(regex, opts)
         opts = ""
     end
 
-    local key, compiled
+    local compiled
     local compile_once = (band(flags, FLAG_COMPILE_ONCE) == 1)
     if compile_once then
-        key = regex .. "\0" .. pcre_opts
-        -- print("key: ", key)
-        compiled = regex_cache[key]
+        local subcache = regex_cache[opts]
+        if subcache then
+            compiled = subcache[regex]
+        end
     end
 
     -- compile the regex
@@ -325,7 +326,13 @@ local function re_match_compile(regex, opts)
         if compile_once then
             if regex_cache_size < get_max_regex_cache_size() then
                 -- print("inserting compiled regex into cache")
-                regex_cache[key] = compiled
+                local subcache = regex_cache[opts]
+                if not subcache then
+                    subcache = {[regex] = compiled}
+                    regex_cache[opts] = subcache
+                else
+                    subcache[regex] = compiled
+                end
                 regex_cache_size = regex_cache_size + 1
             else
                 compile_once = false
