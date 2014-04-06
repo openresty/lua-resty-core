@@ -69,7 +69,7 @@ qr/\[TRACE   \d+ content_by_lua:2 loop\]/
     location = /t {
         set $foo hello;
         content_by_lua '
-            for i = 1, 100 do
+            for i = 1, 200 do
                 ngx.header["Foo"] = i
                 ngx.header["Foo"] = nil
             end
@@ -83,6 +83,7 @@ Foo: nil
 
 --- error_log eval
 qr/\[TRACE   \d+ content_by_lua:2 loop\]/
+--- wait: 0.2
 --- no_error_log
 [error]
  -- NYI:
