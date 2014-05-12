@@ -12,6 +12,7 @@ require "resty.core.ctx"
 require "resty.core.misc"
 require "resty.core.request"
 require "resty.core.response"
+require "resty.core.time"
 
 
 local base = require "resty.core.base"

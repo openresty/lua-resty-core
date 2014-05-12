@@ -23,6 +23,7 @@ Table of Contents
     * [resty.core.request](#restycorerequest)
     * [resty.core.response](#restycoreresponse)
     * [resty.core.misc](#restycoremisc)
+    * [resty.core.time](#restycoretime)
 * [Caveat](#caveat)
 * [Author](#author)
 * [Copyright and License](#copyright-and-license)
@@ -160,6 +161,12 @@ API Implemented
 * [ngx.status](https://github.com/chaoslawful/lua-nginx-module#ngxstatus)
 * [ngx.is_subrequest](https://github.com/chaoslawful/lua-nginx-module#ngxis_subrequest)
 * [ngx.headers_sent](https://github.com/chaoslawful/lua-nginx-module#ngxheaders_sent)
+
+[Back to TOC](#table-of-contents)
+
+## resty.core.time
+
+* [ngx.now](https://github.com/openresty/lua-nginx-module#ngxnow)
 
 [Back to TOC](#table-of-contents)
 
