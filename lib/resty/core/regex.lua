@@ -91,6 +91,8 @@ ffi.cdef[[
         void                         *regex_sd;
 
         ngx_http_lua_complex_value_t *replace;
+
+        const char                   *pattern;
     } ngx_http_lua_regex_t;
 
     ngx_http_lua_regex_t *
