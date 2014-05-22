@@ -39,6 +39,8 @@ ffi.cdef[[
 
     int ngx_http_lua_ffi_req_get_uri_args(ngx_http_request_t *r,
         unsigned char *buf, ngx_http_lua_ffi_table_elt_t *out, int count);
+
+    double ngx_http_lua_ffi_req_start_time(ngx_http_request_t *r);
 ]]
 
 
@@ -167,6 +169,16 @@ function ngx.req.get_uri_args(max_args)
         end
     end
     return args
+end
+
+
+function ngx.req.start_time()
+    local r = getfenv(0).__ngx_req
+    if not r then
+        return error("no request found")
+    end
+
+    return tonumber(C.ngx_http_lua_ffi_req_start_time(r))
 end
 
 

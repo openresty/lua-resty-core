@@ -9,7 +9,7 @@ use Cwd qw(cwd);
 
 repeat_each(2);
 
-plan tests => repeat_each() * (blocks() * 5);
+plan tests => repeat_each() * (blocks() * 5 + 1);
 
 my $pwd = cwd();
 
@@ -283,4 +283,38 @@ qr/\[TRACE   \d+ content_by_lua:4 loop\]/
 --- no_error_log
 [error]
  -- NYI:
+
+
+
+=== TEST 7: ngx.req.start_time()
+--- http_config eval: $::HttpConfig
+--- config
+    location = /t {
+        access_log off;
+        content_by_lua '
+            local t
+            for i = 1, 500 do
+                t = ngx.req.start_time()
+            end
+            ngx.sleep(0.10)
+            local elapsed = ngx.now() - t
+            ngx.say(t > 1399867351)
+            ngx.say(">= 0.099: ", elapsed >= 0.099)
+            ngx.say("< 0.11: ", elapsed < 0.11)
+            -- ngx.say(t, " ", elapsed)
+        ';
+    }
+--- request
+GET /t
+--- response_body
+true
+>= 0.099: true
+< 0.11: true
+
+--- error_log eval
+qr/\[TRACE   \d+ content_by_lua:3 loop\]/
+--- no_error_log
+[error]
+bad argument type
+stitch
 
