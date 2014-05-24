@@ -167,6 +167,7 @@ API Implemented
 
 ## resty.core.time
 
+* [ngx.time](https://github.com/openresty/lua-nginx-module#ngxtime)
 * [ngx.now](https://github.com/openresty/lua-nginx-module#ngxnow)
 
 [Back to TOC](#table-of-contents)

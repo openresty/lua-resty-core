@@ -74,3 +74,33 @@ qr/\[TRACE   \d+ content_by_lua:3 loop\]/
 bad argument type
 stitch
 
+
+
+=== TEST 2: ngx.time()
+--- http_config eval: $::HttpConfig
+--- config
+    location = /t {
+        access_log off;
+        content_by_lua '
+            local t
+            for i = 1, 500 do
+                t = ngx.time()
+            end
+            ngx.say(t > 1400960598)
+            local diff = os.time() - t
+            ngx.say(diff <= 1)
+        ';
+    }
+--- request
+GET /t
+--- response_body
+true
+true
+
+--- error_log eval
+qr/\[TRACE   \d+ content_by_lua:3 loop\]/
+--- no_error_log
+[error]
+bad argument type
+stitch
+
