@@ -11,7 +11,7 @@ local C = ffi.C
 
 ffi.cdef[[
 double ngx_http_lua_ffi_now(void);
-int ngx_http_lua_ffi_time(void);
+long ngx_http_lua_ffi_time(void);
 ]]
 
 
