@@ -10,13 +10,13 @@ local C = ffi.C
 
 
 ffi.cdef[[
-double ngx_http_lua_ffi_ngx_now(void);
+double ngx_http_lua_ffi_now(void);
 int ngx_http_lua_ffi_time(void);
 ]]
 
 
 function ngx.now()
-    return tonumber(C.ngx_http_lua_ffi_ngx_now())
+    return tonumber(C.ngx_http_lua_ffi_now())
 end
 
 
