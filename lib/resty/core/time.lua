@@ -7,6 +7,7 @@ local base = require "resty.core.base"
 
 local tonumber = tonumber
 local C = ffi.C
+local ngx = ngx
 
 
 ffi.cdef[[

@@ -9,7 +9,7 @@ use Cwd qw(cwd);
 
 repeat_each(2);
 
-plan tests => repeat_each() * (blocks() * 5 + 7);
+plan tests => repeat_each() * (blocks() * 5 + 10);
 
 my $pwd = cwd();
 
@@ -469,7 +469,7 @@ stitch
         content_by_lua '
             local t
             for i = 1, 500 do
-                t = ngx.req.set_method(ngx.HTTP_PUT)
+                ngx.req.set_method(ngx.HTTP_PUT)
             end
             ngx.say("method: ", ngx.req.get_method())
         ';
@@ -481,6 +481,88 @@ method: PUT
 
 --- error_log eval
 qr/\[TRACE   \d+ content_by_lua:3 loop\]/
+--- no_error_log
+[error]
+bad argument type
+stitch
+
+
+
+=== TEST 14: ngx.req.set_header (single number value)
+--- http_config eval: $::HttpConfig
+--- config
+    location = /t {
+        access_log off;
+        content_by_lua '
+            local t
+            for i = 1, 500 do
+                ngx.req.set_header("foo", i)
+            end
+            ngx.say("header foo: ", ngx.var.http_foo)
+        ';
+    }
+--- request
+GET /t
+--- response_body
+header foo: 500
+
+--- error_log eval
+qr/\[TRACE   \d+ content_by_lua:3 loop\]/
+--- no_error_log
+[error]
+bad argument type
+stitch
+
+
+
+=== TEST 15: ngx.req.set_header (nil value)
+--- http_config eval: $::HttpConfig
+--- config
+    location = /t {
+        access_log off;
+        content_by_lua '
+            local t
+            for i = 1, 500 do
+                ngx.req.set_header("foo", nil)
+            end
+            ngx.say("header foo: ", type(ngx.var.http_foo))
+        ';
+    }
+--- request
+GET /t
+--- response_body
+header foo: nil
+
+--- error_log eval
+qr/\[TRACE   \d+ content_by_lua:3 loop\]/
+--- no_error_log
+[error]
+bad argument type
+stitch
+
+
+
+=== TEST 16: ngx.req.clear_header
+--- http_config eval: $::HttpConfig
+--- config
+    location = /t {
+        access_log off;
+        content_by_lua '
+            ngx.req.set_header("foo", "hello")
+            local t
+            for i = 1, 500 do
+                t = ngx.req.clear_header("foo")
+            end
+            ngx.say("header foo: ", type(ngx.var.http_foo))
+        ';
+    }
+--- request
+GET /t
+--- response_body
+header foo: nil
+
+--- error_log eval
+qr/\[TRACE   \d+ content_by_lua:4 loop\]/
 --- no_error_log
 [error]
 bad argument type
