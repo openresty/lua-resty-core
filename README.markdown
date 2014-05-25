@@ -128,6 +128,7 @@ API Implemented
 * [ngx.shared.DICT.safe_add](https://github.com/chaoslawful/lua-nginx-module#ngxshareddictsafe_add)
 * [ngx.shared.DICT.replace](https://github.com/chaoslawful/lua-nginx-module#ngxshareddictreplace)
 * [ngx.shared.DICT.delete](https://github.com/chaoslawful/lua-nginx-module#ngxshareddictdelete)
+* [ngx.shared.DICT.flush_all](https://github.com/chaoslawful/lua-nginx-module#ngxshareddictflush_all)
 
 [Back to TOC](#table-of-contents)
 

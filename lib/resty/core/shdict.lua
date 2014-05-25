@@ -33,6 +33,8 @@ ffi.cdef[[
         const unsigned char *str_value_buf, size_t str_value_len,
         double num_value, int exptime, int user_flags, char **errmsg,
         int *forcible);
+
+    int ngx_http_lua_ffi_shdict_flush_all(void *zone);
 ]]
 
 
@@ -337,6 +339,15 @@ local function shdict_incr(zone, key, value)
 end
 
 
+local function shdict_flush_all(zone)
+    if not zone or type(zone) ~= "userdata" then
+        return error("bad \"zone\" argument")
+    end
+
+    C.ngx_http_lua_ffi_shdict_flush_all(zone)
+end
+
+
 if ngx_shared then
     local name, dict = next(ngx_shared, nil)
     if dict then
@@ -353,6 +364,7 @@ if ngx_shared then
                 mt.safe_add = shdict_safe_add
                 mt.replace = shdict_replace
                 mt.delete = shdict_delete
+                mt.flush_all = shdict_flush_all
             end
         end
     end

@@ -9,7 +9,7 @@ use Cwd qw(cwd);
 
 repeat_each(2);
 
-plan tests => repeat_each() * (blocks() * 5);
+plan tests => repeat_each() * (blocks() * 5 + 2);
 
 my $pwd = cwd();
 
@@ -783,6 +783,7 @@ qr/\[TRACE   \d+ content_by_lua:6 loop\]/
 --- no_error_log
 [error]
  -- NYI:
+stitch
 
 
 
@@ -879,4 +880,38 @@ failed to incr: nil key
 [error]
 [alert]
 [crit]
+
+
+
+=== TEST 27: flush_all
+--- http_config eval: $::HttpConfig
+--- config
+    location = /t {
+        content_by_lua '
+            local ffi = require "ffi"
+            local val, flags
+            local dogs = ngx.shared.dogs
+            dogs:set("foo", "bah")
+            -- local cd = ffi.cast("void *", dogs)
+            for i = 1, 150 do
+                dogs:flush_all()
+            end
+            val, flags = dogs:get("foo")
+            ngx.say("value type: ", type(val))
+            ngx.say("value: ", val)
+            ngx.say("flags: ", flags)
+        ';
+    }
+--- request
+GET /t
+--- response_body
+value type: nil
+value: nil
+flags: nil
+--- error_log eval
+qr/\[TRACE   \d+ content_by_lua:7 loop\]/
+--- no_error_log
+[error]
+ -- NYI:
+stitch
 
