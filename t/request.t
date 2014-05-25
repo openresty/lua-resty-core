@@ -9,7 +9,7 @@ use Cwd qw(cwd);
 
 repeat_each(2);
 
-plan tests => repeat_each() * (blocks() * 5 + 1);
+plan tests => repeat_each() * (blocks() * 5 + 6);
 
 my $pwd = cwd();
 
@@ -310,6 +310,147 @@ GET /t
 true
 >= 0.099: true
 < 0.11: true
+
+--- error_log eval
+qr/\[TRACE   \d+ content_by_lua:3 loop\]/
+--- no_error_log
+[error]
+bad argument type
+stitch
+
+
+
+=== TEST 8: ngx.req.get_method (GET)
+--- http_config eval: $::HttpConfig
+--- config
+    location = /t {
+        access_log off;
+        content_by_lua '
+            local t
+            for i = 1, 500 do
+                t = ngx.req.get_method()
+            end
+            ngx.say("method: ", t)
+        ';
+    }
+--- request
+GET /t
+--- response_body
+method: GET
+
+--- error_log eval
+qr/\[TRACE   \d+ content_by_lua:3 loop\]/
+--- no_error_log
+[error]
+bad argument type
+stitch
+
+
+
+=== TEST 9: ngx.req.get_method (OPTIONS)
+--- http_config eval: $::HttpConfig
+--- config
+    location = /t {
+        access_log off;
+        content_by_lua '
+            local t
+            for i = 1, 500 do
+                t = ngx.req.get_method()
+            end
+            ngx.say("method: ", t)
+        ';
+    }
+--- request
+OPTIONS /t
+--- response_body
+method: OPTIONS
+
+--- error_log eval
+qr/\[TRACE   \d+ content_by_lua:3 loop\]/
+--- no_error_log
+[error]
+bad argument type
+stitch
+
+
+
+=== TEST 10: ngx.req.get_method (POST)
+--- http_config eval: $::HttpConfig
+--- config
+    location = /t {
+        access_log off;
+        content_by_lua '
+            local t
+            for i = 1, 500 do
+                t = ngx.req.get_method()
+            end
+            ngx.say("method: ", t)
+            ngx.req.discard_body()
+        ';
+    }
+--- request
+POST /t
+hello
+--- response_body
+method: POST
+
+--- error_log eval
+qr/\[TRACE   \d+ content_by_lua:3 loop\]/
+--- no_error_log
+[error]
+bad argument type
+stitch
+
+
+
+=== TEST 11: ngx.req.get_method (unknown method)
+--- http_config eval: $::HttpConfig
+--- config
+    location = /t {
+        access_log off;
+        content_by_lua '
+            local t
+            for i = 1, 500 do
+                t = ngx.req.get_method()
+            end
+            ngx.say("method: ", t)
+            ngx.req.discard_body()
+        ';
+    }
+--- request
+BLAH /t
+hello
+--- response_body
+method: BLAH
+
+--- error_log eval
+qr/\[TRACE   \d+ content_by_lua:3 loop\]/
+--- no_error_log
+[error]
+bad argument type
+stitch
+
+
+
+=== TEST 12: ngx.req.get_method (CONNECT)
+--- http_config eval: $::HttpConfig
+--- config
+    location = /t {
+        access_log off;
+        content_by_lua '
+            local t
+            for i = 1, 500 do
+                t = ngx.req.get_method()
+            end
+            ngx.say("method: ", t)
+            ngx.req.discard_body()
+        ';
+    }
+--- request
+CONNECT /t
+hello
+--- response_body
+method: CONNECT
 
 --- error_log eval
 qr/\[TRACE   \d+ content_by_lua:3 loop\]/

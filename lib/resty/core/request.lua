@@ -11,6 +11,7 @@ local C = ffi.C
 local ffi_cast = ffi.cast
 local ffi_str = ffi.string
 local get_string_buf = base.get_string_buf
+local get_size_ptr = base.get_size_ptr
 local setmetatable = setmetatable
 local gsub = ngx.re.gsub
 local lower = string.lower
@@ -41,6 +42,11 @@ ffi.cdef[[
         unsigned char *buf, ngx_http_lua_ffi_table_elt_t *out, int count);
 
     double ngx_http_lua_ffi_req_start_time(ngx_http_request_t *r);
+
+    int ngx_http_lua_ffi_req_get_method(ngx_http_request_t *r);
+
+    int ngx_http_lua_ffi_req_get_method_name(ngx_http_request_t *r,
+        char *name, size_t *len);
 ]]
 
 
@@ -180,6 +186,57 @@ function ngx.req.start_time()
 
     return tonumber(C.ngx_http_lua_ffi_req_start_time(r))
 end
+
+
+do
+    local methods = {
+        [0x0002] = "GET",
+        [0x0004] = "HEAD",
+        [0x0008] = "POST",
+        [0x0010] = "PUT",
+        [0x0020] = "DELETE",
+        [0x0040] = "MKCOL",
+        [0x0080] = "COPY",
+        [0x0100] = "MOVE",
+        [0x0200] = "OPTIONS",
+        [0x0400] = "PROPFIND",
+        [0x0800] = "PROPPATCH",
+        [0x1000] = "LOCK",
+        [0x2000] = "UNLOCK",
+        [0x4000] = "PATCH",
+        [0x8000] = "TRACE",
+    }
+
+    function ngx.req.get_method()
+        local r = getfenv(0).__ngx_req
+        if not r then
+            return error("no request found")
+        end
+
+        do
+            local id = C.ngx_http_lua_ffi_req_get_method(r)
+            if id == FFI_BAD_CONTEXT then
+                return error("API disabled in the current context")
+            end
+
+            local method = methods[id]
+            if method then
+                return method
+            end
+        end
+
+        local buf = get_string_buf(32)
+        local sizep = get_size_ptr()
+        sizep[0] = 32
+
+        local rc = C.ngx_http_lua_ffi_req_get_method_name(r, buf, sizep)
+        if rc ~= 0 then
+            return nil
+        end
+
+        return ffi_str(buf, sizep[0])
+    end
+end  -- do
 
 
 return {
