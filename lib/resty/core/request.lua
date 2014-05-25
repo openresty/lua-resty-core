@@ -6,6 +6,8 @@ local base = require "resty.core.base"
 
 
 local FFI_BAD_CONTEXT = base.FFI_BAD_CONTEXT
+local FFI_DECLINED = base.FFI_DECLINED
+local FFI_OK = base.FFI_OK
 local new_tab = base.new_tab
 local C = ffi.C
 local ffi_cast = ffi.cast
@@ -47,6 +49,8 @@ ffi.cdef[[
 
     int ngx_http_lua_ffi_req_get_method_name(ngx_http_request_t *r,
         char *name, size_t *len);
+
+    int ngx_http_lua_ffi_req_set_method(ngx_http_request_t *r, int method);
 ]]
 
 
@@ -237,6 +241,33 @@ do
         return ffi_str(buf, sizep[0])
     end
 end  -- do
+
+
+function ngx.req.set_method(method)
+    local r = getfenv(0).__ngx_req
+    if not r then
+        return error("no request found")
+    end
+
+    if type(method) ~= "number" then
+        return error("bad method number")
+    end
+
+    local rc = C.ngx_http_lua_ffi_req_set_method(r, method)
+    if rc == FFI_OK then
+        return
+    end
+
+    if rc == FFI_BAD_CONTEXT then
+        return error("API disabled in the current context")
+    end
+
+    if rc == FFI_DECLINED then
+        return error("unsupported HTTP method: " .. method)
+    end
+
+    return error("unknown error: " .. rc)
+end
 
 
 return {

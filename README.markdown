@@ -149,6 +149,7 @@ API Implemented
 * [ngx.req.get_uri_args](https://github.com/chaoslawful/lua-nginx-module#ngxreqget_uri_args)
 * [ngx.req.start_time](https://github.com/openresty/lua-nginx-module#ngxreqstart_time)
 * [ngx.req.get_method](https://github.com/openresty/lua-nginx-module#ngxreqget_method)
+* [ngx.req.set_method](https://github.com/openresty/lua-nginx-module#ngxreqset_method)
 
 [Back to TOC](#table-of-contents)
 
