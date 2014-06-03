@@ -280,12 +280,6 @@ end
 
 
 local function destroy_compiled_regex(compiled)
-    -- below is a temporary assertion for tracing an issue in LuaJIT v2.1.
-    if C == nil then
-        ngx_log(ngx_ERR, "value of 'C' is nil, prepare for crash")
-    end
-    assert(C ~= nil)
-
     C.ngx_http_lua_ffi_destroy_regex(ffi_gc(compiled, nil))
 end
 
