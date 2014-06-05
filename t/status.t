@@ -15,7 +15,7 @@ plan tests => repeat_each() * (blocks() * 7);
 my $pwd = cwd();
 
 our $HttpConfig = <<_EOC_;
-    lua_package_path "$pwd/lib/?.lua;\$prefix/html/?.lua;;";
+    lua_package_path "$pwd/lib/?.lua;\$prefix/html/?.lua;../lua-resty-lrucache/lib/?.lua;;";
     init_by_lua '
         local verbose = false
         if verbose then

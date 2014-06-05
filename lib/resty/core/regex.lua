@@ -4,7 +4,10 @@
 local ffi = require 'ffi'
 local base = require "resty.core.base"
 local bit = require "bit"
+local lrucache = require "resty.lrucache"
 
+local lrucache_get = lrucache.get
+local lrucache_set = lrucache.set
 local ffi_string = ffi.string
 local ffi_new = ffi.new
 local ffi_gc = ffi.gc
@@ -62,7 +65,7 @@ local PCRE_JAVASCRIPT_COMPAT = 0x2000000
 local PCRE_ERROR_NOMATCH = -1
 
 
-local regex_match_cache = new_tab(0, 4)
+local regex_match_cache
 local regex_sub_func_cache = new_tab(0, 4)
 local regex_sub_str_cache = new_tab(0, 4)
 local max_regex_cache_size
@@ -294,13 +297,14 @@ local function re_match_compile(regex, opts)
         opts = ""
     end
 
-    local compiled
+    local compiled, key
     local compile_once = (band(flags, FLAG_COMPILE_ONCE) == 1)
     if compile_once then
-        local subcache = regex_match_cache[opts]
-        if subcache then
-            compiled = subcache[regex]
+        if not regex_match_cache then
+            regex_match_cache = lrucache.new(get_max_regex_cache_size())
         end
+        key = regex .. '\0' .. opts
+        compiled = lrucache_get(regex_match_cache, key)
     end
 
     -- compile the regex
@@ -322,20 +326,8 @@ local function re_match_compile(regex, opts)
         -- print("ncaptures: ", compiled.ncaptures)
 
         if compile_once then
-            if regex_cache_size < get_max_regex_cache_size() then
-                -- print("inserting compiled regex into cache")
-                local subcache = regex_match_cache[opts]
-                if not subcache then
-                    regex_match_cache[opts] = {[regex] = compiled}
-
-                else
-                    subcache[regex] = compiled
-                end
-
-                regex_cache_size = regex_cache_size + 1
-            else
-                compile_once = false
-            end
+            -- print("inserting compiled regex into cache")
+            lrucache_set(regex_match_cache, key, compiled)
         end
     end
 
