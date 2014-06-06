@@ -299,10 +299,19 @@ local function re_match_compile(regex, opts)
 
     local compiled, key
     local compile_once = (band(flags, FLAG_COMPILE_ONCE) == 1)
-    if compile_once then
-        if not regex_match_cache then
-            regex_match_cache = lrucache.new(get_max_regex_cache_size())
+
+    -- FIXME: better put this in the outer scope when fixing the ngx.re API's
+    -- compatibility in the init_by_lua* context.
+    if not regex_match_cache then
+        local sz = get_max_regex_cache_size()
+        if sz <= 0 then
+            compile_once = false
+        else
+            regex_match_cache = lrucache.new(sz)
         end
+    end
+
+    if compile_once then
         key = regex .. '\0' .. opts
         compiled = lrucache_get(regex_match_cache, key)
     end
