@@ -44,7 +44,8 @@ ffi.cdef[[
     size_t ngx_http_lua_ffi_req_get_querystring_len(ngx_http_request_t *r);
 
     int ngx_http_lua_ffi_req_get_uri_args(ngx_http_request_t *r,
-        unsigned char *buf, ngx_http_lua_ffi_table_elt_t *out, int count);
+        unsigned char *buf, ngx_http_lua_ffi_table_elt_t *out, int count,
+        int raw);
 
     double ngx_http_lua_ffi_req_start_time(ngx_http_request_t *r);
 
@@ -132,7 +133,7 @@ function ngx.req.get_headers(max_headers, raw)
 end
 
 
-function ngx.req.get_uri_args(max_args)
+function ngx.req.get_uri_args(max_args, raw)
     local r = getfenv(0).__ngx_req
     if not r then
         return error("no request found")
@@ -151,12 +152,18 @@ function ngx.req.get_uri_args(max_args)
         return {}
     end
 
+    if not raw then
+        raw = 0
+    else
+        raw = 1
+    end
+
     local args_len = C.ngx_http_lua_ffi_req_get_querystring_len(r)
 
     local strbuf = get_string_buf(args_len + n * table_elt_size)
     local kvbuf = ffi_cast(table_elt_type, strbuf + args_len)
 
-    local nargs = C.ngx_http_lua_ffi_req_get_uri_args(r, strbuf, kvbuf, n)
+    local nargs = C.ngx_http_lua_ffi_req_get_uri_args(r, strbuf, kvbuf, n, raw)
 
     local args = new_tab(0, nargs)
     for i = 0, nargs - 1 do

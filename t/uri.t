@@ -260,3 +260,49 @@ qr/\[TRACE   \d+ content_by_lua:3 loop\]/
 --- no_error_log
 [error]
 
+
+
+=== TEST 11: unescape_uri (string) raw is not set
+--- http_config eval: $::HttpConfig
+--- config
+    location = /uri {
+        content_by_lua '
+            local s
+            for i = 1, 100 do
+                s = ngx.unescape_uri("hello+%20world")
+            end
+            ngx.say(s)
+        ';
+    }
+--- request
+GET /uri
+--- response_body
+hello  world
+--- error_log eval
+qr/\[TRACE   \d+ content_by_lua:3 loop\]/
+--- no_error_log
+[error]
+
+
+
+=== TEST 12: unescape_uri (string) raw is true
+--- http_config eval: $::HttpConfig
+--- config
+    location = /uri {
+        content_by_lua '
+            local s
+            for i = 1, 100 do
+                s = ngx.unescape_uri("hello+%20world", true)
+            end
+            ngx.say(s)
+        ';
+    }
+--- request
+GET /uri
+--- response_body
+hello+ world
+--- error_log eval
+qr/\[TRACE   \d+ content_by_lua:3 loop\]/
+--- no_error_log
+[error]
+

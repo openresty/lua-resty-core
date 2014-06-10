@@ -568,3 +568,91 @@ qr/\[TRACE   \d+ content_by_lua:4 loop\]/
 bad argument type
 stitch
 
+
+
+=== TEST 17: ngx.req.get_uri_args (raw is not set)
+--- http_config eval: $::HttpConfig
+--- config
+    location = /t {
+        set $foo hello;
+        content_by_lua '
+            local ffi = require "ffi"
+            local args
+            for i = 1, 100 do
+                args = ngx.req.get_uri_args()
+            end
+            if type(args) ~= "table" then
+                ngx.say("bad args type found: ", args)
+                return
+            end
+            local keys = {}
+            for k, _ in pairs(args) do
+                keys[#keys + 1] = k
+            end
+            table.sort(keys)
+            for _, k in ipairs(keys) do
+                local v = args[k]
+                if type(v) == "table" then
+                    ngx.say(k, ": ", table.concat(v, ", "))
+                else
+                    ngx.say(k, ": ", v)
+                end
+            end
+        ';
+    }
+--- request
+GET /t?a=3%200+10&foo%20bar=&a=hello&blah
+--- response_body
+a: 3 0 10, hello
+blah: true
+foo bar: 
+--- error_log eval
+qr/\[TRACE   \d+ .*? -> \d+\]/
+--- no_error_log
+[error]
+ -- NYI:
+
+
+
+=== TEST 18: ngx.req.get_uri_args (raw is true)
+--- http_config eval: $::HttpConfig
+--- config
+    location = /t {
+        set $foo hello;
+        content_by_lua '
+            local ffi = require "ffi"
+            local args
+            for i = 1, 100 do
+                args = ngx.req.get_uri_args(nil, true)
+            end
+            if type(args) ~= "table" then
+                ngx.say("bad args type found: ", args)
+                return
+            end
+            local keys = {}
+            for k, _ in pairs(args) do
+                keys[#keys + 1] = k
+            end
+            table.sort(keys)
+            for _, k in ipairs(keys) do
+                local v = args[k]
+                if type(v) == "table" then
+                    ngx.say(k, ": ", table.concat(v, ", "))
+                else
+                    ngx.say(k, ": ", v)
+                end
+            end
+        ';
+    }
+--- request
+GET /t?a=3%200+10&foo%20bar=&a=hello&blah
+--- response_body
+a: 3 0+10, hello
+blah: true
+foo bar: 
+--- error_log eval
+qr/\[TRACE   \d+ .*? -> \d+\]/
+--- no_error_log
+[error]
+ -- NYI:
+

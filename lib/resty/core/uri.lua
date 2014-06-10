@@ -24,8 +24,8 @@ ffi.cdef[[
     void ngx_http_lua_ffi_escape_uri(const unsigned char *src, size_t len,
                                      unsigned char *dst);
 
-    size_t ngx_http_lua_ffi_unescape_uri(const unsigned char *src,
-                                         size_t len, unsigned char *dst);
+    size_t ngx_http_lua_ffi_unescape_uri(const unsigned char *src, size_t len,
+                                         unsigned char *dst, int raw);
 ]]
 
 
@@ -49,7 +49,7 @@ ngx.escape_uri = function (s)
 end
 
 
-ngx.unescape_uri = function (s)
+ngx.unescape_uri = function (s, raw)
     if type(s) ~= 'string' then
         if not s then
             s = ''
@@ -57,10 +57,17 @@ ngx.unescape_uri = function (s)
             s = tostring(s)
         end
     end
+
+    if not raw then
+        raw = 0
+    else
+        raw = 1
+    end
+
     local slen = #s
     local dlen = slen
     local dst = get_string_buf(dlen)
-    dlen = C.ngx_http_lua_ffi_unescape_uri(s, slen, dst)
+    dlen = C.ngx_http_lua_ffi_unescape_uri(s, slen, dst, raw)
     return ffi_string(dst, dlen)
 end
 
