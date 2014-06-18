@@ -4,6 +4,7 @@
 local ffi = require 'ffi'
 local base = require "resty.core.base"
 local bit = require "bit"
+require "resty.core.time"  -- for ngx.now used by resty.lrucache
 local lrucache = require "resty.lrucache"
 
 local lrucache_get = lrucache.get
