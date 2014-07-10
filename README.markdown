@@ -24,6 +24,7 @@ Table of Contents
     * [resty.core.response](#restycoreresponse)
     * [resty.core.misc](#restycoremisc)
     * [resty.core.time](#restycoretime)
+    * [resty.core.worker](#restycoreworker)
 * [Caveat](#caveat)
 * [Author](#author)
 * [Copyright and License](#copyright-and-license)
@@ -175,6 +176,13 @@ API Implemented
 
 * [ngx.time](https://github.com/openresty/lua-nginx-module#ngxtime)
 * [ngx.now](https://github.com/openresty/lua-nginx-module#ngxnow)
+
+[Back to TOC](#table-of-contents)
+
+## resty.core.worker
+
+* [ngx.worker.exiting](https://github.com/openresty/lua-nginx-module#ngxworkerexiting)
+* [ngx.worker.pid](https://github.com/openresty/lua-nginx-module#ngxworkerpid)
 
 [Back to TOC](#table-of-contents)
 
