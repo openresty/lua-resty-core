@@ -69,7 +69,12 @@ if not pcall(ffi.typeof, "ngx_str_t") then
             size_t                 len;
             const unsigned char   *data;
         } ngx_str_t;
+    ]]
+end
 
+
+if not pcall(ffi.typeof, "ngx_http_request_t") then
+    ffi.cdef[[
         struct ngx_http_request_s;
         typedef struct ngx_http_request_s  ngx_http_request_t;
     ]]
