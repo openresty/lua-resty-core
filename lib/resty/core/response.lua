@@ -23,14 +23,14 @@ local ngx = ngx
 
 
 local errmsg = base.get_errmsg_ptr()
-local ngx_str_type = ffi.typeof("ngx_str_t *")
-local ngx_str_size = ffi.sizeof("ngx_str_t")
+local ffi_str_type = ffi.typeof("ngx_http_lua_ffi_str_t*")
+local ffi_str_size = ffi.sizeof("ngx_http_lua_ffi_str_t")
 
 
 ffi.cdef[[
     int ngx_http_lua_ffi_set_resp_header(ngx_http_request_t *r,
         const char *key_data, size_t key_len, int is_nil,
-        const char *sval, size_t sval_len, ngx_str_t *mvals,
+        const char *sval, size_t sval_len, ngx_http_lua_ffi_str_t *mvals,
         size_t mvals_len, char **errmsg);
 ]]
 
@@ -54,8 +54,8 @@ local function set_resp_header(tb, key, value)
 
         if type(value) == "table" then
             mvals_len = #value
-            buf = get_string_buf(ngx_str_size * mvals_len)
-            mvals = ffi_cast(ngx_str_type, buf)
+            buf = get_string_buf(ffi_str_size * mvals_len)
+            mvals = ffi_cast(ffi_str_type, buf)
             for i = 1, mvals_len do
                 local s = value[i]
                 if type(s) ~= "string" then
