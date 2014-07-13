@@ -64,7 +64,7 @@ qr/\[TRACE   \d+ content_by_lua:4 loop\]/
 
 
 
-=== TEST 1: ngx.worker.pid
+=== TEST 2: ngx.worker.pid
 --- http_config eval: $::HttpConfig
 --- config
     location = /t {
