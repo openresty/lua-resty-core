@@ -9,7 +9,7 @@ use Cwd qw(cwd);
 
 repeat_each(2);
 
-plan tests => repeat_each() * (blocks() * 5);
+plan tests => repeat_each() * (blocks() * 5 + 5);
 
 my $pwd = cwd();
 
@@ -117,4 +117,116 @@ qr/\[TRACE   \d+ content_by_lua:2 loop\]/
 --- no_error_log
 [error]
  -- NYI:
+
+
+
+=== TEST 4: read from ngx.header.HEADER (single value)
+--- http_config eval: $::HttpConfig
+--- config
+    location = /t {
+        set $foo hello;
+        content_by_lua '
+            local v
+            for i = 1, 100 do
+                ngx.header["Foo"] = i
+                v = ngx.header["Foo"]
+            end
+            ngx.say("Foo: ", v)
+        ';
+    }
+--- request
+GET /t
+--- response_body
+Foo: 100
+
+--- error_log eval
+qr/\[TRACE   \d+ content_by_lua:3 loop\]/
+--- no_error_log
+[error]
+ -- NYI:
+stitch
+
+
+
+=== TEST 5: read from ngx.header.HEADER (not found)
+--- http_config eval: $::HttpConfig
+--- config
+    location = /t {
+        set $foo hello;
+        content_by_lua '
+            local v
+            for i = 1, 100 do
+                v = ngx.header["Foo"]
+            end
+            ngx.say("Foo: ", v)
+        ';
+    }
+--- request
+GET /t
+--- response_body
+Foo: nil
+
+--- error_log eval
+qr/\[TRACE   \d+ content_by_lua:3 loop\]/
+--- no_error_log
+[error]
+ -- NYI:
+stitch
+
+
+
+=== TEST 6: read from ngx.header.HEADER (multi-value)
+--- http_config eval: $::HttpConfig
+--- config
+    location = /t {
+        set $foo hello;
+        content_by_lua '
+            ngx.header["Foo"] = {"foo", "bar"}
+            local v
+            for i = 1, 100 do
+                v = ngx.header["Foo"]
+            end
+            ngx.say("Foo: ", table.concat(v, ", "))
+        ';
+    }
+--- request
+GET /t
+--- response_body
+Foo: foo, bar
+
+--- error_log eval
+qr/\[TRACE   \d+ content_by_lua:4 loop\]/
+--- no_error_log
+[error]
+ -- NYI:
+stitch
+
+
+
+=== TEST 7: set multi values to cache-control and override it with multiple values
+--- http_config eval: $::HttpConfig
+--- config
+    location /lua {
+        content_by_lua '
+            ngx.header.cache_control = { "private", "no-store" }
+            ngx.header.cache_control = { "no-cache", "blah", "foo" }
+            local v
+            for i = 1, 400 do
+                v = ngx.header.cache_control
+            end
+            ngx.say("Cache-Control: ", table.concat(v, ", "))
+        ';
+    }
+--- request
+    GET /lua
+--- response_headers
+Cache-Control: no-cache, blah, foo
+--- response_body_like chop
+^Cache-Control: no-cache[;,] blah[;,] foo$
+--- error_log eval
+qr/\[TRACE   \d+ content_by_lua:5 (?:loop|-> \d+)\]/
+--- no_error_log
+[error]
+ -- NYI:
+stitch
 

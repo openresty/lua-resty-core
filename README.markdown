@@ -160,7 +160,7 @@ API Implemented
 
 ## resty.core.response
 
-* [ngx.header.HEADER](https://github.com/chaoslawful/lua-nginx-module#ngxheaderheader) (write part)
+* [ngx.header.HEADER](https://github.com/chaoslawful/lua-nginx-module#ngxheaderheader)
 
 [Back to TOC](#table-of-contents)
 
