@@ -64,7 +64,7 @@ GET /t
 --- response_body
 bar: bar
 baz: baz
-connection: Close
+connection: close
 foo: foo
 host: localhost
 --- more_headers
@@ -105,7 +105,7 @@ GET /t
 --- response_body
 Bar: bar
 Baz: baz
-Connection: Close
+Connection: close
 Foo: foo
 Host: localhost
 --- more_headers
@@ -144,7 +144,7 @@ qr/\[TRACE   \d+ .*? -> 1\]/
 --- request
 GET /t
 --- response_body
-Connection: Close
+Connection: close
 Host: localhost
 --- more_headers
 Foo: foo
@@ -186,7 +186,7 @@ GET /t
 --- response_body
 foo_BAR: foo
 baz: baz
-connection: Close
+connection: close
 foo-bar: foo
 host: localhost
 --- more_headers
