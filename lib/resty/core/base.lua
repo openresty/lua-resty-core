@@ -94,7 +94,7 @@ end
 local c_buf_type = ffi.typeof("char[?]")
 
 
-local _M = new_tab(0, 15)
+local _M = new_tab(0, 16)
 
 
 _M.version = "0.0.9"
@@ -179,6 +179,7 @@ _M.FFI_OK = 0
 _M.FFI_NO_REQ_CTX = -100
 _M.FFI_BAD_CONTEXT = -101
 _M.FFI_ERROR = -1
+_M.FFI_BUSY = -3
 _M.FFI_DONE = -4
 _M.FFI_DECLINED = -5
 
