@@ -26,6 +26,7 @@ Table of Contents
     * [resty.core.time](#restycoretime)
     * [resty.core.worker](#restycoreworker)
 * [Caveat](#caveat)
+* [TODO](#todo)
 * [Author](#author)
 * [Copyright and License](#copyright-and-license)
 * [See Also](#see-also)
@@ -198,9 +199,11 @@ speedup when you get a good part of your user Lua code JIT compiled.
 TODO
 ====
 
-* Re-implement ngx_lua's cosocket API with FFI.
-* Re-implement ngx_lua's `ngx.get_phase` API function with FFI.
-* Re-implement ngx_lua's `ngx.eof` and `ngx.flush` API functions with FFI.
+* Re-implement `ngx_lua`'s cosocket API with FFI.
+* Re-implement `ngx_lua`'s `ngx.get_phase` API function with FFI.
+* Re-implement `ngx_lua`'s `ngx.eof` and `ngx.flush` API functions with FFI.
+
+[Back to TOC](#table-of-contents)
 
 Author
 ======
