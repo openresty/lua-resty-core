@@ -54,7 +54,7 @@ GET /base64
 --- response_body
 aGVsbG8=
 --- error_log eval
-qr/\[TRACE   \d+ content_by_lua:3 loop\]/
+qr/\[TRACE   \d+ content_by_lua\(nginx\.conf:\d+\):3 loop\]/
 --- no_error_log
 [error]
  -- NYI:
@@ -77,7 +77,7 @@ qr/\[TRACE   \d+ content_by_lua:3 loop\]/
 GET /base64
 --- response_body eval: "\n"
 --- error_log eval
-qr/\[TRACE   \d+ content_by_lua:3 loop\]/
+qr/\[TRACE   \d+ content_by_lua\(nginx\.conf:\d+\):3 loop\]/
 --- no_error_log
 [error]
  -- NYI:
@@ -101,7 +101,7 @@ GET /base64
 --- response_body
 My4xNA==
 --- error_log eval
-qr/\[TRACE   \d+ content_by_lua:3 loop\]/
+qr/\[TRACE   \d+ content_by_lua\(nginx\.conf:\d+\):3 loop\]/
 --- no_error_log
 [error]
  -- NYI:
@@ -125,7 +125,7 @@ GET /base64
 --- response_body
 dHJ1ZQ==
 --- error_log eval
-qr/\[TRACE   \d+ content_by_lua:3 loop\]/
+qr/\[TRACE   \d+ content_by_lua\(nginx\.conf:\d+\):3 loop\]/
 --- no_error_log
 [error]
  -- NYI:
@@ -149,7 +149,7 @@ GET /base64
 --- response_body
 4100
 --- error_log eval
-qr/\[TRACE   \d+ content_by_lua:3 loop\]/
+qr/\[TRACE   \d+ content_by_lua\(nginx\.conf:\d+\):3 loop\]/
 --- no_error_log
 [error]
  -- NYI:
@@ -173,7 +173,7 @@ GET /base64
 --- response_body
 4096
 --- error_log eval
-qr/\[TRACE   \d+ content_by_lua:3 loop\]/
+qr/\[TRACE   \d+ content_by_lua\(nginx\.conf:\d+\):3 loop\]/
 --- no_error_log
 [error]
  -- NYI:

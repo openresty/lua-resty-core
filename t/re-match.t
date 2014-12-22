@@ -74,7 +74,7 @@ GET /re
 matched: a
 $1: nil
 --- error_log eval
-qr/\[TRACE   \d+ content_by_lua:4 loop\]/
+qr/\[TRACE   \d+ content_by_lua\(nginx\.conf:\d+\):4 loop\]/
 --- no_error_log
 [error]
 bad argument type
@@ -111,7 +111,7 @@ GET /re
 matched: a
 $1: nil
 --- error_log eval
-qr/\[TRACE   \d+ content_by_lua:4 loop\]/
+qr/\[TRACE   \d+ content_by_lua\(nginx\.conf:\d+\):4 loop\]/
 --- no_error_log
 [error]
 NYI
@@ -147,7 +147,7 @@ GET /re
 --- response_body
 no match
 --- error_log eval
-qr/\[TRACE   \d+ content_by_lua:4 loop\]/
+qr/\[TRACE   \d+ content_by_lua\(nginx\.conf:\d+\):4 loop\]/
 --- no_error_log
 [error]
 
@@ -182,7 +182,7 @@ GET /re
 --- response_body
 no match
 --- error_log eval
-qr/\[TRACE   \d+ content_by_lua:4 loop\]/
+qr/\[TRACE   \d+ content_by_lua\(nginx\.conf:\d+\):4 loop\]/
 --- no_error_log
 [error]
 bad argument type

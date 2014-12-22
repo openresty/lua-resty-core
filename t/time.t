@@ -68,7 +68,7 @@ true
 < 0.11: true
 
 --- error_log eval
-qr/\[TRACE   \d+ content_by_lua:3 loop\]/
+qr/\[TRACE   \d+ content_by_lua\(nginx\.conf:\d+\):3 loop\]/
 --- no_error_log
 [error]
 bad argument type
@@ -98,7 +98,7 @@ true
 true
 
 --- error_log eval
-qr/\[TRACE   \d+ content_by_lua:3 loop\]/
+qr/\[TRACE   \d+ content_by_lua\(nginx\.conf:\d+\):3 loop\]/
 --- no_error_log
 [error]
 bad argument type

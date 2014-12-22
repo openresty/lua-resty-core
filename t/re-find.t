@@ -74,7 +74,7 @@ from: 1
 to: 1
 matched: a
 --- error_log eval
-qr/\[TRACE   \d+ content_by_lua:5 loop\]/
+qr/\[TRACE   \d+ content_by_lua\(nginx\.conf:\d+\):5 loop\]/
 --- no_error_log
 [error]
 bad argument type
@@ -113,7 +113,7 @@ from: 1
 to: 1
 matched: a
 --- error_log eval
-qr/\[TRACE   \d+ content_by_lua:5 loop\]/
+qr/\[TRACE   \d+ content_by_lua\(nginx\.conf:\d+\):5 loop\]/
 --- no_error_log
 [error]
 NYI
@@ -150,7 +150,7 @@ GET /re
 --- response_body
 no match
 --- error_log eval
-qr/\[TRACE   \d+ content_by_lua:5 loop\]/
+qr/\[TRACE   \d+ content_by_lua\(nginx\.conf:\d+\):5 loop\]/
 --- no_error_log
 [error]
 NYI
@@ -188,7 +188,7 @@ not matched!
 [error]
 NYI
 --- error_log eval
-qr/\[TRACE   \d+ content_by_lua:4 loop\]/
+qr/\[TRACE   \d+ content_by_lua\(nginx\.conf:\d+\):4 loop\]/
 
 
 
@@ -223,7 +223,7 @@ not matched!
 [error]
 NYI
 --- error_log eval
-qr/\[TRACE   \d+ content_by_lua:4 loop\]/
+qr/\[TRACE   \d+ content_by_lua\(nginx\.conf:\d+\):4 loop\]/
 
 
 
@@ -259,5 +259,5 @@ matched: 234
 [error]
 NYI
 --- error_log eval
-qr/\[TRACE   \d+ content_by_lua:4 loop\]/
+qr/\[TRACE   \d+ content_by_lua\(nginx\.conf:\d+\):4 loop\]/
 

@@ -87,7 +87,7 @@ headers sent: false
  -- NYI:
  bad argument
 --- error_log eval
-qr/\[TRACE\s+\d+\s+content_by_lua:3 loop\]/
+qr/\[TRACE\s+\d+\s+content_by_lua\(nginx\.conf:\d+\):3 loop\]/
 
 
 
@@ -113,5 +113,5 @@ headers sent: true
  -- NYI:
  bad argument
 --- error_log eval
-qr/\[TRACE\s+\d+\s+content_by_lua:4 loop\]/
+qr/\[TRACE\s+\d+\s+content_by_lua\(nginx\.conf:\d+\):4 loop\]/
 

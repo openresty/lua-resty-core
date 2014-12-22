@@ -151,7 +151,7 @@ Foo: foo
 Bar: bar
 Baz: baz
 --- error_log eval
-qr/\[TRACE   \d+ content_by_lua:4 loop\]/
+qr/\[TRACE   \d+ content_by_lua\(nginx\.conf:\d+\):4 loop\]/
 --- no_error_log
 [error]
  -- NYI:
@@ -279,7 +279,7 @@ qr/\[TRACE   \d+ .*? -> \d+\]/
 GET /t?
 --- response_body
 --- error_log eval
-qr/\[TRACE   \d+ content_by_lua:4 loop\]/
+qr/\[TRACE   \d+ content_by_lua\(nginx\.conf:\d+\):4 loop\]/
 --- no_error_log
 [error]
  -- NYI:
@@ -312,7 +312,7 @@ true
 < 0.11: true
 
 --- error_log eval
-qr/\[TRACE   \d+ content_by_lua:3 loop\]/
+qr/\[TRACE   \d+ content_by_lua\(nginx\.conf:\d+\):3 loop\]/
 --- no_error_log
 [error]
 bad argument type
@@ -339,7 +339,7 @@ GET /t
 method: GET
 
 --- error_log eval
-qr/\[TRACE   \d+ content_by_lua:3 loop\]/
+qr/\[TRACE   \d+ content_by_lua\(nginx\.conf:\d+\):3 loop\]/
 --- no_error_log
 [error]
 bad argument type
@@ -366,7 +366,7 @@ OPTIONS /t
 method: OPTIONS
 
 --- error_log eval
-qr/\[TRACE   \d+ content_by_lua:3 loop\]/
+qr/\[TRACE   \d+ content_by_lua\(nginx\.conf:\d+\):3 loop\]/
 --- no_error_log
 [error]
 bad argument type
@@ -395,7 +395,7 @@ hello
 method: POST
 
 --- error_log eval
-qr/\[TRACE   \d+ content_by_lua:3 loop\]/
+qr/\[TRACE   \d+ content_by_lua\(nginx\.conf:\d+\):3 loop\]/
 --- no_error_log
 [error]
 bad argument type
@@ -424,7 +424,7 @@ hello
 method: BLAH
 
 --- error_log eval
-qr/\[TRACE   \d+ content_by_lua:3 loop\]/
+qr/\[TRACE   \d+ content_by_lua\(nginx\.conf:\d+\):3 loop\]/
 --- no_error_log
 [error]
 bad argument type
@@ -453,7 +453,7 @@ hello
 method: CONNECT
 
 --- error_log eval
-qr/\[TRACE   \d+ content_by_lua:3 loop\]/
+qr/\[TRACE   \d+ content_by_lua\(nginx\.conf:\d+\):3 loop\]/
 --- no_error_log
 [error]
 bad argument type
@@ -480,7 +480,7 @@ GET /t
 method: PUT
 
 --- error_log eval
-qr/\[TRACE   \d+ content_by_lua:3 loop\]/
+qr/\[TRACE   \d+ content_by_lua\(nginx\.conf:\d+\):3 loop\]/
 --- no_error_log
 [error]
 bad argument type
@@ -507,7 +507,7 @@ GET /t
 header foo: 500
 
 --- error_log eval
-qr/\[TRACE   \d+ content_by_lua:3 loop\]/
+qr/\[TRACE   \d+ content_by_lua\(nginx\.conf:\d+\):3 loop\]/
 --- no_error_log
 [error]
 bad argument type
@@ -534,7 +534,7 @@ GET /t
 header foo: nil
 
 --- error_log eval
-qr/\[TRACE   \d+ content_by_lua:3 loop\]/
+qr/\[TRACE   \d+ content_by_lua\(nginx\.conf:\d+\):3 loop\]/
 --- no_error_log
 [error]
 bad argument type
@@ -562,7 +562,7 @@ GET /t
 header foo: nil
 
 --- error_log eval
-qr/\[TRACE   \d+ content_by_lua:4 loop\]/
+qr/\[TRACE   \d+ content_by_lua\(nginx\.conf:\d+\):4 loop\]/
 --- no_error_log
 [error]
 bad argument type

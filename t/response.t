@@ -56,7 +56,7 @@ GET /t
 Foo: 100
 
 --- error_log eval
-qr/\[TRACE   \d+ content_by_lua:2 loop\]/
+qr/\[TRACE   \d+ content_by_lua\(nginx\.conf:\d+\):2 loop\]/
 --- no_error_log
 [error]
  -- NYI:
@@ -82,7 +82,7 @@ GET /t
 Foo: nil
 
 --- error_log eval
-qr/\[TRACE   \d+ content_by_lua:2 loop\]/
+qr/\[TRACE   \d+ content_by_lua\(nginx\.conf:\d+\):2 loop\]/
 --- wait: 0.2
 --- no_error_log
 [error]
@@ -113,7 +113,7 @@ GET /t
 Foo: 200, 201
 
 --- error_log eval
-qr/\[TRACE   \d+ content_by_lua:2 loop\]/
+qr/\[TRACE   \d+ content_by_lua\(nginx\.conf:\d+\):2 loop\]/
 --- no_error_log
 [error]
  -- NYI:
@@ -140,7 +140,7 @@ GET /t
 Foo: 100
 
 --- error_log eval
-qr/\[TRACE   \d+ content_by_lua:3 loop\]/
+qr/\[TRACE   \d+ content_by_lua\(nginx\.conf:\d+\):3 loop\]/
 --- no_error_log
 [error]
  -- NYI:
@@ -167,7 +167,7 @@ GET /t
 Foo: nil
 
 --- error_log eval
-qr/\[TRACE   \d+ content_by_lua:3 loop\]/
+qr/\[TRACE   \d+ content_by_lua\(nginx\.conf:\d+\):3 loop\]/
 --- no_error_log
 [error]
  -- NYI:
@@ -195,7 +195,7 @@ GET /t
 Foo: foo, bar
 
 --- error_log eval
-qr/\[TRACE   \d+ content_by_lua:4 loop\]/
+qr/\[TRACE   \d+ content_by_lua\(nginx\.conf:\d+\):4 loop\]/
 --- no_error_log
 [error]
  -- NYI:
@@ -224,7 +224,7 @@ Cache-Control: no-cache, blah, foo
 --- response_body_like chop
 ^Cache-Control: no-cache[;,] blah[;,] foo$
 --- error_log eval
-qr/\[TRACE   \d+ content_by_lua:5 (?:loop|-> \d+)\]/
+qr/\[TRACE   \d+ content_by_lua\(nginx\.conf:\d+\):5 (?:loop|-> \d+)\]/
 --- no_error_log
 [error]
  -- NYI:

@@ -57,7 +57,7 @@ GET /t
 --- response_body
 value: hello
 --- error_log eval
-qr/\[TRACE   \d+ content_by_lua:4 loop\]/
+qr/\[TRACE   \d+ content_by_lua\(nginx\.conf:\d+\):4 loop\]/
 --- no_error_log
 [error]
  -- NYI: (?!return to lower frame)
@@ -83,7 +83,7 @@ GET /t
 --- response_body
 value: hello
 --- error_log eval
-qr/\[TRACE   \d+ content_by_lua:4 loop\]/
+qr/\[TRACE   \d+ content_by_lua\(nginx\.conf:\d+\):4 loop\]/
 --- no_error_log
 [error]
  -- NYI: (?!return to lower frame)
@@ -109,7 +109,7 @@ GET /t
 --- response_body
 value: nil
 --- error_log eval
-qr/\[TRACE   \d+ content_by_lua:4 loop\]/
+qr/\[TRACE   \d+ content_by_lua\(nginx\.conf:\d+\):4 loop\]/
 --- no_error_log
 [error]
  -- NYI:
@@ -135,7 +135,7 @@ GET /t
 --- response_body
 value: /t
 --- error_log eval
-qr/\[TRACE   \d+ content_by_lua:4 loop\]/
+qr/\[TRACE   \d+ content_by_lua\(nginx\.conf:\d+\):4 loop\]/
 --- no_error_log
 [error]
  -- NYI: (?!return to lower frame)
@@ -161,7 +161,7 @@ GET /t
 --- response_body
 value: hello
 --- error_log eval
-qr/\[TRACE   \d+ content_by_lua:4 loop\]/
+qr/\[TRACE   \d+ content_by_lua\(nginx\.conf:\d+\):4 loop\]/
 --- no_error_log
 [error]
  -- NYI:
@@ -186,7 +186,7 @@ GET /t
 --- response_body
 value: nil
 --- error_log eval
-qr/\[TRACE   \d+ content_by_lua:3 loop\]/
+qr/\[TRACE   \d+ content_by_lua\(nginx\.conf:\d+\):3 loop\]/
 --- no_error_log
 [error]
  -- NYI:
@@ -211,7 +211,7 @@ GET /t
 --- response_body
 value: 100
 --- error_log eval
-qr/\[TRACE   \d+ content_by_lua:3 loop\]/
+qr/\[TRACE   \d+ content_by_lua\(nginx\.conf:\d+\):3 loop\]/
 --- no_error_log
 [error]
  -- NYI:
