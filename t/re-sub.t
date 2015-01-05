@@ -9,7 +9,7 @@ use Cwd qw(cwd);
 
 repeat_each(2);
 
-plan tests => repeat_each() * (blocks() * 4 + 8);
+plan tests => repeat_each() * (blocks() * 4 + 9);
 
 my $pwd = cwd();
 
@@ -272,6 +272,53 @@ GET /t
             INNER_REPLACED
             INNER_REPLACED
 
+--- no_error_log
+[error]
+bad argument type
+NYI
+
+
+
+=== TEST 8: ngx.re.gsub: recursive calling (github openresty/lua-nginx-module#445)
+--- http_config eval: $::HttpConfig
+--- config
+
+location = /t {
+    content_by_lua '
+        function test()
+            local data = [[
+                OUTER {FIRST}
+]]
+
+            local p1 = "(OUTER)(.+)"
+            local p2 = "{([A-Z]+)}"
+
+            ngx.print(data)
+
+            local res =  ngx.re.gsub(data, p1, function(m)
+                -- ngx.say("pre: m[1]: [", m[1], "]")
+                -- ngx.say("pre: m[2]: [", m[2], "]")
+
+                local res = ngx.re.gsub(m[2], p2, function(_)
+                    return "REPLACED"
+                end, "")
+
+                -- ngx.say("post: m[1]: [", m[1], "]")
+                -- ngx.say("post m[2]: [", m[2], "]")
+                return m[1] .. res
+            end, "")
+
+            ngx.print(res)
+        end
+
+        test()
+    ';
+}
+--- request
+GET /t
+--- response_body
+                OUTER {FIRST}
+                OUTER REPLACED
 --- no_error_log
 [error]
 bad argument type

@@ -72,7 +72,6 @@ local regex_sub_str_cache = new_tab(0, 4)
 local max_regex_cache_size
 local regex_cache_size = 0
 local script_engine
-local tmp_captures = new_tab(4, 4)
 
 
 ffi.cdef[[
@@ -636,7 +635,7 @@ local function re_sub_func_helper(subj, regex, replace, opts, global)
         count = count + 1
         local prefix_len = compiled.captures[0] - cp_pos
 
-        local res = collect_captures(compiled, rc, subj, flags, tmp_captures)
+        local res = collect_captures(compiled, rc, subj, flags)
 
         local bit = replace(res)
         local bit_len = #bit
