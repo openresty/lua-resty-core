@@ -73,9 +73,11 @@ Bar: bar
 Baz: baz
 --- error_log eval
 qr/\[TRACE   \d+ .*? -> 1\]/
---- no_error_log
-[error]
- -- NYI:
+--- no_error_log eval
+[
+"[error]",
+qr/ -- NYI: (?!return to lower frame)/,
+]
 
 
 
