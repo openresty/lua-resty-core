@@ -290,6 +290,7 @@ end
 local function re_match_compile(regex, opts)
     local flags = 0
     local pcre_opts = 0
+    local complied_by_opts
 
     if opts then
         flags, pcre_opts = parse_regex_opts(opts)
@@ -312,8 +313,11 @@ local function re_match_compile(regex, opts)
     end
 
     if compile_once then
-        key = regex .. '\0' .. opts
-        compiled = lrucache_get(regex_match_cache, key)
+        local res = lrucache_get(regex_match_cache, regex)
+        if res ~= nil then
+            complied_by_opts = res
+            compiled = complied_by_opts[opts]
+        end
     end
 
     -- compile the regex
@@ -335,8 +339,12 @@ local function re_match_compile(regex, opts)
         -- print("ncaptures: ", compiled.ncaptures)
 
         if compile_once then
+            if not complied_by_opts then
+                complied_by_opts = new_tab(0, 1)
+            end
+            complied_by_opts[opts] = compiled
             -- print("inserting compiled regex into cache")
-            lrucache_set(regex_match_cache, key, compiled)
+            lrucache_set(regex_match_cache, regex, complied_by_opts)
         end
     end
 
