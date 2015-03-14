@@ -21,7 +21,8 @@ local tonumber = tonumber
 
 ffi.cdef[[
     size_t ngx_http_lua_ffi_encode_base64(const unsigned char *src,
-                                          size_t len, unsigned char *dst);
+                                          size_t len, unsigned char *dst,
+                                          int no_padding);
 
     int ngx_http_lua_ffi_decode_base64(const unsigned char *src,
                                        size_t len, unsigned char *dst,
@@ -29,12 +30,12 @@ ffi.cdef[[
 ]]
 
 
-local function base64_encoded_length(len)
-    return floor((len + 2) / 3) * 4
+local function base64_encoded_length(len, no_padding)
+    return no_padding and floor((len + 2) / 3) * 4 or
+           floor((len * 8 + 5) / 6)
 end
 
-
-ngx.encode_base64 = function (s)
+ngx.encode_base64 = function (s, no_padding)
     if type(s) ~= 'string' then
         if not s then
             s = ''
@@ -42,12 +43,25 @@ ngx.encode_base64 = function (s)
             s = tostring(s)
         end
     end
+
     local slen = #s
-    local dlen = base64_encoded_length(slen)
-    -- print("dlen: ", tonumber(dlen))
-    local dst = get_string_buf(dlen)
-    dlen = C.ngx_http_lua_ffi_encode_base64(s, slen, dst)
-    return ffi_string(dst, dlen)
+    if no_padding then
+        if no_padding ~= true then
+            return error("boolean argument only")
+        end
+
+        local dlen = base64_encoded_length(slen, true)
+        -- print("dlen: ", tonumber(dlen))
+        local dst = get_string_buf(dlen)
+        local dlen = C.ngx_http_lua_ffi_encode_base64(s, slen, dst, 1)
+        return ffi_string(dst, dlen)
+    else
+        local dlen = base64_encoded_length(slen, false)
+        -- print("dlen: ", tonumber(dlen))
+        local dst = get_string_buf(dlen)
+        local dlen = C.ngx_http_lua_ffi_encode_base64(s, slen, dst, 0)
+        return ffi_string(dst, dlen)
+    end
 end
 
 
