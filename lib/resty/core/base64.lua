@@ -45,23 +45,24 @@ ngx.encode_base64 = function (s, no_padding)
     end
 
     local slen = #s
+    local no_padding_bool = false;
+    local no_padding_int = 0;
+
     if no_padding then
         if no_padding ~= true then
             return error("boolean argument only")
         end
 
-        local dlen = base64_encoded_length(slen, true)
-        local dst = get_string_buf(dlen)
-        local r_dlen = C.ngx_http_lua_ffi_encode_base64(s, slen, dst, 1)
-        -- if dlen ~= r_dlen then ngx.say ("discrepancy in len") end
-        return ffi_string(dst, r_dlen)
-    else
-        local dlen = base64_encoded_length(slen, false)
-        local dst = get_string_buf(dlen)
-        local r_dlen = C.ngx_http_lua_ffi_encode_base64(s, slen, dst, 0)
-        -- if dlen ~= r_dlen then ngx.say ("discrepancy in len") end
-        return ffi_string(dst, r_dlen)
+        no_padding_bool = true
+        no_padding_int  = 1;
     end
+
+    local dlen = base64_encoded_length(slen, no_padding_bool)
+    local dst = get_string_buf(dlen)
+    local r_dlen = C.ngx_http_lua_ffi_encode_base64(s, slen, dst,
+        no_padding_int)
+    --if dlen ~= r_dlen then ngx.say ("discrepancy in len") end
+    return ffi_string(dst, r_dlen)
 end
 
 

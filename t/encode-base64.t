@@ -180,7 +180,7 @@ qr/\[TRACE   \d+ content_by_lua\(nginx\.conf:\d+\):3 loop\]/
 
 
 
-=== TEST 7: set base64 (number) with explicit padding parameter
+=== TEST 7: set base64 (number) without padding (explicitly specified)
 --- http_config eval: $::HttpConfig
 --- config
     location = /base64 {
@@ -204,7 +204,7 @@ qr/\[TRACE   \d+ content_by_lua\(nginx\.conf:\d+\):3 loop\]/
 
 
 
-=== TEST 8: set base64 (number) without padding (explictly specified)
+=== TEST 8: set base64 (number) with padding (explictly specified)
 --- http_config eval: $::HttpConfig
 --- config
     location = /base64 {
