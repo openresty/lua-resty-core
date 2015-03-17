@@ -31,8 +31,8 @@ ffi.cdef[[
 
 
 local function base64_encoded_length(len, no_padding)
-    return no_padding and floor((len + 2) / 3) * 4 or
-           floor((len * 8 + 5) / 6)
+    return no_padding and floor((len * 8 + 5) / 6) or
+           floor((len + 2) / 3) * 4
 end
 
 ngx.encode_base64 = function (s, no_padding)
@@ -51,16 +51,16 @@ ngx.encode_base64 = function (s, no_padding)
         end
 
         local dlen = base64_encoded_length(slen, true)
-        -- print("dlen: ", tonumber(dlen))
         local dst = get_string_buf(dlen)
-        local dlen = C.ngx_http_lua_ffi_encode_base64(s, slen, dst, 1)
-        return ffi_string(dst, dlen)
+        local r_dlen = C.ngx_http_lua_ffi_encode_base64(s, slen, dst, 1)
+        -- if dlen ~= r_dlen then ngx.say ("discrepancy in len") end
+        return ffi_string(dst, r_dlen)
     else
         local dlen = base64_encoded_length(slen, false)
-        -- print("dlen: ", tonumber(dlen))
         local dst = get_string_buf(dlen)
-        local dlen = C.ngx_http_lua_ffi_encode_base64(s, slen, dst, 0)
-        return ffi_string(dst, dlen)
+        local r_dlen = C.ngx_http_lua_ffi_encode_base64(s, slen, dst, 0)
+        -- if dlen ~= r_dlen then ngx.say ("discrepancy in len") end
+        return ffi_string(dst, r_dlen)
     end
 end
 
