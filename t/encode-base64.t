@@ -178,3 +178,51 @@ qr/\[TRACE   \d+ content_by_lua\(nginx\.conf:\d+\):3 loop\]/
 [error]
  -- NYI:
 
+
+
+=== TEST 7: set base64 (number) without padding (explicitly specified)
+--- http_config eval: $::HttpConfig
+--- config
+    location = /base64 {
+        content_by_lua '
+            local s
+            for i = 1, 200 do
+                s = ngx.encode_base64(3.14, true)
+            end
+            ngx.say(s)
+        ';
+    }
+--- request
+GET /base64
+--- response_body
+My4xNA
+--- error_log eval
+qr/\[TRACE   \d+ content_by_lua\(nginx\.conf:\d+\):3 loop\]/
+--- no_error_log
+[error]
+ -- NYI:
+
+
+
+=== TEST 8: set base64 (number) with padding (explictly specified)
+--- http_config eval: $::HttpConfig
+--- config
+    location = /base64 {
+        content_by_lua '
+            local s
+            for i = 1, 200 do
+                s = ngx.encode_base64(3.14, false)
+            end
+            ngx.say(s)
+        ';
+    }
+--- request
+GET /base64
+--- response_body
+My4xNA==
+--- error_log eval
+qr/\[TRACE   \d+ content_by_lua\(nginx\.conf:\d+\):3 loop\]/
+--- no_error_log
+[error]
+ -- NYI:
+

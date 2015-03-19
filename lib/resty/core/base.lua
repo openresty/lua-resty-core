@@ -17,9 +17,9 @@ local FREE_LIST_REF = 0
 
 if not ngx.config
    or not ngx.config.ngx_lua_version
-   or ngx.config.ngx_lua_version < 9011
+   or ngx.config.ngx_lua_version < 9016
 then
-    error("ngx_lua 0.9.11+ required")
+    error("ngx_lua 0.9.16+ required")
 end
 
 
