@@ -51,7 +51,7 @@ GET /t
 --- error_code: 403
 --- no_error_log eval
 ["[error]",
-" -- NYI: ",
+qr/ -- NYI: (?!FastFunc coroutine.yield)/,
 " bad argument"]
 
 
@@ -81,6 +81,6 @@ GET /t
 --- error_code: 403
 --- no_error_log eval
 ["[error]",
-" -- NYI: ",
+qr/ -- NYI: (?!FastFunc coroutine.yield)/,
 " bad argument"]
 
