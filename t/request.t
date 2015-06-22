@@ -198,7 +198,7 @@ Baz: baz
 qr/\[TRACE   \d+ .*? -> \d\]/
 --- no_error_log eval
 ["[error]",
-qr/ -- NYI: (?!return to lower frame at)/,
+qr/ -- NYI: (?!return to lower frame at)(?!C function 0x[0-9a-f]+ at content_by_lua\(nginx.conf:\d+\):15)/,
 ]
 
 
