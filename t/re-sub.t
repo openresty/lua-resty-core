@@ -134,10 +134,12 @@ GET /re
 --- response_body
 s: a[bc(c)]bd
 n: 1
---- no_error_log
-[error]
-bad argument type
-NYI
+--- no_error_log eval
+[
+"[error]",
+"bad argument type",
+qr/NYI (?!bytecode 51 at)/,
+]
 
 
 
