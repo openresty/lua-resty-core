@@ -71,7 +71,7 @@ Prerequisites
 =============
 
 * LuaJIT 2.1 (for now, it is the v2.1 git branch in the official luajit-2.0 git repository: http://luajit.org/download.html )
-* [ngx_lua](https://github.com/chaoslawful/lua-nginx-module) v0.9.16 or later.
+* [ngx_lua](https://github.com/chaoslawful/lua-nginx-module) v0.9.17 or later.
 * [lua-resty-lrucache](https://github.com/openresty/lua-resty-lrucache)
 
 [Back to TOC](#table-of-contents)

@@ -54,10 +54,22 @@ local str_value_buf = ffi_new("unsigned char *[1]")
 local errmsg = base.get_errmsg_ptr()
 
 
-local function shdict_store(zone, op, key, value, exptime, flags)
-    if not zone or type(zone) ~= "userdata" then
-        return error('bad "zone" argument')
+local function check_zone(zone)
+    if not zone or type(zone) ~= "table" then
+        return error("bad \"zone\" argument")
     end
+
+    zone = zone[1]
+    if type(zone) ~= "userdata" then
+        return error("bad \"zone\" argument")
+    end
+
+    return zone
+end
+
+
+local function shdict_store(zone, op, key, value, exptime, flags)
+    zone = check_zone(zone)
 
     if not exptime then
         exptime = 0
@@ -159,9 +171,7 @@ end
 
 
 local function shdict_get(zone, key)
-    if not zone or type(zone) ~= "userdata" then
-        return error('bad "zone" argument')
-    end
+    zone = check_zone(zone)
 
     if key == nil then
         return nil, "nil key"
@@ -232,9 +242,7 @@ end
 
 
 local function shdict_get_stale(zone, key)
-    if not zone or type(zone) ~= "userdata" then
-        return error("bad \"zone\" argument")
-    end
+    zone = check_zone(zone)
 
     if key == nil then
         return nil, "nil key"
@@ -304,9 +312,7 @@ end
 
 
 local function shdict_incr(zone, key, value)
-    if not zone or type(zone) ~= "userdata" then
-        return error("bad \"zone\" argument")
-    end
+    zone = check_zone(zone)
 
     if key == nil then
         return nil, "nil key"
@@ -340,9 +346,7 @@ end
 
 
 local function shdict_flush_all(zone)
-    if not zone or type(zone) ~= "userdata" then
-        return error("bad \"zone\" argument")
-    end
+    zone = check_zone(zone)
 
     C.ngx_http_lua_ffi_shdict_flush_all(zone)
 end
