@@ -59,7 +59,7 @@ Description
 ===========
 
 This pure Lua library reimplements part of the ngx_lua's
-[Nginx API for Lua](https://github.com/chaoslawful/lua-nginx-module#nginx-api-for-lua)
+[Nginx API for Lua](https://github.com/openresty/lua-nginx-module#nginx-api-for-lua)
 with LuaJIT FFI and installs the new FFI-based Lua API into the ngx.* and ndk.* namespaces
 used by the ngx_lua module.
 
@@ -71,7 +71,7 @@ Prerequisites
 =============
 
 * LuaJIT 2.1 (for now, it is the v2.1 git branch in the official luajit-2.0 git repository: http://luajit.org/download.html )
-* [ngx_lua](https://github.com/chaoslawful/lua-nginx-module) v0.9.17 or later.
+* [ngx_lua](https://github.com/openresty/lua-nginx-module) v0.9.17 or later.
 * [lua-resty-lrucache](https://github.com/openresty/lua-resty-lrucache)
 
 [Back to TOC](#table-of-contents)
@@ -83,72 +83,72 @@ API Implemented
 
 ## resty.core.hash
 
-* [ngx.md5](https://github.com/chaoslawful/lua-nginx-module#ngxmd5)
-* [ngx.md5_bin](https://github.com/chaoslawful/lua-nginx-module#ngxmd5_bin)
-* [ngx.sha1_bin](https://github.com/chaoslawful/lua-nginx-module#ngxsha1_bin)
+* [ngx.md5](https://github.com/openresty/lua-nginx-module#ngxmd5)
+* [ngx.md5_bin](https://github.com/openresty/lua-nginx-module#ngxmd5_bin)
+* [ngx.sha1_bin](https://github.com/openresty/lua-nginx-module#ngxsha1_bin)
 
 [Back to TOC](#table-of-contents)
 
 ## resty.core.base64
 
-* [ngx.encode_base64](https://github.com/chaoslawful/lua-nginx-module#ngxencode_base64)
-* [ngx.decode_base64](https://github.com/chaoslawful/lua-nginx-module#ngxdecode_base64)
+* [ngx.encode_base64](https://github.com/openresty/lua-nginx-module#ngxencode_base64)
+* [ngx.decode_base64](https://github.com/openresty/lua-nginx-module#ngxdecode_base64)
 
 [Back to TOC](#table-of-contents)
 
 ## resty.core.uri
 
-* [ngx.escape_uri](https://github.com/chaoslawful/lua-nginx-module#ngxescape_uri)
-* [ngx.unescape_uri](https://github.com/chaoslawful/lua-nginx-module#ngxunescape_uri)
+* [ngx.escape_uri](https://github.com/openresty/lua-nginx-module#ngxescape_uri)
+* [ngx.unescape_uri](https://github.com/openresty/lua-nginx-module#ngxunescape_uri)
 
 [Back to TOC](#table-of-contents)
 
 ## resty.core.regex
 
-* [ngx.re.match](https://github.com/chaoslawful/lua-nginx-module#ngxrematch)
-* [ngx.re.find](https://github.com/chaoslawful/lua-nginx-module#ngxrefind)
-* [ngx.re.sub](https://github.com/chaoslawful/lua-nginx-module#ngxresub)
-* [ngx.re.gsub](https://github.com/chaoslawful/lua-nginx-module#ngxregsub)
+* [ngx.re.match](https://github.com/openresty/lua-nginx-module#ngxrematch)
+* [ngx.re.find](https://github.com/openresty/lua-nginx-module#ngxrefind)
+* [ngx.re.sub](https://github.com/openresty/lua-nginx-module#ngxresub)
+* [ngx.re.gsub](https://github.com/openresty/lua-nginx-module#ngxregsub)
 
 [Back to TOC](#table-of-contents)
 
 ## resty.core.exit
 
-* [ngx.exit](https://github.com/chaoslawful/lua-nginx-module#ngxexit)
+* [ngx.exit](https://github.com/openresty/lua-nginx-module#ngxexit)
 
 [Back to TOC](#table-of-contents)
 
 ## resty.core.shdict
 
-* [ngx.shared.DICT.get](https://github.com/chaoslawful/lua-nginx-module#ngxshareddictget)
-* [ngx.shared.DICT.get_stale](https://github.com/chaoslawful/lua-nginx-module#ngxshareddictget_stale)
-* [ngx.shared.DICT.incr](https://github.com/chaoslawful/lua-nginx-module#ngxshareddictincr)
-* [ngx.shared.DICT.set](https://github.com/chaoslawful/lua-nginx-module#ngxshareddictset)
-* [ngx.shared.DICT.safe_set](https://github.com/chaoslawful/lua-nginx-module#ngxshareddictsafe_set)
-* [ngx.shared.DICT.add](https://github.com/chaoslawful/lua-nginx-module#ngxshareddictadd)
-* [ngx.shared.DICT.safe_add](https://github.com/chaoslawful/lua-nginx-module#ngxshareddictsafe_add)
-* [ngx.shared.DICT.replace](https://github.com/chaoslawful/lua-nginx-module#ngxshareddictreplace)
-* [ngx.shared.DICT.delete](https://github.com/chaoslawful/lua-nginx-module#ngxshareddictdelete)
-* [ngx.shared.DICT.flush_all](https://github.com/chaoslawful/lua-nginx-module#ngxshareddictflush_all)
+* [ngx.shared.DICT.get](https://github.com/openresty/lua-nginx-module#ngxshareddictget)
+* [ngx.shared.DICT.get_stale](https://github.com/openresty/lua-nginx-module#ngxshareddictget_stale)
+* [ngx.shared.DICT.incr](https://github.com/openresty/lua-nginx-module#ngxshareddictincr)
+* [ngx.shared.DICT.set](https://github.com/openresty/lua-nginx-module#ngxshareddictset)
+* [ngx.shared.DICT.safe_set](https://github.com/openresty/lua-nginx-module#ngxshareddictsafe_set)
+* [ngx.shared.DICT.add](https://github.com/openresty/lua-nginx-module#ngxshareddictadd)
+* [ngx.shared.DICT.safe_add](https://github.com/openresty/lua-nginx-module#ngxshareddictsafe_add)
+* [ngx.shared.DICT.replace](https://github.com/openresty/lua-nginx-module#ngxshareddictreplace)
+* [ngx.shared.DICT.delete](https://github.com/openresty/lua-nginx-module#ngxshareddictdelete)
+* [ngx.shared.DICT.flush_all](https://github.com/openresty/lua-nginx-module#ngxshareddictflush_all)
 
 [Back to TOC](#table-of-contents)
 
 ## resty.core.var
 
-* [ngx.var.VARIABLE](https://github.com/chaoslawful/lua-nginx-module#ngxvarvariable)
+* [ngx.var.VARIABLE](https://github.com/openresty/lua-nginx-module#ngxvarvariable)
 
 [Back to TOC](#table-of-contents)
 
 ## resty.core.ctx
 
-* [ngx.ctx](https://github.com/chaoslawful/lua-nginx-module#ngxctx)
+* [ngx.ctx](https://github.com/openresty/lua-nginx-module#ngxctx)
 
 [Back to TOC](#table-of-contents)
 
 ## resty.core.request
 
-* [ngx.req.get_headers](https://github.com/chaoslawful/lua-nginx-module#ngxreqget_headers)
-* [ngx.req.get_uri_args](https://github.com/chaoslawful/lua-nginx-module#ngxreqget_uri_args)
+* [ngx.req.get_headers](https://github.com/openresty/lua-nginx-module#ngxreqget_headers)
+* [ngx.req.get_uri_args](https://github.com/openresty/lua-nginx-module#ngxreqget_uri_args)
 * [ngx.req.start_time](https://github.com/openresty/lua-nginx-module#ngxreqstart_time)
 * [ngx.req.get_method](https://github.com/openresty/lua-nginx-module#ngxreqget_method)
 * [ngx.req.set_method](https://github.com/openresty/lua-nginx-module#ngxreqset_method)
@@ -159,15 +159,15 @@ API Implemented
 
 ## resty.core.response
 
-* [ngx.header.HEADER](https://github.com/chaoslawful/lua-nginx-module#ngxheaderheader)
+* [ngx.header.HEADER](https://github.com/openresty/lua-nginx-module#ngxheaderheader)
 
 [Back to TOC](#table-of-contents)
 
 ## resty.core.misc
 
-* [ngx.status](https://github.com/chaoslawful/lua-nginx-module#ngxstatus)
-* [ngx.is_subrequest](https://github.com/chaoslawful/lua-nginx-module#ngxis_subrequest)
-* [ngx.headers_sent](https://github.com/chaoslawful/lua-nginx-module#ngxheaders_sent)
+* [ngx.status](https://github.com/openresty/lua-nginx-module#ngxstatus)
+* [ngx.is_subrequest](https://github.com/openresty/lua-nginx-module#ngxis_subrequest)
+* [ngx.headers_sent](https://github.com/openresty/lua-nginx-module#ngxheaders_sent)
 
 [Back to TOC](#table-of-contents)
 
@@ -231,7 +231,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 
 See Also
 ========
-* the ngx_lua module: http://github.com/chaoslawful/lua-nginx-module#readme
+* the ngx_lua module: https://github.com/openresty/lua-nginx-module#readme
 * LuaJIT FFI: http://luajit.org/ext_ffi.html
 
 [Back to TOC](#table-of-contents)
