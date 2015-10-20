@@ -16,6 +16,7 @@ my $pwd = cwd();
 
 no_long_string();
 #no_diff();
+
 my $lua_default_lib = "/usr/local/openresty/lualib/?.lua";
 our $HttpConfig = <<_EOC_;
     lua_package_path "$pwd/lib/?.lua;$lua_default_lib;";

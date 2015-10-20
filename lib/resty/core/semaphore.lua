@@ -4,18 +4,14 @@ local base = require "resty.core.base"
 
 local ffi_new = ffi.new
 local ffi_str = ffi.string
+local ffi_gc = ffi.gc
 local C = ffi.C
 local type = type
 local getfenv = getfenv
 local get_string_buf = base.get_string_buf
 local get_size_ptr = base.get_size_ptr
-local error = error
-local tostring = tostring
-local getmetatable = getmetatable
 local setmetatable = setmetatable
 local ngx = ngx
-ngx.semaphore = {}
-local semaphore = ngx.semaphore
 local ERR_BUF_SIZE = 128
 
 if not pcall(ffi.typeof,"ngx_http_lua_semaphore_t") then
@@ -38,39 +34,32 @@ ffi.cdef[[
 ]]
 
 
-local mt
+local _M = {}
+
+ngx.semaphore = _M
 
 local errmsg = base.get_errmsg_ptr()
 
-local function new(n)
-    if ngx.worker.exiting() == 1 then
-        return nil,"exiting"
-    end
-
+function _M.new(n)
     local psem = ffi_new("ngx_http_lua_semaphore_t *[1]")
-    local ret = ffi.C.ngx_http_lua_ffi_sem_new(psem,n,errmsg)
+    local ret = C.ngx_http_lua_ffi_sem_new(psem, n, errmsg)
 
     if ret == ngx.ERROR then
-        return nil,ffi_str(errmsg[0])
+        return nil, ffi_str(errmsg[0])
     end
 
-    ffi.gc(psem[0],ffi.C.ngx_http_lua_ffi_sem_gc)
-    local sem = {sem = psem[0] }
-    setmetatable(sem,mt)
+    ffi_gc(psem[0], C.ngx_http_lua_ffi_sem_gc)
 
-    return sem
+    return setmetatable({ sem = psem[0] }, _M)
 end
 
-local function wait(sem,time)
+
+function _M.wait(sem, time)
     if sem == nil then
-        return nil,"param is nil"
+        return nil, "param is nil"
     end
 
-    if ngx.worker.exiting() == 1 then
-        return nil,"exiting"
-    end
-
-    time = time or 0
+    time = tonumber(time) or 0
 
     local cdata_sem  = sem.sem
     if time < 0 then
@@ -82,16 +71,19 @@ local function wait(sem,time)
     local errlen = get_size_ptr()
     errlen[0] = ERR_BUF_SIZE
 
-    local ret = ffi.C.ngx_http_lua_ffi_sem_wait(r,cdata_sem,time,err,errlen)
+    local ret = C.ngx_http_lua_ffi_sem_wait(r,cdata_sem,time,err,errlen)
 
     if ret == ngx.ERROR then
         return nil, ffi_str(err, errlen[0])
+
     elseif ret == ngx.OK then
         return true
+
     else
         if time == 0 then
             -- ret == ngx.DECLINE
-            return nil,"busy"
+            return nil, "busy"
+
         else
             --ret == ngx.AGAIN
             return coroutine._yield()
@@ -100,17 +92,13 @@ local function wait(sem,time)
 end
 
 
-local function post(sem)
-    if sem == nil then
-        return nil,"param is nil"
-    end
-
-    if ngx.worker.exiting() == 1 then
-        return nil,"exiting"
+function _M.post(sem)
+    if type(sem) ~= "table" or type(sem.sem) ~= "cdata" then
+        return nil, "semaphore not inited"
     end
 
     local cdata_sem = sem.sem
-    local ret = ffi.C.ngx_http_lua_ffi_sem_post(cdata_sem,1,errmsg)
+    local ret = C.ngx_http_lua_ffi_sem_post(cdata_sem, 1, errmsg)
 
     if ret == ngx.ERROR then
         return nil,ffi_str(errmsg[0])
@@ -119,18 +107,9 @@ local function post(sem)
     return true
 end
 
-mt = {
-    wait = wait,
-    post = post,
-    post_all = post_all,
-}
 
-semaphore.new = new
-for k,v in pairs(mt) do
-    semaphore[k] = v
-end
+_M.__index = _M
 
-mt.__index = mt
 
 return {
     version = base.version
