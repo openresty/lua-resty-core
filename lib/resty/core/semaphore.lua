@@ -23,10 +23,10 @@ end
 
 ffi.cdef[[
     int ngx_http_lua_ffi_sem_new(ngx_http_lua_semaphore_t **psem,
-                                 int n,char **errstr);
+                                 int n, char **errstr);
     int ngx_http_lua_ffi_sem_wait(ngx_http_request_t *r,
     	                          ngx_http_lua_semaphore_t *sem,
-                                  int time,char *errstr,
+                                  int time, char *errstr,
                                   size_t *errlen);
     int ngx_http_lua_ffi_sem_post(ngx_http_lua_semaphore_t *sem,
                                   int time, char **errstr);
@@ -71,7 +71,7 @@ function _M.wait(sem, time)
     local errlen = get_size_ptr()
     errlen[0] = ERR_BUF_SIZE
 
-    local ret = C.ngx_http_lua_ffi_sem_wait(r,cdata_sem,time,err,errlen)
+    local ret = C.ngx_http_lua_ffi_sem_wait(r, cdata_sem, time, err, errlen)
 
     if ret == ngx.ERROR then
         return nil, ffi_str(err, errlen[0])
