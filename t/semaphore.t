@@ -1032,7 +1032,7 @@ GET /test
 --- response_body
 test
 --- error_log
-ngx_http_lua_semphore_cleanup
+ngx_http_lua_semaphore_cleanup
 
 
 
@@ -1061,7 +1061,7 @@ GET /test
 --- response_body
 test
 --- error_log
-ngx_http_lua_semphore_cleanup
+ngx_http_lua_semaphore_cleanup
 
 
 
