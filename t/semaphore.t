@@ -17,13 +17,13 @@ my $pwd = cwd();
 no_long_string();
 #no_diff();
 
-my $lua_default_lib = "/usr/local/openresty/lualib/?.lua";
+#my $lua_default_lib = "/usr/local/openresty/lualib/?.lua";
 our $HttpConfig = <<_EOC_;
-    lua_package_path "$pwd/lib/?.lua;$lua_default_lib;";
+    lua_package_path "$pwd/lib/?.lua;";
 _EOC_
 
 our $HttpConfigInitByLua= <<_EOC_;
-    lua_package_path "$pwd/lib/?.lua;$lua_default_lib;";
+    lua_package_path "$pwd/lib/?.lua;";
     init_by_lua '
             require "resty.core.semaphore"
             local sem  = ngx.semaphore.new(0)
@@ -33,7 +33,7 @@ our $HttpConfigInitByLua= <<_EOC_;
 _EOC_
 
 our $HttpConfigIntWorkerBy = <<_EOC_;
-    lua_package_path "$pwd/lib/?.lua;$lua_default_lib;";
+    lua_package_path "$pwd/lib/?.lua;";
     init_worker_by_lua '
             require "resty.core.semaphore"
             local sem  = ngx.semaphore.new(0)
@@ -1281,118 +1281,6 @@ wait
 true
 2
 2
---- no_error_log
-[error]
-
-
-
-=== TEST 23: test semaphore in websocket
---- http_config eval: $::HttpConfig
---- config
-    location = /c {
-        content_by_lua '
-            local function push_data(data)
-             res = ngx.location.capture(
-                 "/push_data",
-                 { method = ngx.HTTP_POST, body = data }
-             )
-            end
-            local client = require "resty.websocket.client"
-            local wb, err = client:new()
-            local uri = "ws://127.0.0.1:" .. ngx.var.server_port .. "/s"
-            -- ngx.say("uri: ", uri)
-            local ok, err = wb:connect(uri)
-            if not ok then
-                ngx.say("failed to connect: " .. err)
-                return
-            end
-            local function thread_recv(wb)
-                while true do
-                    local data, typ, err = wb:recv_frame()
-                    if not data then
-                        ngx.say("failed to receive 1st frame: ", err)
-                        return
-                    end
-                    --ngx.say(data,typ,err)
-                    if typ == "close" then
-                        break
-                    else
-                        ngx.say(data)
-                    end
-                end
-            end
-            local co_recv = ngx.thread.spawn(thread_recv,wb)
-            local cos_push = {}
-            for i=1,4 do
-                cos_push[i] = ngx.thread.spawn(push_data,tostring("data:"..i))
-            end
-            cos_push[#cos_push+1] = ngx.thread.spawn(push_data,tostring("close"))
-            ngx.thread.wait(co_recv)
-            for i=1,#cos_push do
-                ngx.thread.wait(cos_push[i])
-            end
-        ';
-    }
-    location = /push_data {
-        content_by_lua '
-            ngx.req.read_body()
-            local body = ngx.req.get_body_data()
-            require "resty.core.semaphore"
-            if ngx.semaphore.test == nil then
-                ngx.semaphore.test = ngx.semaphore.new(0)
-            end
-            if ngx.semaphore.arr == nil then
-                ngx.semaphore.arr = {}
-                ngx.semaphore.arr_wi = 1
-                ngx.semaphore.arr_ri = 1
-            end
-            ngx.semaphore.arr[ngx.semaphore.arr_wi] = body
-            ngx.semaphore.arr_wi = ngx.semaphore.arr_wi + 1
-            ngx.semaphore.test:post()
-        ';
-    }
-    location = /s {
-        content_by_lua '
-            local server = require "resty.websocket.server"
-            local wb, err = server:new()
-            if not wb then
-                ngx.log(ngx.ERR, "failed to new websocket: ", err)
-                return ngx.exit(444)
-            end
-
-            require "resty.core.semaphore"
-            if ngx.semaphore.test == nil then
-                ngx.semaphore.test = ngx.semaphore.new(0)
-            end
-            local sem = ngx.semaphore.test
-            while true do
-                local ok,err = sem:wait(10)
-                if not ok then
-                    ngx.log(ngx.ERR,err)
-                end
-                local data = ngx.semaphore.arr[ngx.semaphore.arr_ri]
-                ngx.semaphore.arr_ri = ngx.semaphore.arr_ri + 1
-                if data == "close" then
-                    wb:send_close(1,"close")
-                    break
-                else
-                    local bytes, err = wb:send_text(data)
-                    if not bytes then
-                        ngx.log(ngx.ERR, "failed to send the 2nd text: ", err)
-                        return ngx.exit(444)
-                    end
-                end
-            end
-        ';
-    }
---- no_check_leak
---- request
-GET /c
---- response_body
-data:1
-data:2
-data:3
-data:4
 --- no_error_log
 [error]
 
