@@ -22,15 +22,15 @@ if not pcall(ffi.typeof,"ngx_http_lua_semaphore_t") then
 end
 
 ffi.cdef[[
-    int ngx_http_lua_ffi_sem_new(ngx_http_lua_semaphore_t **psem,
+    int ngx_http_lua_ffi_semaphore_new(ngx_http_lua_semaphore_t **psem,
                                  int n, char **errstr);
-    int ngx_http_lua_ffi_sem_wait(ngx_http_request_t *r,
+    int ngx_http_lua_ffi_semaphore_wait(ngx_http_request_t *r,
     	                          ngx_http_lua_semaphore_t *sem,
                                   int time, char *errstr,
                                   size_t *errlen);
-    int ngx_http_lua_ffi_sem_post(ngx_http_lua_semaphore_t *sem,
+    int ngx_http_lua_ffi_semaphore_post(ngx_http_lua_semaphore_t *sem,
                                   int time, char **errstr);
-    void ngx_http_lua_ffi_sem_gc(ngx_http_lua_semaphore_t *sem);
+    void ngx_http_lua_ffi_semaphore_gc(ngx_http_lua_semaphore_t *sem);
 ]]
 
 
@@ -42,13 +42,13 @@ local errmsg = base.get_errmsg_ptr()
 
 function _M.new(n)
     local psem = ffi_new("ngx_http_lua_semaphore_t *[1]")
-    local ret = C.ngx_http_lua_ffi_sem_new(psem, n, errmsg)
+    local ret = C.ngx_http_lua_ffi_semaphore_new(psem, n, errmsg)
 
     if ret == ngx.ERROR then
         return nil, ffi_str(errmsg[0])
     end
 
-    ffi_gc(psem[0], C.ngx_http_lua_ffi_sem_gc)
+    ffi_gc(psem[0], C.ngx_http_lua_ffi_semaphore_gc)
 
     return setmetatable({ sem = psem[0] }, _M)
 end
@@ -61,7 +61,7 @@ function _M.wait(sem, time)
 
     time = tonumber(time) or 0
 
-    local cdata_sem  = sem.sem
+    local cdata_sem = sem.sem
     if time < 0 then
         return nil, "time must not less than 0"
     end
@@ -71,7 +71,7 @@ function _M.wait(sem, time)
     local errlen = get_size_ptr()
     errlen[0] = ERR_BUF_SIZE
 
-    local ret = C.ngx_http_lua_ffi_sem_wait(r, cdata_sem, time, err, errlen)
+    local ret = C.ngx_http_lua_ffi_semaphore_wait(r, cdata_sem, time, err, errlen)
 
     if ret == ngx.ERROR then
         return nil, ffi_str(err, errlen[0])
@@ -98,7 +98,7 @@ function _M.post(sem)
     end
 
     local cdata_sem = sem.sem
-    local ret = C.ngx_http_lua_ffi_sem_post(cdata_sem, 1, errmsg)
+    local ret = C.ngx_http_lua_ffi_semaphore_post(cdata_sem, 1, errmsg)
 
     if ret == ngx.ERROR then
         return nil,ffi_str(errmsg[0])
@@ -111,6 +111,4 @@ end
 _M.__index = _M
 
 
-return {
-    version = base.version
-}
+return _M

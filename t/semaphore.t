@@ -25,20 +25,22 @@ _EOC_
 our $HttpConfigInitByLua= <<_EOC_;
     lua_package_path "$pwd/lib/?.lua;";
     init_by_lua '
-            require "resty.core.semaphore"
-            local sem  = ngx.semaphore.new(0)
-            local ok,err=sem:wait(1)
-            ngx.semaphore.err = err
+            require "resty.semaphore"
+            local g = _G
+            local sem = ngx.semaphore.new(0)
+            local ok, err=sem:wait(1)
+            g.err = err
     ';
 _EOC_
 
 our $HttpConfigIntWorkerBy = <<_EOC_;
     lua_package_path "$pwd/lib/?.lua;";
     init_worker_by_lua '
-            require "resty.core.semaphore"
-            local sem  = ngx.semaphore.new(0)
-            local ok,err=sem:wait(1)
-            ngx.semaphore.test = err
+            require "resty.semaphore"
+            local sem = ngx.semaphore.new(0)
+            local ok, err=sem:wait(1)
+            local g = _G
+            g.test = err
     ';
 
 _EOC_
@@ -47,7 +49,6 @@ run_tests();
 
 __DATA__
 
-
 === TEST 1: basic semaphore wait post
 --- http_config eval: $::HttpConfig
 --- config
@@ -55,8 +56,8 @@ __DATA__
         access_log off;
         content_by_lua '
         local res1, res2 = ngx.location.capture_multi{
-          { "/sub_sem_wait"},
-          { "/sub_sem_post"},
+          { "/sem_wait"},
+          { "/sem_post"},
         }
         ngx.say(res1.status)
         ngx.say(res1.body)
@@ -64,27 +65,20 @@ __DATA__
         ngx.say(res2.body)
         ';
     }
-     location /sub_sem_wait {
-        proxy_pass $scheme://127.0.0.1:$server_port/sem_wait;
-    }
-
-    location /sub_sem_post {
-        proxy_pass $scheme://127.0.0.1:$server_port/sem_post;
-    }
-
     location /sem_wait {
         content_by_lua '
-            require "resty.core.semaphore"
-            if not ngx.semaphore.test then
-                local sem,err = ngx.semaphore.new(0)
+            require "resty.semaphore"
+            local g = getmetatable(_G).__index
+            if not g.test then
+                local sem, err = ngx.semaphore.new(0)
                 if not sem then
                     ngx.say(err)
                     ngx.exit(500)
                 end
-                ngx.semaphore.test = sem
+                g.test = sem
             end
-            local sem  = ngx.semaphore.test
-            local ok,err = sem:wait(10)
+            local sem = g.test
+            local ok, err = sem:wait(10)
             if ok then
                 ngx.print("wait")
                 ngx.exit(200)
@@ -96,17 +90,18 @@ __DATA__
 
     location /sem_post {
         content_by_lua '
-            require "resty.core.semaphore"
-            if not ngx.semaphore.test then
-                local sem,err = ngx.semaphore.new(0)
+            require "resty.semaphore"
+            local g = getmetatable(_G).__index
+            if not g.test then
+                local sem, err = ngx.semaphore.new(0)
                 if not sem then
                     ngx.say(err)
                     ngx.exit(500)
                 end
-                ngx.semaphore.test = sem
+                g.test = sem
             end
-            local sem  = ngx.semaphore.test
-            local ok,err = sem:post()
+            local sem = g.test
+            local ok, err = sem:post()
             if ok then
                 ngx.print("post")
                 ngx.exit(200)
@@ -134,9 +129,9 @@ post
 --- config
     location /test {
         content_by_lua '
-            require "resty.core.semaphore"
-            local sem  = ngx.semaphore.new(0)
-            local ok,err=sem:wait(1)
+            require "resty.semaphore"
+            local sem = ngx.semaphore.new(0)
+            local ok, err = sem:wait(1)
             ngx.say(tostring(ok).." "..tostring(err))
         ';
     }
@@ -155,10 +150,10 @@ false timeout
 --- config
     location /test {
         body_filter_by_lua '
-            require "resty.core.semaphore"
+            require "resty.semaphore"
             local sem = ngx.semaphore.new(0)
-            local ok,err=sem:wait(1)
-            ngx.log(ngx.ERR,err)
+            local ok, err = sem:wait(1)
+            ngx.log(ngx.ERR, err)
         ';
         return 200;
     }
@@ -176,10 +171,10 @@ API disabled in the context of (unknown)
 --- config
     location /test {
         header_filter_by_lua '
-            require "resty.core.semaphore"
-            local sem  = ngx.semaphore.new(0)
-            local ok,err=sem:wait(1)
-            ngx.log(ngx.ERR,err)
+            require "resty.semaphore"
+            local sem = ngx.semaphore.new(0)
+            local ok, err = sem:wait(1)
+            ngx.log(ngx.ERR, err)
         ';
         return 200;
     }
@@ -193,13 +188,16 @@ GET /test
 --- error_log
 API disabled in the context of header_filter_by_lua*
 
+
+
 === TEST 5: basic semaphore wait not allow in init_worker_by_lua
 --- http_config eval: $::HttpConfigIntWorkerBy
 --- config
     location /test {
        content_by_lua '
-            require "resty.core.semaphore"
-            ngx.say(ngx.semaphore.test)
+            require "resty.semaphore"
+            local g = getmetatable(_G).__index
+            ngx.say(g.test)
        ';
     }
 --- no_check_leak
@@ -210,14 +208,16 @@ API disabled in the context of init_worker_by_lua*
 --- no_error_log
 [error]
 
+
+
 === TEST 6: basic semaphore wait not allow in set_by_lua
 --- http_config eval: $::HttpConfig
 --- config
     location /test {
         set_by_lua $res '
-            require "resty.core.semaphore"
-            local sem,err = ngx.semaphore.new(0)
-            local ok,err=sem:wait(1)
+            require "resty.semaphore"
+            local sem, err = ngx.semaphore.new(0)
+            local ok, err = sem:wait(1)
             return err
         ';
         echo $res;
@@ -237,10 +237,10 @@ API disabled in the context of set_by_lua*
 --- config
     location /test {
         log_by_lua '
-            require "resty.core.semaphore"
-            local sem  = ngx.semaphore.new(0)
-            local ok,err=sem:wait(1)
-            ngx.log(ngx.ERR,err)
+            require "resty.semaphore"
+            local sem = ngx.semaphore.new(0)
+            local ok, err = sem:wait(1)
+            ngx.log(ngx.ERR, err)
             return err
         ';
         echo "try magics";
@@ -260,7 +260,8 @@ API disabled in the context of log_by_lua*
 --- config
     location /test {
         content_by_lua '
-            ngx.say(ngx.semaphore.err)
+            local g = getmetatable(_G).__index
+            ngx.say(g.err)
         ';
     }
 --- no_check_leak
@@ -276,80 +277,43 @@ request is null
 === TEST 9: basic semaphore wait post in access_by_lua
 --- http_config eval: $::HttpConfig
 --- config
-    location = /test {
-        access_log off;
-        content_by_lua '
-        local res1, res2 = ngx.location.capture_multi{
-          { "/sub_sem_wait"},
-          { "/sub_sem_post"},
-        }
-        ngx.say(res1.status)
-        ngx.say(res1.body)
-        ngx.say(res2.status)
-        ngx.say(res2.body)
-        ';
-    }
-     location /sub_sem_wait {
-        proxy_pass $scheme://127.0.0.1:$server_port/sem_wait;
-    }
-
-    location /sub_sem_post {
-        proxy_pass $scheme://127.0.0.1:$server_port/sem_post;
-    }
-
-    location /sem_wait {
+     location /test {
         access_by_lua '
-            require "resty.core.semaphore"
-            if not ngx.semaphore.test then
-                local sem,err = ngx.semaphore.new(0)
+            require "resty.semaphore"
+            local g = getmetatable(_G).__index
+            if not g.test then
+                local sem, err = ngx.semaphore.new(0)
                 if not sem then
                     ngx.say(err)
                     ngx.exit(500)
                 end
-                ngx.semaphore.test = sem
+                g.test = sem
             end
-            local sem  = ngx.semaphore.test
-            local ok,err = sem:wait(1)
-            if ok then
-                ngx.print("wait")
-                ngx.exit(200)
-            else
-                ngx.print(err)
-                ngx.exit(200)
+            local sem = g.test
+            local ret = {}
+            local co1 = ngx.thread.spawn(
+                            function(sem,ret)
+                                ret.wait = sem:wait(10)
+                            end,
+                                sem,ret)
+            local co2 = ngx.thread.spawn(
+                function(sem,ret)
+                ret.post = sem:post()
+                end,
+                sem,ret)
+            ngx.thread.wait(co1)
+            ngx.thread.wait(co2)
+            if ret.post and ret.wait then
+                ngx.say("right")
             end
+            ngx.exit(200)
         ';
-    }
-
-    location /sem_post {
-        access_by_lua '
-            require "resty.core.semaphore"
-            if not ngx.semaphore.test then
-                local sem,err = ngx.semaphore.new(0)
-                if not sem then
-                    ngx.say(err)
-                    ngx.exit(500)
-                end
-                ngx.semaphore.test = sem
-            end
-            local sem  = ngx.semaphore.test
-            local ok,err = sem:post()
-            if ok then
-                ngx.print("post")
-                ngx.exit(200)
-            else
-                ngx.print(err)
-                ngx.exit(200)
-            end
-    ';
     }
 --- no_check_leak
 --- request
 GET /test
 --- response_body
-200
-wait
-200
-post
+right
 --- no_error_log
 [error]
 
@@ -362,8 +326,8 @@ post
         access_log off;
         content_by_lua '
         local res1, res2 = ngx.location.capture_multi{
-          { "/sub_sem_wait"},
-          { "/sub_sem_post"},
+          { "/sem_wait"},
+          { "/sem_post"},
         }
         ngx.say(res1.status)
         ngx.say(res1.body)
@@ -371,27 +335,21 @@ post
         ngx.say(res2.body)
         ';
     }
-     location /sub_sem_wait {
-        proxy_pass $scheme://127.0.0.1:$server_port/sem_wait;
-    }
-
-    location /sub_sem_post {
-        proxy_pass $scheme://127.0.0.1:$server_port/sem_post;
-    }
 
     location /sem_wait {
         rewrite_by_lua '
-            require "resty.core.semaphore"
-            if not ngx.semaphore.test then
-                local sem,err = ngx.semaphore.new(0)
+            require "resty.semaphore"
+            local g = getmetatable(_G).__index
+            if not g.test then
+                local sem, err = ngx.semaphore.new(0)
                 if not sem then
                     ngx.say(err)
                     ngx.exit(500)
                 end
-                ngx.semaphore.test = sem
+                g.test = sem
             end
-            local sem  = ngx.semaphore.test
-            local ok,err = sem:wait(10)
+            local sem = g.test
+            local ok, err = sem:wait(10)
             if ok then
                 ngx.print("wait")
                 ngx.exit(200)
@@ -404,17 +362,18 @@ post
 
     location /sem_post {
         rewrite_by_lua '
-            require "resty.core.semaphore"
-            if not ngx.semaphore.test then
-                local sem,err = ngx.semaphore.new(0)
+            require "resty.semaphore"
+            local g = getmetatable(_G).__index
+            if not g.test then
+                local sem, err = ngx.semaphore.new(0)
                 if not sem then
                     ngx.say(err)
                     ngx.exit(500)
                 end
-                ngx.semaphore.test = sem
+                g.test = sem
             end
-            local sem  = ngx.semaphore.test
-             local ok,err = sem:post()
+            local sem = g.test
+             local ok, err = sem:post()
             if ok then
                 ngx.print("post")
                 ngx.exit(200)
@@ -442,18 +401,19 @@ post
 --- config
     location /test {
        content_by_lua '
-            require "resty.core.semaphore"
-            local sem  = ngx.semaphore.new(0)
-            local ok,err = sem:post()
-            ngx.semaphore.test = sem
-            local function func(premature)
-                local sem1 = ngx.semaphore.test
-                local ok,err = sem1:wait(10)
+            require "resty.semaphore"
+            local sem = ngx.semaphore.new(0)
+            local g = getmetatable(_G).__index
+            local ok, err = sem:post()
+            g.test = sem
+            local function func(premature, g)
+                local sem1 = g.test
+                local ok, err = sem1:wait(10)
                 if not ok then
-                    ngx.log(ngx.ERR,err)
+                    ngx.log(ngx.ERR, err)
                 end
             end
-            ngx.timer.at(0,func,sem,sem2)
+            ngx.timer.at(0,func,g)
             ngx.sleep(2)
             ngx.say("ok")
             --ngx.log(ngx.ERR,ngx.semaphore.err)
@@ -475,8 +435,8 @@ ok
     location /test{
         content_by_lua '
             local res1,res2 = ngx.location.capture_multi{
-                {"/sub_sem_wait"},
-                {"/sub_sem_post"},
+                {"/sem_wait"},
+                {"/sem_post"},
             }
             ngx.say(res1.status)
             ngx.say(res1.body)
@@ -484,27 +444,21 @@ ok
             ngx.say(res2.body)
         ';
     }
-     location /sub_sem_wait {
-        proxy_pass $scheme://127.0.0.1:$server_port/sem_wait;
-    }
-
-    location /sub_sem_post {
-        proxy_pass $scheme://127.0.0.1:$server_port/sem_post;
-    }
 
     location /sem_wait {
         content_by_lua '
-            require "resty.core.semaphore"
-            if not ngx.semaphore.test then
-                local sem,err = ngx.semaphore.new(0)
+            require "resty.semaphore"
+            local g = getmetatable(_G).__index
+            if not g.test then
+                local sem, err = ngx.semaphore.new(0)
                 if not sem then
                     ngx.say(err)
                     ngx.exit(500)
                 end
-                ngx.semaphore.test = sem
+                g.test = sem
             end
-            local sem  = ngx.semaphore.test
-            local ok,err = sem:wait(10)
+            local sem = g.test
+            local ok, err = sem:wait(10)
             if ok then
                 ngx.print("wait")
                 ngx.exit(200)
@@ -516,18 +470,19 @@ ok
 
     location /sem_post {
         header_filter_by_lua '
-            require "resty.core.semaphore"
-            if not ngx.semaphore.test then
-                local sem,err = ngx.semaphore.new(0)
+            require "resty.semaphore"
+            local g = getmetatable(_G).__index
+            if not g.test then
+                local sem, err = ngx.semaphore.new(0)
                 if not sem then
-                    ngx.log(ngx.ERR,err)
+                    ngx.log(ngx.ERR, err)
                 end
-                ngx.semaphore.test = sem
+                g.test = sem
             end
-            local sem  = ngx.semaphore.test
-            local ok,err = sem:post()
+            local sem = g.test
+            local ok, err = sem:post()
             if not ok then
-                ngx.log(ngx.ERR,err)
+                ngx.log(ngx.ERR, err)
             end
     ';
     content_by_lua '
@@ -553,16 +508,17 @@ post
 --- config
     location /test {
        content_by_lua '
-            require "resty.core.semaphore"
-            local sem,err = ngx.semaphore.new(0)
+            require "resty.semaphore"
+            local sem, err = ngx.semaphore.new(0)
+            local g = getmetatable(_G).__index
             if not sem then
-                ngx.semaphore.err = err
+                g.err = err
             else
-                ngx.semaphore.err = "success"
+                g.err = "success"
             end
             sem = nil
-            require "resty.core.semaphore"
-            ngx.say(ngx.semaphore.err)
+            require "resty.semaphore"
+            ngx.say(g.err)
             collectgarbage("collect")
        ';
     }
@@ -572,7 +528,9 @@ GET /test
 success
 --- log_level: debug
 --- error_log
-ngx_http_lua_ffi_sem_gc
+ngx_http_lua_ffi_semaphore_gc
+
+
 
 === TEST 14: semaphore post in body_filter_by_lua
 --- http_config eval: $::HttpConfig
@@ -580,8 +538,8 @@ ngx_http_lua_ffi_sem_gc
     location /test{
         content_by_lua '
             local res1,res2 = ngx.location.capture_multi{
-                {"/sub_sem_wait"},
-                {"/sub_sem_post"},
+                {"/sem_wait"},
+                {"/sem_post"},
             }
             ngx.say(res1.status)
             ngx.say(res1.body)
@@ -589,27 +547,21 @@ ngx_http_lua_ffi_sem_gc
             ngx.say(res2.body)
         ';
     }
-     location /sub_sem_wait {
-        proxy_pass $scheme://127.0.0.1:$server_port/sem_wait;
-    }
-
-    location /sub_sem_post {
-        proxy_pass $scheme://127.0.0.1:$server_port/sem_post;
-    }
 
     location /sem_wait {
         content_by_lua '
-            require "resty.core.semaphore"
-            if not ngx.semaphore.test then
-                local sem,err = ngx.semaphore.new(0)
+            require "resty.semaphore"
+            local g = getmetatable(_G).__index
+            if not g.test then
+                local sem, err = ngx.semaphore.new(0)
                 if not sem then
                     ngx.say(err)
                     ngx.exit(500)
                 end
-                ngx.semaphore.test = sem
+                g.test = sem
             end
-            local sem  = ngx.semaphore.test
-            local ok,err = sem:wait(10)
+            local sem = g.test
+            local ok, err = sem:wait(10)
             if ok then
                 ngx.print("wait")
                 ngx.exit(200)
@@ -621,18 +573,19 @@ ngx_http_lua_ffi_sem_gc
 
     location /sem_post {
         body_filter_by_lua '
-            require "resty.core.semaphore"
-            if not ngx.semaphore.test then
-                local sem,err = ngx.semaphore.new(0)
+            require "resty.semaphore"
+            local g = getmetatable(_G).__index
+            if not g.test then
+                local sem, err = ngx.semaphore.new(0)
                 if not sem then
-                    ngx.log(ngx.ERR,err)
+                    ngx.log(ngx.ERR, err)
                 end
-                ngx.semaphore.test = sem
+                g.test = sem
             end
-            local sem  = ngx.semaphore.test
-            local ok,err = sem:post()
+            local sem = g.test
+            local ok, err = sem:post()
             if not ok then
-                ngx.log(ngx.ERR,err)
+                ngx.log(ngx.ERR, err)
             end
     ';
     content_by_lua '
@@ -657,66 +610,25 @@ post
 === TEST 15: semaphore post in log_by_lua
 --- http_config eval: $::HttpConfig
 --- config
-    location /test{
-        content_by_lua '
-            local res1,res2 = ngx.location.capture_multi{
-                {"/sub_sem_wait"},
-                {"/sub_sem_post"},
-            }
-            ngx.say(res1.status)
-            ngx.say(res1.body)
-            ngx.say(res2.status)
-            ngx.say(res2.body)
-        ';
-    }
-     location /sub_sem_wait {
-        proxy_pass $scheme://127.0.0.1:$server_port/sem_wait;
-    }
-
-    location /sub_sem_post {
-        proxy_pass $scheme://127.0.0.1:$server_port/sem_post;
-    }
-
-    location /sem_wait {
-        content_by_lua '
-            require "resty.core.semaphore"
-            if not ngx.semaphore.test then
-                local sem,err = ngx.semaphore.new(0)
-                if not sem then
-                    ngx.say(err)
-                    ngx.exit(500)
-                end
-                ngx.semaphore.test = sem
-            end
-            local sem  = ngx.semaphore.test
-            local ok,err = sem:wait(10)
-            if ok then
-                ngx.print("wait")
-                ngx.exit(200)
-            else
-                ngx.exit(500)
-            end
-        ';
-    }
-
-    location /sem_post {
+        location /test {
         log_by_lua '
-            require "resty.core.semaphore"
-            if not ngx.semaphore.test then
-                local sem,err = ngx.semaphore.new(0)
+            require "resty.semaphore"
+            local g = getmetatable(_G).__index
+            if not g.test then
+                local sem, err = ngx.semaphore.new(0)
                 if not sem then
-                    ngx.log(ngx.ERR,err)
+                    ngx.log(ngx.ERR, err)
                 end
-                ngx.semaphore.test = sem
+                g.test = sem
             end
-            local sem  = ngx.semaphore.test
-            local ok,err = sem:post()
+            local sem = g.test
+            local ok, err = sem:post()
             if not ok then
-                ngx.log(ngx.ERR,err)
+                ngx.log(ngx.ERR, err)
             end
     ';
     content_by_lua '
-            ngx.print("post")
+            ngx.say("post")
             ngx.exit(200)
     ';
     }
@@ -724,11 +636,7 @@ post
 --- request
 GET /test
 --- response_body
-200
-wait
-200
 post
---- log_level: debug
 --- no_error_log
 [error]
 
@@ -740,8 +648,8 @@ post
     location /test{
         content_by_lua '
             local res1,res2 = ngx.location.capture_multi{
-                {"/sub_sem_wait"},
-                {"/sub_sem_post"},
+                {"/sem_wait"},
+                {"/sem_post"},
             }
             ngx.say(res1.status)
             ngx.say(res1.body)
@@ -749,27 +657,21 @@ post
             ngx.say(res2.body)
         ';
     }
-     location /sub_sem_wait {
-        proxy_pass $scheme://127.0.0.1:$server_port/sem_wait;
-    }
-
-    location /sub_sem_post {
-        proxy_pass $scheme://127.0.0.1:$server_port/sem_post;
-    }
 
     location /sem_wait {
         content_by_lua '
-            require "resty.core.semaphore"
-            if not ngx.semaphore.test then
-                local sem,err = ngx.semaphore.new(0)
+            require "resty.semaphore"
+            local g = getmetatable(_G).__index
+            if not g.test then
+                local sem, err = ngx.semaphore.new(0)
                 if not sem then
                     ngx.say(err)
                     ngx.exit(500)
                 end
-                ngx.semaphore.test = sem
+                g.test = sem
             end
-            local sem  = ngx.semaphore.test
-            local ok,err = sem:wait(10)
+            local sem = g.test
+            local ok, err = sem:wait(10)
             if ok then
                 ngx.print("wait")
                 ngx.exit(200)
@@ -781,18 +683,19 @@ post
 
     location /sem_post {
         set_by_lua $res '
-            require "resty.core.semaphore"
-            if not ngx.semaphore.test then
-                local sem,err = ngx.semaphore.new(0)
+            require "resty.semaphore"
+            local g = getmetatable(_G).__index
+            if not g.test then
+                local sem, err = ngx.semaphore.new(0)
                 if not sem then
-                    ngx.log(ngx.ERR,err)
+                    ngx.log(ngx.ERR, err)
                 end
-                ngx.semaphore.test = sem
+                g.test = sem
             end
-            local sem  = ngx.semaphore.test
-            local ok,err = sem:post()
+            local sem = g.test
+            local ok, err = sem:post()
             if not ok then
-                ngx.log(ngx.ERR,err)
+                ngx.log(ngx.ERR, err)
             end
     ';
     content_by_lua '
@@ -820,8 +723,8 @@ post
     location /test{
         content_by_lua '
             local res1,res2 = ngx.location.capture_multi{
-                {"/sub_sem_wait"},
-                {"/sub_sem_post"},
+                {"/sem_wait"},
+                {"/sem_post"},
             }
             ngx.say(res1.status)
             ngx.say(res1.body)
@@ -829,27 +732,21 @@ post
             ngx.say(res2.body)
         ';
     }
-     location /sub_sem_wait {
-        proxy_pass $scheme://127.0.0.1:$server_port/sem_wait;
-    }
-
-    location /sub_sem_post {
-        proxy_pass $scheme://127.0.0.1:$server_port/sem_post;
-    }
 
     location /sem_wait {
         content_by_lua '
-            require "resty.core.semaphore"
-            if not ngx.semaphore.test then
-                local sem,err = ngx.semaphore.new(0)
+            require "resty.semaphore"
+            local g = getmetatable(_G).__index
+            if not g.test then
+                local sem, err = ngx.semaphore.new(0)
                 if not sem then
                     ngx.say(err)
                     ngx.exit(500)
                 end
-                ngx.semaphore.test = sem
+                g.test = sem
             end
-            local sem  = ngx.semaphore.test
-            local ok,err = sem:wait(10)
+            local sem = g.test
+            local ok, err = sem:wait(2)
             if ok then
                 ngx.print("wait")
                 ngx.exit(200)
@@ -861,22 +758,23 @@ post
 
     location /sem_post {
     content_by_lua '
-            local function func()
-                require "resty.core.semaphore"
-                if not ngx.semaphore.test then
-                    local sem,err = ngx.semaphore.new(0)
+            local g = getmetatable(_G).__index
+            local function func(premature, g)
+                require "resty.semaphore"
+                if not g.test then
+                    local sem, err = ngx.semaphore.new(0)
                     if not sem then
-                        ngx.log(ngx.ERR,err)
+                        ngx.log(ngx.ERR, err)
                     end
-                    ngx.semaphore.test = sem
+                    g.test = sem
                 end
-                local sem  = ngx.semaphore.test
-                local ok,err = sem:post()
+                local sem = g.test
+                local ok, err = sem:post()
                 if not ok then
-                    ngx.log(ngx.ERR,err)
+                    ngx.log(ngx.ERR, err)
                 end
             end
-            ngx.timer.at(0,func)
+            ngx.timer.at(0, func,g)
             ngx.sleep(2)
             ngx.print("post")
             ngx.exit(200)
@@ -896,123 +794,12 @@ post
 
 
 
-=== TEST 18: repeat operation on one semaphore by wait,post
---- http_config eval: $::HttpConfig
---- config
-    location = /test {
-        access_log off;
-        content_by_lua '
-            require "resty.core.semaphore"
-
-            local sem,err = ngx.semaphore.new(0)
-            if not sem then
-                ngx.say(err)
-                ngx.exit(500)
-            end
-            ngx.semaphore.test = sem
-
-            local sem2,err = ngx.semaphore.new(0)
-            if not sem2 then
-                ngx.say(err)
-                ngx.exit(500)
-            end
-            ngx.semaphore.test_next = sem2
-
-            ngx.semaphore.log = {}
-            ngx.semaphore.log_i = 0
-
-            --0:wait 1:post 2:post_all
-            ngx.semaphore.test_op = {0,1,1,0,1,0}
-            local function func(op,index)
-                local res
-                if op == 0 then
-                    res = ngx.location.capture("/sub_sem_wait")
-                else
-                    res = ngx.location.capture("/sub_sem_post")
-                end
-            end
-            local co_array = {}
-            for i=1,#ngx.semaphore.test_op do
-                co_array[i] = ngx.thread.spawn(func,ngx.semaphore.test_op[i],i)
-                sem2:wait(10)
-            end
-            for i=1,#co_array do
-                ngx.thread.wait(co_array[i])
-            end
-            for i=1,ngx.semaphore.log_i do
-                --ngx.say(ngx.semaphore.log[i].op)
-                if ngx.semaphore.log[i].op == 0 then
-                    ngx.say("wait")
-                else
-                    ngx.say("post")
-                end
-
-                if ngx.semaphore.log[i].state then
-                    ngx.say(ngx.semaphore.log[i].state)
-                else
-                    ngx.say(ngx.semaphore.log[i].err)
-                end
-            end
-        ';
-    }
-     location /sub_sem_wait {
-        proxy_pass $scheme://127.0.0.1:$server_port/sem_wait;
-    }
-
-    location /sub_sem_post {
-        proxy_pass $scheme://127.0.0.1:$server_port/sem_post;
-    }
-
-    location /sem_wait {
-        content_by_lua '
-            local sem  = ngx.semaphore.test
-            local sem2 = ngx.semaphore.test_next
-            sem2:post()
-            local ok,err = sem:wait(10)
-            ngx.semaphore.log_i = ngx.semaphore.log_i + 1
-            ngx.semaphore.log[ngx.semaphore.log_i] = {state=ok,err=err,op=0}
-        ';
-    }
-
-    location /sem_post {
-        content_by_lua '
-            local sem  = ngx.semaphore.test
-            local sem2 = ngx.semaphore.test_next
-            sem2:post()
-             local ok,err = sem:post()
-            ngx.semaphore.log_i = ngx.semaphore.log_i + 1
-            ngx.semaphore.log[ngx.semaphore.log_i] = {state=ok,err=err,op=1}
-
-    ';
-    }
-
---- no_check_leak
---- request
-GET /test
---- response_body
-post
-true
-wait
-true
-post
-true
-wait
-true
-post
-true
-wait
-true
---- no_error_log
-[error]
-
-
-
-=== TEST 19: a light thread that to be killed is waitting a semaphore
+=== TEST 18: a light thread that to be killed is waitting a semaphore
 --- http_config eval: $::HttpConfig
 --- config
     location /test {
        content_by_lua '
-            require "resty.core.semaphore"
+            require "resty.semaphore"
             local sem = ngx.semaphore.new(0)
             if not sem then
                 error("create failed")
@@ -1036,12 +823,12 @@ ngx_http_lua_semaphore_cleanup
 
 
 
-=== TEST 20: a light thread that is going to exit is waitting a semaphore
+=== TEST 19: a light thread that is going to exit is waitting a semaphore
 --- http_config eval: $::HttpConfig
 --- config
     location /test {
        content_by_lua '
-            require "resty.core.semaphore"
+            require "resty.semaphore"
             local sem = ngx.semaphore.new(0)
             if not sem then
                 error("create failed")
@@ -1065,202 +852,83 @@ ngx_http_lua_semaphore_cleanup
 
 
 
-=== TEST 21: if light thread wake up as a queue
+=== TEST 20: test thread wait or post a sem in one request
 --- http_config eval: $::HttpConfig
 --- config
     location = /test {
         access_log off;
         content_by_lua '
-            require "resty.core.semaphore"
+            require "resty.semaphore"
 
-            local sem,err = ngx.semaphore.new(0)
+            local g = getmetatable(_G).__index
+            local sem, err = ngx.semaphore.new(0)
             if not sem then
                 ngx.say(err)
                 ngx.exit(500)
             end
-            ngx.semaphore.test = sem
+            g.test = sem
 
-            local sem2,err = ngx.semaphore.new(0)
+            local sem2, err = ngx.semaphore.new(0)
             if not sem2 then
                 ngx.say(err)
                 ngx.exit(500)
             end
-            ngx.semaphore.test_next = sem2
+            g.test_next = sem2
 
-            ngx.semaphore.log = {}
-            ngx.semaphore.log_i = 0
-            ngx.semaphore.wait_id = 0
-            ngx.semaphore.wakeup_id = 0
+            g.log = {}
+            g.log_i = 0
+            g.wait_id = 0
+            g.wakeup_id = 0
             --0:wait 1:post 2:post_all
-            ngx.semaphore.test_op = {0,1,1,0}
-            local function func(op,index)
+            g.test_op = {0,1,1,0}
+            local function func(op,index,g)
                 local res
                 if op == 0 then
-                    res = ngx.location.capture("/sub_sem_wait")
+                    local sem = g.test
+                    local sem2 = g.test_next
+                    sem2:post()
+                    g.wait_id = g.wait_id +1
+                    local wait_id = g.wait_id
+                    local ok, err = sem:wait(10)
+                    g.wakeup_id = g.wakeup_id + 1
+                    g.log_i = g.log_i + 1
+                    local wake_id = g.wakeup_id
+                    g.log[g.log_i] = {state=ok, err=err,op=0,wait_id = wait_id,wake_id = wake_id}
                 else
-                    res = ngx.location.capture("/sub_sem_post")
+                    local sem = g.test
+                    local sem2 = g.test_next
+                    sem2:post()
+                    local ok, err = sem:post()
+                    g.log_i = g.log_i + 1
+                    g.log[g.log_i] = {state=ok, err=err,op=1}
                 end
             end
             local co_array = {}
-            for i=1,#ngx.semaphore.test_op do
-                co_array[i] = ngx.thread.spawn(func,ngx.semaphore.test_op[i],i)
+            for i=1,#g.test_op do
+                co_array[i] = ngx.thread.spawn(func,g.test_op[i],i,g)
                 sem2:wait(10)
             end
             for i=1,#co_array do
                 ngx.thread.wait(co_array[i])
             end
-            for i=1,ngx.semaphore.log_i do
-                --ngx.say(ngx.semaphore.log[i].op)
-                if ngx.semaphore.log[i].op == 0 then
+            for i=1,g.log_i do
+                --ngx.say(g.log[i].op)
+                if g.log[i].op == 0 then
                     ngx.say("wait")
-                else
-                    ngx.say("post")
-                end
-
-                if ngx.semaphore.log[i].state then
-                    ngx.say(ngx.semaphore.log[i].state)
-                    if ngx.semaphore.log[i].op == 0 then
-                        ngx.say(ngx.semaphore.log[i].wait_id)
-                        ngx.say(ngx.semaphore.log[i].wake_id)
-                    end
-                else
-                    ngx.say(ngx.semaphore.log[i].err)
-                end
-            end
-        ';
-    }
-     location /sub_sem_wait {
-        proxy_pass $scheme://127.0.0.1:$server_port/sem_wait;
-    }
-
-    location /sub_sem_post {
-        proxy_pass $scheme://127.0.0.1:$server_port/sem_post;
-    }
-
-
-    location /sem_wait {
-        content_by_lua '
-            local sem  = ngx.semaphore.test
-            local sem2 = ngx.semaphore.test_next
-            sem2:post()
-            ngx.semaphore.wait_id = ngx.semaphore.wait_id +1
-            local wait_id = ngx.semaphore.wait_id
-            local ok,err = sem:wait(10)
-            ngx.semaphore.wakeup_id = ngx.semaphore.wakeup_id + 1
-            ngx.semaphore.log_i = ngx.semaphore.log_i + 1
-            local wake_id = ngx.semaphore.wakeup_id
-            ngx.semaphore.log[ngx.semaphore.log_i] = {state=ok,err=err,op=0,wait_id = wait_id,wake_id = wake_id}
-        ';
-    }
-
-    location /sem_post {
-        content_by_lua '
-            local sem  = ngx.semaphore.test
-            local sem2 = ngx.semaphore.test_next
-            sem2:post()
-             local ok,err = sem:post()
-            ngx.semaphore.log_i = ngx.semaphore.log_i + 1
-            ngx.semaphore.log[ngx.semaphore.log_i] = {state=ok,err=err,op=1}
-
-    ';
-    }
---- no_check_leak
---- request
-GET /test
---- response_body
-post
-true
-wait
-true
-1
-1
-post
-true
-wait
-true
-2
-2
---- no_error_log
-[error]
-
-
-
-=== TEST 22: test thread wait or post a sem in one request
---- http_config eval: $::HttpConfig
---- config
-    location = /test {
-        access_log off;
-        content_by_lua '
-            require "resty.core.semaphore"
-
-            local sem,err = ngx.semaphore.new(0)
-            if not sem then
-                ngx.say(err)
-                ngx.exit(500)
-            end
-            ngx.semaphore.test = sem
-
-            local sem2,err = ngx.semaphore.new(0)
-            if not sem2 then
-                ngx.say(err)
-                ngx.exit(500)
-            end
-            ngx.semaphore.test_next = sem2
-
-            ngx.semaphore.log = {}
-            ngx.semaphore.log_i = 0
-            ngx.semaphore.wait_id = 0
-            ngx.semaphore.wakeup_id = 0
-            --0:wait 1:post 2:post_all
-            ngx.semaphore.test_op = {0,1,1,0}
-            local function func(op,index)
-                local res
-                if op == 0 then
-                    local sem  = ngx.semaphore.test
-                    local sem2 = ngx.semaphore.test_next
-                    sem2:post()
-                    ngx.semaphore.wait_id = ngx.semaphore.wait_id +1
-                    local wait_id = ngx.semaphore.wait_id
-                    local ok,err = sem:wait(10)
-                    ngx.semaphore.wakeup_id = ngx.semaphore.wakeup_id + 1
-                    ngx.semaphore.log_i = ngx.semaphore.log_i + 1
-                    local wake_id = ngx.semaphore.wakeup_id
-                    ngx.semaphore.log[ngx.semaphore.log_i] = {state=ok,err=err,op=0,wait_id = wait_id,wake_id = wake_id}
-                else
-                    local sem  = ngx.semaphore.test
-                    local sem2 = ngx.semaphore.test_next
-                    sem2:post()
-                    local ok,err = sem:post()
-                    ngx.semaphore.log_i = ngx.semaphore.log_i + 1
-                    ngx.semaphore.log[ngx.semaphore.log_i] = {state=ok,err=err,op=1}
-                end
-            end
-            local co_array = {}
-            for i=1,#ngx.semaphore.test_op do
-                co_array[i] = ngx.thread.spawn(func,ngx.semaphore.test_op[i],i)
-                sem2:wait(10)
-            end
-            for i=1,#co_array do
-                ngx.thread.wait(co_array[i])
-            end
-            for i=1,ngx.semaphore.log_i do
-                --ngx.say(ngx.semaphore.log[i].op)
-                if ngx.semaphore.log[i].op == 0 then
-                    ngx.say("wait")
-                elseif ngx.semaphore.log[i].op == 1 then
+                elseif g.log[i].op == 1 then
                     ngx.say("post")
                 else
                     ngx.say("post_all")
                 end
 
-                if ngx.semaphore.log[i].state then
-                    ngx.say(ngx.semaphore.log[i].state)
-                    if ngx.semaphore.log[i].op == 0 then
-                        ngx.say(ngx.semaphore.log[i].wait_id)
-                        ngx.say(ngx.semaphore.log[i].wake_id)
+                if g.log[i].state then
+                    ngx.say(g.log[i].state)
+                    if g.log[i].op == 0 then
+                        ngx.say(g.log[i].wait_id)
+                        ngx.say(g.log[i].wake_id)
                     end
                 else
-                    ngx.say(ngx.semaphore.log[i].err)
+                    ngx.say(g.log[i].err)
                 end
             end
         ';
@@ -1286,50 +954,44 @@ true
 
 
 
-=== TEST 24: benchmark
+=== TEST 21: benchmark
 --- http_config eval: $::HttpConfig
 --- config
     location = /test {
         access_log off;
         content_by_lua '
-            require "resty.core.semaphore"
-            if ngx.semaphore.id == nil then
-                ngx.semaphore.id = 0
-                ngx.semaphore.map = {}
+            require "resty.semaphore"
+            local g = getmetatable(_G).__index
+            if g.id == nil then
+                g.id = 0
+                g.map = {}
             end
-            local id = ngx.semaphore.id
-            ngx.semaphore.id = ngx.semaphore.id + 1
+            local id = g.id
+            g.id = g.id + 1
             local sem = ngx.semaphore.new(0)
-            ngx.semaphore.map[id] = sem
+            g.map[id] = sem
             local res1, res2 = ngx.location.capture_multi{
                 { "/sem_wait",{ method = ngx.HTTP_POST, body = tostring(id) }},
                 { "/sem_post",{ method = ngx.HTTP_POST,body = tostring(id)}},
             }
-            ngx.semaphore.map[id] = nil
+            g.map[id] = nil
             ngx.say("ok")
         ';
     }
 
-     location /sub_sem_wait {
-        proxy_pass $scheme://127.0.0.1:$server_port/sem_wait;
-    }
-
-    location /sub_sem_post {
-        proxy_pass $scheme://127.0.0.1:$server_port/sem_post;
-    }
-
     location /sem_wait {
         content_by_lua '
-            require "resty.core.semaphore"
+            require "resty.semaphore"
+            local g = getmetatable(_G).__index
             ngx.req.read_body()
             local body = ngx.req.get_body_data()
-            local sem  = ngx.semaphore.map[tonumber(body)]
-            local ok,err = sem:wait(10)
+            local sem = g.map[tonumber(body)]
+            local ok, err = sem:wait(10)
             if ok then
                 --ngx.print("wait")
                 ngx.exit(200)
             else
-                ngx.log(ngx.ERR,err)
+                ngx.log(ngx.ERR, err)
                 ngx.exit(500)
             end
         ';
@@ -1337,16 +999,17 @@ true
 
     location /sem_post {
         content_by_lua '
-            require "resty.core.semaphore"
+            require "resty.semaphore"
+            local g = getmetatable(_G).__index
             ngx.req.read_body()
             local body = ngx.req.get_body_data()
-            local sem  = ngx.semaphore.map[tonumber(body)]
-            local ok,err = sem:post()
+            local sem = g.map[tonumber(body)]
+            local ok, err = sem:post()
             if ok then
                 --ngx.print("post")
                 ngx.exit(200)
             else
-                ngx.log(ngx.ERR,err)
+                ngx.log(ngx.ERR, err)
                 ngx.exit(500)
             end
 
@@ -1362,14 +1025,14 @@ ok
 
 
 
-=== TEST 25: semaphore wait time is zero
+=== TEST 22: semaphore wait time is zero
 --- http_config eval: $::HttpConfig
 --- config
     location /test {
        content_by_lua '
-            require "resty.core.semaphore"
+            require "resty.semaphore"
             local sem = ngx.semaphore.new(0)
-            local ok,err = sem:wait(0)
+            local ok, err = sem:wait(0)
             if not ok then
                 ngx.say(err)
             end
@@ -1385,14 +1048,14 @@ busy
 
 
 
-=== TEST 26: basic semaphore wait time default is zero
+=== TEST 23: basic semaphore wait time default is zero
 --- http_config eval: $::HttpConfig
 --- config
     location /test {
        content_by_lua '
-            require "resty.core.semaphore"
+            require "resty.semaphore"
             local sem = ngx.semaphore.new(0)
-            local ok,err = sem:wait()
+            local ok, err = sem:wait()
             if not ok then
                 ngx.say(err)
             end
@@ -1408,14 +1071,14 @@ busy
 
 
 
-=== TEST 27: basic semaphore wait time default is less than zero
+=== TEST 24: basic semaphore wait time default is less than zero
 --- http_config eval: $::HttpConfig
 --- config
     location /test {
        content_by_lua '
-            require "resty.core.semaphore"
+            require "resty.semaphore"
             local sem = ngx.semaphore.new(-1)
-            local ok,err = sem:wait(-1)
+            local ok, err = sem:wait(-1)
             if not ok then
                 ngx.say(err)
             end
