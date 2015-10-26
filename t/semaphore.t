@@ -27,8 +27,7 @@ our $HttpConfigInitByLua= <<_EOC_;
     init_by_lua '
             require "resty.semaphore"
             local g = _G
-            local sem = ngx.semaphore.new(0)
-            local ok, err=sem:wait(1)
+            local sem,err = ngx.semaphore.new(0)
             g.err = err
     ';
 _EOC_
@@ -255,7 +254,7 @@ API disabled in the context of log_by_lua*
 
 
 
-=== TEST 8: basic semaphore wait not allow in init_by_lua
+=== TEST 8: basic semaphore new not allow in init_by_lua
 --- http_config eval: $::HttpConfigInitByLua
 --- config
     location /test {
@@ -268,7 +267,7 @@ API disabled in the context of log_by_lua*
 --- request
 GET /test
 --- response_body
-request is null
+ngx_http_lua_ffi_semaphore_new ngx_alloc failed
 --- no_error_log
 [error]
 
