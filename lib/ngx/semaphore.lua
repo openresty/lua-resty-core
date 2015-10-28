@@ -119,9 +119,4 @@ end
 _M.__index = _M
 
 
-ngx.semaphore = _M
-
-package.loaded["ngx.semaphore"] = _M
-
-
 return _M

@@ -20,16 +20,11 @@ no_long_string();
 #my $lua_default_lib = "/usr/local/openresty/lualib/?.lua";
 our $HttpConfig = <<_EOC_;
     lua_package_path "$pwd/lib/?.lua;;";
-    init_by_lua '
-            require "resty.core"
-    ';
 _EOC_
 
 our $HttpConfigInitByLua= <<_EOC_;
     lua_package_path "$pwd/lib/?.lua;;";
     init_by_lua '
-            require "resty.core"
-
             local g = _G
             local semaphore = require "ngx.semaphore"
             local sem, err = semaphore.new(0)
@@ -40,8 +35,6 @@ _EOC_
 our $HttpConfigIntWorkerBy = <<_EOC_;
     lua_package_path "$pwd/lib/?.lua;;";
     init_worker_by_lua '
-            require "resty.core"
-
             local semaphore = require "ngx.semaphore"
             local sem = semaphore.new(0)
             local ok, err = sem:wait(1)
