@@ -10,7 +10,7 @@ workers(1);
 
 repeat_each(2);
 
-plan tests => repeat_each() * (blocks() * 3);
+plan tests => repeat_each() * (blocks() * 3 + 1);
 
 my $pwd = cwd();
 
@@ -98,6 +98,8 @@ __DATA__
                 g.test = sem
             end
             local sem = g.test
+            ngx.sleep(0.001)
+            collectgarbage("collect")
             local ok, err = sem:post()
             if ok then
                 ngx.print("post")
@@ -118,6 +120,7 @@ wait
 post
 --- no_error_log
 [error]
+[crit]
 
 
 

@@ -54,9 +54,11 @@ function _M.new(n)
         return nil, ffi_str(errmsg[0])
     end
 
-    ffi_gc(psem[0], C.ngx_http_lua_ffi_semaphore_gc)
+    local sem = psem[0]
 
-    return setmetatable({ sem = psem[0] }, _M)
+    ffi_gc(sem, C.ngx_http_lua_ffi_semaphore_gc)
+
+    return setmetatable({ sem = sem }, _M)
 end
 
 
