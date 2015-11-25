@@ -244,6 +244,7 @@ qr/\[TRACE   \d+ .*? -> \d+\]/
 --- no_error_log
 [error]
  -- NYI:
+--- wait: 0.2
 
 
 
