@@ -211,7 +211,7 @@ qr/ -- NYI: (?!return to lower frame at)(?!C function 0x[0-9a-f]+ at content_by_
         content_by_lua '
             local ffi = require "ffi"
             local args
-            for i = 1, 100 do
+            for i = 1, 200 do
                 args = ngx.req.get_uri_args()
             end
             if type(args) ~= "table" then
