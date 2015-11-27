@@ -321,7 +321,7 @@ do
 end  -- do
 
 
-function ngx.req.clear_header(name, value)
+function ngx.req.clear_header(name)
     local r = getfenv(0).__ngx_req
     if not r then
         return error("no request found")
