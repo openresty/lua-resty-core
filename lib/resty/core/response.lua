@@ -6,7 +6,7 @@ local base = require "resty.core.base"
 
 
 local C = ffi.C
-local ffi_new = ffi.new
+--local ffi_new = ffi.new
 local ffi_cast = ffi.cast
 local ffi_str = ffi.string
 local new_tab = base.new_tab

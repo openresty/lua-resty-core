@@ -16,6 +16,7 @@ local getfenv = getfenv
 local C = ffi.C
 local FFI_NO_REQ_CTX = base.FFI_NO_REQ_CTX
 local FFI_OK = base.FFI_OK
+local error = error
 
 
 ffi.cdef[[

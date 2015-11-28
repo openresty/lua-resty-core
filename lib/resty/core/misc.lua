@@ -15,6 +15,8 @@ local ngx_magic_key_setters = new_tab(0, 2)
 local ngx = ngx
 local getfenv = getfenv
 local type = type
+local error = error
+local tonumber = tonumber
 
 
 local _M = new_tab(0, 3)

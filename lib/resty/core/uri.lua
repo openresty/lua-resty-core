@@ -3,18 +3,18 @@
 
 local ffi = require 'ffi'
 local ffi_string = ffi.string
-local ffi_new = ffi.new
+--local ffi_new = ffi.new
 local C = ffi.C
-local setmetatable = setmetatable
+--local setmetatable = setmetatable
 local ngx = ngx
 local type = type
 local tostring = tostring
-local error = error
+--local error = error
 local base = require "resty.core.base"
 local get_string_buf = base.get_string_buf
-local get_size_ptr = base.get_size_ptr
-local print = print
-local tonumber = tonumber
+--local get_size_ptr = base.get_size_ptr
+--local print = print
+--local tonumber = tonumber
 
 
 ffi.cdef[[
