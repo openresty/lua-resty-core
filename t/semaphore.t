@@ -618,6 +618,7 @@ post
 ok
 
 
+
 === TEST 16: semaphore post in set_by_lua
 --- http_config eval: $::HttpConfig
 --- config
@@ -984,7 +985,7 @@ busy
 
 
 
-=== TEST 23: basic semaphore_mm alloc
+=== TEST 24: basic semaphore_mm alloc
 --- http_config eval: $::HttpConfig
 --- config
     location /test {
@@ -1011,7 +1012,7 @@ ok
 
 
 
-=== TEST 23: basic semaphore_mm free insert tail
+=== TEST 25: basic semaphore_mm free insert tail
 --- http_config eval: $::HttpConfig
 --- config
     location /test {
@@ -1037,7 +1038,7 @@ add to free queue tail
 
 
 
-=== TEST 24: basic semaphore_mm free insert head
+=== TEST 26: basic semaphore_mm free insert head
 --- http_config eval: $::HttpConfig
 --- config
     location /test {
@@ -1063,7 +1064,7 @@ add to free queue head
 
 
 
-=== TEST 25: basic semaphore_mm free block
+=== TEST 27: basic semaphore_mm free block
 --- http_config eval: $::HttpConfig
 --- config
     location /test {
@@ -1096,7 +1097,8 @@ ok
 ]
 
 
-=== TEST 25: basic semaphore count
+
+=== TEST 28: basic semaphore count
 --- http_config eval: $::HttpConfig
 --- config
     location /test {
