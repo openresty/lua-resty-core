@@ -25,7 +25,7 @@ Table of Contents
     * [resty.core.misc](#restycoremisc)
     * [resty.core.time](#restycoretime)
     * [resty.core.worker](#restycoreworker)
-    * [resty.core.semaphore](#restycoresemaphore)
+    * [ngx.semaphore](./lib/ngx/semaphore.md)
 * [Caveat](#caveat)
 * [TODO](#todo)
 * [Author](#author)
@@ -183,12 +183,6 @@ API Implemented
 
 * [ngx.worker.exiting](https://github.com/openresty/lua-nginx-module#ngxworkerexiting)
 * [ngx.worker.pid](https://github.com/openresty/lua-nginx-module#ngxworkerpid)
-
-[Back to TOC](#table-of-contents)
-
-* [ngx.semaphore.new](https://github.com/openresty/lua-nginx-module#ngxsemaphorenew)
-* [ngx.semaphore.wait](https://github.com/openresty/lua-nginx-module#ngxsemaphorewait)
-* [ngx.semaphore.post](https://github.com/openresty/lua-nginx-module#ngxsemaphorepost)
 
 [Back to TOC](#table-of-contents)
 

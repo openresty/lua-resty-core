@@ -32,10 +32,11 @@ if not pcall(ffi.typeof,"ngx_http_lua_semaphore_t") then
 end
 
 ffi.cdef[[
-    int ngx_http_lua_ffi_semaphore_new(ngx_http_lua_semaphore_t **psem,
-        int n, char **errstr);
+    int ngx_http_lua_ffi_semaphore_new(ngx_http_request_t *r, 
+        ngx_http_lua_semaphore_t **psem, int n, char *errstr, size_t *errlen);
     int ngx_http_lua_ffi_semaphore_post(ngx_http_lua_semaphore_t *sem,
         int n, char **errstr);
+    int ngx_http_lua_ffi_semaphore_count(ngx_http_lua_semaphore_t *sem);
     int ngx_http_lua_ffi_semaphore_wait(ngx_http_request_t *r,
         ngx_http_lua_semaphore_t *sem, int wait_ms, char *errstr, size_t *errlen);
     void ngx_http_lua_ffi_semaphore_gc(ngx_http_lua_semaphore_t *sem);
@@ -44,14 +45,23 @@ ffi.cdef[[
 
 local _M = {}
 
+local psem = ffi_new("ngx_http_lua_semaphore_t *[1]")
 
 function _M.new(n)
-    local psem = ffi_new("ngx_http_lua_semaphore_t *[1]")
 
-    local ret = C.ngx_http_lua_ffi_semaphore_new(psem, n, errmsg)
+    local r = getfenv(0).__ngx_req
+    if not r then
+        return nil, "no request found"
+    end
+
+    local err = get_string_buf(ERR_BUF_SIZE)
+    local errlen = get_size_ptr()
+    errlen[0] = ERR_BUF_SIZE
+
+    local ret = C.ngx_http_lua_ffi_semaphore_new(r, psem, n, err, errlen)
 
     if ret == FFI_ERROR then
-        return nil, ffi_str(errmsg[0])
+        return nil, ffi_str(err, errlen[0])
     end
 
     local sem = psem[0]
@@ -102,9 +112,13 @@ function _M.wait(self, time)
 end
 
 
-function _M.post(self)
+function _M.post(self, n)
     if type(self) ~= "table" or type(self.sem) ~= "cdata" then
         return nil, "semaphore not inited"
+    end
+
+    if not n then
+        n = 1
     end
 
     local cdata_sem = self.sem
@@ -117,6 +131,16 @@ function _M.post(self)
     return true
 end
 
+function _M.count(self)
+    if type(self) ~= "table" or type(self.sem) ~= "cdata" then
+        return nil, "semaphore not inited"
+    end
+
+    local cdata_sem = self.sem
+    local ret = C.ngx_http_lua_ffi_semaphore_count(cdata_sem)
+
+    return ret      
+end
 
 _M.__index = _M
 
