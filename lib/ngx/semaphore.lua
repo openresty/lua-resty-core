@@ -123,12 +123,14 @@ function _M.post(self, n)
         return nil, "semaphore not inited"
     end
 
-    if not n then
-        n = 1
+    local cdata_sem = self.sem
+
+    local num = tonumber(n) or 1
+    if num < 1 then
+        num = 1
     end
 
-    local cdata_sem = self.sem
-    local ret = C.ngx_http_lua_ffi_semaphore_post(cdata_sem, 1, errmsg)
+    local ret = C.ngx_http_lua_ffi_semaphore_post(cdata_sem, num, errmsg)
 
     if ret == FFI_ERROR then
         return nil, ffi_str(errmsg[0])
