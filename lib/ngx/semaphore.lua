@@ -32,23 +32,29 @@ if not pcall(ffi.typeof,"ngx_http_lua_semaphore_t") then
 end
 
 ffi.cdef[[
-    int ngx_http_lua_ffi_semaphore_new(ngx_http_request_t *r, 
+    int ngx_http_lua_ffi_semaphore_new(ngx_http_request_t *r,
         ngx_http_lua_semaphore_t **psem, int n, char *errstr, size_t *errlen);
+
     int ngx_http_lua_ffi_semaphore_post(ngx_http_lua_semaphore_t *sem,
         int n, char **errstr);
+
     int ngx_http_lua_ffi_semaphore_count(ngx_http_lua_semaphore_t *sem);
+
     int ngx_http_lua_ffi_semaphore_wait(ngx_http_request_t *r,
         ngx_http_lua_semaphore_t *sem, int wait_ms, char *errstr, size_t *errlen);
+
     void ngx_http_lua_ffi_semaphore_gc(ngx_http_lua_semaphore_t *sem);
 ]]
 
 
-local _M = {}
-
 local psem = ffi_new("ngx_http_lua_semaphore_t *[1]")
 
-function _M.new(n)
 
+local _M = {}
+local mt = { __index = _M }
+
+
+function _M.new(n)
     local r = getfenv(0).__ngx_req
     if not r then
         return nil, "no request found"
@@ -68,7 +74,7 @@ function _M.new(n)
 
     ffi_gc(sem, C.ngx_http_lua_ffi_semaphore_gc)
 
-    return setmetatable({ sem = sem }, _M)
+    return setmetatable({ sem = sem }, mt)
 end
 
 
@@ -131,6 +137,7 @@ function _M.post(self, n)
     return true
 end
 
+
 function _M.count(self)
     if type(self) ~= "table" or type(self.sem) ~= "cdata" then
         return nil, "semaphore not inited"
@@ -139,10 +146,8 @@ function _M.count(self)
     local cdata_sem = self.sem
     local ret = C.ngx_http_lua_ffi_semaphore_count(cdata_sem)
 
-    return ret      
+    return ret
 end
-
-_M.__index = _M
 
 
 return _M

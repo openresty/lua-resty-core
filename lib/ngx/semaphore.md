@@ -14,17 +14,6 @@ Table of Contents
     * [wait](#wait)
     * [post](#post)
     * [count](#count)
-* [Caveats](#caveats)
-    * [Out-of-Sync Counter Prevention](#out-of-sync-counter-prevention)
-* [Instance Sharing](#instance-sharing)
-* [Limiting Granularity](#limiting-granularity)
-* [Community](#community)
-    * [English Mailing List](#english-mailing-list)
-    * [Chinese Mailing List](#chinese-mailing-list)
-* [Bugs and Patches](#bugs-and-patches)
-* [Author](#author)
-* [Copyright and License](#copyright-and-license)
-* [See Also](#see-also)
 
 Synopsis
 ========
@@ -55,7 +44,7 @@ http {
             content_by_lua_block {
                 local semaphore = require "ngx.semaphore"
                 local g = require "mydata" -- please check https://github.com/openresty/lua-nginx-module#data-sharing-within-an-nginx-worker
-                
+
                 if not g.example then
                     local sem, err = semaphore.new(0)
                     if not sem then
@@ -121,13 +110,13 @@ new
 Creates a semaphore that has n resource. LuaJIT's FFI is needed by this api.
 
 ```lua
-
- local semaphore = require "ngx.semaphore"
- local print = ngx.print
- local sem,err = semaphore.new(0)
- if not sem then
-     print("create semaphore failed: "..err)
- end
+    local semaphore = require "ngx.semaphore"
+    local print = ngx.print
+    local sem, err = semaphore.new(0)
+    if not sem then
+        print("create semaphore failed: "..err)
+    end
+```
 
 [Back to TOC](#table-of-contents)
 
@@ -136,7 +125,7 @@ wait
 **syntax:** *ok, err = sem:wait(timeout?)*
 
 **context:** *rewrite_by_lua*, access_by_lua*, content_by_lua*, ngx.timer.**
-The param sem is created by [ngx.semaphore.new](#ngxsemaphorenew). Wait on one semapohre. If there is a resource then it returns immediately, else the light thread or main thread or coroutine will sleep, then it will be waked up when some one else call the post method[#ngx.semaphore.post|ngx.semaphore.post]] or timeout event occur. The timeout default is 0,which means it will returns nil,"busy" if there is no resource to use. LuaJIT's FFI is needed by this api.
+The param sem is created by [ngx.semaphore.new](#ngxsemaphorenew). Wait on one semapohre. If there is a resource then it returns immediately, else the light thread or main thread or coroutine will sleep, then it will be waked up when some one else call the post method[#ngx.semaphore.post|ngx.semaphore.post]] or timeout event occur. The timeout default is 0, which means it will returns `nil`, `busy` if there is no resource to use. LuaJIT's FFI is needed by this api.
 
 ```lua
 

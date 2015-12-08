@@ -47,7 +47,7 @@ __DATA__
             local semaphore = require "ngx.semaphore"
             local g = package.loaded["semaphore_test"] or {}
             package.loaded["semaphore_test"] = g
-            
+
             if not g.test then
                 local sem, err = semaphore.new(0)
                 if not sem then
@@ -241,7 +241,7 @@ API disabled in the context of log_by_lua*
         local sem, err = semaphore.new(0)
         if not sem then
             ngx.log(ngx.ERR, err)
-        else 
+        else
             ngx.log(ngx.ERR, tostring(sem))
         end
     }
@@ -829,7 +829,7 @@ http lua semaphore cleanup
     location = /test {
         content_by_lua_block {
             local semaphore = require "ngx.semaphore"
-            local sem,err = semaphore.new(0)
+            local sem, err = semaphore.new(0)
             if not sem then
                 ngx.log(ngx.ERR, err)
                 ngx.exit(500)
@@ -852,7 +852,7 @@ http lua semaphore cleanup
                 tco[#tco + 1] = ngx.thread.spawn(thread, "post", i)
             end
 
-            for k,co in pairs(tco) do 
+            for k, co in pairs(tco) do
                 ngx.thread.wait(co)
             end
         }
@@ -1020,7 +1020,7 @@ ok
             local semaphore = require "ngx.semaphore"
             local t = {}
             local num_per_block = 4094
-            for i=1, num_per_block*2 do 
+            for i = 1, num_per_block * 2 do
                 t[i] = semaphore.new(0)
             end
             t = nil
@@ -1046,7 +1046,7 @@ add to free queue tail
             local semaphore = require "ngx.semaphore"
             local t = {}
             local num_per_block = 4094
-            for i=1, num_per_block*2 do 
+            for i = 1, num_per_block * 2 do
                 t[i] = semaphore.new(0)
             end
             t = nil
@@ -1072,10 +1072,10 @@ add to free queue head
             local semaphore = require "ngx.semaphore"
             local t = {}
             local num_per_block = 4094
-            for i=1, num_per_block*2 do 
+            for i = 1, num_per_block * 2 do
                 t[i] = semaphore.new(0)
             end
-            for i=1,num_per_block do 
+            for i = 1, num_per_block do
                 t[i] = nil
             end
 
