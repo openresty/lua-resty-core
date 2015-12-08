@@ -24,7 +24,7 @@ local ERR_BUF_SIZE = 128
 local errmsg = base.get_errmsg_ptr()
 
 
-if not pcall(ffi.typeof,"ngx_http_lua_semaphore_t") then
+if not pcall(ffi.typeof, "ngx_http_lua_semaphore_t") then
     ffi.cdef[[
         struct ngx_http_lua_semaphore_s;
         typedef struct ngx_http_lua_semaphore_s ngx_http_lua_semaphore_t;
