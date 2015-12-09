@@ -1,7 +1,7 @@
 Name
 ====
 
-resty.limit.conn - Lua module for limiting request concurrency (or concurrent connections) for OpenResty/ngx_lua.
+ngx.semaphore for OpenResty/ngx_lua.
 
 Table of Contents
 =================
@@ -19,7 +19,7 @@ Synopsis
 ========
 
 ```nginx
-# demonstrate the usage of the resty.limit.conn module (alone!)
+# demonstrate the usage of the ngx.semaphore
 http {
     lua_shared_dict my_limit_conn_store 100m;
 
