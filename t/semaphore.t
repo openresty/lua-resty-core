@@ -167,10 +167,10 @@ API disabled in the context of header_filter_by_lua*
 --- http_config
     lua_package_path $TEST_NGINX_LUA_PACKAGE_PATH;
     init_worker_by_lua_block {
-            local semaphore = require "ngx.semaphore"
-            local sem = semaphore.new(0)
-            local ok, err = sem:wait(1)
-            ngx.log(ngx.ERR, err)
+        local semaphore = require "ngx.semaphore"
+        local sem = semaphore.new(0)
+        local ok, err = sem:wait(1)
+        ngx.log(ngx.ERR, err)
     }
 --- config
     location /test {
@@ -271,18 +271,21 @@ ok
             local semaphore = require "ngx.semaphore"
             local ret = {}
             local sem = semaphore.new(0)
-            local co1 = ngx.thread.spawn(
-                            function(sem, ret)
-                                ret.wait = sem:wait(10)
-                            end,
-                            sem, ret)
-            local co2 = ngx.thread.spawn(
-                function(sem, ret)
+
+            local func_wait = function ()
+                ret.wait = sem:wait(10)
+            end
+
+            local func_post = function ()
                 ret.post = sem:post()
-                end,
-                sem, ret)
+            end
+
+            local co1 = ngx.thread.spawn(func_wait)
+            local co2 = ngx.thread.spawn(func_post)
+
             ngx.thread.wait(co1)
             ngx.thread.wait(co2)
+
             if ret.post and ret.wait then
                 ngx.say("right")
             end
@@ -305,8 +308,8 @@ right
         access_log off;
         content_by_lua_block {
             local res1, res2 = ngx.location.capture_multi{
-              { "/sem_wait"},
-              { "/sem_post"},
+                { "/sem_wait"},
+                { "/sem_post"},
             }
             ngx.say(res1.status)
             ngx.say(res1.body)
@@ -622,7 +625,7 @@ ok
 === TEST 16: semaphore post in set_by_lua
 --- http_config eval: $::HttpConfig
 --- config
-    location /test{
+    location /test {
         content_by_lua_block {
             local res1, res2 = ngx.location.capture_multi{
                 {"/sem_wait"},
@@ -698,7 +701,7 @@ post
 === TEST 17: semaphore post in timer.at
 --- http_config eval: $::HttpConfig
 --- config
-    location /test{
+    location /test {
         content_by_lua_block {
             local semaphore = require "ngx.semaphore"
             local g = package.loaded["semaphore_test"] or {}
