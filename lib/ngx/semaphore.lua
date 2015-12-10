@@ -78,7 +78,7 @@ function _M.new(n)
 end
 
 
-function _M.wait(self, time)
+function _M.wait(self, seconds)
     if type(self) ~= "table" or type(self.sem) ~= "cdata" then
         return nil, "semaphore not inited"
     end
@@ -88,9 +88,9 @@ function _M.wait(self, time)
         return error("no request found")
     end
 
-    time = time and tonumber(time) or 0
-    if time < 0 then
-        time = 0
+    local milliseconds = (seconds and tonumber(seconds) or 0) * 1000
+    if milliseconds < 0 then
+        milliseconds = 0
     end
 
     local cdata_sem = self.sem
@@ -100,7 +100,7 @@ function _M.wait(self, time)
     errlen[0] = ERR_BUF_SIZE
 
     local ret = C.ngx_http_lua_ffi_semaphore_wait(r, cdata_sem,
-                                                  time * 1000, err, errlen)
+                                                  milliseconds, err, errlen)
 
     if ret == FFI_ERROR then
         return nil, ffi_str(err, errlen[0])

@@ -68,6 +68,7 @@ __DATA__
             local semaphore = require "ngx.semaphore"
             local g = package.loaded["semaphore_test"] or {}
             package.loaded["semaphore_test"] = g
+
             if not g.test then
                 local sem, err = semaphore.new(0)
                 if not sem then
@@ -82,7 +83,6 @@ __DATA__
             local ok, err = sem:post()
             if ok then
                 ngx.print("post")
-                ngx.exit(200)
             else
                 ngx.exit(500)
             end
@@ -109,7 +109,7 @@ post
             local semaphore = require "ngx.semaphore"
             local sem = semaphore.new(0)
             local ok, err = sem:wait(0.1)
-            ngx.say(tostring(ok).." "..tostring(err))
+            ngx.say(ok, " ", err)
         }
     }
 --- request
@@ -267,15 +267,23 @@ ok
     location /test {
         access_by_lua_block {
             local semaphore = require "ngx.semaphore"
-            local ret = {}
             local sem = semaphore.new(0)
 
             local func_wait = function ()
-                ret.wait = sem:wait(10)
-            end
+                ngx.say("enter wait")
 
+                local ok, err = sem:wait(1)
+                if ok then
+                    ngx.say("wait success")
+                end
+            end
             local func_post = function ()
-                ret.post = sem:post()
+                ngx.say("enter post")
+
+                local ok, err = sem:post()
+                if ok then
+                    ngx.say("post success")
+                end
             end
 
             local co1 = ngx.thread.spawn(func_wait)
@@ -283,17 +291,15 @@ ok
 
             ngx.thread.wait(co1)
             ngx.thread.wait(co2)
-
-            if ret.post and ret.wait then
-                ngx.say("right")
-            end
-            ngx.exit(200)
         }
     }
 --- request
 GET /test
 --- response_body
-right
+enter wait
+enter post
+post success
+wait success
 --- no_error_log
 [error]
 
@@ -302,76 +308,42 @@ right
 === TEST 10: basic semaphore wait post in rewrite_by_lua
 --- http_config eval: $::HttpConfig
 --- config
-    location = /test {
-        access_log off;
-        content_by_lua_block {
-            local res1, res2 = ngx.location.capture_multi{
-                { "/sem_wait"},
-                { "/sem_post"},
-            }
-            ngx.say(res1.status)
-            ngx.say(res1.body)
-            ngx.say(res2.status)
-            ngx.say(res2.body)
-        }
-    }
-
-    location /sem_wait {
+    location /t {
         rewrite_by_lua_block {
             local semaphore = require "ngx.semaphore"
-            local g = package.loaded["semaphore_test"] or {}
-            package.loaded["semaphore_test"] = g
-            if not g.test then
-                local sem, err = semaphore.new(0)
-                if not sem then
-                    ngx.say(err)
-                    ngx.exit(500)
-                end
-                g.test = sem
-            end
-            local sem = g.test
-            local ok, err = sem:wait(10)
-            if ok then
-                ngx.print("wait")
-                ngx.exit(200)
-            else
-                ngx.print("some badthing happen"..err)
-                ngx.exit(201)
-            end
-        }
-    }
+            local sem = semaphore.new(0)
 
-    location /sem_post {
-        rewrite_by_lua_block {
-            local semaphore = require "ngx.semaphore"
-            local g = package.loaded["semaphore_test"] or {}
-            package.loaded["semaphore_test"] = g
-            if not g.test then
-                local sem, err = semaphore.new(0)
-                if not sem then
-                    ngx.say(err)
-                    ngx.exit(500)
+            local func_wait = function ()
+                ngx.say("enter wait")
+
+                local ok, err = sem:wait(1)
+                if ok then
+                    ngx.say("wait success")
                 end
-                g.test = sem
             end
-            local sem = g.test
-             local ok, err = sem:post()
-            if ok then
-                ngx.print("post")
-                ngx.exit(200)
-            else
-                ngx.print("some badthing happen"..err)
-                ngx.exit(201)
+            local func_post = function ()
+                ngx.say("enter post")
+
+                local ok, err = sem:post()
+                if ok then
+                    ngx.say("post success")
+                end
             end
+
+            local co1 = ngx.thread.spawn(func_wait)
+            local co2 = ngx.thread.spawn(func_post)
+
+            ngx.thread.wait(co1)
+            ngx.thread.wait(co2)
         }
     }
 --- request
 GET /test
 --- response_body
-200
-wait
-200
-post
+enter wait
+enter post
+post success
+wait success
 --- no_error_log
 [error]
 
@@ -383,17 +355,19 @@ post
     location /test {
         content_by_lua_block {
             local semaphore = require "ngx.semaphore"
-            local sem = semaphore.new(0)
-            local ok, err = sem:post()
-            local function func(premature, g)
-                local sem1 = sem
-                local ok, err = sem1:wait(10)
+            local sem = semaphore.new(1)
+
+            local function func_wait(premature)
+                local ok, err = sem:wait(1)
                 if not ok then
                     ngx.log(ngx.ERR, err)
+                else
+                    ngx.log(ngx.ERR, "wait success")
                 end
             end
-            ngx.timer.at(0, func, g)
-            ngx.sleep(0)
+
+            ngx.timer.at(0, func_wait)
+            ngx.sleep(0.001)
             ngx.say("ok")
         }
     }
@@ -401,8 +375,8 @@ post
 GET /test
 --- response_body
 ok
---- no_error_log
-[error]
+--- error_log
+wait success
 
 
 
@@ -490,10 +464,9 @@ post
             local semaphore = require "ngx.semaphore"
             local sem, err = semaphore.new(0)
             if sem then
-                err = "success"
+                ngx.say("success")
             end
             sem = nil
-            ngx.say(err)
             collectgarbage("collect")
         }
     }
@@ -759,7 +732,7 @@ post
 
 
 
-=== TEST 18: a light thread that to be killed is waiting on a semaphore
+=== TEST 18: kill a light thread that is waiting on a semaphore(no resource)
 --- http_config eval: $::HttpConfig
 --- config
     location /test {
@@ -769,10 +742,11 @@ post
             if not sem then
                 error("create failed")
             end
-            local function func(sem)
-                sem:wait(10)
+
+            local function func_wait()
+                sem:wait(1)
             end
-            local co = ngx.thread.spawn(func, sem)
+            local co = ngx.thread.spawn(func_wait)
             local ok, err = ngx.thread.kill(co)
             if ok then
                 ngx.say("ok")
@@ -791,7 +765,49 @@ ok
 
 
 
-=== TEST 19: a light thread that is going to exit is waiting on a semaphore
+=== TEST 19: kill a light thread that is waiting on a semaphore(after post)
+--- http_config eval: $::HttpConfig
+--- config
+    location /test {
+        content_by_lua_block {
+            local semaphore = require "ngx.semaphore"
+            local sem = semaphore.new(0)
+            if not sem then
+                error("create failed")
+            end
+
+            local function func_wait()
+                sem:wait(1)
+            end
+            local co = ngx.thread.spawn(func_wait)
+
+            sem:post()
+            local ok, err = ngx.thread.kill(co)
+
+            if ok then
+                ngx.say("ok")
+            else
+                ngx.say(err)
+            end
+
+            ngx.sleep(0.001)
+
+            local count = sem:count()
+            ngx.say("count: ", count)
+        }
+    }
+--- log_level: debug
+--- request
+GET /test
+--- response_body
+ok
+count: 1
+--- no_error_log
+[error]
+
+
+
+=== TEST 20: a light thread that is going to exit is waiting on a semaphore
 --- http_config eval: $::HttpConfig
 --- config
     location /test {
@@ -802,10 +818,15 @@ ok
                 error("create failed")
             end
             local function func(sem)
-                sem:wait(10)
+                local ok, err = sem:wait(0.001)
+                if ok then
+                    ngx.say("wait success")
+                else
+                    ngx.say("err: ", err)
+                end
             end
             local co = ngx.thread.spawn(func, sem)
-            ngx.say("test")
+            ngx.say("ok")
             ngx.exit(200)
         }
     }
@@ -813,13 +834,45 @@ ok
 --- request
 GET /test
 --- response_body
-test
+ok
 --- error_log
 http lua semaphore cleanup
 
 
 
-=== TEST 20: multi wait and mult post with one semaphore
+=== TEST 21: main thread wait a light thread that is waiting on a semaphore
+--- http_config eval: $::HttpConfig
+--- config
+    location /test {
+        content_by_lua_block {
+            local semaphore = require "ngx.semaphore"
+            local sem = semaphore.new(0)
+            if not sem then
+                error("create failed")
+            end
+            local function func(sem)
+                local ok, err = sem:wait(0.001)
+                if ok then
+                    ngx.say("wait success")
+                else
+                    ngx.say("err: ", err)
+                end
+            end
+            local co = ngx.thread.spawn(func, sem)
+            ngx.thread.wait(co)
+        }
+    }
+--- log_level: debug
+--- request
+GET /test
+--- response_body
+err: timeout
+--- no_error_log
+[error]
+
+
+
+=== TEST 22: multi wait and mult post with one semaphore
 --- http_config eval: $::HttpConfig
 --- config
     location = /test {
@@ -830,114 +883,54 @@ http lua semaphore cleanup
                 ngx.log(ngx.ERR, err)
                 ngx.exit(500)
             end
-            local function thread(op, id)
+
+            local function func(op, id)
+                ngx.say(op, ": ", id)
                 if op == "wait" then
-                    sem:wait(5)
-                    ngx.say(op.." "..tostring(id))
+                    local ok, err = sem:wait(1)
+                    if ok then
+                        ngx.say("wait success: ", id)
+                    end
                 else
-                    sem:post()
+                    local ok, err = sem:post()
+                    if not ok then
+                        ngx.say("post err: ", err)
+                    end
                 end
             end
             local tco = {}
 
             for i = 1, 3 do
-                tco[#tco + 1] = ngx.thread.spawn(thread, "wait", i)
+                tco[#tco + 1] = ngx.thread.spawn(func, "wait", i)
             end
 
             for i = 1, 3 do
-                tco[#tco + 1] = ngx.thread.spawn(thread, "post", i)
+                tco[#tco + 1] = ngx.thread.spawn(func, "post", i)
             end
 
-            for k, co in pairs(tco) do
-                ngx.thread.wait(co)
+            for i = 1, #tco do
+                ngx.thread.wait(tco[i])
             end
         }
     }
 --- request
 GET /test
 --- response_body
-wait 1
-wait 2
-wait 3
+wait: 1
+wait: 2
+wait: 3
+post: 1
+post: 2
+post: 3
+wait success: 1
+wait success: 2
+wait success: 3
 --- no_error_log
 [error]
 
 
 
-=== TEST 21: benchmark
---- http_config eval: $::HttpConfig
---- config
-    location = /test {
-        access_log off;
-        content_by_lua_block {
-            local semaphore = require "ngx.semaphore"
-            local g = package.loaded["semaphore_test"] or {}
-            package.loaded["semaphore_test"] = g
-            if g.id == nil then
-                g.id = 0
-                g.map = {}
-            end
-            local id = g.id
-            g.id = g.id + 1
-            local sem = semaphore.new(0)
-            g.map[id] = sem
-            local res1, res2 = ngx.location.capture_multi{
-                { "/sem_wait", { method = ngx.HTTP_POST, body = tostring(id) }},
-                { "/sem_post", { method = ngx.HTTP_POST, body = tostring(id)}},
-            }
-            g.map[id] = nil
-            ngx.say("ok")
-        }
-    }
-
-    location /sem_wait {
-        content_by_lua_block {
-            local semaphore = require "ngx.semaphore"
-            local g = package.loaded["semaphore_test"] or {}
-            package.loaded["semaphore_test"] = g
-            ngx.req.read_body()
-            local body = ngx.req.get_body_data()
-            local sem = g.map[tonumber(body)]
-            local ok, err = sem:wait(10)
-            if ok then
-                --ngx.print("wait")
-                ngx.exit(200)
-            else
-                ngx.log(ngx.ERR, err)
-                ngx.exit(500)
-            end
-        }
-    }
-
-    location /sem_post {
-        content_by_lua_block {
-            local semaphore = require "ngx.semaphore"
-            local g = package.loaded["semaphore_test"] or {}
-            package.loaded["semaphore_test"] = g
-            ngx.req.read_body()
-            local body = ngx.req.get_body_data()
-            local sem = g.map[tonumber(body)]
-            local ok, err = sem:post()
-            if ok then
-                --ngx.print("post")
-                ngx.exit(200)
-            else
-                ngx.log(ngx.ERR, err)
-                ngx.exit(500)
-            end
-        }
-    }
-
---- request
-GET /test
---- response_body
-ok
---- no_error_log
-[error]
-
-
-
-=== TEST 22: semaphore wait time is zero
+=== TEST 23: semaphore wait time is zero
 --- http_config eval: $::HttpConfig
 --- config
     location /test {
@@ -959,7 +952,7 @@ busy
 
 
 
-=== TEST 23: basic semaphore wait time default is zero
+=== TEST 24: semaphore wait time default is zero
 --- http_config eval: $::HttpConfig
 --- config
     location /test {
@@ -981,15 +974,16 @@ busy
 
 
 
-=== TEST 24: basic semaphore_mm alloc
+=== TEST 25: basic semaphore_mm alloc
 --- http_config eval: $::HttpConfig
 --- config
     location /test {
         content_by_lua_block {
             local semaphore = require "ngx.semaphore"
-            local sem1 = semaphore.new(0)
-            --local sem2 = semaphore.new(0)
-            ngx.say("ok")
+            local sem = semaphore.new(0)
+            if sem then
+                ngx.say("ok")
+            end
         }
     }
 --- log_level: debug
@@ -1008,25 +1002,35 @@ ok
 
 
 
-=== TEST 25: basic semaphore_mm free insert tail
+=== TEST 26: basic semaphore_mm free insert tail
 --- http_config eval: $::HttpConfig
 --- config
-    location /test {
+    location /t {
         content_by_lua_block {
             local semaphore = require "ngx.semaphore"
-            local t = {}
+            local sems = package.loaded.sems or {}
+            package.loaded.sems = sems
+
             local num_per_block = 4094
-            for i = 1, num_per_block * 2 do
-                t[i] = semaphore.new(0)
+            if not sems[num_per_block] then
+                for i = 1, num_per_block * 3 do
+                    sems[i] = semaphore.new(0)
+                end
             end
-            t = nil
+
+            for i = 1, 2 do
+                if sems[i] then
+                    sems[i] = nil
+                    ngx.say("ok")
+                    break
+                end
+            end
             collectgarbage("collect")
-            ngx.say("ok")
         }
     }
 --- log_level: debug
 --- request
-GET /test
+GET /t
 --- response_body
 ok
 --- error_log
@@ -1034,20 +1038,27 @@ add to free queue tail
 
 
 
-=== TEST 26: basic semaphore_mm free insert head
+=== TEST 27: basic semaphore_mm free insert head
 --- http_config eval: $::HttpConfig
 --- config
     location /test {
         content_by_lua_block {
             local semaphore = require "ngx.semaphore"
-            local t = {}
+            local sems = package.loaded.sems or {}
+            package.loaded.sems = sems
+
             local num_per_block = 4094
-            for i = 1, num_per_block * 2 do
-                t[i] = semaphore.new(0)
+            if not sems[num_per_block] then
+                for i = 1, num_per_block * 3 do
+                    sems[i] = semaphore.new(0)
+                end
             end
-            t = nil
+
+            if sems[#sems] then
+                sems[#sems] = nil
+                ngx.say("ok")
+            end
             collectgarbage("collect")
-            ngx.say("ok")
         }
     }
 --- log_level: debug
@@ -1060,19 +1071,28 @@ add to free queue head
 
 
 
-=== TEST 27: basic semaphore_mm free block
+=== TEST 28: semaphore_mm free block (load <= 50% & the on the older side)
 --- http_config eval: $::HttpConfig
 --- config
     location /test {
         content_by_lua_block {
             local semaphore = require "ngx.semaphore"
-            local t = {}
+            local sems = package.loaded.sems or {}
+            package.loaded.sems = sems
+
             local num_per_block = 4094
-            for i = 1, num_per_block * 2 do
-                t[i] = semaphore.new(0)
-            end
-            for i = 1, num_per_block do
-                t[i] = nil
+            if not sems[num_per_block * 3] then
+                for i = 1, num_per_block * 3 do
+                    sems[i] = semaphore.new(0)
+                end
+
+                for i = num_per_block + 1, num_per_block * 2 do
+                    sems[i] = nil
+                end
+            else
+                for i = 1, num_per_block do
+                    sems[i] = nil
+                end
             end
 
             collectgarbage("collect")
@@ -1087,14 +1107,14 @@ ok
 --- grep_error_log eval: qr/free semaphore block/
 --- grep_error_log_out eval
 [
+"",
 "free semaphore block
 ",
-"",
 ]
 
 
 
-=== TEST 28: basic semaphore count
+=== TEST 29: basic semaphore count
 --- http_config eval: $::HttpConfig
 --- config
     location /test {
@@ -1103,12 +1123,21 @@ ok
             local sem = semaphore.new(10)
             local count = sem:count()
             ngx.say(count)
+
+            sem:wait()
+            local count = sem:count()
+            ngx.say(count)
+
+            sem:post(3)
+            local count = sem:count()
+            ngx.say(count)
         }
     }
---- log_level: debug
 --- request
 GET /test
 --- response_body
 10
+9
+12
 --- no_error_log
 [error]

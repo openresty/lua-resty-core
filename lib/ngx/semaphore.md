@@ -126,7 +126,8 @@ wait
 **syntax:** *ok, err = sem:wait(timeout?)*
 
 **context:** *rewrite_by_lua*, access_by_lua*, content_by_lua*, ngx.timer.**
-The param sem is created by [ngx.semaphore.new](#ngxsemaphorenew). Wait on one semapohre. If there is a resource then it returns immediately, else the light thread or main thread or coroutine will sleep, then it will be waked up when some one else call the post method[#ngx.semaphore.post|ngx.semaphore.post]] or timeout event occur. The timeout default is 0, which means it will returns `nil`, `busy` if there is no resource to use. LuaJIT's FFI is needed by this api.
+
+The variable `sem` is created by [ngx.semaphore.new](#ngxsemaphorenew). If there have resources then it returns `true` immediately, else the light thread or main thread will yields the executation. then it will be waked up when some one else call the post method[#ngx.semaphore.post|ngx.semaphore.post]] or timeout event occur. The timeout default is 0, which means it will returns `nil`, `busy` if there is no resource to use. LuaJIT's FFI is needed by this api.
 
 ```lua
  local semaphore = require "ngx.semaphore"
