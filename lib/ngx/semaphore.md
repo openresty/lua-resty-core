@@ -29,8 +29,8 @@ http {
             access_log off;
             content_by_lua_block {
                 local res1, res2 = ngx.location.capture_multi{
-                  { "/sem_wait"},
-                  { "/sem_post"},
+                    { "/sem_wait"},
+                    { "/sem_post"},
                 }
                 ngx.say(res1.status)
                 ngx.say(res1.body)

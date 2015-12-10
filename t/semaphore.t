@@ -31,8 +31,8 @@ __DATA__
     location = /test {
         content_by_lua_block {
             local res1, res2 = ngx.location.capture_multi{
-              { "/sem_wait"},
-              { "/sem_post"},
+                { "/sem_wait"},
+                { "/sem_post"},
             }
             ngx.say(res1.status)
             ngx.say(res1.body)
@@ -40,7 +40,6 @@ __DATA__
             ngx.say(res2.body)
         }
     }
-
 
     location /sem_wait {
         content_by_lua_block {
@@ -63,7 +62,6 @@ __DATA__
             end
         }
     }
-
 
     location /sem_post {
         content_by_lua_block {
@@ -318,7 +316,6 @@ right
         }
     }
 
-
     location /sem_wait {
         rewrite_by_lua_block {
             local semaphore = require "ngx.semaphore"
@@ -343,7 +340,6 @@ right
             end
         }
     }
-
 
     location /sem_post {
         rewrite_by_lua_block {
@@ -385,7 +381,7 @@ post
 --- http_config eval: $::HttpConfig
 --- config
     location /test {
-       content_by_lua_block {
+        content_by_lua_block {
             local semaphore = require "ngx.semaphore"
             local sem = semaphore.new(0)
             local ok, err = sem:post()
@@ -399,7 +395,7 @@ post
             ngx.timer.at(0, func, g)
             ngx.sleep(0)
             ngx.say("ok")
-       }
+        }
     }
 --- request
 GET /test
@@ -426,7 +422,6 @@ ok
         }
     }
 
-
     location /sem_wait {
         content_by_lua_block {
             local semaphore = require "ngx.semaphore"
@@ -450,7 +445,6 @@ ok
             end
         }
     }
-
 
     location /sem_post {
         header_filter_by_lua_block {
@@ -492,7 +486,7 @@ post
 --- http_config eval: $::HttpConfig
 --- config
     location /test {
-       content_by_lua_block {
+        content_by_lua_block {
             local semaphore = require "ngx.semaphore"
             local sem, err = semaphore.new(0)
             if sem then
@@ -501,7 +495,7 @@ post
             sem = nil
             ngx.say(err)
             collectgarbage("collect")
-       }
+        }
     }
 --- request
 GET /test
@@ -553,7 +547,6 @@ in lua gc, semaphore
         }
     }
 
-
     location /sem_post {
         body_filter_by_lua_block {
             local semaphore = require "ngx.semaphore"
@@ -574,8 +567,8 @@ in lua gc, semaphore
         }
 
         content_by_lua_block {
-                ngx.print("post")
-                ngx.exit(200)
+            ngx.print("post")
+            ngx.exit(200)
         }
     }
 --- request
@@ -609,8 +602,8 @@ post
                 end
             }
             content_by_lua_block {
-                    ngx.say("post")
-                    ngx.exit(200)
+                ngx.say("post")
+                ngx.exit(200)
             }
         }
 --- request
@@ -681,8 +674,8 @@ ok
             end
         }
         content_by_lua_block {
-                ngx.print("post")
-                ngx.exit(200)
+            ngx.print("post")
+            ngx.exit(200)
         }
     }
 --- request
@@ -770,7 +763,7 @@ post
 --- http_config eval: $::HttpConfig
 --- config
     location /test {
-       content_by_lua_block {
+        content_by_lua_block {
             local semaphore = require "ngx.semaphore"
             local sem = semaphore.new(0)
             if not sem then
@@ -786,7 +779,7 @@ post
             else
                 ngx.say(err)
             end
-       }
+        }
     }
 --- log_level: debug
 --- request
@@ -802,7 +795,7 @@ ok
 --- http_config eval: $::HttpConfig
 --- config
     location /test {
-       content_by_lua_block {
+        content_by_lua_block {
             local semaphore = require "ngx.semaphore"
             local sem = semaphore.new(0)
             if not sem then
@@ -814,7 +807,7 @@ ok
             local co = ngx.thread.spawn(func, sem)
             ngx.say("test")
             ngx.exit(200)
-       }
+        }
     }
 --- log_level: debug
 --- request
@@ -948,14 +941,14 @@ ok
 --- http_config eval: $::HttpConfig
 --- config
     location /test {
-       content_by_lua_block {
+        content_by_lua_block {
             local semaphore = require "ngx.semaphore"
             local sem = semaphore.new(0)
             local ok, err = sem:wait(0)
             if not ok then
                 ngx.say(err)
             end
-       }
+        }
     }
 --- request
 GET /test
@@ -970,14 +963,14 @@ busy
 --- http_config eval: $::HttpConfig
 --- config
     location /test {
-       content_by_lua_block {
+        content_by_lua_block {
             local semaphore = require "ngx.semaphore"
             local sem = semaphore.new(0)
             local ok, err = sem:wait()
             if not ok then
                 ngx.say(err)
             end
-       }
+        }
     }
 --- request
 GET /test
@@ -992,12 +985,12 @@ busy
 --- http_config eval: $::HttpConfig
 --- config
     location /test {
-       content_by_lua_block {
+        content_by_lua_block {
             local semaphore = require "ngx.semaphore"
             local sem1 = semaphore.new(0)
             --local sem2 = semaphore.new(0)
             ngx.say("ok")
-       }
+        }
     }
 --- log_level: debug
 --- request
@@ -1019,7 +1012,7 @@ ok
 --- http_config eval: $::HttpConfig
 --- config
     location /test {
-       content_by_lua_block {
+        content_by_lua_block {
             local semaphore = require "ngx.semaphore"
             local t = {}
             local num_per_block = 4094
@@ -1029,7 +1022,7 @@ ok
             t = nil
             collectgarbage("collect")
             ngx.say("ok")
-       }
+        }
     }
 --- log_level: debug
 --- request
@@ -1045,7 +1038,7 @@ add to free queue tail
 --- http_config eval: $::HttpConfig
 --- config
     location /test {
-       content_by_lua_block {
+        content_by_lua_block {
             local semaphore = require "ngx.semaphore"
             local t = {}
             local num_per_block = 4094
@@ -1055,7 +1048,7 @@ add to free queue tail
             t = nil
             collectgarbage("collect")
             ngx.say("ok")
-       }
+        }
     }
 --- log_level: debug
 --- request
@@ -1071,7 +1064,7 @@ add to free queue head
 --- http_config eval: $::HttpConfig
 --- config
     location /test {
-       content_by_lua_block {
+        content_by_lua_block {
             local semaphore = require "ngx.semaphore"
             local t = {}
             local num_per_block = 4094
@@ -1084,7 +1077,7 @@ add to free queue head
 
             collectgarbage("collect")
             ngx.say("ok")
-       }
+        }
     }
 --- log_level: debug
 --- request
@@ -1105,12 +1098,12 @@ ok
 --- http_config eval: $::HttpConfig
 --- config
     location /test {
-       content_by_lua_block {
+        content_by_lua_block {
             local semaphore = require "ngx.semaphore"
             local sem = semaphore.new(10)
             local count = sem:count()
             ngx.say(count)
-       }
+        }
     }
 --- log_level: debug
 --- request

@@ -32,18 +32,18 @@ if not pcall(ffi.typeof, "ngx_http_lua_semaphore_t") then
 end
 
 ffi.cdef[[
-    int ngx_http_lua_ffi_semaphore_new(ngx_http_request_t *r,
-        ngx_http_lua_semaphore_t **psem, int n, char *errstr, size_t *errlen);
+int ngx_http_lua_ffi_semaphore_new(ngx_http_request_t *r,
+    ngx_http_lua_semaphore_t **psem, int n, char *errstr, size_t *errlen);
 
-    int ngx_http_lua_ffi_semaphore_post(ngx_http_lua_semaphore_t *sem,
-        int n, char **errstr);
+int ngx_http_lua_ffi_semaphore_post(ngx_http_lua_semaphore_t *sem,
+    int n, char **errstr);
 
-    int ngx_http_lua_ffi_semaphore_count(ngx_http_lua_semaphore_t *sem);
+int ngx_http_lua_ffi_semaphore_count(ngx_http_lua_semaphore_t *sem);
 
-    int ngx_http_lua_ffi_semaphore_wait(ngx_http_request_t *r,
-        ngx_http_lua_semaphore_t *sem, int wait_ms, char *errstr, size_t *errlen);
+int ngx_http_lua_ffi_semaphore_wait(ngx_http_request_t *r,
+    ngx_http_lua_semaphore_t *sem, int wait_ms, char *errstr, size_t *errlen);
 
-    void ngx_http_lua_ffi_semaphore_gc(ngx_http_lua_semaphore_t *sem);
+void ngx_http_lua_ffi_semaphore_gc(ngx_http_lua_semaphore_t *sem);
 ]]
 
 
