@@ -14,6 +14,13 @@ Table of Contents
     * [wait](#wait)
     * [post](#post)
     * [count](#count)
+* [Community](#community)
+    * [English Mailing List](#english-mailing-list)
+    * [Chinese Mailing List](#chinese-mailing-list)
+* [Bugs and Patches](#bugs-and-patches)
+* [Author](#author)
+* [Copyright and License](#copyright-and-license)
+* [See Also](#see-also)
 
 Synopsis
 ========
@@ -21,12 +28,8 @@ Synopsis
 ```nginx
 # demonstrate the usage of the ngx.semaphore
 http {
-    lua_shared_dict my_limit_conn_store 100m;
-
     server {
-
         location = /example {
-            access_log off;
             content_by_lua_block {
                 local res1, res2 = ngx.location.capture_multi{
                     { "/sem_wait"},
@@ -38,7 +41,6 @@ http {
                 ngx.say(res2.body)
             }
         }
-
 
         location /sem_wait {
             content_by_lua_block {
@@ -60,7 +62,6 @@ http {
                 end
             }
         }
-
 
         location /sem_post {
             content_by_lua_block {
@@ -128,7 +129,6 @@ wait
 The param sem is created by [ngx.semaphore.new](#ngxsemaphorenew). Wait on one semapohre. If there is a resource then it returns immediately, else the light thread or main thread or coroutine will sleep, then it will be waked up when some one else call the post method[#ngx.semaphore.post|ngx.semaphore.post]] or timeout event occur. The timeout default is 0, which means it will returns `nil`, `busy` if there is no resource to use. LuaJIT's FFI is needed by this api.
 
 ```lua
-
  local semaphore = require "ngx.semaphore"
  local shared =  require "mydata" -- please check https://github.com/openresty/lua-nginx-module#data-sharing-within-an-nginx-worker
  local print = ngx.print
@@ -187,11 +187,10 @@ count
 Return the count of the semaphore. LuaJIT's FFI is needed by this api.
 
 ```lua
-
  local semaphore = require "ngx.semaphore"
  local sem = ngx.semaphore.new(2)
  local count = sem:count()  -- count == 2
- ```
+```
 
 [Back to TOC](#table-of-contents)
 
