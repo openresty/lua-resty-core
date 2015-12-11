@@ -32,11 +32,10 @@ if not pcall(ffi.typeof, "ngx_http_lua_semaphore_t") then
 end
 
 ffi.cdef[[
-int ngx_http_lua_ffi_semaphore_new(ngx_http_request_t *r,
-    ngx_http_lua_semaphore_t **psem, int n, char *errstr, size_t *errlen);
+int ngx_http_lua_ffi_semaphore_new(ngx_http_lua_semaphore_t **psem,
+    int n, char *errstr, size_t *errlen);
 
-int ngx_http_lua_ffi_semaphore_post(ngx_http_lua_semaphore_t *sem,
-    int n, char **errstr);
+int ngx_http_lua_ffi_semaphore_post(ngx_http_lua_semaphore_t *sem, int n);
 
 int ngx_http_lua_ffi_semaphore_count(ngx_http_lua_semaphore_t *sem);
 
@@ -57,14 +56,14 @@ local mt = { __index = _M }
 function _M.new(n)
     local r = getfenv(0).__ngx_req
     if not r then
-        return nil, "no request found"
+        return nil, "API disabled in the context of init"
     end
 
     local err = get_string_buf(ERR_BUF_SIZE)
     local errlen = get_size_ptr()
     errlen[0] = ERR_BUF_SIZE
 
-    local ret = C.ngx_http_lua_ffi_semaphore_new(r, psem, n, err, errlen)
+    local ret = C.ngx_http_lua_ffi_semaphore_new(psem, n, err, errlen)
 
     if ret == FFI_ERROR then
         return nil, ffi_str(err, errlen[0])
@@ -130,11 +129,8 @@ function _M.post(self, n)
         num = 1
     end
 
-    local ret = C.ngx_http_lua_ffi_semaphore_post(cdata_sem, num, errmsg)
-
-    if ret == FFI_ERROR then
-        return nil, ffi_str(errmsg[0])
-    end
+    -- always return NGX_OK
+    C.ngx_http_lua_ffi_semaphore_post(cdata_sem, num)
 
     return true
 end

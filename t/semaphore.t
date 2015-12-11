@@ -251,10 +251,10 @@ API disabled in the context of log_by_lua*
 GET /test
 --- response_body
 ok
---- grep_error_log eval: qr/no request found/
+--- grep_error_log eval: qr/API disabled in the context of init/
 --- grep_error_log_out eval
 [
-"no request found
+"API disabled in the context of init
 ",
 "",
 ]
@@ -991,12 +991,12 @@ busy
 GET /test
 --- response_body
 ok
---- grep_error_log eval: qr/(new block, alloc semaphore|free queue, alloc semaphore)/
+--- grep_error_log eval: qr/(new block, alloc semaphore|from head of free queue, alloc semaphore)/
 --- grep_error_log_out eval
 [
 "new block, alloc semaphore
 ",
-"free queue, alloc semaphore
+"from head of free queue, alloc semaphore
 ",
 ]
 
