@@ -32,17 +32,18 @@ if not pcall(ffi.typeof, "ngx_http_lua_semaphore_t") then
 end
 
 ffi.cdef[[
-int ngx_http_lua_ffi_semaphore_new(ngx_http_lua_semaphore_t **psem,
-    int n, char *errstr, size_t *errlen);
+    int ngx_http_lua_ffi_semaphore_new(ngx_http_lua_semaphore_t **psem,
+        int n, char **errmsg);
 
-int ngx_http_lua_ffi_semaphore_post(ngx_http_lua_semaphore_t *sem, int n);
+    int ngx_http_lua_ffi_semaphore_post(ngx_http_lua_semaphore_t *sem, int n);
 
-int ngx_http_lua_ffi_semaphore_count(ngx_http_lua_semaphore_t *sem);
+    int ngx_http_lua_ffi_semaphore_count(ngx_http_lua_semaphore_t *sem);
 
-int ngx_http_lua_ffi_semaphore_wait(ngx_http_request_t *r,
-    ngx_http_lua_semaphore_t *sem, int wait_ms, char *errstr, size_t *errlen);
+    int ngx_http_lua_ffi_semaphore_wait(ngx_http_request_t *r,
+        ngx_http_lua_semaphore_t *sem, int wait_ms,
+        unsigned char *errstr, size_t *errlen);
 
-void ngx_http_lua_ffi_semaphore_gc(ngx_http_lua_semaphore_t *sem);
+    void ngx_http_lua_ffi_semaphore_gc(ngx_http_lua_semaphore_t *sem);
 ]]
 
 
@@ -59,14 +60,9 @@ function _M.new(n)
         return nil, "API disabled in the context of init"
     end
 
-    local err = get_string_buf(ERR_BUF_SIZE)
-    local errlen = get_size_ptr()
-    errlen[0] = ERR_BUF_SIZE
-
-    local ret = C.ngx_http_lua_ffi_semaphore_new(psem, n, err, errlen)
-
+    local ret = C.ngx_http_lua_ffi_semaphore_new(psem, n, errmsg)
     if ret == FFI_ERROR then
-        return nil, ffi_str(err, errlen[0])
+        return nil, ffi_str(errmsg[0])
     end
 
     local sem = psem[0]
