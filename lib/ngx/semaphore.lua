@@ -60,7 +60,7 @@ function _M.new(n)
         return nil, "API disabled in the context of init"
     end
 
-    local ret = C.ngx_http_lua_ffi_semaphore_new(psem, n, errmsg)
+    local ret = C.ngx_http_lua_ffi_semaphore_new(psem, tonumber(n) or 0, errmsg)
     if ret == FFI_ERROR then
         return nil, ffi_str(errmsg[0])
     end
