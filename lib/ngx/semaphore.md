@@ -98,9 +98,9 @@ wait
 
 **context:** *rewrite_by_lua*, access_by_lua*, content_by_lua*, ngx.timer.**
 
-The variable `sem` is created by [ngx.semaphore.new](#ngxsemaphorenew).
+The variable `sem` is created by [ngx.semaphore.new](#new).
 If there have resources then it returns `true`, `nil` immediately.
-Otherwise the current thread will yields the executation, it will be waked up and return `true`, `nil` until there have a resource(some one call the post method[#ngx.semaphore.post|ngx.semaphore.post]]) or return `nil`, `timeout` when timeout event occurred.
+Otherwise the current thread will yields the executation, it will be waked up and return `true`, `nil` until there have a resource(some one call the post method[#post|ngx.semaphore.post]]) or return `nil`, `timeout` when timeout event occurred.
 The param `timeout` default is 0, it will returns `nil`, `busy` when there is no resource.
 
 ```lua
@@ -128,7 +128,7 @@ Release `n` resources to a semaphore.
 This will not yields the current executation.
 At most `n` uthreads will be waked up in the next `nginx event cycle`.
 
-The variable `sem` is created by [ngx.semaphore.new](#ngxsemaphorenew).
+The variable `sem` is created by [ngx.semaphore.new](#new).
 It always return `true`, `nil`.
 
 ```lua
