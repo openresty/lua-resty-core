@@ -97,16 +97,16 @@ post
 
 **context:** *init_worker_by_lua*, set_by_lua*, rewrite_by_lua*, access_by_lua*, content_by_lua*, header_filter_by_lua*, body_filter_by_lua, log_by_lua*, ngx.timer.**
 
-Release `n` resources to the semaphore instance.
+Release `n` (default `1`) resources to the semaphore instance.
 This will not yields the current executation.
-At most `n` uthreads will be waked up in the next `nginx event cycle`.
+At most `n` uthreads will be waked up in the next nginx event cycle.
 
 ```lua
+ -- typically, we get the semaphore instance from upvalue or globally share data
+ -- https://github.com/openresty/lua-nginx-module#data-sharing-within-an-nginx-worker
+
  local semaphore = require "ngx.semaphore"
  local sem = semaphore.new()
-
- -- typically, we get the sem from upvalue or globally share data
- -- https://github.com/openresty/lua-nginx-module#data-sharing-within-an-nginx-worker
 
  sem:post()
 ```
@@ -147,13 +147,20 @@ The param `timeout` default is 0. And it will returns `nil`, `busy` when there i
 
  sem:post(2)
 
+ local ok, err = sem:wait()
+ if ok then
+     ngx.say("wait success in main thread")
+ else
+     ngx.say("wait failed in main thread: ", err) -- busy
+ end
+
  ngx.say("still in main thread")
 
  local ok, err = sem:wait(0.01)
  if ok then
      ngx.say("wait success in main thread")
  else
-     ngx.say("wait failed in main thread: ", err)
+     ngx.say("wait failed in main thread: ", err) -- timeout
  end
 
  ngx.sleep(0.01)
@@ -166,6 +173,7 @@ The param `timeout` default is 0. And it will returns `nil`, `busy` when there i
 count
 --------
 **syntax:** `count = sem:count()`
+
 **context:** *init_worker_by_lua*, set_by_lua*, rewrite_by_lua*, access_by_lua*, content_by_lua*, header_filter_by_lua*, body_filter_by_lua, log_by_lua*, ngx.timer.**
 
 Return the number of resources in the semaphore instance. It means the number of uthreads that is waiting on the semaphore instance when the number is negative.
