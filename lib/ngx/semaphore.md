@@ -11,8 +11,8 @@ Table of Contents
 * [Description](#description)
 * [Methods](#methods)
     * [new](#new)
-    * [wait](#wait)
     * [post](#post)
+    * [wait](#wait)
     * [count](#count)
 * [Community](#community)
     * [English Mailing List](#english-mailing-list)
@@ -49,10 +49,9 @@ http {
 
                 ngx.say("back in main thread")
 
-                local ok, err = sem:post()
-                if ok then
-                    ngx.say("sem post ok")
-                end
+                sem:post()
+
+                ngx.say("still in main thread")
 
                 ngx.sleep(0.01)
 
@@ -80,14 +79,36 @@ new
 
 **context:** *init_worker_by_lua*, set_by_lua*, rewrite_by_lua*, access_by_lua*, content_by_lua*, header_filter_by_lua*, body_filter_by_lua, log_by_lua*, ngx.timer.**
 
-Creates a semaphore that has `n`(default `0`) resources.
+Creates and returns a semaphore instance that has `n` (default `0`) resources.
 
 ```lua
-    local semaphore = require "ngx.semaphore"
-    local sem, err = semaphore.new(1)
-    if not sem then
-        ngx.say("create semaphore failed: ", err)
-    end
+ local semaphore = require "ngx.semaphore"
+ local sem, err = semaphore.new(1)
+ if not sem then
+     ngx.say("create semaphore failed: ", err)
+ end
+```
+
+[Back to TOC](#table-of-contents)
+
+post
+--------
+**syntax:** *sem:post(n?)*
+
+**context:** *init_worker_by_lua*, set_by_lua*, rewrite_by_lua*, access_by_lua*, content_by_lua*, header_filter_by_lua*, body_filter_by_lua, log_by_lua*, ngx.timer.**
+
+Release `n` resources to the semaphore instance.
+This will not yields the current executation.
+At most `n` uthreads will be waked up in the next `nginx event cycle`.
+
+```lua
+ local semaphore = require "ngx.semaphore"
+ local sem = semaphore.new()
+
+ -- typically, we get the sem from upvalue or globally share data
+ -- https://github.com/openresty/lua-nginx-module#data-sharing-within-an-nginx-worker
+
+ sem:post()
 ```
 
 [Back to TOC](#table-of-contents)
@@ -98,50 +119,46 @@ wait
 
 **context:** *rewrite_by_lua*, access_by_lua*, content_by_lua*, ngx.timer.**
 
-The variable `sem` is created by [ngx.semaphore.new](#new).
-If there have resources then it returns `true`, `nil` immediately.
-Otherwise the current thread will yields the executation, it will be waked up and return `true`, `nil` until there have a resource(some one call the post method [ngx.seamphore.post](#post) ) or return `nil`, `timeout` when timeout event occurred.
-The param `timeout` default is 0, it will returns `nil`, `busy` when there is no resource.
+Request a resource from the semaphore instance.
+It returns `true` immediately when there have resources and no one have already waiting on the semaphore instance.
+Otherwise the current thread will into the waiting queue and yields the current executation, it will be waked and returned `true` until there have resources(some one call the post method [ngx.seamphore.post](#post)) and not one is waiting before it or return `nil`, `timeout` when timeout event occurred.
+
+The param `timeout` default is 0. And it will returns `nil`, `busy` when there is no resources or there have some one already waiting on the semaphore instance.
 
 ```lua
-    local semaphore = require "ngx.semaphore"
-    local sem = semaphore.new()
+ local semaphore = require "ngx.semaphore"
+ local sem = semaphore.new()
 
-    -- typically, we get the sem from upvalue or globally share data
-    -- https://github.com/openresty/lua-nginx-module#data-sharing-within-an-nginx-worker
+ local function sem_wait(id)
+     ngx.say("enter waiting, id: ", id)
 
-    local ok, err = sem:wait(10)
-    if not ok then
-        ngx.say("wait err: ", err)
-    end
-```
+     local ok, err = sem:wait(1)
+     if not ok then
+         ngx.say("err: ", err)
+     else
+         ngx.say("wait success, id: ", id)
+     end
+ end
 
-[Back to TOC](#table-of-contents)
+ local co1 = ngx.thread.spawn(sem_wait, 1)
+ local co2 = ngx.thread.spawn(sem_wait, 2)
 
-post
---------
-**syntax:** *ok, err = sem:post(n?)*
+ ngx.say("back in main thread")
 
-**context:** *init_worker_by_lua*, set_by_lua*, rewrite_by_lua*, access_by_lua*, content_by_lua*, header_filter_by_lua*, body_filter_by_lua, log_by_lua*, ngx.timer.**
+ sem:post(2)
 
-Release `n` resources to a semaphore.
-This will not yields the current executation.
-At most `n` uthreads will be waked up in the next `nginx event cycle`.
+ ngx.say("still in main thread")
 
-The variable `sem` is created by [ngx.semaphore.new](#new).
-It always return `true`, `nil`.
+ local ok, err = sem:wait(0.01)
+ if ok then
+     ngx.say("wait success in main thread")
+ else
+     ngx.say("wait failed in main thread: ", err)
+ end
 
-```lua
-    local semaphore = require "ngx.semaphore"
-    local sem = semaphore.new()
+ ngx.sleep(0.01)
 
-    -- typically, we get the sem from upvalue or globally share data
-    -- https://github.com/openresty/lua-nginx-module#data-sharing-within-an-nginx-worker
-
-    local ok, err = sem:post()
-    if not ok then
-        ngx.say("post err: ", err)
-    end
+ ngx.say("main thread end")
 ```
 
 [Back to TOC](#table-of-contents)
@@ -151,13 +168,35 @@ count
 **syntax:** `count = sem:count()`
 **context:** *init_worker_by_lua*, set_by_lua*, rewrite_by_lua*, access_by_lua*, content_by_lua*, header_filter_by_lua*, body_filter_by_lua, log_by_lua*, ngx.timer.**
 
-Return the count of the semaphore.
+Return the number of resources in the semaphore instance. It means the number of uthreads that is waiting on the semaphore instance when the number is negative.
 
 ```lua
-    local semaphore = require "ngx.semaphore"
-    local sem = ngx.semaphore.new(2)
-    local count = sem:count()
-    ngx.say("count: ", count)  -- count: 2
+ local semaphore = require "ngx.semaphore"
+ local sem = ngx.semaphore.new(0)
+
+ ngx.say("count: ", sem:count())  -- count: 0
+
+ local function sem_wait(id)
+     local ok, err = sem:wait(1)
+     if not ok then
+         ngx.say("err: ", err)
+     else
+         ngx.say("wait success")
+     end
+ end
+
+ local co1 = ngx.thread.spawn(sem_wait)
+ local co2 = ngx.thread.spawn(sem_wait)
+
+ ngx.say("count: ", sem:count())  -- count: -2
+
+ sem:post(1)
+
+ ngx.say("count: ", sem:count())  -- count: -1
+
+ sem:post(2)
+
+ ngx.say("count: ", sem:count())  -- count: 1
 ```
 
 [Back to TOC](#table-of-contents)
