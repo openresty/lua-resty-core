@@ -110,7 +110,6 @@ main thread end
             ngx.say("main thread end")
         }
     }
---- ONLY
 --- request
 GET /test
 --- response_body
@@ -182,12 +181,8 @@ main thread end
             local sem = g.test
             ngx.sleep(0.001)
             collectgarbage("collect")
-            local ok, err = sem:post()
-            if ok then
-                ngx.print("post")
-            else
-                ngx.exit(500)
-            end
+            sem:post()
+            ngx.print("post")
         }
     }
 --- request
@@ -243,10 +238,7 @@ ok
             ngx.log(ngx.ERR, "sem: ", err)
         end
 
-        local ok, err = sem:post(1)
-        if not ok then
-            ngx.log(ngx.ERR, "sem: ", err)
-        end
+        sem:post(1)
 
         local count = sem:count()
         ngx.log(ngx.ERR, "sem: ", count)
@@ -286,10 +278,7 @@ sem: API disabled in the context of init_worker_by_lua*,
                 ngx.log(ngx.ERR, "sem: ", err)
             end
 
-            local ok, err = sem:post(1)
-            if not ok then
-                ngx.log(ngx.ERR, "sem: ", err)
-            end
+            sem:post(1)
 
             local count = sem:count()
             ngx.log(ngx.ERR, "sem: ", count)
@@ -334,10 +323,7 @@ sem: API disabled in the context of set_by_lua*,
                 ngx.log(ngx.ERR, "sem: ", err)
             end
 
-            local ok, err = sem:post(1)
-            if not ok then
-                ngx.log(ngx.ERR, "sem: ", err)
-            end
+            sem:post(1)
 
             local count = sem:count()
             ngx.log(ngx.ERR, "sem: ", count)
@@ -382,10 +368,7 @@ sem: 1,
                 ngx.log(ngx.ERR, "sem: ", err)
             end
 
-            local ok, err = sem:post(1)
-            if not ok then
-                ngx.log(ngx.ERR, "sem: ", err)
-            end
+            sem:post(1)
 
             local count = sem:count()
             ngx.log(ngx.ERR, "sem: ", count)
@@ -430,10 +413,7 @@ sem: 1,
                 ngx.log(ngx.ERR, "sem: ", err)
             end
 
-            local ok, err = sem:post(1)
-            if not ok then
-                ngx.log(ngx.ERR, "sem: ", err)
-            end
+            sem:post(1)
 
             local count = sem:count()
             ngx.log(ngx.ERR, "sem: ", count)
@@ -475,10 +455,7 @@ sem: 1,
                 ngx.log(ngx.ERR, "sem: ", err)
             end
 
-            local ok, err = sem:post(1)
-            if not ok then
-                ngx.log(ngx.ERR, "sem: ", err)
-            end
+            sem:post(1)
 
             local count = sem:count()
             ngx.log(ngx.ERR, "sem: ", count)
@@ -518,10 +495,7 @@ sem: API disabled in the context of log_by_lua* while logging request,
                 ngx.log(ngx.ERR, "sem: ", err)
             end
 
-            local ok, err = sem:post(1)
-            if not ok then
-                ngx.log(ngx.ERR, "sem: ", err)
-            end
+            sem:post(1)
 
             local count = sem:count()
             ngx.log(ngx.ERR, "sem: ", count)
@@ -561,10 +535,7 @@ sem: API disabled in the context of header_filter_by_lua*,
                 ngx.log(ngx.ERR, "sem: ", err)
             end
 
-            local ok, err = sem:post(1)
-            if not ok then
-                ngx.log(ngx.ERR, "sem: ", err)
-            end
+            sem:post(1)
 
             local count = sem:count()
             ngx.log(ngx.ERR, "sem: ", count)
@@ -613,10 +584,7 @@ sem: API disabled in the context of body_filter_by_lua*,
                     ngx.log(ngx.ERR, "sem: ", err)
                 end
 
-                local ok, err = sem:post(1)
-                if not ok then
-                    ngx.log(ngx.ERR, "sem: ", err)
-                end
+                sem:post(1)
 
                 local count = sem:count()
                 ngx.log(ngx.ERR, "sem: ", count)
@@ -697,10 +665,8 @@ sem: 1,
         }
         content_by_lua_block {
             local sem = package.loaded.sem
-            local ok, err = sem:post()
-            if ok then
-                ngx.say("ok")
-            end
+            sem:post()
+            ngx.say("ok")
         }
         header_filter_by_lua_block {
             local sem = package.loaded.sem
@@ -745,10 +711,8 @@ ok
             local func_post = function ()
                 ngx.say("enter post")
 
-                local ok, err = sem:post()
-                if ok then
-                    ngx.say("post success")
-                end
+                sem:post()
+                ngx.say("post success")
             end
 
             local co1 = ngx.thread.spawn(func_wait)
@@ -789,10 +753,8 @@ wait success
             local func_post = function ()
                 ngx.say("enter post")
 
-                local ok, err = sem:post()
-                if ok then
-                    ngx.say("post success")
-                end
+                sem:post()
+                ngx.say("post success")
             end
 
             local co1 = ngx.thread.spawn(func_wait)
@@ -896,10 +858,7 @@ wait success
                 package.loaded.sem = sem
             end
             local sem = package.loaded.sem
-            local ok, err = sem:post()
-            if not ok then
-                ngx.log(ngx.ERR, err)
-            end
+            sem:post()
         }
 
         content_by_lua_block {
@@ -968,10 +927,7 @@ post
                 package.loaded.sem = sem
             end
             local sem = package.loaded.sem
-            local ok, err = sem:post()
-            if not ok then
-                ngx.log(ngx.ERR, err)
-            end
+            sem:post()
         }
 
         content_by_lua_block {
@@ -1041,10 +997,7 @@ post
                 package.loaded.sem = sem
             end
             local sem = package.loaded.sem
-            local ok, err = sem:post()
-            if not ok then
-                ngx.log(ngx.ERR, err)
-            end
+            sem:post()
         }
         content_by_lua_block {
             ngx.print("post")
@@ -1100,10 +1053,7 @@ post
         content_by_lua_block {
             local function func(premature)
                 local sem = package.loaded.sem
-                local ok, err = sem:post()
-                if not ok then
-                    ngx.log(ngx.ERR, err)
-                end
+                sem:post()
             end
             ngx.timer.at(0, func, g)
             ngx.sleep(0)
@@ -1392,10 +1342,7 @@ err: timeout
                         ngx.say("wait success: ", id)
                     end
                 else
-                    local ok, err = sem:post()
-                    if not ok then
-                        ngx.say("post err: ", err)
-                    end
+                    sem:post()
                 end
             end
             local tco = {}
