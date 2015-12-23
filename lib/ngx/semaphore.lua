@@ -24,14 +24,10 @@ local ERR_BUF_SIZE = 128
 local errmsg = base.get_errmsg_ptr()
 
 
-if not pcall(ffi.typeof, "ngx_http_lua_semaphore_t") then
-    ffi.cdef[[
-        struct ngx_http_lua_semaphore_s;
-        typedef struct ngx_http_lua_semaphore_s ngx_http_lua_semaphore_t;
-    ]]
-end
-
 ffi.cdef[[
+    struct ngx_http_lua_semaphore_s;
+    typedef struct ngx_http_lua_semaphore_s ngx_http_lua_semaphore_t;
+
     int ngx_http_lua_ffi_semaphore_new(ngx_http_lua_semaphore_t **psem,
         int n, char **errmsg);
 
@@ -60,7 +56,12 @@ function _M.new(n)
         return nil, "API disabled in the context of init"
     end
 
-    local ret = C.ngx_http_lua_ffi_semaphore_new(psem, tonumber(n) or 0, errmsg)
+    n = tonumber(n) or 0
+    if n < 0 then
+        return error("no negative number")
+    end
+
+    local ret = C.ngx_http_lua_ffi_semaphore_new(psem, n, errmsg)
     if ret == FFI_ERROR then
         return nil, ffi_str(errmsg[0])
     end
@@ -75,7 +76,7 @@ end
 
 function _M.wait(self, seconds)
     if type(self) ~= "table" or type(self.sem) ~= "cdata" then
-        return nil, "semaphore not inited"
+        return error("not a semaphore instance")
     end
 
     local r = getfenv(0).__ngx_req
@@ -85,7 +86,7 @@ function _M.wait(self, seconds)
 
     local milliseconds = (seconds and tonumber(seconds) or 0) * 1000
     if milliseconds < 0 then
-        milliseconds = 0
+        return error("no negative number")
     end
 
     local cdata_sem = self.sem
@@ -115,14 +116,14 @@ end
 
 function _M.post(self, n)
     if type(self) ~= "table" or type(self.sem) ~= "cdata" then
-        return nil, "semaphore not inited"
+        return error("not a semaphore instance")
     end
 
     local cdata_sem = self.sem
 
     local num = tonumber(n) or 1
     if num < 1 then
-        num = 1
+        return error("no negative number")
     end
 
     -- always return NGX_OK
@@ -134,13 +135,10 @@ end
 
 function _M.count(self)
     if type(self) ~= "table" or type(self.sem) ~= "cdata" then
-        return nil, "semaphore not inited"
+        return error("not a semaphore instance")
     end
 
-    local cdata_sem = self.sem
-    local ret = C.ngx_http_lua_ffi_semaphore_count(cdata_sem)
-
-    return ret
+    return C.ngx_http_lua_ffi_semaphore_count(self.sem)
 end
 
 
