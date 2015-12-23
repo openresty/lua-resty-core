@@ -242,6 +242,7 @@ Author
 ======
 
 Yichun "agentzh" Zhang (章亦春) <agentzh@gmail.com>, CloudFlare Inc.
+cuiweixie (崔伟协), <523516579@qq.com>, Kugou Inc.
 
 [Back to TOC](#table-of-contents)
 
