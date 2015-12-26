@@ -25,6 +25,7 @@ Table of Contents
     * [resty.core.misc](#restycoremisc)
     * [resty.core.time](#restycoretime)
     * [resty.core.worker](#restycoreworker)
+    * [ngx.semaphore](#ngxsemaphore)
 * [Caveat](#caveat)
 * [TODO](#todo)
 * [Author](#author)
@@ -71,7 +72,7 @@ Prerequisites
 =============
 
 * LuaJIT 2.1 (for now, it is the v2.1 git branch in the official luajit-2.0 git repository: http://luajit.org/download.html )
-* [ngx_lua](https://github.com/openresty/lua-nginx-module) v0.9.17 or later.
+* [ngx_lua](https://github.com/openresty/lua-nginx-module) v0.9.21 or later.
 * [lua-resty-lrucache](https://github.com/openresty/lua-resty-lrucache)
 
 [Back to TOC](#table-of-contents)
@@ -182,6 +183,15 @@ API Implemented
 
 * [ngx.worker.exiting](https://github.com/openresty/lua-nginx-module#ngxworkerexiting)
 * [ngx.worker.pid](https://github.com/openresty/lua-nginx-module#ngxworkerpid)
+
+[Back to TOC](#table-of-contents)
+
+## ngx.semaphore
+
+This Lua module implements a semaphore API for efficient "light thread" synchronization,
+which can work across different requests (but not across nginx worker processes).
+
+See the [documentation](./lib/ngx/semaphore.md) for this Lua module for more details.
 
 [Back to TOC](#table-of-contents)
 
