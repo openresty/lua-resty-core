@@ -26,6 +26,7 @@ Table of Contents
     * [resty.core.time](#restycoretime)
     * [resty.core.worker](#restycoreworker)
     * [ngx.semaphore](#ngxsemaphore)
+    * [ngx.balancer](#ngxbalancer)
 * [Caveat](#caveat)
 * [TODO](#todo)
 * [Author](#author)
@@ -192,6 +193,14 @@ This Lua module implements a semaphore API for efficient "light thread" synchron
 which can work across different requests (but not across nginx worker processes).
 
 See the [documentation](./lib/ngx/semaphore.md) for this Lua module for more details.
+
+[Back to TOC](#table-of-contents)
+
+## ngx.balancer
+
+This Lua module implements for defining dynamic upstream balancers in Lua.
+
+See the [documentation](./lib/ngx/balancer.md) for this Lua module for more details.
 
 [Back to TOC](#table-of-contents)
 
