@@ -107,7 +107,7 @@ location = /t {
             sema:post(1)
         end
 
-        local co = ngx.timer.at(0, handler)
+        assert(ngx.timer.at(0, handler))
 
         out("main thread: waiting on sema...")
 
