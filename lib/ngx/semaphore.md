@@ -151,7 +151,13 @@ synchronize among each other very efficiently without constant polling and sleep
 "Light threads" in different contexts (like in different requests) can share the same
 semaphore instance as long as these "light threads" reside in the same NGINX worker
 process and the [lua_code_cache](https://github.com/openresty/lua-nginx-module#lua_code_cache)
-directive is turned on (which is the default).
+directive is turned on (which is the default). For inter-process "light thread" synchronization,
+it is recommended to use the [lua-resty-lock](https://github.com/openresty/lua-resty-lock) library instead
+(which is a bit less efficient than this semaphore API though).
+
+This semaphore API has a pure userland implementation which does not involve any system calls nor
+block any operating system threads. It works closely with the event model of NGINX without
+introducing any extra delay.
 
 Like other APIs provided by this `lua-resty-core` library, the LuaJIT FFI feature is required.
 
