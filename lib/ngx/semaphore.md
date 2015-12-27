@@ -97,8 +97,6 @@ location = /t {
             i = i + 1
         end
 
-        local done = false
-
         local function handler()
             out("timer thread: sleeping for a little while...")
 
