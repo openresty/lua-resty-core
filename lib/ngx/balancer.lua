@@ -11,6 +11,10 @@ local errmsg = base.get_errmsg_ptr()
 local FFI_OK = base.FFI_OK
 local FFI_ERROR = base.FFI_ERROR
 local int_out = ffi.new("int[1]")
+local getfenv = getfenv
+local error = error
+local type = type
+local tonumber = tonumber
 
 
 ffi.cdef[[
