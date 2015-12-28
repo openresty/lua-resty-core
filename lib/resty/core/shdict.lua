@@ -26,7 +26,7 @@ ffi.cdef[[
         int get_stale, int *is_stale);
 
     int ngx_http_lua_ffi_shdict_incr(void *zone, const unsigned char *key,
-        size_t key_len, double *value, char **err);
+        size_t key_len, double *value, int exptime, char **err);
 
     int ngx_http_lua_ffi_shdict_store(void *zone, int op,
         const unsigned char *key, size_t key_len, int value_type,
@@ -311,7 +311,7 @@ local function shdict_get_stale(zone, key)
 end
 
 
-local function shdict_incr(zone, key, value)
+local function shdict_incr(zone, key, value, exptime)
     zone = check_zone(zone)
 
     if key == nil then
@@ -334,9 +334,11 @@ local function shdict_incr(zone, key, value)
         value = tonumber(value)
     end
     num_value[0] = value
+    
+    exptime = exptime or -1
 
     local rc = C.ngx_http_lua_ffi_shdict_incr(zone, key, key_len, num_value,
-                                             errmsg)
+                                             exptime, errmsg)
     if rc ~= 0 then  -- ~= NGX_OK
         return nil, ffi_str(errmsg[0])
     end
