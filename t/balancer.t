@@ -29,7 +29,7 @@ __DATA__
         balancer_by_lua_block {
             print("hello from balancer by lua!")
             local b = require "ngx.balancer"
-            assert(b.set_current_peer("127.0.0.3", 12345))
+            assert(b.set_current_peer("127.0.0.1", 12345))
         }
     }
 --- config
@@ -43,7 +43,7 @@ __DATA__
 --- error_log eval
 [
 '[lua] balancer_by_lua:2: hello from balancer by lua! while connecting to upstream,',
-qr{connect\(\) failed .*?, upstream: "http://127\.0\.0\.3:12345/t"},
+qr{connect\(\) failed .*?, upstream: "http://127\.0\.0\.1:12345/t"},
 ]
 --- no_error_log
 [warn]
@@ -75,7 +75,7 @@ qr{connect\(\) failed .*?, upstream: "http://127\.0\.0\.3:12345/t"},
                 end
             end
             ngx.ctx.tries = ngx.ctx.tries + 1
-            assert(b.set_current_peer("127.0.0.3", 12345))
+            assert(b.set_current_peer("127.0.0.1", 12345))
         }
     }
 --- config
@@ -88,7 +88,7 @@ qr{connect\(\) failed .*?, upstream: "http://127\.0\.0\.3:12345/t"},
 --- error_code: 502
 --- grep_error_log eval: qr{connect\(\) failed .*, upstream: "http://.*?"}
 --- grep_error_log_out eval
-qr#^(?:connect\(\) failed .*?, upstream: "http://127.0.0.3:12345/t"\n){3}$#
+qr#^(?:connect\(\) failed .*?, upstream: "http://127.0.0.1:12345/t"\n){3}$#
 --- no_error_log
 [warn]
 
@@ -111,7 +111,7 @@ qr#^(?:connect\(\) failed .*?, upstream: "http://127.0.0.3:12345/t"\n){3}$#
             end
 
             ngx.ctx.tries = ngx.ctx.tries + 1
-            assert(b.set_current_peer("127.0.0.3", 12345))
+            assert(b.set_current_peer("127.0.0.1", 12345))
         }
     }
 --- config
@@ -124,7 +124,7 @@ qr#^(?:connect\(\) failed .*?, upstream: "http://127.0.0.3:12345/t"\n){3}$#
 --- error_code: 502
 --- grep_error_log eval: qr{connect\(\) failed .*, upstream: "http://.*?"}
 --- grep_error_log_out eval
-qr#^(?:connect\(\) failed .*?, upstream: "http://127.0.0.3:12345/t"\n){1}$#
+qr#^(?:connect\(\) failed .*?, upstream: "http://127.0.0.1:12345/t"\n){1}$#
 --- no_error_log
 [warn]
 
@@ -155,7 +155,7 @@ qr#^(?:connect\(\) failed .*?, upstream: "http://127.0.0.3:12345/t"\n){1}$#
                 end
             end
             ngx.ctx.tries = ngx.ctx.tries + 1
-            assert(b.set_current_peer("127.0.0.3", 12345))
+            assert(b.set_current_peer("127.0.0.1", 12345))
         }
     }
 --- config
@@ -168,7 +168,7 @@ qr#^(?:connect\(\) failed .*?, upstream: "http://127.0.0.3:12345/t"\n){1}$#
 --- error_code: 502
 --- grep_error_log eval: qr{connect\(\) failed .*, upstream: "http://.*?"}
 --- grep_error_log_out eval
-qr#^(?:connect\(\) failed .*?, upstream: "http://127.0.0.3:12345/t"\n){2}$#
+qr#^(?:connect\(\) failed .*?, upstream: "http://127.0.0.1:12345/t"\n){2}$#
 --- error_log
 set more tries: reduced tries due to limit
 
@@ -310,7 +310,7 @@ last peer failure: failed 500
                 end
             end
             ngx.ctx.tries = ngx.ctx.tries + 1
-            assert(b.set_current_peer("127.0.0.3", 12345))
+            assert(b.set_current_peer("127.0.0.1", 12345))
         }
     }
 --- config
@@ -345,7 +345,7 @@ last peer failure: failed 502
         balancer_by_lua_block {
             print("hello from balancer by lua!")
             local b = require "ngx.balancer"
-            assert(b.set_current_peer("127.0.0.3:12345"))
+            assert(b.set_current_peer("127.0.0.1:12345"))
         }
     }
 --- config
@@ -359,7 +359,7 @@ last peer failure: failed 502
 --- error_log eval
 [
 '[lua] balancer_by_lua:2: hello from balancer by lua! while connecting to upstream,',
-qr{connect\(\) failed .*?, upstream: "http://127\.0\.0\.3:12345/t"},
+qr{connect\(\) failed .*?, upstream: "http://127\.0\.0\.1:12345/t"},
 ]
 --- no_error_log
 [warn]
@@ -376,7 +376,7 @@ qr{connect\(\) failed .*?, upstream: "http://127\.0\.0\.3:12345/t"},
         balancer_by_lua_block {
             print("hello from balancer by lua!")
             local b = require "ngx.balancer"
-            assert(b.set_current_peer("127.0.0.3:12345"))
+            assert(b.set_current_peer("127.0.0.1:12345"))
         }
     }
 --- config
@@ -397,7 +397,7 @@ qr{connect\(\) failed .*?, upstream: "http://127\.0\.0\.3:12345/t"},
 --- error_log eval
 [
 '[lua] balancer_by_lua:2: hello from balancer by lua! while connecting to upstream,',
-qr{connect\(\) failed .*?, upstream: "http://127\.0\.0\.3:12345/t"},
+qr{connect\(\) failed .*?, upstream: "http://127\.0\.0\.1:12345/t"},
 ]
 --- no_error_log
 [crit]
