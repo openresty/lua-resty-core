@@ -60,12 +60,17 @@ Synopsis
 Description
 ===========
 
-This pure Lua library reimplements part of the ngx_lua's
+This pure Lua library reimplements part of the [ngx_lua](https://github.com/openresty/lua-nginx-module#readme) module's
 [Nginx API for Lua](https://github.com/openresty/lua-nginx-module#nginx-api-for-lua)
 with LuaJIT FFI and installs the new FFI-based Lua API into the ngx.* and ndk.* namespaces
 used by the ngx_lua module.
 
-The FFI-based Lua API can work with LuaJIT's JIT compiler. ngx_lua's default API is based on the standard Lua C API, which will never be JIT compiled and the user Lua code is always interpreted (slowly).
+In addition, this Lua library implements any significant new Lua APIs of
+the [ngx_lua](https://github.com/openresty/lua-nginx-module#readme) module
+as proper Lua modules, like [ngx.semaphore](#ngxsemaphore) and [ngx.balancer](#ngxbalancer).
+
+The FFI-based Lua API can work with LuaJIT's JIT compiler. ngx_lua's default API is based on the standard
+Lua C API, which will never be JIT compiled and the user Lua code is always interpreted (slowly).
 
 [Back to TOC](#table-of-contents)
 
