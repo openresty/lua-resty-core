@@ -72,6 +72,9 @@ as proper Lua modules, like [ngx.semaphore](#ngxsemaphore) and [ngx.balancer](#n
 The FFI-based Lua API can work with LuaJIT's JIT compiler. ngx_lua's default API is based on the standard
 Lua C API, which will never be JIT compiled and the user Lua code is always interpreted (slowly).
 
+This library is shipped with the OpenResty bundle by default. So you do not really need to worry about the dependencies
+and requirements.
+
 [Back to TOC](#table-of-contents)
 
 Prerequisites
