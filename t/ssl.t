@@ -9,7 +9,7 @@ use Cwd qw(cwd);
 
 repeat_each(2);
 
-plan tests => repeat_each() * (blocks() * 6);
+plan tests => repeat_each() * (blocks() * 6 + 1);
 
 our $CWD = cwd();
 
@@ -1411,6 +1411,12 @@ GET /t
 connected: 1
 ssl handshake: boolean
 
+--- grep_error_log eval: qr/http lua semaphore (?:wait yielding|\w[^:,]*)/
+--- grep_error_log_out
+http lua semaphore new
+http lua semaphore wait
+http lua semaphore wait yielding
+http lua semaphore post
 --- error_log
 ssl cert by lua done
 
