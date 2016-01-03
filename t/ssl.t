@@ -1335,3 +1335,86 @@ got TLS1 version: TLSv1.2,
 [error]
 [alert]
 [emerg]
+
+
+
+=== TEST 14: ngx.semaphore in ssl_certificate_by_lua*
+--- http_config
+    lua_package_path "t/lib/?.lua;lua/?.lua;../lua-resty-core/lib/?.lua;;";
+
+    server {
+        listen 127.0.0.2:8080 ssl;
+        server_name test.com;
+        ssl_certificate_by_lua_block {
+            local semaphore = require "ngx.semaphore"
+
+            local sema = assert(semaphore.new())
+
+            local function f()
+                assert(sema:wait(0.4))
+            end
+
+            local t = assert(ngx.thread.spawn(f))
+            ngx.sleep(0.2)
+
+            assert(sema:post())
+
+            assert(ngx.thread.wait(t))
+            print("ssl cert by lua done")
+        }
+        ssl_certificate ../../cert/test.crt;
+        ssl_certificate_key ../../cert/test.key;
+        ssl_protocols TLSv1.2;
+
+        server_tokens off;
+        location /foo {
+            default_type 'text/plain';
+            content_by_lua_block {ngx.status = 201 ngx.say("foo") ngx.exit(201)}
+            more_clear_headers Date;
+        }
+    }
+--- config
+    server_tokens off;
+    lua_ssl_trusted_certificate ../../cert/test.crt;
+    lua_ssl_verify_depth 3;
+    lua_ssl_protocols TLSv1.2;
+
+    location /t {
+        content_by_lua_block {
+            do
+                local sock = ngx.socket.tcp()
+
+                sock:settimeout(2000)
+
+                local ok, err = sock:connect("127.0.0.2", 8080)
+                if not ok then
+                    ngx.say("failed to connect: ", err)
+                    return
+                end
+
+                ngx.say("connected: ", ok)
+
+                local sess, err = sock:sslhandshake(false, nil, true, false)
+                if not sess then
+                    ngx.say("failed to do SSL handshake: ", err)
+                    return
+                end
+
+                ngx.say("ssl handshake: ", type(sess))
+            end  -- do
+        }
+    }
+
+--- request
+GET /t
+--- response_body
+connected: 1
+ssl handshake: boolean
+
+--- error_log
+ssl cert by lua done
+
+--- no_error_log
+[error]
+[alert]
+[emerg]
