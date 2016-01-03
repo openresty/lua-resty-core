@@ -941,7 +941,7 @@ lua ssl server name: "test.com"
 
             local ok, err = ssl.set_der_priv_key(pkey_data)
             if not ok then
-                ngx.log(ngx.ERR, "failed to set DER cert: ", err)
+                ngx.log(ngx.ERR, "failed to set DER private key: ", err)
                 return
             end
         }
