@@ -37,7 +37,7 @@ int ngx_http_lua_ffi_ssl_set_ocsp_status_resp(ngx_http_request_t *r,
 local _M = { version = base.version }
 
 
-function _M.get_ocsp_responder_from_der_chain(data, maxlen)
+function _M.get_ocsp_responder_from_der_chain(certs, maxlen)
 
     local buf_size = maxlen
     if not buf_size then
@@ -48,8 +48,8 @@ function _M.get_ocsp_responder_from_der_chain(data, maxlen)
     local sizep = get_size_ptr()
     sizep[0] = buf_size
 
-    local rc = C.ngx_http_lua_ffi_ssl_get_ocsp_responder_from_der_chain(data,
-                                                    #data, buf, sizep, errmsg)
+    local rc = C.ngx_http_lua_ffi_ssl_get_ocsp_responder_from_der_chain(certs,
+                                                   #certs, buf, sizep, errmsg)
 
     if rc == FFI_DECLINED then
         return nil
@@ -67,7 +67,7 @@ function _M.get_ocsp_responder_from_der_chain(data, maxlen)
 end
 
 
-function _M.create_ocsp_request(data, maxlen)
+function _M.create_ocsp_request(certs, maxlen)
 
     local buf_size = maxlen
     if not buf_size then
@@ -78,8 +78,8 @@ function _M.create_ocsp_request(data, maxlen)
     local sizep = get_size_ptr()
     sizep[0] = buf_size
 
-    local rc = C.ngx_http_lua_ffi_ssl_create_ocsp_request(data,
-                                                          #data, buf, sizep,
+    local rc = C.ngx_http_lua_ffi_ssl_create_ocsp_request(certs,
+                                                          #certs, buf, sizep,
                                                           errmsg)
 
     if rc == FFI_OK then
@@ -119,13 +119,14 @@ function _M.validate_ocsp_response(resp, chain, max_errmsg_len)
 end
 
 
-function _M.set_ocsp_status_resp(data)
+function _M.set_ocsp_status_resp(ocsp_resp)
     local r = getfenv(0).__ngx_req
     if not r then
         return error("no request found")
     end
 
-    local rc = C.ngx_http_lua_ffi_ssl_set_ocsp_status_resp(r, data, #data,
+    local rc = C.ngx_http_lua_ffi_ssl_set_ocsp_status_resp(r, ocsp_resp,
+                                                           #ocsp_resp,
                                                            errmsg)
 
     if rc == FFI_DECLINED then

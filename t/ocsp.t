@@ -860,8 +860,8 @@ failed to create OCSP request: no issuer certificate in chain
             local resp = f:read("*a")
             f:close()
 
-            local req, err = ocsp.validate_ocsp_response(resp, cert_data)
-            if not req then
+            local ok, err = ocsp.validate_ocsp_response(resp, cert_data)
+            if not ok then
                 ngx.log(ngx.ERR, "failed to validate OCSP response: ", err)
                 return
             end
