@@ -479,7 +479,7 @@ still get an error: truncated
 
 === TEST 6: create OCSP request (good)
 --- http_config
-    lua_package_path "t/lib/?.lua;lua/?.lua;../lua-resty-core/lib/?.lua;;";
+    lua_package_path "$TEST_NGINX_LUA_PACKAGE_PATH/?.lua;;";
 
     server {
         listen unix:$TEST_NGINX_HTML_DIR/nginx.sock ssl;
@@ -573,7 +573,7 @@ OCSP request created with length 68
 
 === TEST 7: create OCSP request (buffer too small)
 --- http_config
-    lua_package_path "t/lib/?.lua;lua/?.lua;../lua-resty-core/lib/?.lua;;";
+    lua_package_path "$TEST_NGINX_LUA_PACKAGE_PATH/?.lua;;";
 
     server {
         listen unix:$TEST_NGINX_HTML_DIR/nginx.sock ssl;
@@ -664,7 +664,7 @@ failed to create OCSP request: output buffer too small: 68 > 67
 
 === TEST 8: create OCSP request (empty string cert chain)
 --- http_config
-    lua_package_path "t/lib/?.lua;lua/?.lua;../lua-resty-core/lib/?.lua;;";
+    lua_package_path "$TEST_NGINX_LUA_PACKAGE_PATH/?.lua;;";
 
     server {
         listen unix:$TEST_NGINX_HTML_DIR/nginx.sock ssl;
@@ -746,7 +746,7 @@ failed to create OCSP request: d2i_X509_bio() failed
 
 === TEST 9: create OCSP request (no issuer cert in the chain)
 --- http_config
-    lua_package_path "t/lib/?.lua;lua/?.lua;../lua-resty-core/lib/?.lua;;";
+    lua_package_path "$TEST_NGINX_LUA_PACKAGE_PATH/?.lua;;";
 
     server {
         listen unix:$TEST_NGINX_HTML_DIR/nginx.sock ssl;
@@ -837,7 +837,7 @@ failed to create OCSP request: no issuer certificate in chain
 
 === TEST 10: validate good OCSP response
 --- http_config
-    lua_package_path "t/lib/?.lua;lua/?.lua;../lua-resty-core/lib/?.lua;;";
+    lua_package_path "$TEST_NGINX_LUA_PACKAGE_PATH/?.lua;;";
 
     server {
         listen unix:$TEST_NGINX_HTML_DIR/nginx.sock ssl;
@@ -928,7 +928,7 @@ OCSP response validation ok
 
 === TEST 11: fail to validate OCSP response - no issuer cert
 --- http_config
-    lua_package_path "t/lib/?.lua;lua/?.lua;../lua-resty-core/lib/?.lua;;";
+    lua_package_path "$TEST_NGINX_LUA_PACKAGE_PATH/?.lua;;";
 
     server {
         listen unix:$TEST_NGINX_HTML_DIR/nginx.sock ssl;
@@ -1019,7 +1019,7 @@ OCSP response validation ok
 
 === TEST 12: validate good OCSP response - no certs in response
 --- http_config
-    lua_package_path "t/lib/?.lua;lua/?.lua;../lua-resty-core/lib/?.lua;;";
+    lua_package_path "$TEST_NGINX_LUA_PACKAGE_PATH/?.lua;;";
 
     server {
         listen unix:$TEST_NGINX_HTML_DIR/nginx.sock ssl;
@@ -1113,7 +1113,7 @@ OCSP response validation ok
 FIXME: we should complain in this case.
 
 --- http_config
-    lua_package_path "t/lib/?.lua;lua/?.lua;../lua-resty-core/lib/?.lua;;";
+    lua_package_path "$TEST_NGINX_LUA_PACKAGE_PATH/?.lua;;";
 
     server {
         listen unix:$TEST_NGINX_HTML_DIR/nginx.sock ssl;
@@ -1205,7 +1205,7 @@ OCSP response validation ok
 === TEST 14: fail to validate OCSP response - OCSP response signed by an unknown cert and the OCSP response does not contain the unknown cert
 
 --- http_config
-    lua_package_path "t/lib/?.lua;lua/?.lua;../lua-resty-core/lib/?.lua;;";
+    lua_package_path "$TEST_NGINX_LUA_PACKAGE_PATH/?.lua;;";
 
     server {
         listen unix:$TEST_NGINX_HTML_DIR/nginx.sock ssl;
@@ -1296,7 +1296,7 @@ OCSP response validation ok
 
 === TEST 15: fail to validate OCSP response - OCSP response returns revoked status
 --- http_config
-    lua_package_path "t/lib/?.lua;lua/?.lua;../lua-resty-core/lib/?.lua;;";
+    lua_package_path "$TEST_NGINX_LUA_PACKAGE_PATH/?.lua;;";
 
     server {
         listen unix:$TEST_NGINX_HTML_DIR/nginx.sock ssl;
@@ -1388,7 +1388,7 @@ OCSP response validation ok
 === TEST 16: good status req from client
 FIXME: check the OCSP staple actually received by the ssl client
 --- http_config
-    lua_package_path "t/lib/?.lua;lua/?.lua;../lua-resty-core/lib/?.lua;;";
+    lua_package_path "$TEST_NGINX_LUA_PACKAGE_PATH/?.lua;;";
 
     server {
         listen 127.0.0.2:8080 ssl;
@@ -1470,7 +1470,7 @@ ocsp status resp set ok: nil,
 
 === TEST 17: no status req from client
 --- http_config
-    lua_package_path "t/lib/?.lua;lua/?.lua;../lua-resty-core/lib/?.lua;;";
+    lua_package_path "$TEST_NGINX_LUA_PACKAGE_PATH/?.lua;;";
 
     server {
         listen 127.0.0.2:8080 ssl;
