@@ -99,7 +99,7 @@ set_current_peer
 ----------------
 **syntax:** `ok, err = balancer.set_current_peer(host, port)`
 
-**context:** *upstream*
+**context:** *balancer_by_lua&#42;*
 
 Sets the peer address (host and port) for the current backend query (which may be a retry).
 
@@ -115,7 +115,7 @@ set_more_tries
 --------------
 **syntax:** `ok, err = balancer.set_more_tries(count)`
 
-**context:** *upstream*
+**context:** *balancer_by_lua&#42;*
 
 Sets the tries performed when the current attempt (which may be a retry) fails (as determined
 by directives like [proxy_next_upstream](http://nginx.org/en/docs/http/ngx_http_proxy_module.html#proxy_next_upstream), depending on what
@@ -134,7 +134,7 @@ get_last_failure
 ----------------
 **syntax:** `state_name, status_code = balancer.get_last_failure()`
 
-**context:** *upstream*
+**context:** *balancer_by_lua&#42;*
 
 Retrieves the failure details about the previous failed attempt (if any) when the `next_upstream` retrying
 mechanism is in action. When there was indeed a failed previous attempt, it returned a string descrbing
@@ -214,7 +214,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 See Also
 ========
 * the ngx_lua module: https://github.com/openresty/lua-nginx-module
-* the [balancer_by_lua](https://github.com/openresty/lua-nginx-module#balancer_by_lua) directive.
+* the [balancer_by_lua*](https://github.com/openresty/lua-nginx-module#balancer_by_lua_block) directive.
 * library [lua-resty-core](https://github.com/openresty/lua-resty-core)
 * OpenResty: http://openresty.org
 
