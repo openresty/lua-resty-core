@@ -1424,6 +1424,7 @@ ssl cert by lua done
 [error]
 [alert]
 [emerg]
+--- wait: 0.2
 
 
 
