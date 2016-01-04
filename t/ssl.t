@@ -1351,11 +1351,11 @@ got TLS1 version: TLSv1.2,
             local sema = assert(semaphore.new())
 
             local function f()
-                assert(sema:wait(0.4))
+                assert(sema:wait(0.5))
             end
 
             local t = assert(ngx.thread.spawn(f))
-            ngx.sleep(0.2)
+            ngx.sleep(0.25)
 
             assert(sema:post())
 
@@ -1424,7 +1424,6 @@ ssl cert by lua done
 [error]
 [alert]
 [emerg]
---- wait: 0.2
 
 
 
