@@ -145,6 +145,7 @@ In case of failures, returns `nil` and a string describing the error.
 It is known that the `openssl` command-line utility may not convert the whole SSL
 certificate chain from PEM to DER correctly. So always use this Lua function to do
 the conversion. You can always use libraries like [lua-resty-lrucache](https://github.com/openresty/lua-resty-lrucache#readme)
+and/or ngx_lua APIs like [lua_shared_dict](https://github.com/openresty/lua-nginx-module#lua_shared_dict)
 to do the caching of the DER-formated results, for example.
 
 This function can be called in whatever contexts.
