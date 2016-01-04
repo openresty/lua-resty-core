@@ -101,9 +101,9 @@ end
 
 
 local addr_types = {
-    [1] = "unix",
-    [2] = "inet",
-    [10] = "inet6",
+    [0] = "unix",
+    [1] = "inet",
+    [2] = "inet6",
 }
 
 
