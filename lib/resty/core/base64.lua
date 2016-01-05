@@ -5,9 +5,7 @@ local ffi = require 'ffi'
 local base = require "resty.core.base"
 
 local ffi_string = ffi.string
---local ffi_new = ffi.new
 local C = ffi.C
---local setmetatable = setmetatable
 local ngx = ngx
 local type = type
 local tostring = tostring
@@ -15,8 +13,6 @@ local error = error
 local get_string_buf = base.get_string_buf
 local get_size_ptr = base.get_size_ptr
 local floor = math.floor
---local print = print
---local tonumber = tonumber
 
 
 ffi.cdef[[
@@ -78,7 +74,6 @@ ngx.decode_base64 = function (s)
     end
     local slen = #s
     local dlen = base64_decoded_length(slen)
-    -- print("dlen: ", tonumber(dlen))
     local dst = get_string_buf(dlen)
     local pdlen = get_size_ptr()
     local ok = C.ngx_http_lua_ffi_decode_base64(s, slen, dst, pdlen)

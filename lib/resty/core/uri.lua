@@ -3,18 +3,12 @@
 
 local ffi = require 'ffi'
 local ffi_string = ffi.string
---local ffi_new = ffi.new
 local C = ffi.C
---local setmetatable = setmetatable
 local ngx = ngx
 local type = type
 local tostring = tostring
---local error = error
 local base = require "resty.core.base"
 local get_string_buf = base.get_string_buf
---local get_size_ptr = base.get_size_ptr
---local print = print
---local tonumber = tonumber
 
 
 ffi.cdef[[
@@ -39,7 +33,6 @@ ngx.escape_uri = function (s)
     end
     local slen = #s
     local dlen = C.ngx_http_lua_ffi_uri_escaped_length(s, slen)
-    -- print("dlen: ", tonumber(dlen))
     if dlen == slen then
         return s
     end
