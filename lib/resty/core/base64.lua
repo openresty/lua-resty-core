@@ -5,9 +5,7 @@ local ffi = require 'ffi'
 local base = require "resty.core.base"
 
 local ffi_string = ffi.string
---local ffi_new = ffi.new
 local C = ffi.C
---local setmetatable = setmetatable
 local ngx = ngx
 local type = type
 local tostring = tostring
@@ -15,8 +13,6 @@ local error = error
 local get_string_buf = base.get_string_buf
 local get_size_ptr = base.get_size_ptr
 local floor = math.floor
---local print = print
---local tonumber = tonumber
 
 
 ffi.cdef[[
