@@ -74,6 +74,7 @@ ngx.decode_base64 = function (s)
     end
     local slen = #s
     local dlen = base64_decoded_length(slen)
+    -- print("dlen: ", tonumber(dlen))
     local dst = get_string_buf(dlen)
     local pdlen = get_size_ptr()
     local ok = C.ngx_http_lua_ffi_decode_base64(s, slen, dst, pdlen)

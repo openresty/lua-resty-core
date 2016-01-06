@@ -33,6 +33,7 @@ ngx.escape_uri = function (s)
     end
     local slen = #s
     local dlen = C.ngx_http_lua_ffi_uri_escaped_length(s, slen)
+    -- print("dlen: ", tonumber(dlen))
     if dlen == slen then
         return s
     end
