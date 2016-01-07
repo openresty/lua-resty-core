@@ -51,6 +51,7 @@ qr{connect\(\) failed .*?, upstream: "http://127\.0\.0\.3:12345/t"},
 
 
 === TEST 2: set current peer & next upstream (3 tries)
+--- skip_nginx: 4: < 1.7.5
 --- http_config
     lua_package_path "$TEST_NGINX_CWD/lib/?.lua;;";
 
@@ -95,11 +96,11 @@ qr#^(?:connect\(\) failed .*?, upstream: "http://127.0.0.3:12345/t"\n){3}$#
 
 
 === TEST 3: set current peer & next upstream (no retries)
+--- skip_nginx: 4: < 1.7.5
 --- http_config
     lua_package_path "$TEST_NGINX_CWD/lib/?.lua;;";
 
     proxy_next_upstream error timeout invalid_header http_500 http_502 http_503 http_504 http_403 http_404;
-    proxy_next_upstream_tries 10;
 
     upstream backend {
         server 0.0.0.1;
@@ -131,6 +132,7 @@ qr#^(?:connect\(\) failed .*?, upstream: "http://127.0.0.3:12345/t"\n){1}$#
 
 
 === TEST 4: set current peer & next upstream (3 tries exceeding the limit)
+--- skip_nginx: 4: < 1.7.5
 --- http_config
     lua_package_path "$TEST_NGINX_CWD/lib/?.lua;;";
 
@@ -175,6 +177,7 @@ set more tries: reduced tries due to limit
 
 
 === TEST 5: get last peer failure status (404)
+--- skip_nginx: 4: < 1.7.5
 --- http_config
     lua_package_path "$TEST_NGINX_CWD/lib/?.lua;;";
 
@@ -229,6 +232,7 @@ last peer failure: next 404
 
 
 === TEST 6: get last peer failure status (500)
+--- skip_nginx: 4: < 1.7.5
 --- http_config
     lua_package_path "$TEST_NGINX_CWD/lib/?.lua;;";
 
@@ -283,6 +287,7 @@ last peer failure: failed 500
 
 
 === TEST 7: get last peer failure status (connect failed)
+--- skip_nginx: 4: < 1.7.5
 --- http_config
     lua_package_path "$TEST_NGINX_CWD/lib/?.lua;;";
 
