@@ -1351,7 +1351,7 @@ got TLS1 version: TLSv1.2,
             local sema = assert(semaphore.new())
 
             local function f()
-                assert(sema:wait(0.5))
+                assert(sema:wait(1))
             end
 
             local t = assert(ngx.thread.spawn(f))
