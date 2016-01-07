@@ -1696,6 +1696,7 @@ ok
 "free semaphore block
 ",
 ]
+--- timeout: 10
 
 
 
