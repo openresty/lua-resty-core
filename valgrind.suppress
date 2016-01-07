@@ -50,5 +50,4 @@
    fun:epoll_ctl
    fun:ngx_epoll_add_connection
    fun:ngx_event_connect_peer
-   fun:ngx_http_upstream_connect
 }
