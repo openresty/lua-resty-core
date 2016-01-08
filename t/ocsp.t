@@ -72,7 +72,7 @@ __DATA__
             do
                 local sock = ngx.socket.tcp()
 
-                sock:settimeout(2000)
+                sock:settimeout(3000)
 
                 local ok, err = sock:connect("unix:$TEST_NGINX_HTML_DIR/nginx.sock")
                 if not ok then
@@ -163,7 +163,7 @@ OCSP url found: http://127.0.0.1:8888/ocsp?foo=1,
             do
                 local sock = ngx.socket.tcp()
 
-                sock:settimeout(2000)
+                sock:settimeout(3000)
 
                 local ok, err = sock:connect("unix:$TEST_NGINX_HTML_DIR/nginx.sock")
                 if not ok then
@@ -254,7 +254,7 @@ OCSP responder not found
             do
                 local sock = ngx.socket.tcp()
 
-                sock:settimeout(2000)
+                sock:settimeout(3000)
 
                 local ok, err = sock:connect("unix:$TEST_NGINX_HTML_DIR/nginx.sock")
                 if not ok then
@@ -344,7 +344,7 @@ failed to get OCSP responder: no issuer certificate in chain
             do
                 local sock = ngx.socket.tcp()
 
-                sock:settimeout(2000)
+                sock:settimeout(3000)
 
                 local ok, err = sock:connect("unix:$TEST_NGINX_HTML_DIR/nginx.sock")
                 if not ok then
@@ -438,7 +438,7 @@ failed to get OCSP responder: issuer certificate not next to leaf
             do
                 local sock = ngx.socket.tcp()
 
-                sock:settimeout(2000)
+                sock:settimeout(3000)
 
                 local ok, err = sock:connect("unix:$TEST_NGINX_HTML_DIR/nginx.sock")
                 if not ok then
@@ -533,7 +533,7 @@ still get an error: truncated
             do
                 local sock = ngx.socket.tcp()
 
-                sock:settimeout(2000)
+                sock:settimeout(3000)
 
                 local ok, err = sock:connect("unix:$TEST_NGINX_HTML_DIR/nginx.sock")
                 if not ok then
@@ -625,7 +625,7 @@ OCSP request created with length 68
             do
                 local sock = ngx.socket.tcp()
 
-                sock:settimeout(2000)
+                sock:settimeout(3000)
 
                 local ok, err = sock:connect("unix:$TEST_NGINX_HTML_DIR/nginx.sock")
                 if not ok then
@@ -707,7 +707,7 @@ failed to create OCSP request: output buffer too small: 68 > 67
             do
                 local sock = ngx.socket.tcp()
 
-                sock:settimeout(2000)
+                sock:settimeout(3000)
 
                 local ok, err = sock:connect("unix:$TEST_NGINX_HTML_DIR/nginx.sock")
                 if not ok then
@@ -798,7 +798,7 @@ failed to create OCSP request: d2i_X509_bio() failed
             do
                 local sock = ngx.socket.tcp()
 
-                sock:settimeout(2000)
+                sock:settimeout(3000)
 
                 local ok, err = sock:connect("unix:$TEST_NGINX_HTML_DIR/nginx.sock")
                 if not ok then
@@ -888,7 +888,7 @@ failed to create OCSP request: no issuer certificate in chain
             do
                 local sock = ngx.socket.tcp()
 
-                sock:settimeout(2000)
+                sock:settimeout(3000)
 
                 local ok, err = sock:connect("unix:$TEST_NGINX_HTML_DIR/nginx.sock")
                 if not ok then
@@ -979,7 +979,7 @@ OCSP response validation ok
             do
                 local sock = ngx.socket.tcp()
 
-                sock:settimeout(2000)
+                sock:settimeout(3000)
 
                 local ok, err = sock:connect("unix:$TEST_NGINX_HTML_DIR/nginx.sock")
                 if not ok then
@@ -1070,7 +1070,7 @@ OCSP response validation ok
             do
                 local sock = ngx.socket.tcp()
 
-                sock:settimeout(2000)
+                sock:settimeout(3000)
 
                 local ok, err = sock:connect("unix:$TEST_NGINX_HTML_DIR/nginx.sock")
                 if not ok then
@@ -1164,7 +1164,7 @@ FIXME: we should complain in this case.
             do
                 local sock = ngx.socket.tcp()
 
-                sock:settimeout(2000)
+                sock:settimeout(3000)
 
                 local ok, err = sock:connect("unix:$TEST_NGINX_HTML_DIR/nginx.sock")
                 if not ok then
@@ -1256,7 +1256,7 @@ OCSP response validation ok
             do
                 local sock = ngx.socket.tcp()
 
-                sock:settimeout(2000)
+                sock:settimeout(3000)
 
                 local ok, err = sock:connect("unix:$TEST_NGINX_HTML_DIR/nginx.sock")
                 if not ok then
@@ -1347,7 +1347,7 @@ OCSP response validation ok
             do
                 local sock = ngx.socket.tcp()
 
-                sock:settimeout(2000)
+                sock:settimeout(3000)
 
                 local ok, err = sock:connect("unix:$TEST_NGINX_HTML_DIR/nginx.sock")
                 if not ok then
@@ -1430,7 +1430,7 @@ FIXME: check the OCSP staple actually received by the ssl client
             do
                 local sock = ngx.socket.tcp()
 
-                sock:settimeout(2000)
+                sock:settimeout(3000)
 
                 local ok, err = sock:connect("127.0.0.2", 8080)
                 if not ok then
@@ -1512,7 +1512,7 @@ ocsp status resp set ok: nil,
             do
                 local sock = ngx.socket.tcp()
 
-                sock:settimeout(2000)
+                sock:settimeout(3000)
 
                 local ok, err = sock:connect("127.0.0.2", 8080)
                 if not ok then

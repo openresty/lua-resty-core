@@ -53,7 +53,7 @@ __DATA__
             do
                 local sock = ngx.socket.tcp()
 
-                sock:settimeout(2000)
+                sock:settimeout(3000)
 
                 local ok, err = sock:connect("unix:$TEST_NGINX_HTML_DIR/nginx.sock")
                 if not ok then
@@ -164,7 +164,7 @@ sslv3 alert handshake failure
             do
                 local sock = ngx.socket.tcp()
 
-                sock:settimeout(2000)
+                sock:settimeout(3000)
 
                 local ok, err = sock:connect("unix:$TEST_NGINX_HTML_DIR/nginx.sock")
                 if not ok then
@@ -263,7 +263,7 @@ lua ssl server name: "test.com"
             do
                 local sock = ngx.socket.tcp()
 
-                sock:settimeout(2000)
+                sock:settimeout(3000)
 
                 local ok, err = sock:connect("unix:$TEST_NGINX_HTML_DIR/nginx.sock")
                 if not ok then
@@ -363,7 +363,7 @@ read SNI name from Lua: test.com
             do
                 local sock = ngx.socket.tcp()
 
-                sock:settimeout(2000)
+                sock:settimeout(3000)
 
                 local ok, err = sock:connect("unix:$TEST_NGINX_HTML_DIR/nginx.sock")
                 if not ok then
@@ -479,7 +479,7 @@ read SNI name from Lua: nil, type: nil
             do
                 local sock = ngx.socket.tcp()
 
-                sock:settimeout(2000)
+                sock:settimeout(3000)
 
                 local ok, err = sock:connect("unix:$TEST_NGINX_HTML_DIR/nginx.sock")
                 if not ok then
@@ -599,7 +599,7 @@ qr/Using unix socket file .*?nginx\.sock/
             do
                 local sock = ngx.socket.tcp()
 
-                sock:settimeout(2000)
+                sock:settimeout(3000)
 
                 local ok, err = sock:connect("127.0.0.1", 12345)
                 if not ok then
@@ -717,7 +717,7 @@ Using IPv4 address: 127.0.0.1
             do
                 local sock = ngx.socket.tcp()
 
-                sock:settimeout(2000)
+                sock:settimeout(3000)
 
                 local ok, err = sock:connect("[::1]", 12345)
                 if not ok then
@@ -838,7 +838,7 @@ Using IPv6 address: 0.0.0.1
             do
                 local sock = ngx.socket.tcp()
 
-                sock:settimeout(2000)
+                sock:settimeout(3000)
 
                 local ok, err = sock:connect("unix:$TEST_NGINX_HTML_DIR/nginx.sock")
                 if not ok then
@@ -965,7 +965,7 @@ lua ssl server name: "test.com"
             do
                 local sock = ngx.socket.tcp()
 
-                sock:settimeout(2000)
+                sock:settimeout(3000)
 
                 local ok, err = sock:connect("unix:$TEST_NGINX_HTML_DIR/nginx.sock")
                 if not ok then
@@ -1073,7 +1073,7 @@ lua ssl server name: "test.com"
             do
                 local sock = ngx.socket.tcp()
 
-                sock:settimeout(2000)
+                sock:settimeout(3000)
 
                 local ok, err = sock:connect("127.0.0.2", 8080)
                 if not ok then
@@ -1149,7 +1149,7 @@ got TLS1 version: SSLv3,
             do
                 local sock = ngx.socket.tcp()
 
-                sock:settimeout(2000)
+                sock:settimeout(3000)
 
                 local ok, err = sock:connect("127.0.0.2", 8080)
                 if not ok then
@@ -1225,7 +1225,7 @@ got TLS1 version: TLSv1,
             do
                 local sock = ngx.socket.tcp()
 
-                sock:settimeout(2000)
+                sock:settimeout(3000)
 
                 local ok, err = sock:connect("127.0.0.2", 8080)
                 if not ok then
@@ -1301,7 +1301,7 @@ got TLS1 version: TLSv1.1,
             do
                 local sock = ngx.socket.tcp()
 
-                sock:settimeout(2000)
+                sock:settimeout(3000)
 
                 local ok, err = sock:connect("127.0.0.2", 8080)
                 if not ok then
@@ -1384,7 +1384,7 @@ got TLS1 version: TLSv1.2,
             do
                 local sock = ngx.socket.tcp()
 
-                sock:settimeout(2000)
+                sock:settimeout(3000)
 
                 local ok, err = sock:connect("127.0.0.2", 8080)
                 if not ok then
@@ -1490,7 +1490,7 @@ ssl cert by lua done
             do
                 local sock = ngx.socket.tcp()
 
-                sock:settimeout(2000)
+                sock:settimeout(3000)
 
                 local ok, err = sock:connect("unix:$TEST_NGINX_HTML_DIR/nginx.sock")
                 if not ok then
