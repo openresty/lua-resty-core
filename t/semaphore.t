@@ -273,7 +273,7 @@ post
 
 
 
-=== TEST 5: semaphore.new in init_by_lua*
+=== TEST 5: semaphore.new in init_by_lua* (w/o shdict)
 --- http_config
     lua_package_path $TEST_NGINX_LUA_PACKAGE_PATH;
     init_by_lua_block {
@@ -316,7 +316,51 @@ qr/\[lua\] init_by_lua:\d+: sema created: table: 0x[a-f0-9]+/,
 
 
 
-=== TEST 6: semaphore in init_worker_by_lua (wait is not allowed)
+=== TEST 6: semaphore.new in init_by_lua* (with shdict)
+--- http_config
+    lua_shared_dict dogs 1m;
+    lua_package_path $TEST_NGINX_LUA_PACKAGE_PATH;
+    init_by_lua_block {
+        local semaphore = require "ngx.semaphore"
+        local sem, err = semaphore.new(0)
+        if not sem then
+            ngx.log(ngx.ERR, err)
+        else
+            ngx.log(ngx.WARN, "sema created: ", tostring(sem))
+        end
+        sem:post(2)
+        package.loaded.my_sema = sem
+    }
+--- config
+    location /test {
+        content_by_lua_block {
+            local sem = package.loaded.my_sema
+            ngx.say("sem count: ", sem:count())
+            -- sem:post(1)
+            local ok, err = sem:wait(0)
+            if not ok then
+                ngx.say("failed to wait: ", err)
+                return
+            end
+            ngx.say("waited successfully.")
+        }
+    }
+--- request
+GET /test
+--- response_body_like
+sem count: [12]
+waited successfully.
+--- grep_error_log eval
+qr/\[lua\] init_by_lua:\d+: sema created: table: 0x[a-f0-9]+/
+--- grep_error_log_out eval
+[
+qr/\[lua\] init_by_lua:\d+: sema created: table: 0x[a-f0-9]+/,
+"",
+]
+
+
+
+=== TEST 7: semaphore in init_worker_by_lua (wait is not allowed)
 --- http_config
     lua_package_path $TEST_NGINX_LUA_PACKAGE_PATH;
     init_worker_by_lua_block {
@@ -355,7 +399,7 @@ sem wait: API disabled in the context of init_worker_by_lua*,
 
 
 
-=== TEST 7: semaphore in init_worker_by_lua (new and post)
+=== TEST 8: semaphore in init_worker_by_lua (new and post)
 --- http_config
     lua_package_path $TEST_NGINX_LUA_PACKAGE_PATH;
     init_worker_by_lua_block {
@@ -400,7 +444,7 @@ sem wait successfully.
 
 
 
-=== TEST 8: semaphore in set_by_lua (wait is not allowed)
+=== TEST 9: semaphore in set_by_lua (wait is not allowed)
 --- http_config eval: $::HttpConfig
 --- config
     location /t {
@@ -440,7 +484,7 @@ sem: API disabled in the context of set_by_lua*,
 
 
 
-=== TEST 9: semaphore in rewrite_by_lua (all allowed)
+=== TEST 10: semaphore in rewrite_by_lua (all allowed)
 --- http_config eval: $::HttpConfig
 --- config
     location /t {
@@ -485,7 +529,7 @@ sem: 1,
 
 
 
-=== TEST 10: semaphore in access_by_lua (all allowed)
+=== TEST 11: semaphore in access_by_lua (all allowed)
 --- http_config eval: $::HttpConfig
 --- config
     location /t {
@@ -530,7 +574,7 @@ sem: 1,
 
 
 
-=== TEST 11: semaphore in content_by_lua (all allowed)
+=== TEST 12: semaphore in content_by_lua (all allowed)
 --- http_config eval: $::HttpConfig
 --- config
     location /t {
@@ -576,7 +620,7 @@ sem: 1,
 
 
 
-=== TEST 12: semaphore in log_by_lua (wait not allowed)
+=== TEST 13: semaphore in log_by_lua (wait not allowed)
 --- http_config eval: $::HttpConfig
 --- config
     location /t {
@@ -617,7 +661,7 @@ sem: API disabled in the context of log_by_lua* while logging request,
 
 
 
-=== TEST 13: semaphore in header_filter_by_lua (wait not allowed)
+=== TEST 14: semaphore in header_filter_by_lua (wait not allowed)
 --- http_config eval: $::HttpConfig
 --- config
     location /t {
@@ -657,7 +701,7 @@ sem: API disabled in the context of header_filter_by_lua*,
 
 
 
-=== TEST 14: semaphore in body_filter_by_lua (wait not allowed)
+=== TEST 15: semaphore in body_filter_by_lua (wait not allowed)
 --- http_config eval: $::HttpConfig
 --- config
     location /t {
@@ -701,7 +745,7 @@ sem: API disabled in the context of body_filter_by_lua*,
 
 
 
-=== TEST 15: semaphore in ngx.timer (all allowed)
+=== TEST 16: semaphore in ngx.timer (all allowed)
 --- http_config eval: $::HttpConfig
 --- config
     location /t {
@@ -754,7 +798,7 @@ sem: 1,
 
 
 
-=== TEST 16: semaphore post in all phase (in a request)
+=== TEST 17: semaphore post in all phase (in a request)
 --- http_config
     lua_package_path $TEST_NGINX_LUA_PACKAGE_PATH;
     init_worker_by_lua_block {
@@ -828,7 +872,7 @@ ok
 
 
 
-=== TEST 17: semaphore wait post in access_by_lua
+=== TEST 18: semaphore wait post in access_by_lua
 --- http_config eval: $::HttpConfig
 --- config
     location /test {
@@ -870,7 +914,7 @@ wait success
 
 
 
-=== TEST 18: semaphore wait post in rewrite_by_lua
+=== TEST 19: semaphore wait post in rewrite_by_lua
 --- http_config eval: $::HttpConfig
 --- config
     location /t {
@@ -912,7 +956,7 @@ wait success
 
 
 
-=== TEST 19: semaphore wait in timer.at
+=== TEST 20: semaphore wait in timer.at
 --- http_config eval: $::HttpConfig
 --- config
     location /test {
@@ -945,7 +989,7 @@ wait success
 
 
 
-=== TEST 20: semaphore post in header_filter_by_lua (subrequest)
+=== TEST 21: semaphore post in header_filter_by_lua (subrequest)
 --- http_config eval: $::HttpConfig
 --- config
     location /test {
@@ -1014,7 +1058,7 @@ post
 
 
 
-=== TEST 21: semaphore post in body_filter_by_lua (subrequest)
+=== TEST 22: semaphore post in body_filter_by_lua (subrequest)
 --- http_config eval: $::HttpConfig
 --- config
     location /test {
@@ -1084,7 +1128,7 @@ post
 
 
 
-=== TEST 22: semaphore post in set_by_lua
+=== TEST 23: semaphore post in set_by_lua
 --- http_config eval: $::HttpConfig
 --- config
     location /test {
@@ -1153,7 +1197,7 @@ post
 
 
 
-=== TEST 23: semaphore post in timer.at
+=== TEST 24: semaphore post in timer.at
 --- http_config eval: $::HttpConfig
 --- config
     location /test {
@@ -1210,7 +1254,7 @@ post
 
 
 
-=== TEST 24: two thread wait for each other
+=== TEST 25: two thread wait for each other
 --- http_config eval: $::HttpConfig
 --- config
     location /test {
@@ -1260,7 +1304,7 @@ count in A: 0
 
 
 
-=== TEST 25: kill a light thread that is waiting on a semaphore(no resource)
+=== TEST 26: kill a light thread that is waiting on a semaphore(no resource)
 --- http_config eval: $::HttpConfig
 --- config
     location /test {
@@ -1293,7 +1337,7 @@ ok
 
 
 
-=== TEST 26: kill a light thread that is waiting on a semaphore(after post)
+=== TEST 27: kill a light thread that is waiting on a semaphore(after post)
 --- http_config eval: $::HttpConfig
 --- config
     location /test {
@@ -1335,7 +1379,7 @@ count: 1
 
 
 
-=== TEST 27: kill a thread that is waiting on another thread that is waiting on semaphore
+=== TEST 28: kill a thread that is waiting on another thread that is waiting on semaphore
 --- http_config eval: $::HttpConfig
 --- config
     location /test {
@@ -1391,7 +1435,7 @@ sem waiting done
 
 
 
-=== TEST 28: a light thread that is going to exit is waiting on a semaphore
+=== TEST 29: a light thread that is going to exit is waiting on a semaphore
 --- http_config eval: $::HttpConfig
 --- config
     location /test {
@@ -1426,7 +1470,7 @@ http lua semaphore cleanup
 
 
 
-=== TEST 29: main thread wait a light thread that is waiting on a semaphore
+=== TEST 30: main thread wait a light thread that is waiting on a semaphore
 --- http_config eval: $::HttpConfig
 --- config
     location /test {
@@ -1458,7 +1502,7 @@ err: timeout
 
 
 
-=== TEST 30: multi wait and mult post with one semaphore
+=== TEST 31: multi wait and mult post with one semaphore
 --- http_config eval: $::HttpConfig
 --- config
     location = /test {
@@ -1513,7 +1557,7 @@ wait success: 3
 
 
 
-=== TEST 31: semaphore wait time is zero
+=== TEST 32: semaphore wait time is zero
 --- http_config eval: $::HttpConfig
 --- config
     location /test {
@@ -1535,7 +1579,7 @@ timeout
 
 
 
-=== TEST 32: test semaphore gc
+=== TEST 33: test semaphore gc
 --- http_config eval: $::HttpConfig
 --- config
     location /test {
@@ -1559,7 +1603,7 @@ in lua gc, semaphore
 
 
 
-=== TEST 33: basic semaphore_mm alloc
+=== TEST 34: basic semaphore_mm alloc
 --- http_config eval: $::HttpConfig
 --- config
     location /test {
@@ -1587,7 +1631,7 @@ ok
 
 
 
-=== TEST 34: basic semaphore_mm free insert tail
+=== TEST 35: basic semaphore_mm free insert tail
 --- http_config eval: $::HttpConfig
 --- config
     location /t {
@@ -1623,7 +1667,7 @@ add to free queue tail
 
 
 
-=== TEST 35: basic semaphore_mm free insert head
+=== TEST 36: basic semaphore_mm free insert head
 --- http_config eval: $::HttpConfig
 --- config
     location /test {
@@ -1656,7 +1700,7 @@ add to free queue head
 
 
 
-=== TEST 36: semaphore_mm free block (load <= 50% & the on the older side)
+=== TEST 37: semaphore_mm free block (load <= 50% & the on the older side)
 --- http_config eval: $::HttpConfig
 --- config
     location /test {
@@ -1700,7 +1744,7 @@ ok
 
 
 
-=== TEST 37: basic semaphore count
+=== TEST 38: basic semaphore count
 --- http_config eval: $::HttpConfig
 --- config
     location /test {
@@ -1730,7 +1774,7 @@ GET /test
 
 
 
-=== TEST 38: basic semaphore count(negative number)
+=== TEST 39: basic semaphore count(negative number)
 --- http_config eval: $::HttpConfig
 --- config
     location /test {

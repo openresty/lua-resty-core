@@ -1427,7 +1427,7 @@ ssl cert by lua done
 
 
 
-=== TEST 45: read PEM key chain but set DER key chain
+=== TEST 15: read PEM key chain but set DER key chain
 --- http_config
     lua_package_path "$TEST_NGINX_LUA_PACKAGE_PATH/?.lua;;";
 
