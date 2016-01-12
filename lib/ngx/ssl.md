@@ -215,7 +215,7 @@ openssl rsa -in key.pem -outform DER -out key.der
 
 server_name
 -----------
-**syntax:** `name, err = ssl.set_der_priv_key(der_cert_chain)`
+**syntax:** `name, err = ssl.server_name()`
 
 **context:** *any*
 
