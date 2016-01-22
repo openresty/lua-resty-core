@@ -439,3 +439,105 @@ NYI
 --- error_log eval
 qr/\[TRACE\s+\d+\s+/
 
+
+
+=== TEST 11: unmatched captures are false
+--- http_config eval: $::HttpConfig
+--- config
+    location /re {
+        content_by_lua '
+            local m = ngx.re.match("hello!", "(hello)(, .+)?(!)", "jo")
+
+            if m then
+                ngx.say(m[0])
+                ngx.say(m[1])
+                ngx.say(m[2])
+                ngx.say(m[3])
+            else
+                ngx.say("not matched!")
+            end
+        ';
+    }
+--- request
+    GET /re
+--- response_body
+hello!
+hello
+false
+!
+--- no_error_log
+[error]
+NYI
+--- error_log eval
+qr/\[TRACE\s+\d+\s+/
+
+
+
+=== TEST 12: unmatched trailing captures are false
+--- http_config eval: $::HttpConfig
+--- config
+    location /re {
+        content_by_lua '
+            local m = ngx.re.match("hello", "(hello)(, .+)?(!)?", "jo")
+
+            if m then
+                ngx.say(m[0])
+                ngx.say(m[1])
+                ngx.say(m[2])
+                ngx.say(m[3])
+            else
+                ngx.say("not matched!")
+            end
+        ';
+    }
+--- request
+    GET /re
+--- response_body
+hello
+hello
+false
+false
+--- no_error_log
+[error]
+NYI
+--- error_log eval
+qr/\[TRACE\s+\d+\s+/
+
+
+
+=== TEST 13: unmatched named captures are false
+--- http_config eval: $::HttpConfig
+--- config
+    location /re {
+        content_by_lua '
+            local m = ngx.re.match("hello!", "(?<first>hello)(?<second>, .+)?(?<third>!)", "jo")
+
+            if m then
+                ngx.say(m[0])
+                ngx.say(m[1])
+                ngx.say(m[2])
+                ngx.say(m[3])
+                ngx.say(m.first)
+                ngx.say(m.second)
+                ngx.say(m.third)
+            else
+                ngx.say("not matched!")
+            end
+        ';
+    }
+--- request
+    GET /re
+--- response_body
+hello!
+hello
+false
+!
+hello
+false
+!
+--- no_error_log
+[error]
+NYI
+--- error_log eval
+qr/\[TRACE\s+\d+\s+/
+
