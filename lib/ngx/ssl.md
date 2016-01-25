@@ -14,6 +14,7 @@ Table of Contents
     * [clear_certs](#clear_certs)
     * [cert_pem_to_der](#cert_pem_to_der)
     * [set_der_cert](#set_der_cert)
+    * [priv_key_pem_to_der](#priv_key_pem_to_der)
     * [set_der_priv_key](#set_der_priv_key)
     * [server_name](#server_name)
     * [raw_server_addr](#raw_server_addr)
@@ -215,7 +216,7 @@ openssl rsa -in key.pem -outform DER -out key.der
 
 server_name
 -----------
-**syntax:** `name, err = ssl.set_der_priv_key(der_cert_chain)`
+**syntax:** `name, err = ssl.server_name()`
 
 **context:** *any*
 
