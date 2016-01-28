@@ -650,3 +650,54 @@ ok
 qr/\[error\] .*? log_by_lua.*? failed to call: API disabled in the current context/
 --- no_error_log
 [alert]
+
+
+
+=== TEST 15: lua_code_cache off
+--- http_config
+    lua_package_path "$TEST_NGINX_CWD/lib/?.lua;;";
+
+    lua_code_cache off;
+
+    upstream backend {
+        server 0.0.0.1;
+        balancer_by_lua_file html/test.lua;
+    }
+--- config
+    location = /t {
+        rewrite ^/t /tt break;
+        proxy_pass http://backend;
+    }
+    location = /tt {
+        echo "hello!";
+    }
+    location /update {
+        content_by_lua_block {
+            local f = assert(io.open("t/servroot/html/test.lua", "w"))
+            f:write("print('hello after update!')\n local b = require 'ngx.balancer'\n assert(b.set_current_peer('127.0.0.1', ngx.var.server_port))")
+            f:close()
+            ngx.say("updated")
+        }
+    }
+    location /main {
+        echo_location /t;
+        echo_location /update;
+        echo_location /t;
+    }
+--- user_files
+>>> test.lua
+print("hello before update!")
+local b = require "ngx.balancer"
+assert(b.set_current_peer("127.0.0.1", ngx.var.server_port))
+--- request
+    GET /main
+--- response_body
+hello!
+updated
+hello!
+--- error_code: 200
+--- error_log eval
+[
+'[lua] test.lua:1: hello before update! while connecting to upstream,',
+'[lua] test.lua:1: hello after update! while connecting to upstream,',
+]
