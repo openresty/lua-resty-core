@@ -97,6 +97,10 @@ local function shdict_store(zone, op, key, value, exptime, flags)
         return nil, "key too long"
     end
 
+    if exptime < 0 then
+        return error([[bad "exptime" argument]])
+    end
+
     local str_value_buf
     local str_value_len = 0
     local num_value = 0

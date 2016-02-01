@@ -9,7 +9,7 @@ use Cwd qw(cwd);
 
 repeat_each(2);
 
-plan tests => repeat_each() * (blocks() * 5 + 2);
+plan tests => repeat_each() * (blocks() * 5 );
 
 my $pwd = cwd();
 
@@ -914,4 +914,23 @@ qr/\[TRACE   \d+ content_by_lua\(nginx\.conf:\d+\):7 loop\]/
 [error]
  -- NYI:
 stitch
+
+
+
+=== TEST 28: invalid expire time
+--- http_config eval: $::HttpConfig
+--- config
+    location = /t {
+        content_by_lua '
+            local dogs = ngx.shared.dogs
+            local ok, err = dogs:set("foo", 32, -1)
+            ngx.say(ok)
+        ';
+    }
+--- request
+GET /t
+--- response_body_like: 500 Internal Server Error
+--- error_code: 500
+--- error_log
+bad "exptime" argument
 
