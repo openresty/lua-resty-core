@@ -353,6 +353,10 @@ end
 
 
 local function re_match_helper(subj, regex, opts, ctx, want_caps, res, nth)
+    -- we need to cast this to strings to avoid exceptions when they are
+    -- something else.
+    subj  = tostring(subj)
+
     local compiled, compile_once, flags = re_match_compile(regex, opts)
     if compiled == nil then
         -- compiled_once holds the error string
@@ -602,6 +606,7 @@ local function re_sub_func_helper(subj, regex, replace, opts, global)
 
     -- exec the compiled regex
 
+    subj = tostring(subj)
     local subj_len = #subj
     local count = 0
     local pos = 0
@@ -645,7 +650,7 @@ local function re_sub_func_helper(subj, regex, replace, opts, global)
 
         local res = collect_captures(compiled, rc, subj, flags)
 
-        local bit = replace(res)
+        local bit = tostring(replace(res))
         local bit_len = #bit
 
         local new_dst_len = dst_len + prefix_len + bit_len
@@ -711,6 +716,7 @@ local function re_sub_str_helper(subj, regex, replace, opts, global)
 
     -- exec the compiled regex
 
+    subj = tostring(subj)
     local subj_len = #subj
     local count = 0
     local pos = 0
