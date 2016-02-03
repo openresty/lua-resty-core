@@ -9,7 +9,7 @@ use Cwd qw(cwd);
 
 repeat_each(2);
 
-plan tests => repeat_each() * (blocks() * 5 + 3);
+plan tests => repeat_each() * (blocks() * 5 + 1);
 
 my $pwd = cwd();
 
@@ -540,4 +540,50 @@ false
 NYI
 --- error_log eval
 qr/\[TRACE\s+\d+\s+/
+
+=== TEST 14: subject is not a string type
+--- http_config eval: $::HttpConfig
+--- config
+    location /re {
+        content_by_lua '
+            local m = ngx.re.match(12345, [=[(\\d+)]=], "jo")
+
+            if m then
+                ngx.say(m[0])
+                ngx.say(m[1])
+            else
+                ngx.say("not matched")
+            end
+        ';
+    }
+--- request
+    GET /re
+--- response_body
+12345
+12345
+--- no_error_log
+[error]
+attempt to get length of local 'subj' (a number value)
+
+=== TEST 15: regex is not a string type
+--- http_config eval: $::HttpConfig
+--- config
+    location /re {
+        content_by_lua '
+            local m = ngx.re.match(12345, 123, "jo")
+
+            if m then
+                ngx.say(m[0])
+            else
+                ngx.say("not matched")
+            end
+        ';
+    }
+--- request
+    GET /re
+--- response_body
+123
+--- no_error_log
+[error]
+attempt to get length of local 'regex' (a number value)
 
