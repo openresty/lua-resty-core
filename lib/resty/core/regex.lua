@@ -353,6 +353,11 @@ end
 
 
 local function re_match_helper(subj, regex, opts, ctx, want_caps, res, nth)
+    -- we need to caste these to a string to avoid a potential thread abort
+    -- see http://bit.ly/1SH0oz6
+    regex = tostring(regex)
+    subj  = tostring(subj)
+
     local compiled, compile_once, flags = re_match_compile(regex, opts)
     if compiled == nil then
         -- compiled_once holds the error string
@@ -528,6 +533,8 @@ local function re_sub_compile(regex, opts, replace, func)
         -- print("compiled regex not found, compiling regex...")
         local errbuf = get_string_buf(MAX_ERR_MSG_LEN)
 
+        regex = tostring(regex)
+
         compiled = C.ngx_http_lua_ffi_compile_regex(regex, #regex, flags,
                                                     pcre_opts, errbuf,
                                                     MAX_ERR_MSG_LEN)
@@ -602,6 +609,7 @@ local function re_sub_func_helper(subj, regex, replace, opts, global)
 
     -- exec the compiled regex
 
+    subj = tostring(subj)
     local subj_len = #subj
     local count = 0
     local pos = 0
@@ -645,7 +653,7 @@ local function re_sub_func_helper(subj, regex, replace, opts, global)
 
         local res = collect_captures(compiled, rc, subj, flags)
 
-        local bit = replace(res)
+        local bit = tostring(replace(res))
         local bit_len = #bit
 
         local new_dst_len = dst_len + prefix_len + bit_len
@@ -711,6 +719,7 @@ local function re_sub_str_helper(subj, regex, replace, opts, global)
 
     -- exec the compiled regex
 
+    subj = tostring(subj)
     local subj_len = #subj
     local count = 0
     local pos = 0

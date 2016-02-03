@@ -326,3 +326,42 @@ GET /t
 bad argument type
 NYI
 
+=== TEST 8: string replace subj is not a string type
+--- http_config eval: $::HttpConfig
+--- config
+    location /re {
+        content_by_lua '
+			local newstr, n, err = ngx.re.sub(1234, "([0-9])[0-9]", 5, "jo")
+
+			ngx.say(newstr)
+        ';
+    }
+--- request
+    GET /re
+--- response_body
+534
+--- no_error_log
+[error]
+attempt to get length of local 'subj' (a number value)
+
+=== TEST 9: func replace return is not a string type
+--- http_config eval: $::HttpConfig
+--- config
+    location /re {
+        content_by_lua '
+			local lookup = function(m)
+				-- note we are returning a number type here
+				return 5
+			end
+
+			local newstr, n, err = ngx.re.sub("hello, 1234", "([0-9])[0-9]", lookup, "jo")
+			ngx.say(newstr)
+        ';
+    }
+--- request
+    GET /re
+--- response_body
+hello, 534
+--- no_error_log
+[error]
+attempt to get length of local 'bit' (a number value)
