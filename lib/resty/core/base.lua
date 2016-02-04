@@ -17,9 +17,9 @@ local FREE_LIST_REF = 0
 
 if not ngx.config
    or not ngx.config.ngx_lua_version
-   or ngx.config.ngx_lua_version < 10000
+   or ngx.config.ngx_lua_version < 10001
 then
-    error("ngx_lua 0.10.0+ required")
+    error("ngx_lua 0.10.1+ required")
 end
 
 
@@ -97,7 +97,7 @@ local c_buf_type = ffi.typeof("char[?]")
 local _M = new_tab(0, 16)
 
 
-_M.version = "0.1.1"
+_M.version = "0.1.4"
 _M.new_tab = new_tab
 _M.clear_tab = clear_tab
 

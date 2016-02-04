@@ -236,17 +236,18 @@ local function collect_named_captures(compiled, flags, res)
         -- ngx.say("n = ", n)
         local name = ffi_string(name_table + ind + 2)
         local cap = res[n]
-        if cap then
-            if dup_names then
+        if dup_names then
+            -- unmatched captures (false) are not collected
+            if cap then
                 local old = res[name]
                 if old then
                     old[#old + 1] = cap
                 else
                     res[name] = {cap}
                 end
-            else
-                res[name] = cap
             end
+        else
+            res[name] = cap
         end
 
         ind = ind + entry_size
@@ -256,19 +257,26 @@ end
 
 local function collect_captures(compiled, rc, subj, flags, res)
     local cap = compiled.captures
+    local ncap = compiled.ncaptures
     local name_count = compiled.name_count
 
     if not res then
-        res = new_tab(rc, name_count)
+        res = new_tab(ncap, name_count)
     end
 
     local i = 0
     local n = 0
-    while i < rc do
-        local from = cap[n]
-        if from >= 0 then
-            local to = cap[n + 1]
-            res[i] = sub(subj, from + 1, to)
+    while i <= ncap do
+        if i > rc then
+            res[i] = false
+        else
+            local from = cap[n]
+            if from >= 0 then
+                local to = cap[n + 1]
+                res[i] = sub(subj, from + 1, to)
+            else
+                res[i] = false
+            end
         end
         i = i + 1
         n = n + 2
@@ -345,6 +353,10 @@ end
 
 
 local function re_match_helper(subj, regex, opts, ctx, want_caps, res, nth)
+    -- we need to cast this to strings to avoid exceptions when they are
+    -- something else.
+    subj  = tostring(subj)
+
     local compiled, compile_once, flags = re_match_compile(regex, opts)
     if compiled == nil then
         -- compiled_once holds the error string
@@ -594,6 +606,7 @@ local function re_sub_func_helper(subj, regex, replace, opts, global)
 
     -- exec the compiled regex
 
+    subj = tostring(subj)
     local subj_len = #subj
     local count = 0
     local pos = 0
@@ -637,7 +650,7 @@ local function re_sub_func_helper(subj, regex, replace, opts, global)
 
         local res = collect_captures(compiled, rc, subj, flags)
 
-        local bit = replace(res)
+        local bit = tostring(replace(res))
         local bit_len = #bit
 
         local new_dst_len = dst_len + prefix_len + bit_len
@@ -703,6 +716,7 @@ local function re_sub_str_helper(subj, regex, replace, opts, global)
 
     -- exec the compiled regex
 
+    subj = tostring(subj)
     local subj_len = #subj
     local count = 0
     local pos = 0

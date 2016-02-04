@@ -5,7 +5,6 @@ local ffi = require 'ffi'
 local ffi_string = ffi.string
 local ffi_new = ffi.new
 local C = ffi.C
---local setmetatable = setmetatable
 local ngx = ngx
 local type = type
 local tostring = tostring

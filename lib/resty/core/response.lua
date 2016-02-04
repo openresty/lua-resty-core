@@ -6,13 +6,11 @@ local base = require "resty.core.base"
 
 
 local C = ffi.C
---local ffi_new = ffi.new
 local ffi_cast = ffi.cast
 local ffi_str = ffi.string
 local new_tab = base.new_tab
 local FFI_BAD_CONTEXT = base.FFI_BAD_CONTEXT
 local FFI_NO_REQ_CTX = base.FFI_NO_REQ_CTX
--- local FFI_ERROR = base.FFI_ERROR
 local FFI_DECLINED = base.FFI_DECLINED
 local get_string_buf = base.get_string_buf
 local getmetatable = getmetatable

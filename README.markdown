@@ -26,6 +26,7 @@ Table of Contents
     * [resty.core.time](#restycoretime)
     * [resty.core.worker](#restycoreworker)
     * [ngx.semaphore](#ngxsemaphore)
+    * [ngx.balancer](#ngxbalancer)
 * [Caveat](#caveat)
 * [TODO](#todo)
 * [Author](#author)
@@ -45,7 +46,7 @@ Synopsis
 
     http {
         # you do NOT need to configure the following line when you
-        # are using the ngx_openresty bundle 1.4.3.9+.
+        # are using the OpenResty bundle 1.4.3.9+.
         lua_package_path "/path/to/lua-resty-core/lib/?.lua;;";
 
         init_by_lua '
@@ -59,12 +60,20 @@ Synopsis
 Description
 ===========
 
-This pure Lua library reimplements part of the ngx_lua's
+This pure Lua library reimplements part of the [ngx_lua](https://github.com/openresty/lua-nginx-module#readme) module's
 [Nginx API for Lua](https://github.com/openresty/lua-nginx-module#nginx-api-for-lua)
 with LuaJIT FFI and installs the new FFI-based Lua API into the ngx.* and ndk.* namespaces
 used by the ngx_lua module.
 
-The FFI-based Lua API can work with LuaJIT's JIT compiler. ngx_lua's default API is based on the standard Lua C API, which will never be JIT compiled and the user Lua code is always interpreted (slowly).
+In addition, this Lua library implements any significant new Lua APIs of
+the [ngx_lua](https://github.com/openresty/lua-nginx-module#readme) module
+as proper Lua modules, like [ngx.semaphore](#ngxsemaphore) and [ngx.balancer](#ngxbalancer).
+
+The FFI-based Lua API can work with LuaJIT's JIT compiler. ngx_lua's default API is based on the standard
+Lua C API, which will never be JIT compiled and the user Lua code is always interpreted (slowly).
+
+This library is shipped with the OpenResty bundle by default. So you do not really need to worry about the dependencies
+and requirements.
 
 [Back to TOC](#table-of-contents)
 
@@ -72,7 +81,7 @@ Prerequisites
 =============
 
 * LuaJIT 2.1 (for now, it is the v2.1 git branch in the official luajit-2.0 git repository: http://luajit.org/download.html )
-* [ngx_lua](https://github.com/openresty/lua-nginx-module) v0.10.0 or later.
+* [ngx_lua](https://github.com/openresty/lua-nginx-module) v0.10.1 or later.
 * [lua-resty-lrucache](https://github.com/openresty/lua-resty-lrucache)
 
 [Back to TOC](#table-of-contents)
@@ -195,6 +204,14 @@ See the [documentation](./lib/ngx/semaphore.md) for this Lua module for more det
 
 [Back to TOC](#table-of-contents)
 
+## ngx.balancer
+
+This Lua module implements for defining dynamic upstream balancers in Lua.
+
+See the [documentation](./lib/ngx/balancer.md) for this Lua module for more details.
+
+[Back to TOC](#table-of-contents)
+
 Caveat
 ======
 
@@ -225,7 +242,7 @@ Copyright and License
 
 This module is licensed under the BSD license.
 
-Copyright (C) 2013-2015, by Yichun "agentzh" Zhang, CloudFlare Inc.
+Copyright (C) 2013-2016, by Yichun "agentzh" Zhang, CloudFlare Inc.
 
 All rights reserved.
 

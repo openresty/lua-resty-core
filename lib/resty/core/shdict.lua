@@ -73,6 +73,8 @@ local function shdict_store(zone, op, key, value, exptime, flags)
 
     if not exptime then
         exptime = 0
+    elseif exptime < 0 then
+        return error('bad "exptime" argument')
     end
 
     if not flags then

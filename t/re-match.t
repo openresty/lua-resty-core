@@ -9,7 +9,7 @@ use Cwd qw(cwd);
 
 repeat_each(2);
 
-plan tests => repeat_each() * (blocks() * 5 + 3);
+plan tests => repeat_each() * (blocks() * 5 + 1);
 
 my $pwd = cwd();
 
@@ -438,4 +438,156 @@ hello
 NYI
 --- error_log eval
 qr/\[TRACE\s+\d+\s+/
+
+
+
+=== TEST 11: unmatched captures are false
+--- http_config eval: $::HttpConfig
+--- config
+    location /re {
+        content_by_lua '
+            local m = ngx.re.match("hello!", "(hello)(, .+)?(!)", "jo")
+
+            if m then
+                ngx.say(m[0])
+                ngx.say(m[1])
+                ngx.say(m[2])
+                ngx.say(m[3])
+            else
+                ngx.say("not matched!")
+            end
+        ';
+    }
+--- request
+    GET /re
+--- response_body
+hello!
+hello
+false
+!
+--- no_error_log
+[error]
+NYI
+--- error_log eval
+qr/\[TRACE\s+\d+\s+/
+
+
+
+=== TEST 12: unmatched trailing captures are false
+--- http_config eval: $::HttpConfig
+--- config
+    location /re {
+        content_by_lua '
+            local m = ngx.re.match("hello", "(hello)(, .+)?(!)?", "jo")
+
+            if m then
+                ngx.say(m[0])
+                ngx.say(m[1])
+                ngx.say(m[2])
+                ngx.say(m[3])
+            else
+                ngx.say("not matched!")
+            end
+        ';
+    }
+--- request
+    GET /re
+--- response_body
+hello
+hello
+false
+false
+--- no_error_log
+[error]
+NYI
+--- error_log eval
+qr/\[TRACE\s+\d+\s+/
+
+
+
+=== TEST 13: unmatched named captures are false
+--- http_config eval: $::HttpConfig
+--- config
+    location /re {
+        content_by_lua '
+            local m = ngx.re.match("hello!", "(?<first>hello)(?<second>, .+)?(?<third>!)", "jo")
+
+            if m then
+                ngx.say(m[0])
+                ngx.say(m[1])
+                ngx.say(m[2])
+                ngx.say(m[3])
+                ngx.say(m.first)
+                ngx.say(m.second)
+                ngx.say(m.third)
+            else
+                ngx.say("not matched!")
+            end
+        ';
+    }
+--- request
+    GET /re
+--- response_body
+hello!
+hello
+false
+!
+hello
+false
+!
+--- no_error_log
+[error]
+NYI
+--- error_log eval
+qr/\[TRACE\s+\d+\s+/
+
+
+
+=== TEST 14: subject is not a string type
+--- http_config eval: $::HttpConfig
+--- config
+    location /re {
+        content_by_lua '
+            local m = ngx.re.match(12345, [=[(\\d+)]=], "jo")
+
+            if m then
+                ngx.say(m[0])
+                ngx.say(m[1])
+            else
+                ngx.say("not matched")
+            end
+        ';
+    }
+--- request
+    GET /re
+--- response_body
+12345
+12345
+--- no_error_log
+[error]
+attempt to get length of local 'subj' (a number value)
+
+
+
+=== TEST 15: subject is not a string type
+--- http_config eval: $::HttpConfig
+--- config
+    location /re {
+        content_by_lua '
+            local m = ngx.re.match(12345, "123", "jo")
+
+            if m then
+                ngx.say(m[0])
+            else
+                ngx.say("not matched")
+            end
+        ';
+    }
+--- request
+    GET /re
+--- response_body
+123
+--- no_error_log
+[error]
+attempt to get length of local 'regex' (a number value)
 

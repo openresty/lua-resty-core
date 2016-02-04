@@ -5,7 +5,6 @@ local ffi = require 'ffi'
 local ffi_string = ffi.string
 local C = ffi.C
 local ngx = ngx
---local tostring = tostring
 local error = error
 local base = require "resty.core.base"
 local get_string_buf = base.get_string_buf
