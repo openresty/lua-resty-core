@@ -10,10 +10,11 @@ use Cwd qw(cwd);
 
 repeat_each(2);
 
-plan tests => repeat_each() * (blocks() * 4 + 4);
+plan tests => repeat_each() * (blocks() * 4 + 3);
 
 $ENV{TEST_NGINX_CWD} = cwd();
 
+#worker_connections(1024);
 #no_diff();
 no_long_string();
 run_tests();
@@ -650,3 +651,55 @@ ok
 qr/\[error\] .*? log_by_lua.*? failed to call: API disabled in the current context/
 --- no_error_log
 [alert]
+
+
+
+=== TEST 15: hot loop when proxy_upstream_next error is hit and keepalive is used.
+github issue openresty/lua-nginx-module#693
+--- skip_nginx: 4: < 1.7.5
+--- http_config
+    lua_package_path "$TEST_NGINX_CWD/lib/?.lua;;";
+
+    upstream backend {
+        server 0.0.0.1;
+        balancer_by_lua_block {
+            local b = require "ngx.balancer"
+            print("hello from balancer by lua!")
+            assert(b.set_current_peer("127.0.0.1", $TEST_NGINX_SERVER_PORT))
+        }
+        keepalive 1;
+    }
+--- config
+    location /t {
+        rewrite ^/t(.*) $1 break;
+        proxy_pass http://backend;
+        proxy_http_version 1.1;
+        proxy_set_header Connection "";
+    }
+
+    location = /back {
+        return 200;
+    }
+
+    location = /main {
+        echo_location /t/back;
+        echo_location /t/bad;
+    }
+
+    location = /bad {
+        content_by_lua_block {
+            ngx.exit(444)
+        }
+    }
+--- request
+    GET /main
+--- no_error_log
+[alert]
+--- ignore_response
+--- grep_error_log eval: qr{hello from balancer by lua!}
+--- grep_error_log_out
+hello from balancer by lua!
+hello from balancer by lua!
+hello from balancer by lua!
+--- error_log eval
+qr/\[error] .*? upstream prematurely closed connection while reading response header from upstream/
