@@ -10,7 +10,7 @@ use Cwd qw(cwd);
 
 repeat_each(2);
 
-plan tests => repeat_each() * (blocks() * 4 + 3);
+plan tests => repeat_each() * (blocks() * 4 + 5);
 
 $ENV{TEST_NGINX_CWD} = cwd();
 
@@ -703,3 +703,92 @@ hello from balancer by lua!
 hello from balancer by lua!
 --- error_log eval
 qr/\[error] .*? upstream prematurely closed connection while reading response header from upstream/
+
+
+
+=== TEST 16: https (keepalive)
+--- skip_nginx: 4: < 1.7.5
+--- http_config
+    lua_package_path "$TEST_NGINX_CWD/lib/?.lua;;";
+
+    upstream backend {
+        server 0.0.0.1;
+        balancer_by_lua_block {
+            local b = require "ngx.balancer"
+            print("hello from balancer by lua!")
+            assert(b.set_current_peer("127.0.0.1", 1234))
+        }
+        keepalive 1;
+    }
+
+    server {
+        listen 1234 ssl;
+        ssl_certificate ../../cert/test.crt;
+        ssl_certificate_key ../../cert/test.key;
+
+        server_tokens off;
+        location = /back {
+            return 200 "ok";
+        }
+    }
+--- config
+    location /t {
+        proxy_pass https://backend/back;
+        proxy_http_version 1.1;
+        proxy_set_header Connection "";
+    }
+
+--- request
+    GET /t
+--- no_error_log
+[alert]
+[error]
+--- response_body chomp
+ok
+--- grep_error_log eval: qr{hello from balancer by lua!}
+--- grep_error_log_out
+hello from balancer by lua!
+
+
+
+=== TEST 17: https (no keepalive)
+--- skip_nginx: 4: < 1.7.5
+--- http_config
+    lua_package_path "$TEST_NGINX_CWD/lib/?.lua;;";
+
+    upstream backend {
+        server 0.0.0.1;
+        balancer_by_lua_block {
+            local b = require "ngx.balancer"
+            print("hello from balancer by lua!")
+            assert(b.set_current_peer("127.0.0.1", 1234))
+        }
+    }
+
+    server {
+        listen 1234 ssl;
+        ssl_certificate ../../cert/test.crt;
+        ssl_certificate_key ../../cert/test.key;
+
+        server_tokens off;
+        location = /back {
+            return 200 "ok";
+        }
+    }
+--- config
+    location /t {
+        proxy_pass https://backend/back;
+        proxy_http_version 1.1;
+        proxy_set_header Connection "";
+    }
+
+--- request
+    GET /t
+--- no_error_log
+[alert]
+[error]
+--- response_body chomp
+ok
+--- grep_error_log eval: qr{hello from balancer by lua!}
+--- grep_error_log_out
+hello from balancer by lua!
