@@ -96,7 +96,7 @@ function _M.wait(self, seconds)
     errlen[0] = ERR_BUF_SIZE
 
     local ret = C.ngx_http_lua_ffi_sema_wait(r, cdata_sem,
-                                                  milliseconds, err, errlen)
+                                             milliseconds, err, errlen)
 
     if ret == FFI_ERROR then
         return nil, ffi_str(err, errlen[0])
