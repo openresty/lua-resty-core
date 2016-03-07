@@ -26,6 +26,9 @@ int ngx_http_lua_ffi_balancer_set_more_tries(ngx_http_request_t *r,
 
 int ngx_http_lua_ffi_balancer_get_last_failure(ngx_http_request_t *r,
     int *status, char **err);
+
+int ngx_http_lua_ffi_balancer_set_timeout(ngx_http_request_t *r,
+    int connect_timeout, int send_timeout, int read_timeout, char **err);
 ]]
 
 
@@ -100,5 +103,24 @@ function _M.get_last_failure()
     return peer_state_names[state] or "unknown", int_out[0]
 end
 
+
+function _M.set_timeout(connect_timeout, send_timeout, read_timeout)
+    local r = getfenv(0).__ngx_req
+    if not r then
+        return error("no request found")
+    end
+
+    local state = C.ngx_http_lua_ffi_balancer_set_timeout(r,
+                                                          connect_timeout,
+                                                          send_timeout,
+                                                          read_timeout,
+                                                          errmsg)
+
+    if state == FFI_OK then
+        return true
+    end
+    
+    return false, ffi_str(errmsg[0])
+end
 
 return _M
