@@ -595,3 +595,169 @@ ok
 qr/\[error\] .*? log_by_lua.*? failed to call: API disabled in the current context/
 --- no_error_log
 [alert]
+
+
+
+=== TEST 14: set_timeout (connect_timeout, send_timeout, read_timeout)
+--- http_config
+    lua_package_path "$TEST_NGINX_CWD/lib/?.lua;;";
+
+    upstream backend {
+        server 0.0.0.1;
+        balancer_by_lua_block {
+            print("hello from balancer by lua!")
+            local b = require "ngx.balancer"
+            b.set_timeout(1000, 1000, 1000)
+            assert(b.set_current_peer("127.0.0.1", tonumber(ngx.var.server_port)))
+        }
+    }
+--- config
+    location = /t {
+        proxy_pass http://backend;
+    }
+    location = /back {
+        echo "hello proxy timeout!";
+    }
+--- request
+    GET /t
+--- response_body:
+hello proxy timeout!
+--- error_code: 200
+--- no_error_log
+[warn]
+
+
+
+=== TEST 15: set connect timeout zero got 504
+--- http_config
+    lua_package_path "$TEST_NGINX_CWD/lib/?.lua;;";
+
+    upstream backend {
+        server 0.0.0.1;
+        balancer_by_lua_block {
+            print("hello from balancer by lua!")
+            local b = require "ngx.balancer"
+            b.set_timeout(0, 1000, 1000)
+            assert(b.set_current_peer("127.0.0.1", tonumber(ngx.var.server_port)))
+        }
+    }
+--- config
+    location = /t {
+        proxy_pass http://backend;
+    }
+    location = /back {
+        echo "hello proxy timeout!";
+    }
+--- request
+    GET /t
+--- response_body_like: 504 Gateway Time-out
+--- error_code: 504
+--- error_log eval
+qr/\[error\] .*? upstream timed out .*? connecting to upstream/
+--- no_error_log
+[warn]
+
+
+
+=== TEST 16: set read timeout zero got 504
+--- http_config
+    lua_package_path "$TEST_NGINX_CWD/lib/?.lua;;";
+
+    upstream backend {
+        server 0.0.0.1;
+        balancer_by_lua_block {
+            print("hello from balancer by lua!")
+            local b = require "ngx.balancer"
+            b.set_timeout(1000, 1000, 0)
+            assert(b.set_current_peer("127.0.0.1", tonumber(ngx.var.server_port)))
+        }
+    }
+--- config
+    location = /t {
+        proxy_pass http://backend;
+    }
+    location = /back {
+        echo "hello proxy timeout!";
+    }
+--- request
+    GET /t
+--- response_body_like: 504 Gateway Time-out
+--- error_code: 504
+--- error_log eval
+qr/\[error\] .*? upstream timed out .*? reading response header from upstream/
+--- no_error_log
+[warn]
+
+
+
+=== TEST 17: set_timeout called in a wrong context
+--- wait: 0.2
+--- http_config
+    lua_package_path "$TEST_NGINX_CWD/lib/?.lua;;";
+
+    upstream backend {
+        server 127.0.0.1:$TEST_NGINX_SERVER_PORT;
+        balancer_by_lua_block {
+            print("hello from balancer by lua!")
+        }
+    }
+
+--- config
+
+    location = /fake {
+        echo ok;
+    }
+
+    location = /t {
+        proxy_pass http://backend/fake;
+
+        log_by_lua_block {
+            local balancer = require "ngx.balancer"
+            local ok, err = balancer.set_timeout(1000, 1000, 1000)
+            if not ok then
+                ngx.log(ngx.ERR, "failed to call: ", err)
+                return
+            end
+            ngx.log(ngx.ALERT, "unexpected success")
+        }
+    }
+
+--- request
+GET /t
+--- response_body
+ok
+--- error_log eval
+qr/\[error\] .*? log_by_lua.*? failed to call: API disabled in the current context/
+--- no_error_log
+[alert]
+
+
+
+=== TEST 17: set_timeout called in a bad parameter
+--- wait: 0.2
+--- http_config
+    lua_package_path "$TEST_NGINX_CWD/lib/?.lua;;";
+
+    upstream backend {
+        server 0.0.0.1;
+        balancer_by_lua_block {
+            local balancer = require "ngx.balancer"
+            local ok, err = balancer.set_timeout(-1, 1000, 1000)
+            if not ok then
+                ngx.log(ngx.ERR, "failed to call: ", err)
+            end
+        }
+    }
+
+--- config
+    location = /t {
+        proxy_pass http://backend;
+    }
+--- request
+GET /t
+--- response_body_like: 502 Bad Gateway
+--- error_code: 502
+--- error_log eval
+qr/\[error\] .*? balancer_by_lua.*? failed to call: connect_timeout must be greater than zero/
+--- no_error_log
+[alert]

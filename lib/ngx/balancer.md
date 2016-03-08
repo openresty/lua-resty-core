@@ -156,6 +156,16 @@ method always returns a single `nil` value.
 
 [Back to TOC](#table-of-contents)
 
+set_timeout
+----------------
+**syntax:** `ok, err = balancer.set_timeout(connect_timeout, send_timeout, read_timeout)`
+
+**context:** *balancer_by_lua&#42;*
+
+Sets the proxy timeout (connect, send and read) for the current backend query (which may be a retry).
+
+[Back to TOC](#table-of-contents)
+
 Community
 =========
 

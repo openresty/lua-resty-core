@@ -119,7 +119,7 @@ function _M.set_timeout(connect_timeout, send_timeout, read_timeout)
     if state == FFI_OK then
         return true
     end
-    
+
     return false, ffi_str(errmsg[0])
 end
 
