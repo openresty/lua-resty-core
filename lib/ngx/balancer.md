@@ -97,7 +97,7 @@ to call these methods.
 
 set_current_peer
 ----------------
-**syntax:** `ok, err = balancer.set_current_peer(host, port)`
+**syntax:** *ok, err = balancer.set_current_peer(host, port)*
 
 **context:** *balancer_by_lua&#42;*
 
@@ -113,7 +113,7 @@ and pass the results to the `balancer_by_lua*` handler via [ngx.ctx](https://git
 
 set_more_tries
 --------------
-**syntax:** `ok, err = balancer.set_more_tries(count)`
+**syntax:** *ok, err = balancer.set_more_tries(count)*
 
 **context:** *balancer_by_lua&#42;*
 
@@ -132,7 +132,7 @@ is still a `true` value.
 
 get_last_failure
 ----------------
-**syntax:** `state_name, status_code = balancer.get_last_failure()`
+**syntax:** *state_name, status_code = balancer.get_last_failure()*
 
 **context:** *balancer_by_lua&#42;*
 
