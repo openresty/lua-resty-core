@@ -153,7 +153,7 @@ Methods
 
 get_ocsp_responder_from_der_chain
 ---------------------------------
-**syntax:** `ocsp_url, err = ocsp.get_ocsp_responder_from_der_chain(der_cert_chain, max_len)`
+**syntax:** *ocsp_url, err = ocsp.get_ocsp_responder_from_der_chain(der_cert_chain, max_len)*
 
 **context:** *any*
 
@@ -172,7 +172,7 @@ In case of failures, returns `nil` and a string describing the error.
 
 create_ocsp_request
 -------------------
-**syntax:** `ocsp_req, err = ocsp.create_ocsp_request(der_cert_chain, max_len)`
+**syntax:** *ocsp_req, err = ocsp.create_ocsp_request(der_cert_chain, max_len)*
 
 **context:** *any*
 
@@ -195,7 +195,7 @@ by the [get_ocsp_responder_from_der_chain](#get_ocsp_responder_from_der_chain) f
 
 validate_ocsp_response
 ----------------------
-**syntax:** `ok, err = ocsp.validate_ocsp_response(ocsp_resp, der_cert_chain, max_err_msg_len)`
+**syntax:** *ok, err = ocsp.validate_ocsp_response(ocsp_resp, der_cert_chain, max_err_msg_len)*
 
 **context:** *any*
 
@@ -214,7 +214,7 @@ being 4KB).
 
 set_ocsp_status_resp
 --------------------
-**syntax:** `ok, err = ocsp.set_ocsp_status_resp(ocsp_resp)`
+**syntax:** *ok, err = ocsp.set_ocsp_status_resp(ocsp_resp)*
 
 **context:** *ssl_certificate_by_lua&#42;*
 
