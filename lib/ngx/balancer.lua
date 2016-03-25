@@ -27,8 +27,8 @@ int ngx_http_lua_ffi_balancer_set_more_tries(ngx_http_request_t *r,
 int ngx_http_lua_ffi_balancer_get_last_failure(ngx_http_request_t *r,
     int *status, char **err);
 
-int ngx_http_lua_ffi_balancer_set_timeout(ngx_http_request_t *r,
-    int connect_timeout, int send_timeout, int read_timeout, char **err);
+int ngx_http_lua_ffi_balancer_set_peer_timeout(ngx_http_request_t *r,
+    const unsigned char *type, int read_timeout, char **err);
 ]]
 
 
@@ -104,17 +104,20 @@ function _M.get_last_failure()
 end
 
 
-function _M.set_timeout(connect_timeout, send_timeout, read_timeout)
+function _M.set_read_timeout(timeout)
     local r = getfenv(0).__ngx_req
     if not r then
         return error("no request found")
     end
 
-    local state = C.ngx_http_lua_ffi_balancer_set_timeout(r,
-                                                          connect_timeout,
-                                                          send_timeout,
-                                                          read_timeout,
-                                                          errmsg)
+    if type(timeout) ~= "number" then
+        timeout = tonumber(timeout)
+    end
+
+    local state = C.ngx_http_lua_ffi_balancer_set_peer_timeout(r,
+                                                               "read",
+                                                               timeout,
+                                                               errmsg)
 
     if state == FFI_OK then
         return true
@@ -122,5 +125,52 @@ function _M.set_timeout(connect_timeout, send_timeout, read_timeout)
 
     return false, ffi_str(errmsg[0])
 end
+
+
+function _M.set_send_timeout(timeout)
+    local r = getfenv(0).__ngx_req
+    if not r then
+        return error("no request found")
+    end
+
+    if type(timeout) ~= "number" then
+        timeout = tonumber(timeout)
+    end
+
+    local state = C.ngx_http_lua_ffi_balancer_set_peer_timeout(r,
+                                                               "send",
+                                                               timeout,
+                                                               errmsg)
+
+    if state == FFI_OK then
+        return true
+    end
+
+    return false, ffi_str(errmsg[0])
+end
+
+
+function _M.set_connect_timeout(timeout)
+    local r = getfenv(0).__ngx_req
+    if not r then
+        return error("no request found")
+    end
+
+    if type(timeout) ~= "number" then
+        timeout = tonumber(timeout)
+    end
+
+    local state = C.ngx_http_lua_ffi_balancer_set_peer_timeout(r,
+                                                               "connect",
+                                                               timeout,
+                                                               errmsg)
+
+    if state == FFI_OK then
+        return true
+    end
+
+    return false, ffi_str(errmsg[0])
+end
+
 
 return _M
