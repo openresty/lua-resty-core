@@ -192,6 +192,8 @@ API Implemented
 
 * [ngx.worker.exiting](https://github.com/openresty/lua-nginx-module#ngxworkerexiting)
 * [ngx.worker.pid](https://github.com/openresty/lua-nginx-module#ngxworkerpid)
+* [ngx.worker.id](https://github.com/openresty/lua-nginx-module#ngxworkerid)
+* [ngx.worker.count](https://github.com/openresty/lua-nginx-module#ngxworkercount)
 
 [Back to TOC](#table-of-contents)
 
