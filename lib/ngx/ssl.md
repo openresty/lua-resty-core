@@ -121,7 +121,7 @@ Methods
 
 clear_certs
 -----------
-**syntax:** `ok, err = ssl.clear_certs()`
+**syntax:** *ok, err = ssl.clear_certs()*
 
 **context:** *ssl_certificate_by_lua&#42;*
 
@@ -133,7 +133,7 @@ Returns `true` on success, or a `nil` value and a string describing the error ot
 
 cert_pem_to_der
 ---------------
-**syntax:** `der_cert_chain, err = ssl.cert_pem_to_der(pem_cert_chain)`
+**syntax:** *der_cert_chain, err = ssl.cert_pem_to_der(pem_cert_chain)*
 
 **context:** *any*
 
@@ -155,7 +155,7 @@ This function can be called in whatever contexts.
 
 set_der_cert
 ------------
-**syntax:** `ok, err = ssl.set_der_cert(der_cert_chain)`
+**syntax:** *ok, err = ssl.set_der_cert(der_cert_chain)*
 
 **context:** *ssl_certificate_by_lua&#42;*
 
@@ -173,7 +173,7 @@ function to do the conversion first.
 
 priv_key_pem_to_der
 -------------------
-**syntax:** `der_priv_key, err = ssl.priv_key_pem_to_der(pem_priv_key)`
+**syntax:** *der_priv_key, err = ssl.priv_key_pem_to_der(pem_priv_key)*
 
 **context:** *any*
 
@@ -195,7 +195,7 @@ This function can be called in whatever contexts.
 
 set_der_priv_key
 ----------------
-**syntax:** `ok, err = ssl.set_der_priv_key(der_cert_chain)`
+**syntax:** *ok, err = ssl.set_der_priv_key(der_cert_chain)*
 
 **context:** *ssl_certificate_by_lua&#42;*
 
@@ -216,7 +216,7 @@ openssl rsa -in key.pem -outform DER -out key.der
 
 server_name
 -----------
-**syntax:** `name, err = ssl.server_name()`
+**syntax:** *name, err = ssl.server_name()*
 
 **context:** *any*
 
@@ -240,7 +240,7 @@ This function can be called in whatever contexts where downstream https is used.
 
 raw_server_addr
 ---------------
-**syntax:** `addr_data, addr_type, err = ssl.raw_server_addr()`
+**syntax:** *addr_data, addr_type, err = ssl.raw_server_addr()*
 
 **context:** *any*
 
@@ -290,7 +290,7 @@ This function can be called in whatever contexts where downstream https is used.
 
 get_tls1_version
 ----------------
-**syntax:** `ver, err = ssl.get_tls1_version()`
+**syntax:** *ver, err = ssl.get_tls1_version()*
 
 **context:** *any*
 
