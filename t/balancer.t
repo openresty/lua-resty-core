@@ -792,3 +792,43 @@ ok
 --- grep_error_log eval: qr{hello from balancer by lua!}
 --- grep_error_log_out
 hello from balancer by lua!
+
+
+
+=== TEST 18: test ngx.var.upstream_addr after using more than one set_current_peer
+--- wait: 0.2
+--- http_config
+    lua_package_path "$TEST_NGINX_CWD/lib/?.lua;;";
+    proxy_next_upstream_tries 3;
+
+    upstream backend {
+        server 127.0.0.1:$TEST_NGINX_SERVER_PORT;
+        balancer_by_lua_block {
+            local balancer = require "ngx.balancer"
+            if ngx.ctx.tries == nil then
+                balancer.set_more_tries(1)
+                ngx.ctx.tries = 1
+                balancer.set_current_peer("127.0.0.3", 12345)
+            else
+                balancer.set_current_peer("127.0.0.3", 12346)
+            end
+        }
+    }
+
+--- config
+
+    location = /t {
+        proxy_pass http://backend;
+        log_by_lua_block {
+            ngx.log(ngx.INFO, "ngx.var.upstream_addr is " .. ngx.var.upstream_addr)
+        }
+    }
+
+--- request
+GET /t
+--- response_body_like: 502 Bad Gateway
+--- error_code: 502
+--- error_log
+[lua] log_by_lua(nginx.conf:59):2: ngx.var.upstream_addr is 127.0.0.3:12345, 127.0.0.3:12346
+--- no_error_log
+[alert]
