@@ -231,6 +231,8 @@ The current "light thread" will be automatically waken up and the `wait` functio
 will return `true` when there is resources available for it, or return `nil` and a string describing
 the error in case of failure (like `"timeout"`).
 
+The `timeout` argument specifies the maximum time this function call should wait for (in seconds).
+
 When the `timeout` argument is 0, it means "no wait", that is, when there is no readily available
 "resources" for the current running "light thread", this `wait` function call returns immediately
 `nil` and the error string `"timeout"`.
