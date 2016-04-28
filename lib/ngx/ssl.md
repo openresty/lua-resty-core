@@ -173,13 +173,15 @@ function to do the conversion first.
 
 priv_key_pem_to_der
 -------------------
-**syntax:** *der_priv_key, err = ssl.priv_key_pem_to_der(pem_priv_key)*
+**syntax:** *der_priv_key, err = ssl.priv_key_pem_to_der(pem_priv_key, passphrase)*
 
 **context:** *any*
 
 Converts the PEM-formated SSL private key data into the DER format (for later uses
 in the [set_der_priv_key](#set_der_priv_key)
 function, for example).
+
+Specifies a `passphrase` for the private key If needed.
 
 In case of failures, returns `nil` and a string describing the error.
 
