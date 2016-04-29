@@ -166,8 +166,8 @@ end
 function _M.priv_key_pem_to_der(pem, passphrase)
     local outbuf = get_string_buf(#pem)
 
-    local sz = C.ngx_http_lua_ffi_priv_key_pem_to_der(pem, #pem, passphrase, 
-                                                        outbuf, errmsg)
+    local sz = C.ngx_http_lua_ffi_priv_key_pem_to_der(pem, #pem, passphrase,
+                                                      outbuf, errmsg)
     if sz > 0 then
         return ffi_str(outbuf, sz)
     end
