@@ -110,7 +110,12 @@ function _M.wait(self, seconds)
         return nil, "timeout"
     end
 
-    return co_yield()
+    -- Note: we cannot use the tail-call form here since we
+    -- might need the current function call's activation
+    -- record to hold the reference to our semaphore object
+    -- to prevent it from getting GC'd prematurely.
+    local ok, err = co_yield()
+    return ok, err
 end
 
 
