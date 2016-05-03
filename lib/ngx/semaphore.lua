@@ -110,7 +110,10 @@ function _M.wait(self, seconds)
         return nil, "timeout"
     end
 
-    return co_yield()
+    -- prevent the semaphore instance to be garbage collected
+    -- when someone is waiting on it
+    local ok, err = co_yield()
+    return ok, err
 end
 
 
