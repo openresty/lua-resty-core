@@ -1822,7 +1822,7 @@ GET /test
                 collectgarbage()
             end
 
-            local ok, err = ngx.timer.at(0.01, my_clean)
+            local ok, err = ngx.timer.at(0.001, my_clean)
             if not ok then
                 ngx.log(ngx.ERR, "failed to create timer: ", err)
                 ngx.exit(500)
@@ -1830,7 +1830,7 @@ GET /test
 
             my_sema[key] = semaphore:new(0)
 
-            local ok, err = my_sema[key]:wait(0.1)
+            local ok, err = my_sema[key]:wait(2)
             ngx.say(ok, ", ", err)
         }
     }
