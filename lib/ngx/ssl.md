@@ -137,7 +137,7 @@ cert_pem_to_der
 
 **context:** *any*
 
-Converts the PEM-formated SSL certificate chain data into the DER format (for later uses
+Converts the PEM-formatted SSL certificate chain data into the DER format (for later uses
 in the [set_der_cert](#set_der_cert)
 function, for example).
 
@@ -147,7 +147,7 @@ It is known that the `openssl` command-line utility may not convert the whole SS
 certificate chain from PEM to DER correctly. So always use this Lua function to do
 the conversion. You can always use libraries like [lua-resty-lrucache](https://github.com/openresty/lua-resty-lrucache#readme)
 and/or ngx_lua APIs like [lua_shared_dict](https://github.com/openresty/lua-nginx-module#lua_shared_dict)
-to do the caching of the DER-formated results, for example.
+to do the caching of the DER-formatted results, for example.
 
 This function can be called in whatever contexts.
 
@@ -159,7 +159,7 @@ set_der_cert
 
 **context:** *ssl_certificate_by_lua&#42;*
 
-Sets the DER-formated SSL certificate chain data for the current SSL connection. Note that
+Sets the DER-formatted SSL certificate chain data for the current SSL connection. Note that
 the DER data is
 directly in the Lua string argument. *No* external file names are supported here.
 
@@ -177,7 +177,7 @@ priv_key_pem_to_der
 
 **context:** *any*
 
-Converts the PEM-formated SSL private key data into the DER format (for later uses
+Converts the PEM-formatted SSL private key data into the DER format (for later uses
 in the [set_der_priv_key](#set_der_priv_key)
 function, for example).
 
@@ -199,7 +199,7 @@ set_der_priv_key
 
 **context:** *ssl_certificate_by_lua&#42;*
 
-Sets the DER-formated prviate key for the current SSL connection.
+Sets the DER-formatted prviate key for the current SSL connection.
 
 Returns `true` on success, or a `nil` value and a string describing the error otherwise.
 
