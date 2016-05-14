@@ -781,6 +781,7 @@ lua ssl server name: "test.com"
 Using IPv6 address: 0.0.0.1
 
 --- no_error_log
+--- skip_eval: 3: system("ping6 -c 1 ::1 >/dev/null 2>&1") ne 0
 [error]
 [alert]
 
