@@ -172,7 +172,7 @@ new
 ---
 **syntax:** *sema, err = semaphore_module.new(n?)*
 
-**context:** **init_by_lua*, init_worker_by_lua*, set_by_lua*, rewrite_by_lua*, access_by_lua*, content_by_lua*, header_filter_by_lua*, body_filter_by_lua, log_by_lua*, ngx.timer.**
+**context:** *init_by_lua&#42;, init_worker_by_lua&#42;, set_by_lua&#42;, rewrite_by_lua&#42;, access_by_lua&#42;, content_by_lua&#42;, header_filter_by_lua&#42;, body_filter_by_lua&#42;, log_by_lua&#42;, ngx.timer.&#42;*
 
 Creates and returns a new semaphore instance that has `n` (default to `0`) resources.
 
@@ -197,7 +197,7 @@ post
 --------
 **syntax:** *sema:post(n?)*
 
-**context:** *init_by_lua*, init_worker_by_lua*, set_by_lua*, rewrite_by_lua*, access_by_lua*, content_by_lua*, header_filter_by_lua*, body_filter_by_lua, log_by_lua*, ngx.timer.**
+**context:** *init_by_lua&#42;, init_worker_by_lua&#42;, set_by_lua&#42;, rewrite_by_lua&#42;, access_by_lua&#42;, content_by_lua&#42;, header_filter_by_lua&#42;, body_filter_by_lua&#42;, log_by_lua&#42;, ngx.timer.&#42;*
 
 Releases `n` (default to `1`) "resources" to the semaphore instance.
 
@@ -221,7 +221,7 @@ wait
 ------------
 **syntax:** *ok, err = sema:wait(timeout)*
 
-**context:** *rewrite_by_lua*, access_by_lua*, content_by_lua*, ngx.timer.**
+**context:** *rewrite_by_lua&#42;, access_by_lua&#42;, content_by_lua&#42;, ngx.timer.&#42;*
 
 Requests a resource from the semaphore instance.
 
@@ -230,6 +230,8 @@ Otherwise the current "light thread" will enter the waiting queue and yield exec
 The current "light thread" will be automatically waken up and the `wait` function call
 will return `true` when there is resources available for it, or return `nil` and a string describing
 the error in case of failure (like `"timeout"`).
+
+The `timeout` argument specifies the maximum time this function call should wait for (in seconds).
 
 When the `timeout` argument is 0, it means "no wait", that is, when there is no readily available
 "resources" for the current running "light thread", this `wait` function call returns immediately
@@ -244,10 +246,10 @@ See [Synopsis](#synopsis) for code examples.
 
 count
 --------
-**syntax:** `count = sema:count()`
+**syntax:** *count = sema:count()*
 
-**context:** *init_by_lua*, init_worker_by_lua*, set_by_lua*, rewrite_by_lua*, access_by_lua*,
-content_by_lua*, header_filter_by_lua*, body_filter_by_lua, log_by_lua*, ngx.timer.**
+**context:** *init_by_lua&#42;, init_worker_by_lua&#42;, set_by_lua&#42;, rewrite_by_lua&#42;, access_by_lua&#42;,
+content_by_lua&#42;, header_filter_by_lua&#42;, body_filter_by_lua&#42;, log_by_lua&#42;, ngx.timer.&#42;*
 
 Returns the number of resources readily available in the `sema` semaphore instance (if any).
 

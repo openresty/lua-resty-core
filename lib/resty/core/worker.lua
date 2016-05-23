@@ -11,6 +11,8 @@ local C = ffi.C
 ffi.cdef[[
 int ngx_http_lua_ffi_worker_pid(void);
 int ngx_http_lua_ffi_worker_exiting(void);
+int ngx_http_lua_ffi_worker_id(void);
+int ngx_http_lua_ffi_worker_count(void);
 ]]
 
 
@@ -21,6 +23,21 @@ end
 
 function ngx.worker.pid()
     return C.ngx_http_lua_ffi_worker_pid()
+end
+
+
+function ngx.worker.id()
+    local id = C.ngx_http_lua_ffi_worker_id()
+    if id < 0 then
+        return nil
+    end
+
+    return id
+end
+
+
+function ngx.worker.count()
+    return C.ngx_http_lua_ffi_worker_count()
 end
 
 

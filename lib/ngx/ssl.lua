@@ -151,11 +151,6 @@ end
 
 
 function _M.cert_pem_to_der(pem)
-    local r = getfenv(0).__ngx_req
-    if not r then
-        return error("no request found")
-    end
-
     local outbuf = get_string_buf(#pem)
 
     local sz = C.ngx_http_lua_ffi_cert_pem_to_der(pem, #pem, outbuf, errmsg)
@@ -168,11 +163,6 @@ end
 
 
 function _M.priv_key_pem_to_der(pem)
-    local r = getfenv(0).__ngx_req
-    if not r then
-        return error("no request found")
-    end
-
     local outbuf = get_string_buf(#pem)
 
     local sz = C.ngx_http_lua_ffi_priv_key_pem_to_der(pem, #pem, outbuf, errmsg)

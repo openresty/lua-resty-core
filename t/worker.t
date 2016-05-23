@@ -90,3 +90,55 @@ qr/\[TRACE   \d+ content_by_lua\(nginx\.conf:\d+\):4 loop\]/
  -- NYI:
  stitch
 
+
+
+=== TEST 3: ngx.worker.id
+--- http_config eval: $::HttpConfig
+--- config
+    location = /t {
+        content_by_lua '
+            local v
+            local id = ngx.worker.id
+            for i = 1, 400 do
+                v = id()
+            end
+            ngx.say("worker id: ", v)
+        ';
+    }
+--- request
+GET /t
+--- response_body_like chop
+^worker id: [0-1]$
+--- error_log eval
+qr/\[TRACE   \d+ content_by_lua\(nginx\.conf:\d+\):4 loop\]/
+--- no_error_log
+[error]
+ -- NYI:
+ stitch
+--- skip_nginx: 3: <=1.9.0
+
+
+
+=== TEST 4: ngx.worker.count
+--- http_config eval: $::HttpConfig
+--- config
+    location = /t {
+        content_by_lua '
+            local v
+            local count = ngx.worker.count
+            for i = 1, 400 do
+                v = count()
+            end
+            ngx.say("workers: ", v)
+        ';
+    }
+--- request
+GET /t
+--- response_body
+workers: 1
+--- error_log eval
+qr/\[TRACE   \d+ content_by_lua\(nginx\.conf:\d+\):4 loop\]/
+--- no_error_log
+[error]
+ -- NYI:
+ stitch

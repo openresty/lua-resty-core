@@ -9,7 +9,7 @@ use Cwd qw(cwd);
 
 repeat_each(2);
 
-plan tests => repeat_each() * (blocks() * 3 + 2);
+plan tests => repeat_each() * (blocks() * 3 + 3);
 
 my $pwd = cwd();
 
@@ -1800,3 +1800,44 @@ GET /test
 -1
 --- no_error_log
 [error]
+
+
+
+=== TEST 40: bugfix: semaphore instance can't be garbage collected when someone is waiting on it
+--- http_config eval: $::HttpConfig
+--- config
+    location /test {
+        content_by_lua_block {
+            local semaphore = require "ngx.semaphore"
+
+            local my_sema = {}
+            local key = "my key"
+
+            local function my_clean()
+                print("cleaning up")
+
+                my_sema[key]:post()
+                my_sema[key] = nil
+
+                collectgarbage()
+            end
+
+            local ok, err = ngx.timer.at(0.001, my_clean)
+            if not ok then
+                ngx.log(ngx.ERR, "failed to create timer: ", err)
+                ngx.exit(500)
+            end
+
+            my_sema[key] = semaphore:new(0)
+
+            local ok, err = my_sema[key]:wait(2)
+            ngx.say(ok, ", ", err)
+        }
+    }
+--- request
+GET /test
+--- response_body
+true, nil
+--- no_error_log
+[error]
+[crit]

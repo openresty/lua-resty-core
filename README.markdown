@@ -81,7 +81,7 @@ Prerequisites
 =============
 
 * LuaJIT 2.1 (for now, it is the v2.1 git branch in the official luajit-2.0 git repository: http://luajit.org/download.html )
-* [ngx_lua](https://github.com/openresty/lua-nginx-module) v0.10.1 or later.
+* [ngx_lua](https://github.com/openresty/lua-nginx-module) v0.10.3 or later.
 * [lua-resty-lrucache](https://github.com/openresty/lua-resty-lrucache)
 
 [Back to TOC](#table-of-contents)
@@ -192,6 +192,8 @@ API Implemented
 
 * [ngx.worker.exiting](https://github.com/openresty/lua-nginx-module#ngxworkerexiting)
 * [ngx.worker.pid](https://github.com/openresty/lua-nginx-module#ngxworkerpid)
+* [ngx.worker.id](https://github.com/openresty/lua-nginx-module#ngxworkerid)
+* [ngx.worker.count](https://github.com/openresty/lua-nginx-module#ngxworkercount)
 
 [Back to TOC](#table-of-contents)
 

@@ -10,10 +10,11 @@ use Cwd qw(cwd);
 
 repeat_each(2);
 
-plan tests => repeat_each() * (blocks() * 4 + 4);
+plan tests => repeat_each() * (blocks() * 4 + 5);
 
 $ENV{TEST_NGINX_CWD} = cwd();
 
+#worker_connections(1024);
 #no_diff();
 no_long_string();
 run_tests();
@@ -648,5 +649,186 @@ GET /t
 ok
 --- error_log eval
 qr/\[error\] .*? log_by_lua.*? failed to call: API disabled in the current context/
+--- no_error_log
+[alert]
+
+
+
+=== TEST 15: hot loop when proxy_upstream_next error is hit and keepalive is used.
+github issue openresty/lua-nginx-module#693
+--- skip_nginx: 4: < 1.7.5
+--- http_config
+    lua_package_path "$TEST_NGINX_CWD/lib/?.lua;;";
+
+    upstream backend {
+        server 0.0.0.1;
+        balancer_by_lua_block {
+            local b = require "ngx.balancer"
+            print("hello from balancer by lua!")
+            assert(b.set_current_peer("127.0.0.1", $TEST_NGINX_SERVER_PORT))
+        }
+        keepalive 1;
+    }
+--- config
+    location /t {
+        rewrite ^/t(.*) $1 break;
+        proxy_pass http://backend;
+        proxy_http_version 1.1;
+        proxy_set_header Connection "";
+    }
+
+    location = /back {
+        return 200;
+    }
+
+    location = /main {
+        echo_location /t/back;
+        echo_location /t/bad;
+    }
+
+    location = /bad {
+        content_by_lua_block {
+            ngx.exit(444)
+        }
+    }
+--- request
+    GET /main
+--- no_error_log
+[alert]
+--- ignore_response
+--- grep_error_log eval: qr{hello from balancer by lua!}
+--- grep_error_log_out
+hello from balancer by lua!
+hello from balancer by lua!
+hello from balancer by lua!
+--- error_log eval
+qr/\[error] .*? upstream prematurely closed connection while reading response header from upstream/
+
+
+
+=== TEST 16: https (keepalive)
+--- skip_nginx: 4: < 1.7.5
+--- http_config
+    lua_package_path "$TEST_NGINX_CWD/lib/?.lua;;";
+
+    upstream backend {
+        server 0.0.0.1;
+        balancer_by_lua_block {
+            local b = require "ngx.balancer"
+            print("hello from balancer by lua!")
+            assert(b.set_current_peer("127.0.0.1", 1234))
+        }
+        keepalive 1;
+    }
+
+    server {
+        listen 1234 ssl;
+        ssl_certificate ../../cert/test.crt;
+        ssl_certificate_key ../../cert/test.key;
+
+        server_tokens off;
+        location = /back {
+            return 200 "ok";
+        }
+    }
+--- config
+    location /t {
+        proxy_pass https://backend/back;
+        proxy_http_version 1.1;
+        proxy_set_header Connection "";
+    }
+
+--- request
+    GET /t
+--- no_error_log
+[alert]
+[error]
+--- response_body chomp
+ok
+--- grep_error_log eval: qr{hello from balancer by lua!}
+--- grep_error_log_out
+hello from balancer by lua!
+
+
+
+=== TEST 17: https (no keepalive)
+--- skip_nginx: 4: < 1.7.5
+--- http_config
+    lua_package_path "$TEST_NGINX_CWD/lib/?.lua;;";
+
+    upstream backend {
+        server 0.0.0.1;
+        balancer_by_lua_block {
+            local b = require "ngx.balancer"
+            print("hello from balancer by lua!")
+            assert(b.set_current_peer("127.0.0.1", 1234))
+        }
+    }
+
+    server {
+        listen 1234 ssl;
+        ssl_certificate ../../cert/test.crt;
+        ssl_certificate_key ../../cert/test.key;
+
+        server_tokens off;
+        location = /back {
+            return 200 "ok";
+        }
+    }
+--- config
+    location /t {
+        proxy_pass https://backend/back;
+        proxy_http_version 1.1;
+        proxy_set_header Connection "";
+    }
+
+--- request
+    GET /t
+--- no_error_log
+[alert]
+[error]
+--- response_body chomp
+ok
+--- grep_error_log eval: qr{hello from balancer by lua!}
+--- grep_error_log_out
+hello from balancer by lua!
+
+
+
+=== TEST 18: test ngx.var.upstream_addr after using more than one set_current_peer
+--- wait: 0.2
+--- http_config
+    lua_package_path "$TEST_NGINX_CWD/lib/?.lua;;";
+    proxy_next_upstream_tries 3;
+
+    upstream backend {
+        server 127.0.0.1:$TEST_NGINX_SERVER_PORT;
+        balancer_by_lua_block {
+            local balancer = require "ngx.balancer"
+            if ngx.ctx.tries == nil then
+                balancer.set_more_tries(1)
+                ngx.ctx.tries = 1
+                balancer.set_current_peer("127.0.0.3", 12345)
+            else
+                balancer.set_current_peer("127.0.0.3", 12346)
+            end
+        }
+    }
+
+--- config
+
+    location = /t {
+        proxy_pass http://backend;
+        log_by_lua_block {
+            ngx.log(ngx.INFO, "ngx.var.upstream_addr is " .. ngx.var.upstream_addr)
+        }
+    }
+
+--- request
+GET /t
+--- response_body_like: 502 Bad Gateway
+--- error_code: 502
+--- error_log
+[lua] log_by_lua(nginx.conf:59):2: ngx.var.upstream_addr is 127.0.0.3:12345, 127.0.0.3:12346
 --- no_error_log
 [alert]
