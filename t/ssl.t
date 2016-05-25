@@ -783,7 +783,7 @@ Using IPv6 address: 0.0.0.1
 --- no_error_log
 [error]
 [alert]
---- skip_eval: 3: system("ping6 -c 1 ::1 >/dev/null 2>&1") ne 0
+--- skip_eval: 6: system("ping6 -c 1 ::1 >/dev/null 2>&1") ne 0
 
 
 
