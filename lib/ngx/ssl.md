@@ -19,6 +19,10 @@ Table of Contents
     * [server_name](#server_name)
     * [raw_server_addr](#raw_server_addr)
     * [get_tls1_version](#get_tls1_version)
+    * [parse_pem_cert](#parse_pem_cert)
+    * [parse_pem_priv_key](#parse_pem_priv_key)
+    * [set_cert](#set_cert)
+    * [set_priv_key](#set_priv_key)
 * [Community](#community)
     * [English Mailing List](#english-mailing-list)
     * [Chinese Mailing List](#chinese-mailing-list)
@@ -305,6 +309,68 @@ Typical return values are
 * `TLSv1.2`
 
 This function can be called in whatever contexts where downstream https is used.
+
+[Back to TOC](#table-of-contents)
+
+parse_pem_cert
+----------------
+**syntax:** *cert_chain, err = ssl.parse_pem_cert(pem_cert_chain)*
+
+**context:** *any*
+
+Converts the PEM-formated SSL certificate chain data into an opaque cdata pointer (for later uses
+in the [set_cert](#set_cert)
+function, for example).
+
+In case of failures, returns `nil` and a string describing the error.
+
+You can always use libraries like [lua-resty-lrucache](https://github.com/openresty/lua-resty-lrucache#readme)
+and/or ngx_lua APIs like [lua_shared_dict](https://github.com/openresty/lua-nginx-module#lua_shared_dict)
+to do the caching of the cdata results, for example.
+
+This function can be called in whatever contexts.
+
+[Back to TOC](#table-of-contents)
+
+parse_pem_priv_key
+----------------
+**syntax:** *priv_key, err = ssl.parse_pem_priv_key(pem_priv_key)*
+
+**context:** *any*
+
+Converts the PEM-formated SSL private key data into an opaque cdata pointer (for later uses
+in the [set_priv_key](#set_priv_key)
+function, for example).
+
+In case of failures, returns `nil` and a string describing the error.
+
+This function can be called in whatever contexts.
+
+[Back to TOC](#table-of-contents)
+
+set_cert
+------------
+**syntax:** *ok, err = ssl.set_cert(cert_chain)*
+
+**context:** *ssl_certificate_by_lua&#42;*
+
+Sets the SSL certificate chain opaque pointer returned by the
+[parse_pem_cert](#parse_pem_cert) function for the current SSL connection.
+
+Returns `true` on success, or a `nil` value and a string describing the error otherwise.
+
+[Back to TOC](#table-of-contents)
+
+set_priv_key
+------------
+**syntax:** *ok, err = ssl.set_priv_key(priv_key)*
+
+**context:** *ssl_certificate_by_lua&#42;*
+
+Sets the SSL private key opaque pointer returned by the
+[parse_pem_priv_key](#parse_pem_priv_key) function for the current SSL connection.
+
+Returns `true` on success, or a `nil` value and a string describing the error otherwise.
 
 [Back to TOC](#table-of-contents)
 
