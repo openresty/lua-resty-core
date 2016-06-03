@@ -9,23 +9,36 @@ local core_regex = require "resty.core.regex"
 
 
 local C = ffi.C
+local ffi_str = ffi.string
 local sub = string.sub
+local error = error
 local type = type
 local band = bit.band
 local new_tab = base.new_tab
 local tostring = tostring
 local math_max = math.max
 local math_min = math.min
+local is_regex_cache_empty = core_regex.is_regex_cache_empty
 local re_match_compile = core_regex.re_match_compile
 local destroy_compiled_regex = core_regex.destroy_compiled_regex
+local get_string_buf = base.get_string_buf
+local get_size_ptr = base.get_size_ptr
+local FFI_OK = base.FFI_OK
 
 
+local MAX_ERR_MSG_LEN        = 128
 local FLAG_DFA               = 0x02
 local PCRE_ERROR_NOMATCH     = -1
 local DEFAULT_SPLIT_RES_SIZE = 4
 
 
 local split_ctx = new_tab(0, 1)
+
+
+ffi.cdef[[
+int ngx_http_lua_ffi_set_jit_stack_size(int size, unsigned char *errstr,
+    size_t *errstr_size);
+]]
 
 
 local _M = { version = base.version }
@@ -216,6 +229,30 @@ function _M.split(subj, regex, opts, ctx, max, res)
     res[res_idx + 2] = nil
 
     return res
+end
+
+
+function _M.opt(option, value)
+    if option == "jit_stack_size" then
+        if not is_regex_cache_empty() then
+            error("changing jit stack size is not allowed when some " ..
+                  "regexs have already been compiled and cached")
+        end
+
+        local errbuf = get_string_buf(MAX_ERR_MSG_LEN)
+        local sizep = get_size_ptr()
+        sizep[0] = MAX_ERR_MSG_LEN
+
+        local rc = C.ngx_http_lua_ffi_set_jit_stack_size(value, errbuf, sizep)
+
+        if rc == FFI_OK then
+            return
+        end
+
+        error(ffi_str(errbuf, sizep[0]))
+    end
+
+    error("unrecognized option name")
 end
 
 
