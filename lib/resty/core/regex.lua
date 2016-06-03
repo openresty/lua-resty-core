@@ -126,6 +126,9 @@ ffi.cdef[[
                                              unsigned char *dst);
 
     uint32_t ngx_http_lua_ffi_max_regex_cache_size(void);
+
+    void ngx_http_lua_ffi_set_jit_stack_size(int size);
+
 ]]
 
 
@@ -153,6 +156,11 @@ local function get_max_regex_cache_size()
     return max_regex_cache_size
 end
 
+function ngx.re.opt(option, value)
+    if option == "jit_stack_size" then
+        C.ngx_http_lua_ffi_set_jit_stack_size(value)
+    end
+end
 
 local function parse_regex_opts(opts)
     local t = cached_re_opts[opts]
