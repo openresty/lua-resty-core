@@ -332,6 +332,7 @@ local function shdict_incr(zone, key, value, exptime)
         return nil, "key too long"
     end
 
+    value = value or 1
     if type(value) ~= "number" then
         value = tonumber(value)
     end
