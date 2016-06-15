@@ -127,8 +127,7 @@ ffi.cdef[[
 
     uint32_t ngx_http_lua_ffi_max_regex_cache_size(void);
 
-    void ngx_http_lua_ffi_set_jit_stack_size(int size);
-
+    int ngx_http_lua_set_jit_stack_size(int size);
 ]]
 
 
@@ -156,11 +155,21 @@ local function get_max_regex_cache_size()
     return max_regex_cache_size
 end
 
+
 function ngx.re.opt(option, value)
     if option == "jit_stack_size" then
-        C.ngx_http_lua_ffi_set_jit_stack_size(value)
+        local result = C.ngx_http_lua_set_jit_stack_size(value)
+
+        if result ~= 0 then
+            return error("PCRE jit stack allocation failed")
+        end
+
+        return
     end
+
+    return error("unrecognized option name")
 end
+
 
 local function parse_regex_opts(opts)
     local t = cached_re_opts[opts]
