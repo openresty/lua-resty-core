@@ -915,3 +915,27 @@ qr/\[TRACE   \d+ content_by_lua\(nginx\.conf:\d+\):7 loop\]/
  -- NYI:
 stitch
 
+
+
+
+=== TEST 27: incr key expire
+--- http_config eval: $::HttpConfig
+--- config
+    location = /t {
+        content_by_lua '
+            local val, flags
+            local dogs = ngx.shared.dogs
+            local value, err = dogs:incr(nil, 32, 10)
+            if not ok then
+                ngx.say("failed to incr: ", err)
+            end
+        ';
+    }
+--- request
+GET /t
+--- response_body
+failed to incr: nil key
+--- no_error_log
+[error]
+[alert]
+[crit]
