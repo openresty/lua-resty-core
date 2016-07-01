@@ -14,6 +14,7 @@ Table of Contents
     * [set_current_peer](#set_current_peer)
     * [set_more_tries](#set_more_tries)
     * [get_last_failure](#get_last_failure)
+    * [set_timeouts](#set_timeouts)
 * [Community](#community)
     * [English Mailing List](#english-mailing-list)
     * [Chinese Mailing List](#chinese-mailing-list)
@@ -153,6 +154,31 @@ Possible status codes are those HTTP error status codes like `502` and `504`.
 When the current attempt is the first attempt for the current downstream request (which means
 there is no previous attempts at all), this
 method always returns a single `nil` value.
+
+[Back to TOC](#table-of-contents)
+
+set_timeouts
+------------
+**syntax:** `ok, err = balancer.set_timeouts(connect_timeout, send_timeout, read_timeout)`
+
+**context:** *balancer_by_lua&#42;*
+
+Sets the upstream timeout (connect, send and read) in milliseconds for the current and any
+subsequent backend requests (which might be a retry).
+
+If you want to inherit the timeout value of the global `nginx.conf` configuration (like `proxy_connect_timeout`), then
+just specify the `nil` value for the corresponding argument (like the `connect_timeout` argument).
+
+Zero and negative timeout values are not allowed.
+
+Returns `true` when the operation is successul; returns `nil` and a string describing the error
+otherwise.
+
+This only affects the current downstream request. It is not a global change.
+
+For the best performance, you should use the [OpenResty](https://openresty.org/) bundle.
+
+This function was first added in the `0.1.7` version of this library.
 
 [Back to TOC](#table-of-contents)
 

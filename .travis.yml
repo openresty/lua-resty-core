@@ -47,6 +47,7 @@ install:
   - git clone https://github.com/openresty/lua-resty-lrucache.git
   - git clone https://github.com/openresty/headers-more-nginx-module.git ../headers-more-nginx-module
   - git clone -b v2.1-agentzh https://github.com/openresty/luajit2.git
+  - git clone https://github.com/openresty/mockeagain.git
 
 script:
   - cd luajit2/
@@ -59,8 +60,11 @@ script:
   - ./config shared --prefix=$OPENSSL_PREFIX -DPURIFY > build.log 2>&1 || (cat build.log && exit 1)
   - make -j$JOBS > build.log 2>&1 || (cat build.log && exit 1)
   - sudo make PATH=$PATH install_sw > build.log 2>&1 || (cat build.log && exit 1)
-  - cd ..
+  - cd ../mockeagain/ && make CC=$CC -j$JOBS && cd ..
   - export PATH=$PWD/work/nginx/sbin:$PWD/nginx-devel-utils:$PATH
+  - export LD_PRELOAD=$PWD/mockeagain/mockeagain.so
+  - export LD_LIBRARY_PATH=$PWD/mockeagain:$LD_LIBRARY_PATH
+  - export TEST_NGINX_RESOLVER=8.8.4.4
   - export NGX_BUILD_CC=$CC
   - ngx-build $NGINX_VERSION --with-ipv6 --with-http_realip_module --with-http_ssl_module --with-cc-opt="-I$OPENSSL_INC" --with-ld-opt="-L$OPENSSL_LIB -Wl,-rpath,$OPENSSL_LIB" --add-module=../ndk-nginx-module --add-module=../echo-nginx-module --add-module=../headers-more-nginx-module --add-module=../lua-nginx-module --with-debug > build.log 2>&1 || (cat build.log && exit 1)
   - nginx -V
