@@ -160,7 +160,10 @@ function ngx.re.opt(option, value)
     if option == "jit_stack_size" then
         local result = C.ngx_http_lua_set_jit_stack_size(value)
 
-        if result ~= 0 then
+        if result == -1 then
+            return error("Changing jit stack size is not allowed when " ..
+                         "regexs have already been compiled and cached")
+        elseif result == -2 then
             return error("PCRE jit stack allocation failed")
         end
 
