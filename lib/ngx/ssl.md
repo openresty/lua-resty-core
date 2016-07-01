@@ -329,6 +329,8 @@ to cache the cdata result.
 
 This function can be called in whatever contexts.
 
+This function was first added in version `0.1.7`.
+
 [Back to TOC](#table-of-contents)
 
 parse_pem_priv_key
@@ -345,6 +347,8 @@ In case of failures, returns `nil` and a string describing the error.
 
 This function can be called in whatever contexts.
 
+This function was first added in version `0.1.7`.
+
 [Back to TOC](#table-of-contents)
 
 set_cert
@@ -358,6 +362,8 @@ Sets the SSL certificate chain opaque pointer returned by the
 
 Returns `true` on success, or a `nil` value and a string describing the error otherwise.
 
+This function was first added in version `0.1.7`.
+
 [Back to TOC](#table-of-contents)
 
 set_priv_key
@@ -370,6 +376,8 @@ Sets the SSL private key opaque pointer returned by the
 [parse_pem_priv_key](#parse_pem_priv_key) function for the current SSL connection.
 
 Returns `true` on success, or a `nil` value and a string describing the error otherwise.
+
+This function was first added in version `0.1.7`.
 
 [Back to TOC](#table-of-contents)
 
