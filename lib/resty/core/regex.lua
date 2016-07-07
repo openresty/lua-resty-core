@@ -170,7 +170,7 @@ function ngx.re.opt(option, value)
         return
     end
 
-    return error("unrecognized option name")
+    return error("unrecognized option name for ngx.re.opt")
 end
 
 
