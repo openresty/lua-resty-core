@@ -260,3 +260,83 @@ matched: 234
 NYI
 --- error_log eval
 qr/\[TRACE   \d+ content_by_lua\(nginx\.conf:\d+\):4 loop\]/
+
+
+
+=== TEST 7: matched, no submatch, no jit compile, no regex cache, large jit_stack_size
+--- http_config eval: $::HttpConfig
+--- config
+    location = /re {
+        access_log off;
+        content_by_lua '
+            ngx.re.opt("jit_stack_size", 128 * 1024)
+            local from, to, err
+            local find = ngx.re.find
+            local s = "a"
+            for i = 1, 100 do
+                from, to, err = find(s, "a")
+            end
+            if err then
+                ngx.log(ngx.ERR, "failed: ", err)
+                return
+            end
+            if not from then
+                ngx.log(ngx.ERR, "no match")
+                return
+            end
+            ngx.say("from: ", from)
+            ngx.say("to: ", to)
+            ngx.say("matched: ", string.sub(s, from, to))
+        ';
+    }
+--- request
+GET /re
+--- response_body
+from: 1
+to: 1
+matched: a
+--- error_log eval
+qr/\[TRACE   \d+ content_by_lua\(nginx\.conf:\d+\):6 loop\]/
+--- no_error_log
+[error]
+bad argument type
+
+
+
+=== TEST 8: matched, no submatch, jit compile, regex cache, large jit_stack_size
+--- http_config eval: $::HttpConfig
+--- config
+    location = /re {
+        access_log off;
+        content_by_lua '
+            ngx.re.opt("jit_stack_size", 128 * 1024)
+            local from, to, err
+            local find = ngx.re.find
+            local s = "a"
+            for i = 1, 200 do
+                from, to, err = find(s, "a", "jo")
+            end
+            if err then
+                ngx.log(ngx.ERR, "failed: ", err)
+                return
+            end
+            if not from then
+                ngx.log(ngx.ERR, "no match")
+                return
+            end
+            ngx.say("from: ", from)
+            ngx.say("to: ", to)
+            ngx.say("matched: ", string.sub(s, from, to))
+        ';
+    }
+--- request
+GET /re
+--- response_body
+from: 1
+to: 1
+matched: a
+--- error_log eval
+qr/\[TRACE   \d+ content_by_lua\(nginx\.conf:\d+\):6 loop\]/
+--- no_error_log
+[error]
+NYI
