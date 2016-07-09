@@ -49,7 +49,7 @@ __DATA__
         server 0.0.0.1;
         balancer_by_lua_block {
             local b = require "ngx.balancer"
-            assert(b.set_timeouts(1234, 5678, 7689))
+            assert(b.set_timeouts(1.234, 5.678, 7.689))
             assert(b.set_current_peer("127.0.0.1", tonumber(ngx.var.server_port)))
         }
     }
@@ -84,7 +84,7 @@ event timer add: \d+: 7689:
         server 0.0.0.1;
         balancer_by_lua_block {
             local b = require "ngx.balancer"
-            assert(b.set_timeouts(nil, 5678, 7689))
+            assert(b.set_timeouts(nil, 5.678, 7.689))
             assert(b.set_current_peer("127.0.0.1", tonumber(ngx.var.server_port)))
         }
     }
@@ -119,7 +119,7 @@ event timer add: \d+: 7689:
         server 0.0.0.1;
         balancer_by_lua_block {
             local b = require "ngx.balancer"
-            assert(b.set_timeouts(1234, nil, 7689))
+            assert(b.set_timeouts(1.234, nil, 7.689))
             assert(b.set_current_peer("127.0.0.1", tonumber(ngx.var.server_port)))
         }
     }
@@ -154,7 +154,7 @@ event timer add: \d+: 7689:
         server 0.0.0.1;
         balancer_by_lua_block {
             local b = require "ngx.balancer"
-            assert(b.set_timeouts(1234, 5678, nil))
+            assert(b.set_timeouts(1.234, 5.678, nil))
             assert(b.set_current_peer("127.0.0.1", tonumber(ngx.var.server_port)))
         }
     }
@@ -189,7 +189,7 @@ event timer add: \d+: 7689:
         balancer_by_lua_block {
             print("hello from balancer by lua!")
             local b = require "ngx.balancer"
-            assert(b.set_timeouts(0, 1234, 5678))
+            assert(b.set_timeouts(0, 1.234, 5.678))
             assert(b.set_current_peer("127.0.0.1", tonumber(ngx.var.server_port)))
         }
     }
@@ -220,7 +220,7 @@ qr/\[error\] .*? balancer_by_lua:4: bad connect timeout/
         balancer_by_lua_block {
             print("hello from balancer by lua!")
             local b = require "ngx.balancer"
-            assert(b.set_timeouts(-1, 1234, 5678))
+            assert(b.set_timeouts(-1, 1.234, 5.678))
             assert(b.set_current_peer("127.0.0.1", tonumber(ngx.var.server_port)))
         }
     }
@@ -251,7 +251,7 @@ qr/\[error\] .*? balancer_by_lua:4: bad connect timeout/
         balancer_by_lua_block {
             print("hello from balancer by lua!")
             local b = require "ngx.balancer"
-            assert(b.set_timeouts(1234, 0, 5678))
+            assert(b.set_timeouts(1.234, 0, 5.678))
             assert(b.set_current_peer("127.0.0.1", tonumber(ngx.var.server_port)))
         }
     }
@@ -282,7 +282,7 @@ qr/\[error\] .*? balancer_by_lua:4: bad send timeout/
         balancer_by_lua_block {
             print("hello from balancer by lua!")
             local b = require "ngx.balancer"
-            assert(b.set_timeouts(1234, -1, 5678))
+            assert(b.set_timeouts(1.234, -1, 5.678))
             assert(b.set_current_peer("127.0.0.1", tonumber(ngx.var.server_port)))
         }
     }
@@ -313,7 +313,7 @@ qr/\[error\] .*? balancer_by_lua:4: bad send timeout/
         balancer_by_lua_block {
             print("hello from balancer by lua!")
             local b = require "ngx.balancer"
-            assert(b.set_timeouts(1234, 5678, -1))
+            assert(b.set_timeouts(1.234, 5.678, -1))
             assert(b.set_current_peer("127.0.0.1", tonumber(ngx.var.server_port)))
         }
     }
@@ -344,7 +344,7 @@ qr/\[error\] .*? balancer_by_lua:4: bad read timeout/
     location = /t {
        content_by_lua_block {
             local balancer = require "ngx.balancer"
-            local ok, err = balancer.set_timeouts(1000, 1000, 1000)
+            local ok, err = balancer.set_timeouts(1, 1, 1)
             if not ok then
                 ngx.say("failed to call: ", err)
                 return
@@ -371,7 +371,7 @@ failed to call: no upstream found
         server 0.0.0.1;
         balancer_by_lua_block {
             local balancer = require "ngx.balancer"
-            local ok, err = balancer.set_timeouts("1234", 1000, 1000)
+            local ok, err = balancer.set_timeouts("1.234", 1, 1)
             if not ok then
                 ngx.log(ngx.ERR, "failed to call: ", err)
             end

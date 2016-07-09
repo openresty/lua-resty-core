@@ -115,18 +115,24 @@ function _M.set_timeouts(connect_timeout, send_timeout, read_timeout)
         connect_timeout = 0
     elseif type(connect_timeout) ~= "number" or connect_timeout <= 0 then
         return error("bad connect timeout")
+    else
+        connect_timeout = connect_timeout * 1000
     end
 
     if not send_timeout then
         send_timeout = 0
     elseif type(send_timeout) ~= "number" or send_timeout <= 0 then
         return error("bad send timeout")
+    else
+        send_timeout = send_timeout * 1000
     end
 
     if not read_timeout then
         read_timeout = 0
     elseif type(read_timeout) ~= "number" or read_timeout <= 0 then
         return error("bad read timeout")
+    else
+        read_timeout = read_timeout * 1000
     end
 
     local rc =

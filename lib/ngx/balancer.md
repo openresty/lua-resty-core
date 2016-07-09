@@ -163,13 +163,15 @@ set_timeouts
 
 **context:** *balancer_by_lua&#42;*
 
-Sets the upstream timeout (connect, send and read) in milliseconds for the current and any
+Sets the upstream timeout (connect, send and read) in seconds for the current and any
 subsequent backend requests (which might be a retry).
 
 If you want to inherit the timeout value of the global `nginx.conf` configuration (like `proxy_connect_timeout`), then
 just specify the `nil` value for the corresponding argument (like the `connect_timeout` argument).
 
 Zero and negative timeout values are not allowed.
+
+You can specify millisecond precision by using floating point numbers like 0.001 (which means 1ms).
 
 Returns `true` when the operation is successul; returns `nil` and a string describing the error
 otherwise.
