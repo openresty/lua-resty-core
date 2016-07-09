@@ -171,7 +171,7 @@ just specify the `nil` value for the corresponding argument (like the `connect_t
 
 Zero and negative timeout values are not allowed.
 
-You can specify millisecond precision by using floating point numbers like 0.001 (which means 1ms).
+You can specify millisecond precision in the timeout values by using floating point numbers like 0.001 (which means 1ms).
 
 Returns `true` when the operation is successul; returns `nil` and a string describing the error
 otherwise.
