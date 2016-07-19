@@ -9,7 +9,6 @@ local error = error
 local base = require "resty.core.base"
 local get_string_buf = base.get_string_buf
 local get_size_ptr = base.get_size_ptr
-local base = require "resty.core.base"
 local getfenv = getfenv
 local co_yield = coroutine._yield
 
