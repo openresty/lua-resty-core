@@ -4,8 +4,6 @@
 local ffi = require 'ffi'
 local ffi_new = ffi.new
 local error = error
-local setmetatable = setmetatable
-local floor = math.floor
 local ceil = math.ceil
 
 
