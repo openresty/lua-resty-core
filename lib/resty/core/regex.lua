@@ -10,7 +10,6 @@ local lrucache = require "resty.lrucache"
 local lrucache_get = lrucache.get
 local lrucache_set = lrucache.set
 local ffi_string = ffi.string
-local ffi_new = ffi.new
 local ffi_gc = ffi.gc
 local ffi_copy = ffi.copy
 local ffi_cast = ffi.cast
@@ -21,21 +20,13 @@ local lshift = bit.lshift
 local sub = string.sub
 local fmt = string.format
 local byte = string.byte
-local setmetatable = setmetatable
-local concat = table.concat
 local ngx = ngx
 local type = type
 local tostring = tostring
 local error = error
 local get_string_buf = base.get_string_buf
 local get_string_buf_size = base.get_string_buf_size
-local get_size_ptr = base.get_size_ptr
 local new_tab = base.new_tab
-local floor = math.floor
-local print = print
-local tonumber = tonumber
-local ngx_log = ngx.log
-local ngx_ERR = ngx.ERR
 
 
 if not ngx.re then
