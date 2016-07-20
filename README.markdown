@@ -28,6 +28,7 @@ Table of Contents
     * [ngx.semaphore](#ngxsemaphore)
     * [ngx.balancer](#ngxbalancer)
     * [ngx.ssl](#ngxssl)
+    * [ngx.ssl.session](#ngxsslsession)
 * [Caveat](#caveat)
 * [TODO](#todo)
 * [Author](#author)
@@ -222,6 +223,15 @@ This Lua module provides a Lua API for controlling SSL certificates, private key
 SSL protocol versions, and etc in NGINX downstream SSL handshakes.
 
 See the [documentation](./lib/ngx/ssl.md) for this Lua module for more details.
+
+[Back to TOC](#table-of-contents)
+
+## ngx.ssl.session
+
+This Lua module provides a Lua API for manipulating SSL session data and IDs
+for NGINX downstream SSL connections.
+
+See the [documentation](./lib/ngx/ssl/session.md) for this Lua module for more details.
 
 [Back to TOC](#table-of-contents)
 
