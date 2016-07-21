@@ -218,7 +218,7 @@ See the [documentation](./lib/ngx/balancer.md) for this Lua module for more deta
 
 ## ngx.ssl
 
-This Lua module Lua API for controlling SSL certificates, private keys,
+This Lua module provides a Lua API for controlling SSL certificates, private keys,
 SSL protocol versions, and etc in NGINX downstream SSL handshakes.
 
 See the [documentation](./lib/ngx/ssl.md) for this Lua module for more details.
