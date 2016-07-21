@@ -1,7 +1,7 @@
 Name
 ====
 
-ngx.ssl - Lua API for controling NGINX downstream SSL handshakes
+ngx.ssl - Lua API for controlling NGINX downstream SSL handshakes
 
 Table of Contents
 =================
@@ -339,7 +339,7 @@ parse_pem_priv_key
 
 **context:** *any*
 
-Converts the PEM-formated SSL private key data into an opaque cdata pointer (for later uses
+Converts the PEM-formatted SSL private key data into an opaque cdata pointer (for later uses
 in the [set_priv_key](#set_priv_key)
 function, for example).
 

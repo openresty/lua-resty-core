@@ -27,6 +27,7 @@ Table of Contents
     * [resty.core.worker](#restycoreworker)
     * [ngx.semaphore](#ngxsemaphore)
     * [ngx.balancer](#ngxbalancer)
+    * [ngx.ssl](#ngxssl)
 * [Caveat](#caveat)
 * [TODO](#todo)
 * [Author](#author)
@@ -212,6 +213,15 @@ See the [documentation](./lib/ngx/semaphore.md) for this Lua module for more det
 This Lua module implements for defining dynamic upstream balancers in Lua.
 
 See the [documentation](./lib/ngx/balancer.md) for this Lua module for more details.
+
+[Back to TOC](#table-of-contents)
+
+## ngx.ssl
+
+This Lua module Lua API for controlling SSL certificates, private keys,
+SSL protocol versions, and etc in NGINX downstream SSL handshakes.
+
+See the [documentation](./lib/ngx/ssl.md) for this Lua module for more details.
 
 [Back to TOC](#table-of-contents)
 
