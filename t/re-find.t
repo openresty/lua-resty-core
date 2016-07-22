@@ -32,6 +32,8 @@ our $HttpConfig = <<_EOC_;
         -- jit.opt.start("hotloop=1")
         -- jit.opt.start("loopunroll=1000000")
         -- jit.off()
+
+        ngx.re.opt("jit_stack_size", 128 * 1024)
     }
 _EOC_
 
@@ -269,7 +271,7 @@ qr/\[TRACE   \d+ content_by_lua\(nginx\.conf:\d+\):4 loop\]/
     location = /re {
         access_log off;
         content_by_lua '
-            ngx.re.opt("jit_stack_size", 128 * 1024)
+            -- ngx.re.opt("jit_stack_size", 128 * 1024)
             local from, to, err
             local find = ngx.re.find
             local s = "a"
@@ -309,7 +311,7 @@ bad argument type
     location = /re {
         access_log off;
         content_by_lua '
-            ngx.re.opt("jit_stack_size", 128 * 1024)
+            -- ngx.re.opt("jit_stack_size", 128 * 1024)
             local from, to, err
             local find = ngx.re.find
             local s = "a"
