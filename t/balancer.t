@@ -761,12 +761,12 @@ hello from balancer by lua!
         balancer_by_lua_block {
             local b = require "ngx.balancer"
             print("hello from balancer by lua!")
-            assert(b.set_current_peer("127.0.0.1", 1234))
+            assert(b.set_current_peer("127.0.0.1", 12347))
         }
     }
 
     server {
-        listen 1234 ssl;
+        listen 12347 ssl;
         ssl_certificate ../../cert/test.crt;
         ssl_certificate_key ../../cert/test.key;
 
