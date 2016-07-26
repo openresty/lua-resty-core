@@ -120,7 +120,7 @@ set_more_tries
 
 Sets the tries performed when the current attempt (which may be a retry) fails (as determined
 by directives like [proxy_next_upstream](http://nginx.org/en/docs/http/ngx_http_proxy_module.html#proxy_next_upstream), depending on what
-particular nginx uptream module you are currently using. Note that the current attempt is *excluded* in the `count` number set here.
+particular nginx uptream module you are currently using). Note that the current attempt is *excluded* in the `count` number set here.
 
 Please note that, the total number of tries in a single downstream request cannot exceed the
 hard limit configured by directives like [proxy_next_upstream_tries](http://nginx.org/en/docs/http/ngx_http_proxy_module.html#proxy_next_upstream_tries),
