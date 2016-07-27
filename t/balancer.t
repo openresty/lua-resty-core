@@ -752,7 +752,7 @@ hello from balancer by lua!
 
 
 === TEST 17: https (no keepalive)
---- skip_nginx: 4: < 1.7.5
+--- skip_nginx: 5: < 1.7.5
 --- http_config
     lua_package_path "$TEST_NGINX_CWD/lib/?.lua;;";
 
