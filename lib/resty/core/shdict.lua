@@ -19,11 +19,14 @@ local ngx_shared = ngx.shared
 local getmetatable = getmetatable
 
 
+local MAX_ERR_MSG_LEN = 128
+
+
 ffi.cdef[[
     int ngx_http_lua_ffi_shdict_get(void *zone, const unsigned char *key,
         size_t key_len, int *value_type, unsigned char **str_value_buf,
         size_t *str_value_len, double *num_value, int *user_flags,
-        int get_stale, int *is_stale);
+        int get_stale, int *is_stale, char **errmsg);
 
     int ngx_http_lua_ffi_shdict_incr(void *zone, const unsigned char *key,
         size_t key_len, double *value, char **err, int has_init, double init,
@@ -201,8 +204,12 @@ local function shdict_get(zone, key)
     local rc = C.ngx_http_lua_ffi_shdict_get(zone, key, key_len, value_type,
                                              str_value_buf, value_len,
                                              num_value, user_flags, 0,
-                                             is_stale)
+                                             is_stale, errmsg)
     if rc ~= 0 then
+        if errmsg[0] then
+            return nil, ffi_str(errmsg[0])
+        end
+
         return error("failed to get the key")
     end
 
@@ -272,8 +279,12 @@ local function shdict_get_stale(zone, key)
     local rc = C.ngx_http_lua_ffi_shdict_get(zone, key, key_len, value_type,
                                              str_value_buf, value_len,
                                              num_value, user_flags, 1,
-                                             is_stale)
+                                             is_stale, errmsg)
     if rc ~= 0 then
+        if errmsg[0] then
+            return nil, ffi_str(errmsg[0])
+        end
+
         return error("failed to get the key")
     end
 
