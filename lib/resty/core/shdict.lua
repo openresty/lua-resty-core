@@ -341,11 +341,12 @@ local function shdict_incr(zone, key, value, init)
     local has_init
 
     if init then
-        if type(init) ~= "number" then
+        local typ = type(init)
+        if typ ~= "number" then
             init = tonumber(init)
 
             if not init then
-                return error("init should be a number")
+                return error("bad init arg: number expected, got " .. typ)
             end
         end
 

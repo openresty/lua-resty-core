@@ -995,7 +995,7 @@ GET /t
 --- error_code: 500
 --- response_body_like: 500
 --- error_log
-init should be a number
+number expected, got string
 --- no_error_log
 [alert]
 [crit]
