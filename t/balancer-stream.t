@@ -16,7 +16,6 @@ $ENV{TEST_NGINX_CWD} = cwd();
 
 #worker_connections(1024);
 #no_diff();
-no_shuffle();
 no_long_string();
 run_tests();
 
