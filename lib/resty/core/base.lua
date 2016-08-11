@@ -79,6 +79,14 @@ if not pcall(ffi.typeof, "ngx_http_request_t") then
 end
 
 
+if not pcall(ffi.typeof, "ngx_stream_session_t") then
+    ffi.cdef[[
+        struct ngx_stream_session_s;
+        typedef struct ngx_stream_session_s  ngx_stream_session_t;
+    ]]
+end
+
+
 if not pcall(ffi.typeof, "ngx_http_lua_ffi_str_t") then
     ffi.cdef[[
         typedef struct {
