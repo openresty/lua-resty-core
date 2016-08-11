@@ -42,7 +42,7 @@ local _M = { version = base.version }
 function _M.set_current_peer(addr, port)
     local r = getfenv(0).__ngx_sess
     if not r then
-        return error("no request found")
+        return error("no session found")
     end
 
     if not port then
@@ -64,7 +64,7 @@ end
 function _M.set_more_tries(count)
     local r = getfenv(0).__ngx_sess
     if not r then
-        return error("no request found")
+        return error("no session found")
     end
 
     local rc = C.ngx_stream_lua_ffi_balancer_set_more_tries(r, count, errmsg)
@@ -76,6 +76,32 @@ function _M.set_more_tries(count)
     end
 
     return nil, ffi_str(errmsg[0])
+end
+
+
+function _M.get_last_failure()
+    local r = getfenv(0).__ngx_sess
+    if not r then
+        return error("no session found")
+    end
+
+    local state = C.ngx_stream_lua_ffi_balancer_get_last_failure(r,
+                                                                 int_out,
+                                                                 errmsg)
+
+    if state == 0 then
+        return nil
+    end
+
+    if state == FFI_ERROR then
+        return nil, nil, ffi_str(errmsg[0])
+    end
+
+    return peer_state_names[state] or "unknown", int_out[0]
+end
+
+function _M.set_timeouts(connect_timeout, send_timeout, read_timeout)
+   return error("not implemented")
 end
 
 
