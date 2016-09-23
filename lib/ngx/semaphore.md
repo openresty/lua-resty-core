@@ -218,7 +218,7 @@ sema:post(2)  -- releases 2 resources
 [Back to TOC](#table-of-contents)
 
 wait
-------------
+----
 **syntax:** *ok, err = sema:wait(timeout)*
 
 **context:** *rewrite_by_lua&#42;, access_by_lua&#42;, content_by_lua&#42;, ngx.timer.&#42;*
@@ -236,6 +236,8 @@ The `timeout` argument specifies the maximum time this function call should wait
 When the `timeout` argument is 0, it means "no wait", that is, when there is no readily available
 "resources" for the current running "light thread", this `wait` function call returns immediately
 `nil` and the error string `"timeout"`.
+
+You can specify millisecond precision in the timeout value by using floating point numbers like 0.001 (which means 1ms).
 
 "Light threads" created by different contexts (like request handlers) can wait on the
 same semaphore instance without problem.

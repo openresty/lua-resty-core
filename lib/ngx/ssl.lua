@@ -7,6 +7,7 @@ local base = require "resty.core.base"
 
 local C = ffi.C
 local ffi_str = ffi.string
+local ffi_gc = ffi.gc
 local getfenv = getfenv
 local error = error
 local tonumber = tonumber
@@ -43,6 +44,20 @@ int ngx_http_lua_ffi_priv_key_pem_to_der(const unsigned char *pem,
     size_t pem_len, unsigned char *der, char **err);
 
 int ngx_http_lua_ffi_ssl_get_tls1_version(ngx_http_request_t *r, char **err);
+
+void *ngx_http_lua_ffi_parse_pem_cert(const unsigned char *pem,
+    size_t pem_len, char **err);
+
+void *ngx_http_lua_ffi_parse_pem_priv_key(const unsigned char *pem,
+    size_t pem_len, char **err);
+
+int ngx_http_lua_ffi_set_cert(void *r, void *cdata, char **err);
+
+int ngx_http_lua_ffi_set_priv_key(void *r, void *cdata, char **err);
+
+void ngx_http_lua_ffi_free_cert(void *cdata);
+
+void ngx_http_lua_ffi_free_priv_key(void *cdata);
 ]]
 
 
@@ -194,6 +209,56 @@ local function get_tls1_version()
     return nil, ffi_str(errmsg[0])
 end
 _M.get_tls1_version = get_tls1_version
+
+
+function _M.parse_pem_cert(pem)
+    local cert = C.ngx_http_lua_ffi_parse_pem_cert(pem, #pem, errmsg)
+    if cert ~= nil then
+        return ffi_gc(cert, C.ngx_http_lua_ffi_free_cert)
+    end
+
+    return nil, ffi_str(errmsg[0])
+end
+
+
+function _M.parse_pem_priv_key(pem)
+    local pkey = C.ngx_http_lua_ffi_parse_pem_priv_key(pem, #pem, errmsg)
+    if pkey ~= nil then
+        return ffi_gc(pkey, C.ngx_http_lua_ffi_free_priv_key)
+    end
+
+    return nil, ffi_str(errmsg[0])
+end
+
+
+function _M.set_cert(cert)
+    local r = getfenv(0).__ngx_req
+    if not r then
+        return error("no request found")
+    end
+
+    local rc = C.ngx_http_lua_ffi_set_cert(r, cert, errmsg)
+    if rc == FFI_OK then
+        return true
+    end
+
+    return nil, ffi_str(errmsg[0])
+end
+
+
+function _M.set_priv_key(priv_key)
+    local r = getfenv(0).__ngx_req
+    if not r then
+        return error("no request found")
+    end
+
+    local rc = C.ngx_http_lua_ffi_set_priv_key(r, priv_key, errmsg)
+    if rc == FFI_OK then
+        return true
+    end
+
+    return nil, ffi_str(errmsg[0])
+end
 
 
 do

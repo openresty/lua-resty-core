@@ -8,3 +8,4 @@ nginx
 ctags
 tags
 a.lua
+t/shdict.t

@@ -752,7 +752,7 @@ hello from balancer by lua!
 
 
 === TEST 17: https (no keepalive)
---- skip_nginx: 4: < 1.7.5
+--- skip_nginx: 5: < 1.7.5
 --- http_config
     lua_package_path "$TEST_NGINX_CWD/lib/?.lua;;";
 
@@ -761,12 +761,12 @@ hello from balancer by lua!
         balancer_by_lua_block {
             local b = require "ngx.balancer"
             print("hello from balancer by lua!")
-            assert(b.set_current_peer("127.0.0.1", 1234))
+            assert(b.set_current_peer("127.0.0.1", 12347))
         }
     }
 
     server {
-        listen 1234 ssl;
+        listen 12347 ssl;
         ssl_certificate ../../cert/test.crt;
         ssl_certificate_key ../../cert/test.key;
 
@@ -792,6 +792,7 @@ ok
 --- grep_error_log eval: qr{hello from balancer by lua!}
 --- grep_error_log_out
 hello from balancer by lua!
+--- no_check_leak
 
 
 

@@ -27,6 +27,8 @@ Table of Contents
     * [resty.core.worker](#restycoreworker)
     * [ngx.semaphore](#ngxsemaphore)
     * [ngx.balancer](#ngxbalancer)
+    * [ngx.ssl](#ngxssl)
+    * [ngx.ssl.session](#ngxsslsession)
 * [Caveat](#caveat)
 * [TODO](#todo)
 * [Author](#author)
@@ -49,9 +51,10 @@ Synopsis
         # are using the OpenResty bundle 1.4.3.9+.
         lua_package_path "/path/to/lua-resty-core/lib/?.lua;;";
 
-        init_by_lua '
+        init_by_lua_block {
             require "resty.core"
-        ';
+            collectgarbage("collect")  -- just to collect any garbage
+        }
 
         ...
     }
@@ -81,7 +84,7 @@ Prerequisites
 =============
 
 * LuaJIT 2.1 (for now, it is the v2.1 git branch in the official luajit-2.0 git repository: http://luajit.org/download.html )
-* [ngx_lua](https://github.com/openresty/lua-nginx-module) v0.10.3 or later.
+* [ngx_lua](https://github.com/openresty/lua-nginx-module) v0.10.6 or later.
 * [lua-resty-lrucache](https://github.com/openresty/lua-resty-lrucache)
 
 [Back to TOC](#table-of-contents)
@@ -211,6 +214,24 @@ See the [documentation](./lib/ngx/semaphore.md) for this Lua module for more det
 This Lua module implements for defining dynamic upstream balancers in Lua.
 
 See the [documentation](./lib/ngx/balancer.md) for this Lua module for more details.
+
+[Back to TOC](#table-of-contents)
+
+## ngx.ssl
+
+This Lua module provides a Lua API for controlling SSL certificates, private keys,
+SSL protocol versions, and etc in NGINX downstream SSL handshakes.
+
+See the [documentation](./lib/ngx/ssl.md) for this Lua module for more details.
+
+[Back to TOC](#table-of-contents)
+
+## ngx.ssl.session
+
+This Lua module provides a Lua API for manipulating SSL session data and IDs
+for NGINX downstream SSL connections.
+
+See the [documentation](./lib/ngx/ssl/session.md) for this Lua module for more details.
 
 [Back to TOC](#table-of-contents)
 

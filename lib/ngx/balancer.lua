@@ -26,6 +26,10 @@ int ngx_http_lua_ffi_balancer_set_more_tries(ngx_http_request_t *r,
 
 int ngx_http_lua_ffi_balancer_get_last_failure(ngx_http_request_t *r,
     int *status, char **err);
+
+int ngx_http_lua_ffi_balancer_set_timeouts(ngx_http_request_t *r,
+    long connect_timeout, long send_timeout,
+    long read_timeout, char **err);
 ]]
 
 
@@ -98,6 +102,49 @@ function _M.get_last_failure()
     end
 
     return peer_state_names[state] or "unknown", int_out[0]
+end
+
+
+function _M.set_timeouts(connect_timeout, send_timeout, read_timeout)
+    local r = getfenv(0).__ngx_req
+    if not r then
+        return error("no request found")
+    end
+
+    if not connect_timeout then
+        connect_timeout = 0
+    elseif type(connect_timeout) ~= "number" or connect_timeout <= 0 then
+        return error("bad connect timeout")
+    else
+        connect_timeout = connect_timeout * 1000
+    end
+
+    if not send_timeout then
+        send_timeout = 0
+    elseif type(send_timeout) ~= "number" or send_timeout <= 0 then
+        return error("bad send timeout")
+    else
+        send_timeout = send_timeout * 1000
+    end
+
+    if not read_timeout then
+        read_timeout = 0
+    elseif type(read_timeout) ~= "number" or read_timeout <= 0 then
+        return error("bad read timeout")
+    else
+        read_timeout = read_timeout * 1000
+    end
+
+    local rc =
+        C.ngx_http_lua_ffi_balancer_set_timeouts(r, connect_timeout,
+                                                 send_timeout, read_timeout,
+                                                 errmsg)
+
+    if rc == FFI_OK then
+        return true
+    end
+
+    return false, ffi_str(errmsg[0])
 end
 
 

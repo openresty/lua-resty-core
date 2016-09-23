@@ -349,7 +349,7 @@ qr/\[TRACE   \d+ content_by_lua\(nginx\.conf:\d+\):12 loop\]/
             local val
             local dogs = ngx.shared.dogs
             -- local cd = ffi.cast("void *", dogs)
-            local ok, err, foricible = dogs:set("foo", 56)
+            local ok, err, forcible = dogs:set("foo", 56)
             if not ok then
                 ngx.say("failed to set: ", err)
                 return
@@ -867,7 +867,7 @@ failed to get stale: nil key
             local val, flags
             local dogs = ngx.shared.dogs
             local value, err = dogs:incr(nil, 32)
-            if not ok then
+            if not value then
                 ngx.say("failed to incr: ", err)
             end
         ';
@@ -917,6 +917,7 @@ stitch
 
 
 
+<<<<<<< HEAD
 
 === TEST 27: incr key expire
 --- http_config eval: $::HttpConfig
@@ -930,12 +931,93 @@ stitch
                 ngx.say("failed to incr: ", err)
             end
         ';
+=======
+=== TEST 28: incr, value is not number
+--- http_config eval: $::HttpConfig
+--- config
+    location = /t {
+        content_by_lua_block {
+            local val, flags
+            local dogs = ngx.shared.dogs
+            local value, err = dogs:incr("foo", "bar")
+            if not value then
+                ngx.say("failed to incr: ", err)
+            end
+        }
+    }
+--- request
+GET /t
+--- error_code: 500
+--- response_body_like: 500
+--- error_log
+cannot convert 'nil' to 'double'
+--- no_error_log
+[alert]
+[crit]
+
+
+
+=== TEST 29: incr with init
+--- http_config eval: $::HttpConfig
+--- config
+    location = /t {
+        content_by_lua_block {
+            local val, flags
+            local dogs = ngx.shared.dogs
+            dogs:flush_all()
+
+            local value, err = dogs:incr("foo", 10)
+            if not value then
+                ngx.say("failed to incr: ", err)
+            end
+
+            local value, err, forcible = dogs:incr("foo", 10, nil, 10)
+            if not value then
+                ngx.say("failed to incr: ", err)
+                return
+            end
+
+            ngx.say("incr ok, value: ", value, ", forcible: ", forcible)
+        }
     }
 --- request
 GET /t
 --- response_body
+<<<<<<< HEAD
 failed to incr: nil key
 --- no_error_log
 [error]
+[alert]
+[crit]
+=======
+failed to incr: not found
+incr ok, value: 20, forcible: false
+--- no_error_log
+[error]
+[alert]
+[crit]
+
+
+
+=== TEST 30: incr, init is not number
+--- http_config eval: $::HttpConfig
+--- config
+    location = /t {
+        content_by_lua_block {
+            local val, flags
+            local dogs = ngx.shared.dogs
+            local value, err = dogs:incr("foo", 10, nil, "bar")
+            if not ok then
+                ngx.say("failed to incr: ", err)
+            end
+        }
+    }
+--- request
+GET /t
+--- error_code: 500
+--- response_body_like: 500
+--- error_log
+number expected, got string
+--- no_error_log
 [alert]
 [crit]
