@@ -286,6 +286,9 @@ local function destroy_compiled_regex(compiled)
 end
 
 
+_M.destroy_compiled_regex = destroy_compiled_regex
+
+
 local function re_match_compile(regex, opts)
     local flags = 0
     local pcre_opts = 0
@@ -341,6 +344,9 @@ local function re_match_compile(regex, opts)
 
     return compiled, compile_once, flags
 end
+
+
+_M.re_match_compile = re_match_compile
 
 
 local function re_match_helper(subj, regex, opts, ctx, want_caps, res, nth)

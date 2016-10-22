@@ -29,6 +29,7 @@ Table of Contents
     * [ngx.balancer](#ngxbalancer)
     * [ngx.ssl](#ngxssl)
     * [ngx.ssl.session](#ngxsslsession)
+    * [ngx.re](#ngxre)
 * [Caveat](#caveat)
 * [TODO](#todo)
 * [Author](#author)
@@ -232,6 +233,15 @@ This Lua module provides a Lua API for manipulating SSL session data and IDs
 for NGINX downstream SSL connections.
 
 See the [documentation](./lib/ngx/ssl/session.md) for this Lua module for more details.
+
+[Back to TOC](#table-of-contents)
+
+## ngx.re
+
+This Lua module provides a Lua API which implements convenience utilities for
+the `ngx.re` API.
+
+See the [documentation](./lib/ngx/re.md) for this Lua module for more details.
 
 [Back to TOC](#table-of-contents)
 
