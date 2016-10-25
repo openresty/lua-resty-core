@@ -19,9 +19,6 @@ local ngx_shared = ngx.shared
 local getmetatable = getmetatable
 
 
-local MAX_ERR_MSG_LEN = 128
-
-
 ffi.cdef[[
     int ngx_http_lua_ffi_shdict_get(void *zone, const unsigned char *key,
         size_t key_len, int *value_type, unsigned char **str_value_buf,
