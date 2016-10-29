@@ -1,4 +1,4 @@
-local _M = {}
+-- Copyright (C) Yichun Zhang (agentzh)
 
 
 local ffi = require "ffi"
@@ -30,6 +30,9 @@ int ngx_http_lua_ffi_ssl_get_serialized_session_size(ngx_http_request_t *r,
 int ngx_http_lua_ffi_ssl_get_session_id_size(ngx_http_request_t *r,
     char **err);
 ]]
+
+
+local _M = { version = base.version }
 
 
 -- return session, err
