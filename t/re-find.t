@@ -270,7 +270,7 @@ qr/\[TRACE   \d+ content_by_lua\(nginx\.conf:\d+\):4 loop\]/
 --- config
     location = /re {
         access_log off;
-        content_by_lua '
+        content_by_lua_block {
             -- ngx.re.opt("jit_stack_size", 128 * 1024)
             local from, to, err
             local find = ngx.re.find
@@ -289,7 +289,7 @@ qr/\[TRACE   \d+ content_by_lua\(nginx\.conf:\d+\):4 loop\]/
             ngx.say("from: ", from)
             ngx.say("to: ", to)
             ngx.say("matched: ", string.sub(s, from, to))
-        ';
+        }
     }
 --- request
 GET /re
@@ -310,7 +310,7 @@ bad argument type
 --- config
     location = /re {
         access_log off;
-        content_by_lua '
+        content_by_lua_block {
             -- ngx.re.opt("jit_stack_size", 128 * 1024)
             local from, to, err
             local find = ngx.re.find
@@ -329,7 +329,7 @@ bad argument type
             ngx.say("from: ", from)
             ngx.say("to: ", to)
             ngx.say("matched: ", string.sub(s, from, to))
-        ';
+        }
     }
 --- request
 GET /re
