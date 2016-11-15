@@ -163,14 +163,16 @@ function ngx.re.opt(option, value)
     if option == "jit_stack_size" then
         local rc = C.ngx_http_lua_ffi_set_jit_stack_size(value)
 
-        if rc == FFI_DECLINED then
+        if rc == FFI_OK then
+            return
+        elseif rc == FFI_DECLINED then
             return error("Changing jit stack size is not allowed when some " ..
                          "regexs have already been compiled and cached")
         elseif rc == FFI_ERROR then
             return error("PCRE jit stack allocation failed")
         end
 
-        return
+        return error("unreachable")
     end
 
     return error("unrecognized option name")
