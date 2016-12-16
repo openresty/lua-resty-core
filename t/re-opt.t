@@ -43,6 +43,7 @@ run_tests();
 __DATA__
 
 === TEST 1: default jit_stack_size too small
+--- http_config eval: $::HttpConfig
 --- config
     location /re {
         content_by_lua_block {
@@ -72,6 +73,7 @@ error: pcre_exec() failed: -27
 
 
 === TEST 2: increase jit_stack_size
+--- http_config eval: $::HttpConfig
 --- http_config
     init_by_lua_block {
         local ngx_re = require "ngx.re"
@@ -107,6 +109,7 @@ to: 1563
 
 
 === TEST 3: jit_stack_size change disallowed once regex cache is populated
+--- http_config eval: $::HttpConfig
 --- config
     location /re {
         content_by_lua_block {
@@ -135,6 +138,7 @@ qr/Changing jit stack size is not allowed when some regexs have already been com
 
 
 === TEST 4: passing unknown options to ngx_re.opt throws an error
+--- http_config eval: $::HttpConfig
 --- config
     location /re {
         content_by_lua_block {
