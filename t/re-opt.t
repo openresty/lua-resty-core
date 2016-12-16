@@ -73,7 +73,7 @@ error: pcre_exec() failed: -27
 
 
 === TEST 2: increase jit_stack_size
---- http_config
+--- http_config eval
     lua_package_path "$pwd/lib/?.lua;../lua-resty-lrucache/lib/?.lua;;";
     init_by_lua_block {
         -- local verbose = true
