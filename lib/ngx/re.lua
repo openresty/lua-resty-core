@@ -18,6 +18,9 @@ local math_max = math.max
 local math_min = math.min
 local re_match_compile = core_regex.re_match_compile
 local destroy_compiled_regex = core_regex.destroy_compiled_regex
+local FFI_DECLINED = base.FFI_DECLINED
+local FFI_ERROR = base.FFI_ERROR
+local FFI_OK = base.FFI_OK
 
 
 local FLAG_DFA               = 0x02
@@ -26,6 +29,11 @@ local DEFAULT_SPLIT_RES_SIZE = 4
 
 
 local split_ctx = new_tab(0, 1)
+
+
+ffi.cdef[[
+    int ngx_http_lua_ffi_set_jit_stack_size(int size);
+]]
 
 
 local _M = { version = base.version }
@@ -216,6 +224,26 @@ function _M.split(subj, regex, opts, ctx, max, res)
     res[res_idx + 2] = nil
 
     return res
+end
+
+
+function _M.opt(option, value)
+    if option == "jit_stack_size" then
+        local rc = C.ngx_http_lua_ffi_set_jit_stack_size(value)
+
+        if rc == FFI_OK then
+            return
+        elseif rc == FFI_DECLINED then
+            return error("Changing jit stack size is not allowed when some " ..
+                         "regexs have already been compiled and cached")
+        elseif rc == FFI_ERROR then
+            return error("PCRE jit stack allocation failed")
+        end
+
+        return error("unreachable")
+    end
+
+    return error("unrecognized option name")
 end
 
 

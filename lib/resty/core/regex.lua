@@ -27,9 +27,6 @@ local error = error
 local get_string_buf = base.get_string_buf
 local get_string_buf_size = base.get_string_buf_size
 local new_tab = base.new_tab
-local FFI_DECLINED = base.FFI_DECLINED
-local FFI_ERROR = base.FFI_ERROR
-local FFI_OK = base.FFI_OK
 
 
 if not ngx.re then
@@ -129,8 +126,6 @@ ffi.cdef[[
                                              unsigned char *dst);
 
     uint32_t ngx_http_lua_ffi_max_regex_cache_size(void);
-
-    int ngx_http_lua_ffi_set_jit_stack_size(int size);
 ]]
 
 
@@ -156,26 +151,6 @@ local function get_max_regex_cache_size()
     end
     max_regex_cache_size = C.ngx_http_lua_ffi_max_regex_cache_size()
     return max_regex_cache_size
-end
-
-
-function ngx.re.opt(option, value)
-    if option == "jit_stack_size" then
-        local rc = C.ngx_http_lua_ffi_set_jit_stack_size(value)
-
-        if rc == FFI_OK then
-            return
-        elseif rc == FFI_DECLINED then
-            return error("Changing jit stack size is not allowed when some " ..
-                         "regexs have already been compiled and cached")
-        elseif rc == FFI_ERROR then
-            return error("PCRE jit stack allocation failed")
-        end
-
-        return error("unreachable")
-    end
-
-    return error("unrecognized option name")
 end
 
 
