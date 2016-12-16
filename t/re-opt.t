@@ -11,7 +11,7 @@ repeat_each(2);
 
 plan tests => repeat_each() * blocks() * 4 + (2 * repeat_each());
 
-my $pwd = cwd();
+our $pwd = cwd();
 
 our $HttpConfig = <<_EOC_;
     lua_package_path "$pwd/lib/?.lua;../lua-resty-lrucache/lib/?.lua;;";
