@@ -9,7 +9,7 @@ use Cwd qw(cwd);
 
 repeat_each(2);
 
-plan tests => repeat_each() * blocks() * 4 + (2 * repeat_each());
+plan tests => repeat_each() * blocks() * 3;
 
 our $pwd = cwd();
 
@@ -79,7 +79,7 @@ error: pcre_exec() failed: -27
     init_by_lua_block {
         -- local verbose = true
         local verbose = false
-        local outfile = "$::Test::Nginx::Util::ErrLogFile"
+        local outfile = "$Test::Nginx::Util::ErrLogFile"
         -- local outfile = "/tmp/v.log"
         if verbose then
             local dump = require "jit.dump"
@@ -135,7 +135,7 @@ to: 1563
             local ngx_re = require "ngx.re"
 
             local status, err = pcall(ngx_re.opt, "jit_stack_size", 128 * 1024)
-            if err then ngx.log(ngx.INFO, err) end
+            if err then ngx.log(ngx.ERR, err) end
             local s = "hello, 1234"
             local from, to = ngx.re.find(s, "(hello world)|([0-9])", "jo")
             ngx.say("from: ", from)

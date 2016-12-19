@@ -229,18 +229,20 @@ end
 
 function _M.opt(option, value)
     if option == "jit_stack_size" then
+        if not core_regex.regex_cache_is_empty() then
+            return error("Changing jit stack size is not allowed when some " ..
+                         "regexs have already been compiled and cached")
+        end
+
         local rc = C.ngx_http_lua_ffi_set_jit_stack_size(value)
 
         if rc == FFI_OK then
             return
-        elseif rc == FFI_DECLINED then
-            return error("Changing jit stack size is not allowed when some " ..
-                         "regexs have already been compiled and cached")
         elseif rc == FFI_ERROR then
             return error("PCRE jit stack allocation failed")
         end
 
-        return error("unreachable")
+        return error("Received unexpected return code: " .. rc)
     end
 
     return error("unrecognized option name")

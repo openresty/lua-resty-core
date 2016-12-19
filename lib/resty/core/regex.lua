@@ -153,6 +153,14 @@ local function get_max_regex_cache_size()
     return max_regex_cache_size
 end
 
+function _M.regex_cache_is_empty()
+    if not regex_match_cache then
+        return true
+    else
+        return next(regex_match_cache.hasht) == nil
+    end
+end
+
 
 local function parse_regex_opts(opts)
     local t = cached_re_opts[opts]
