@@ -10,6 +10,7 @@ local core_regex = require "resty.core.regex"
 
 local C = ffi.C
 local sub = string.sub
+local error = error
 local type = type
 local band = bit.band
 local new_tab = base.new_tab
@@ -18,7 +19,6 @@ local math_max = math.max
 local math_min = math.min
 local re_match_compile = core_regex.re_match_compile
 local destroy_compiled_regex = core_regex.destroy_compiled_regex
-local FFI_DECLINED = base.FFI_DECLINED
 local FFI_ERROR = base.FFI_ERROR
 local FFI_OK = base.FFI_OK
 
