@@ -176,7 +176,7 @@ Copyright and License
 
 This module is licensed under the BSD license.
 
-Copyright (C) 2016, by Yichun "agentzh" Zhang, CloudFlare Inc.
+Copyright (C) 2016-2017, by Yichun "agentzh" Zhang, OpenResty Inc.
 
 All rights reserved.
 
