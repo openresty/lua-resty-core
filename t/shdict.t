@@ -9,7 +9,7 @@ use Cwd qw(cwd);
 
 repeat_each(2);
 
-plan tests => repeat_each() * (blocks() * 5 + 2);
+plan tests => repeat_each() * (blocks() * 5 - 1);
 
 my $pwd = cwd();
 
@@ -999,3 +999,179 @@ number expected, got string
 --- no_error_log
 [alert]
 [crit]
+
+
+
+=== TEST 31: decr int
+--- http_config eval: $::HttpConfig
+--- config
+    location = /t {
+        content_by_lua '
+            local ffi = require "ffi"
+            local val
+            local dogs = ngx.shared.dogs
+            -- local cd = ffi.cast("void *", dogs)
+            local ok, err, forcible = dogs:set("foo", 256)
+            if not ok then
+                ngx.say("failed to set: ", err)
+                return
+            end
+            for i = 1, 100 do
+                val, err = dogs:decr("foo", 2)
+            end
+            ngx.say("value: ", val)
+            ngx.say("err: ", err)
+        ';
+    }
+--- request
+GET /t
+--- response_body
+value: 56
+err: nil
+--- error_log eval
+qr/\[TRACE   \d+ content_by_lua\(nginx\.conf:\d+\):11 loop\]/
+--- no_error_log
+[error]
+ -- NYI:
+
+
+
+=== TEST 32: decr double
+--- http_config eval: $::HttpConfig
+--- config
+    location = /t {
+        content_by_lua '
+            local ffi = require "ffi"
+            local val
+            local dogs = ngx.shared.dogs
+            -- local cd = ffi.cast("void *", dogs)
+            dogs:set("foo", 256)
+            for i = 1, 10 do
+                val, err = dogs:decr("foo", 2.1)
+            end
+            ngx.say("value: ", val)
+            ngx.say("err: ", err)
+        ';
+    }
+--- request
+GET /t
+--- response_body
+value: 235
+err: nil
+--- no_error_log
+[error]
+ -- NYI:
+
+
+
+=== TEST 33: decr, value is not number
+--- http_config eval: $::HttpConfig
+--- config
+    location = /t {
+        content_by_lua_block {
+            local val, flags
+            local dogs = ngx.shared.dogs
+            local value, err = dogs:decr("foo", "bar")
+            if not value then
+                ngx.say("failed to decr: ", err)
+            end
+        }
+    }
+--- request
+GET /t
+--- error_code: 500
+--- response_body_like: 500
+--- error_log
+cannot convert 'nil' to 'double'
+--- no_error_log
+[alert]
+[crit]
+
+
+
+=== TEST 34: decr with init
+--- http_config eval: $::HttpConfig
+--- config
+    location = /t {
+        content_by_lua_block {
+            local val, flags
+            local dogs = ngx.shared.dogs
+            dogs:flush_all()
+
+            local value, err = dogs:decr("foo", 10)
+            if not value then
+                ngx.say("failed to decr: ", err)
+            end
+
+            local value, err, forcible = dogs:decr("foo", 10, 10)
+            if not value then
+                ngx.say("failed to decr: ", err)
+                return
+            end
+
+            ngx.say("decr ok, value: ", value, ", forcible: ", forcible)
+        }
+    }
+--- request
+GET /t
+--- response_body
+failed to decr: not found
+decr ok, value: 0, forcible: false
+--- no_error_log
+[error]
+[alert]
+[crit]
+
+
+
+=== TEST 35: decr, init is not number
+--- http_config eval: $::HttpConfig
+--- config
+    location = /t {
+        content_by_lua_block {
+            local val, flags
+            local dogs = ngx.shared.dogs
+            local value, err = dogs:incr("foo", 10, "bar")
+            if not ok then
+                ngx.say("failed to incr: ", err)
+            end
+        }
+    }
+--- request
+GET /t
+--- error_code: 500
+--- response_body_like: 500
+--- error_log
+number expected, got string
+--- no_error_log
+[alert]
+[crit]
+
+
+
+=== TEST 36: decr int below zero
+--- http_config eval: $::HttpConfig
+--- config
+    location = /t {
+        content_by_lua '
+            local ffi = require "ffi"
+            local val
+            local dogs = ngx.shared.dogs
+            -- local cd = ffi.cast("void *", dogs)
+            local ok, err, forcible = dogs:set("foo", 256)
+            if not ok then
+                ngx.say("failed to set: ", err)
+                return
+            end
+            val, err = dogs:decr("foo", -1)
+            ngx.say("value: ", val)
+            ngx.say("err: ", err)
+        ';
+    }
+--- request
+GET /t
+--- response_body
+value: nil
+err: must decr by a positive value
+--- no_error_log
+[error]
