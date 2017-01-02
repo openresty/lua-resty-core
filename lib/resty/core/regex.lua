@@ -281,6 +281,9 @@ local function collect_captures(compiled, rc, subj, flags, res)
 end
 
 
+_M.collect_captures = collect_captures
+
+
 local function destroy_compiled_regex(compiled)
     C.ngx_http_lua_ffi_destroy_regex(ffi_gc(compiled, nil))
 end
@@ -491,6 +494,9 @@ local function check_buf_size(buf, buf_size, pos, len, new_len, must_alloc)
 end
 
 
+_M.check_buf_size = check_buf_size
+
+
 local function re_sub_compile(regex, opts, replace, func)
     local flags = 0
     local pcre_opts = 0
@@ -591,6 +597,9 @@ local function re_sub_compile(regex, opts, replace, func)
 
     return compiled, compile_once, flags
 end
+
+
+_M.re_sub_compile = re_sub_compile
 
 
 local function re_sub_func_helper(subj, regex, replace, opts, global)
