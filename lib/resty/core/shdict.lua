@@ -25,9 +25,9 @@ ffi.cdef[[
         size_t *str_value_len, double *num_value, int *user_flags,
         int get_stale, int *is_stale, char **errmsg);
 
-    int ngx_http_lua_ffi_shdict_incr(void *zone, const unsigned char *key,
-        size_t key_len, double *value, char **err, int has_init, double init,
-        int *forcible);
+    int ngx_http_lua_ffi_shdict_incr(void *zone, int op,
+        const unsigned char *key, size_t key_len, double *value, char **err,
+        int has_init, double init, int *forcible);
 
     int ngx_http_lua_ffi_shdict_store(void *zone, int op,
         const unsigned char *key, size_t key_len, int value_type,
@@ -321,8 +321,7 @@ local function shdict_get_stale(zone, key)
     return val, nil, is_stale[0] == 1
 end
 
-
-local function shdict_incr(zone, key, value, init)
+local function shdict_incr_helper(zone, op, key, value, init)
     zone = check_zone(zone)
 
     if key == nil then
@@ -346,6 +345,10 @@ local function shdict_incr(zone, key, value, init)
     end
     num_value[0] = value
 
+    if op == 0x0002 and value <= 0 then
+        return nil, "must decr by a positive value"
+    end
+
     local has_init
 
     if init then
@@ -365,7 +368,7 @@ local function shdict_incr(zone, key, value, init)
         init = 0
     end
 
-    local rc = C.ngx_http_lua_ffi_shdict_incr(zone, key, key_len, num_value,
+    local rc = C.ngx_http_lua_ffi_shdict_incr(zone, op, key, key_len, num_value,
                                               errmsg, has_init, init,
                                               forcible)
     if rc ~= 0 then  -- ~= NGX_OK
@@ -377,6 +380,16 @@ local function shdict_incr(zone, key, value, init)
     end
 
     return tonumber(num_value[0]), nil, forcible[0] == 1
+end
+
+
+local function shdict_incr(zone, key, value, init)
+    return shdict_incr_helper(zone, 0x0001, key, value, init)
+end
+
+
+local function shdict_decr(zone, key, value, init)
+    return shdict_incr_helper(zone, 0x0002, key, value, init)
 end
 
 
@@ -397,6 +410,7 @@ if ngx_shared then
                 mt.get = shdict_get
                 mt.get_stale = shdict_get_stale
                 mt.incr = shdict_incr
+                mt.decr = shdict_decr
                 mt.set = shdict_set
                 mt.safe_set = shdict_safe_set
                 mt.add = shdict_add
