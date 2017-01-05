@@ -258,7 +258,6 @@ TODO
 ====
 
 * Re-implement `ngx_lua`'s cosocket API with FFI.
-* Re-implement `ngx_lua`'s `ngx.get_phase` API function with FFI.
 * Re-implement `ngx_lua`'s `ngx.eof` and `ngx.flush` API functions with FFI.
 
 [Back to TOC](#table-of-contents)
