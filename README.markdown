@@ -25,6 +25,7 @@ Table of Contents
     * [resty.core.misc](#restycoremisc)
     * [resty.core.time](#restycoretime)
     * [resty.core.worker](#restycoreworker)
+    * [resty.core.phase](#restycorephase)
     * [ngx.semaphore](#ngxsemaphore)
     * [ngx.balancer](#ngxbalancer)
     * [ngx.ssl](#ngxssl)
@@ -214,6 +215,12 @@ API Implemented
 
 [Back to TOC](#table-of-contents)
 
+## resty.core.phase
+
+* [ngx.get_phase](https://github.com/openresty/lua-nginx-module#ngxget_phase)
+
+[Back to TOC](#table-of-contents)
+
 ## ngx.semaphore
 
 This Lua module implements a semaphore API for efficient "light thread" synchronization,
@@ -301,7 +308,6 @@ TODO
 ====
 
 * Re-implement `ngx_lua`'s cosocket API with FFI.
-* Re-implement `ngx_lua`'s `ngx.get_phase` API function with FFI.
 * Re-implement `ngx_lua`'s `ngx.eof` and `ngx.flush` API functions with FFI.
 
 [Back to TOC](#table-of-contents)
