@@ -115,6 +115,32 @@ function _M.split(subj, regex, opts, ctx, max, res)
         return error("res is not a table", 2)
     end
 
+    local len = #subj
+    if ctx.pos > len then
+        res[1] = nil
+        return res
+    end
+
+    if regex == "" then
+        local pos = ctx.pos
+        local last = len
+        if max > 0 then
+            last = math_min(len, pos + max - 1)
+        end
+
+        local res_idx = 1
+        while pos < last do
+            res[res_idx] = sub(subj, pos, pos)
+            res_idx = res_idx + 1
+            pos = pos + 1
+        end
+
+        res[res_idx] = sub(subj, pos)
+        res[res_idx + 1] = nil
+
+        return res
+    end
+
     -- compile regex
 
     local compiled, compile_once, flags = re_match_compile(regex, opts)
@@ -186,7 +212,7 @@ function _M.split(subj, regex, opts, ctx, max, res)
 
     -- trailing nil for non-cleared res tables
 
-    res[res_idx + 1] = sub(subj, sub_idx, #subj)
+    res[res_idx + 1] = sub(subj, sub_idx)
     res[res_idx + 2] = nil
 
     return res

@@ -705,3 +705,163 @@ qr/\[TRACE   \d+/
 --- no_error_log
 [error]
 attempt to get length of local 'subj' (a number value)
+
+
+
+=== TEST 21: split matches, pos is larger than subject length
+--- http_config eval: $::HttpConfig
+--- config
+    location = /re {
+        content_by_lua_block {
+            local ngx_re = require "ngx.re"
+
+            local res, err = ngx_re.split("a,b,c,d,e", ",", nil, { pos = 10 })
+            if err then
+                ngx.log(ngx.ERR, "failed: ", err)
+                return
+            end
+
+            for i = 1, #res do
+                ngx.say(res[i])
+            end
+            ngx.say("len: ", #res)
+        }
+    }
+--- request
+GET /re
+--- response_body
+len: 0
+--- no_error_log
+[error]
+[TRACE
+
+
+
+=== TEST 22: regex is ""
+--- http_config eval: $::HttpConfig
+--- config
+    location /re {
+        content_by_lua_block {
+            local ngx_re = require "ngx.re"
+
+            local res, err = ngx_re.split("12345", "", "jo")
+            if err then
+                ngx.log(ngx.ERR, "failed: ", err)
+                return
+            end
+
+            for i = 1, #res do
+                ngx.say(res[i])
+            end
+
+            ngx.say("len: ", #res)
+        }
+    }
+--- request
+GET /re
+--- response_body
+1
+2
+3
+4
+5
+len: 5
+--- no_error_log
+[error]
+[TRACE
+
+
+
+=== TEST 23: regex is "" with pos
+--- http_config eval: $::HttpConfig
+--- config
+    location /re {
+        content_by_lua_block {
+            local ngx_re = require "ngx.re"
+
+            local res, err = ngx_re.split("12345", "", "jo", { pos = 2 })
+            if err then
+                ngx.log(ngx.ERR, "failed: ", err)
+                return
+            end
+
+            for i = 1, #res do
+                ngx.say(res[i])
+            end
+
+            ngx.say("len: ", #res)
+        }
+    }
+--- request
+GET /re
+--- response_body
+2
+3
+4
+5
+len: 4
+--- no_error_log
+[error]
+[TRACE
+
+
+
+=== TEST 24: regex is "" with pos larger than subject length
+--- http_config eval: $::HttpConfig
+--- config
+    location /re {
+        content_by_lua_block {
+            local ngx_re = require "ngx.re"
+
+            local res, err = ngx_re.split("12345", "", "jo", { pos = 10 })
+            if err then
+                ngx.log(ngx.ERR, "failed: ", err)
+                return
+            end
+
+            for i = 1, #res do
+                ngx.say(res[i])
+            end
+
+            ngx.say("len: ", #res)
+        }
+    }
+--- request
+GET /re
+--- response_body
+len: 0
+--- no_error_log
+[error]
+[TRACE
+
+
+
+=== TEST 25: regex is "" with pos & max
+--- http_config eval: $::HttpConfig
+--- config
+    location /re {
+        content_by_lua_block {
+            local ngx_re = require "ngx.re"
+
+            local res, err = ngx_re.split("12345", "", "jo", { pos = 2 }, 2)
+            if err then
+                ngx.log(ngx.ERR, "failed: ", err)
+                return
+            end
+
+            for i = 1, #res do
+                ngx.say(res[i])
+            end
+
+            ngx.say("len: ", #res)
+        }
+    }
+--- request
+GET /re
+--- response_body
+2
+345
+len: 2
+--- no_error_log
+[error]
+[TRACE
