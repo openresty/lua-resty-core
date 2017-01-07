@@ -78,6 +78,16 @@ local res, err = ngx_re.split("a,b,c,d", "(,)")
 -- res is now {"a", ",", "b", ",", "c", ",", "d"}
 ```
 
+When `regex` is empty string `""`, the `subject` will be split into chars,
+like so:
+
+```lua
+local ngx_re = require "ngx.re"
+
+local res, err = ngx_re.split("abcd", "")
+-- res is now {"a", "b", "c", "d"}
+```
+
 The optional `ctx` table argument can be a Lua table holding an optional `pos`
 field. When the `pos` field in the `ctx` table argument is specified,
 `ngx_re.split` will start splitting the `subject` from that index:

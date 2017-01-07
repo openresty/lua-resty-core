@@ -705,3 +705,38 @@ qr/\[TRACE   \d+/
 --- no_error_log
 [error]
 attempt to get length of local 'subj' (a number value)
+
+
+
+=== TEST 21: regex is ""
+--- http_config eval: $::HttpConfig
+--- config
+    location /re {
+        content_by_lua_block {
+            local ngx_re = require "ngx.re"
+
+            local res, err = ngx_re.split("12345", "", "jo")
+            if err then
+                ngx.log(ngx.ERR, "failed: ", err)
+                return
+            end
+
+            for i = 1, #res do
+                ngx.say(res[i])
+            end
+
+            ngx.say("len: ", #res)
+        }
+    }
+--- request
+GET /re
+--- response_body
+1
+2
+3
+4
+5
+len: 5
+--- no_error_log
+[error]
+[TRACE

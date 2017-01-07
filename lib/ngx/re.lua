@@ -115,6 +115,24 @@ function _M.split(subj, regex, opts, ctx, max, res)
         return error("res is not a table", 2)
     end
 
+    if regex == "" then
+        local pos = ctx.pos
+        local len = #subj
+        if max > 0 then
+            len = math_min(len, pos + max)
+        end
+
+        local res_idx = 1
+        for i = pos, len do
+            res[res_idx] = sub(subj, i, i)
+            res_idx = res_idx + 1
+        end
+
+        res[res_idx] = nil
+
+        return res
+    end
+
     -- compile regex
 
     local compiled, compile_once, flags = re_match_compile(regex, opts)
