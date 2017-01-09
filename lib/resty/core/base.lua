@@ -22,8 +22,8 @@ end
 
 
 if string.find(jit.version, " 2.0") then
-    ngx.log(ngx.ALERT, "use of lua-resty-core with LuaJIT 2.0 is "
-            .. "not recommended; use LuaJIT 2.1+ instead")
+    ngx.log(ngx.ALERT, "use of lua-resty-core with LuaJIT 2.0 is ",
+            "not recommended; use LuaJIT 2.1+ instead")
 end
 
 
