@@ -157,9 +157,9 @@ end
 function _M.regex_cache_is_empty()
     if not regex_match_cache then
         return true
-    else
-        return next(regex_match_cache.hasht) == nil
     end
+
+    return next(regex_match_cache.hasht) == nil
 end
 
 

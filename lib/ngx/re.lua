@@ -238,7 +238,9 @@ function _M.opt(option, value)
 
         if rc == FFI_OK then
             return
-        elseif rc == FFI_ERROR then
+        end
+
+        if rc == FFI_ERROR then
             return error("pcre jit stack allocation failed")
         end
 
