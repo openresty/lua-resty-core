@@ -24,7 +24,6 @@ local ngx = ngx
 local type = type
 local tostring = tostring
 local error = error
-local next = next
 local get_string_buf = base.get_string_buf
 local get_string_buf_size = base.get_string_buf_size
 local new_tab = base.new_tab
@@ -163,7 +162,7 @@ end
 
 
 local function lrucache_set_wrapper(...)
-    _M.regex_cache_is_empty = false
+    regex_cache_is_empty = false
     lrucache_set(...)
 end
 
