@@ -230,7 +230,7 @@ end
 function _M.opt(option, value)
     if option == "jit_stack_size" then
         if not core_regex.regex_cache_is_empty() then
-            return error("Changing jit stack size is not allowed when some " ..
+            return error("changing jit stack size is not allowed when some " ..
                          "regexs have already been compiled and cached")
         end
 
@@ -239,10 +239,10 @@ function _M.opt(option, value)
         if rc == FFI_OK then
             return
         elseif rc == FFI_ERROR then
-            return error("PCRE jit stack allocation failed")
+            return error("pcre jit stack allocation failed")
         end
 
-        return error("Received unexpected return code: " .. rc)
+        return error("received unexpected return code: " .. rc)
     end
 
     return error("unrecognized option name")
