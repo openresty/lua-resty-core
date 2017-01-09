@@ -149,10 +149,10 @@ from: 8
 to: 8
 
 --- grep_error_log eval
-qr/Changing jit stack size is not allowed when some regexs have already been compiled and cached/
+qr/changing jit stack size is not allowed when some regexs have already been compiled and cached/
 
 --- grep_error_log_out eval
-["", "Changing jit stack size is not allowed when some regexs have already been compiled and cached\n"]
+["", "changing jit stack size is not allowed when some regexs have already been compiled and cached\n"]
 
 
 
