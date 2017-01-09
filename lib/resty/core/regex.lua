@@ -154,12 +154,17 @@ local function get_max_regex_cache_size()
     return max_regex_cache_size
 end
 
-function _M.regex_cache_is_empty()
-    if not regex_match_cache then
-        return true
-    end
 
-    return next(regex_match_cache.hasht) == nil
+local regex_cache_is_empty = true
+
+function _M.is_regex_cache_empty()
+    return regex_cache_is_empty
+end
+
+
+local function lrucache_set_wrapper(...)
+    _M.regex_cache_is_empty = false
+    lrucache_set(...)
 end
 
 
@@ -350,7 +355,7 @@ local function re_match_compile(regex, opts)
 
         if compile_once then
             -- print("inserting compiled regex into cache")
-            lrucache_set(regex_match_cache, key, compiled)
+            lrucache_set_wrapper(regex_match_cache, key, compiled)
         end
     end
 

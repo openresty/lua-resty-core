@@ -17,7 +17,7 @@ local new_tab = base.new_tab
 local tostring = tostring
 local math_max = math.max
 local math_min = math.min
-local regex_cache_is_empty = core_regex.regex_cache_is_empty
+local is_regex_cache_empty = core_regex.is_regex_cache_empty
 local re_match_compile = core_regex.re_match_compile
 local destroy_compiled_regex = core_regex.destroy_compiled_regex
 local FFI_ERROR = base.FFI_ERROR
@@ -230,7 +230,7 @@ end
 
 function _M.opt(option, value)
     if option == "jit_stack_size" then
-        if not regex_cache_is_empty() then
+        if not is_regex_cache_empty() then
             return error("changing jit stack size is not allowed when some " ..
                          "regexs have already been compiled and cached")
         end
