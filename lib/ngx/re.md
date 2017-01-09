@@ -36,7 +36,7 @@ local res, err = ngx_re.split("a,b,c,d", ",")
 --> res is now {"a", "b", "c", "d"}
 
 -- opt
-ngx.re.opt("jit_stack_size", 128 * 1024)
+ngx_re.opt("jit_stack_size", 128 * 1024)
 --> the PCRE jit stack can now handle more complex regular expressions
 ```
 
@@ -145,9 +145,9 @@ local res, err = ngx_re.split("a,b", ",", nil, nil, nil, my_table)
 When the trailing `nil` is not enough for your purpose, you should
 clear the table yourself before feeding it into the `split` function.
 
-ngx.re.opt
+opt
 ----------
-**syntax:** *ngx.re.opt(option, value)*
+**syntax:** *ngx_re.opt(option, value)*
 
 Allows changing of regex settings. Currently, it can only change the
 `jit_stack_size` of the PCRE engine. For example,
