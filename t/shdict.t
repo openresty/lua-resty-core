@@ -1006,7 +1006,7 @@ number expected, got string
 --- http_config eval: $::HttpConfig
 --- config
     location = /t {
-        content_by_lua '
+        content_by_lua_block {
             local ffi = require "ffi"
             local val
             local dogs = ngx.shared.dogs
@@ -1021,7 +1021,7 @@ number expected, got string
             end
             ngx.say("value: ", val)
             ngx.say("err: ", err)
-        ';
+        }
     }
 --- request
 GET /t
@@ -1040,7 +1040,7 @@ qr/\[TRACE   \d+ content_by_lua\(nginx\.conf:\d+\):11 loop\]/
 --- http_config eval: $::HttpConfig
 --- config
     location = /t {
-        content_by_lua '
+        content_by_lua_block {
             local ffi = require "ffi"
             local val
             local dogs = ngx.shared.dogs
@@ -1051,7 +1051,7 @@ qr/\[TRACE   \d+ content_by_lua\(nginx\.conf:\d+\):11 loop\]/
             end
             ngx.say("value: ", val)
             ngx.say("err: ", err)
-        ';
+        }
     }
 --- request
 GET /t
@@ -1153,7 +1153,7 @@ number expected, got string
 --- http_config eval: $::HttpConfig
 --- config
     location = /t {
-        content_by_lua '
+        content_by_lua_block {
             local ffi = require "ffi"
             local val
             local dogs = ngx.shared.dogs
@@ -1166,7 +1166,7 @@ number expected, got string
             val, err = dogs:decr("foo", -1)
             ngx.say("value: ", val)
             ngx.say("err: ", err)
-        ';
+        }
     }
 --- request
 GET /t
