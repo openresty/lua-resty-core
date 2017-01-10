@@ -3,6 +3,7 @@ local base = require "resty.core.base"
 
 local C = ffi.C
 local FFI_ERROR = base.FFI_ERROR
+local error = error
 local tostring = tostring
 
 
@@ -39,12 +40,12 @@ function ngx.get_phase()
 
     local context = C.ngx_http_lua_ffi_get_phase(r, errmsg)
     if context == FFI_ERROR then -- NGX_ERROR
-        error(errmsg)
+        return error(errmsg)
     end
 
     local phase = CONTEXT_LOOKUP[context]
     if not phase then
-        error("unknown phase: " .. tostring(context))
+        return error("unknown phase: " .. tostring(context))
     end
 
     return phase
