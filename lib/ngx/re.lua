@@ -20,6 +20,7 @@ local math_min = math.min
 local is_regex_cache_empty = core_regex.is_regex_cache_empty
 local re_match_compile = core_regex.re_match_compile
 local destroy_compiled_regex = core_regex.destroy_compiled_regex
+local FFI_DECLINED = base.FFI_DECLINED
 local FFI_ERROR = base.FFI_ERROR
 local FFI_OK = base.FFI_OK
 
@@ -243,6 +244,10 @@ function _M.opt(option, value)
 
         if rc == FFI_ERROR then
             return error("pcre jit stack allocation failed")
+        end
+
+        if rc == FFI_DECLINED then
+            return error("no pcre jit support found")
         end
 
         return error("received unexpected return code: " .. rc)
