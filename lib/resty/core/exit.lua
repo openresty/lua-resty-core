@@ -31,7 +31,7 @@ ngx.exit = function (rc)
         return error("no request found")
     end
     errlen[0] = ERR_BUF_SIZE
-    local rc = C.ngx_http_lua_ffi_exit(r, rc, err, errlen)
+    rc = C.ngx_http_lua_ffi_exit(r, rc, err, errlen)
     if rc == 0 then
         -- print("yielding...")
         return co_yield()

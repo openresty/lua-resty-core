@@ -656,10 +656,10 @@ local function re_sub_func_helper(subj, regex, replace, opts, global)
 
         local res = collect_captures(compiled, rc, subj, flags)
 
-        local bit = tostring(replace(res))
-        local bit_len = #bit
+        local piece = tostring(replace(res))
+        local piece_len = #piece
 
-        local new_dst_len = dst_len + prefix_len + bit_len
+        local new_dst_len = dst_len + prefix_len + piece_len
         dst_buf, dst_buf_size, dst_pos, dst_len =
             check_buf_size(dst_buf, dst_buf_size, dst_pos, dst_len,
                            new_dst_len, true)
@@ -670,9 +670,9 @@ local function re_sub_func_helper(subj, regex, replace, opts, global)
             dst_pos = dst_pos + prefix_len
         end
 
-        if bit_len > 0 then
-            ffi_copy(dst_pos, bit, bit_len)
-            dst_pos = dst_pos + bit_len
+        if piece_len > 0 then
+            ffi_copy(dst_pos, piece, piece_len)
+            dst_pos = dst_pos + piece_len
         end
 
         cp_pos = compiled.captures[1]
@@ -698,7 +698,8 @@ local function re_sub_func_helper(subj, regex, replace, opts, global)
             local suffix_len = subj_len - cp_pos
 
             local new_dst_len = dst_len + suffix_len
-            dst_buf, dst_buf_size, dst_pos, dst_len =
+            local _
+            dst_buf, _, dst_pos, dst_len =
                 check_buf_size(dst_buf, dst_buf_size, dst_pos, dst_len,
                                new_dst_len, true)
 
@@ -827,7 +828,8 @@ local function re_sub_str_helper(subj, regex, replace, opts, global)
             local suffix_len = subj_len - cp_pos
 
             local new_dst_len = dst_len + suffix_len
-            dst_buf, dst_buf_size, dst_pos, dst_len =
+            local _
+            dst_buf, _, dst_pos, dst_len =
                 check_buf_size(dst_buf, dst_buf_size, dst_pos, dst_len,
                                new_dst_len)
 

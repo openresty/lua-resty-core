@@ -33,7 +33,8 @@ if not ok then
 end
 
 
-local ok, clear_tab = pcall(require, "table.clear")
+local clear_tab
+ok, clear_tab = pcall(require, "table.clear")
 if not ok then
     clear_tab = function (tab)
                     for k, _ in pairs(tab) do
