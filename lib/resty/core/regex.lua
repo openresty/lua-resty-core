@@ -140,6 +140,7 @@ local _M = {
 
 local buf_grow_ratio = 2
 
+
 function _M.set_buf_grow_ratio(ratio)
     buf_grow_ratio = ratio
 end
@@ -155,6 +156,7 @@ end
 
 
 local regex_cache_is_empty = true
+
 
 function _M.is_regex_cache_empty()
     return regex_cache_is_empty
