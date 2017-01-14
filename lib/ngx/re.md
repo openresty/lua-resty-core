@@ -172,6 +172,8 @@ Allows changing of regex settings. Currently, it can only change the
  }
 ```
 
+The `jit_stack_size` cannot be set to a value lower than PCRE's default of 32K.
+
 This method requires the PCRE library enabled in Nginx.
 
 This feature was first introduced in the `XXX` release.
