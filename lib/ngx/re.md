@@ -146,11 +146,11 @@ When the trailing `nil` is not enough for your purpose, you should
 clear the table yourself before feeding it into the `split` function.
 
 opt
-----------
+-----
 **syntax:** *ngx_re.opt(option, value)*
 
 Allows changing of regex settings. Currently, it can only change the
-`jit_stack_size` of the PCRE engine. For example,
+`jit_stack_size` of the PCRE engine, like so:
 
 ```nginx
 
