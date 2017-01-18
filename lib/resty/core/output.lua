@@ -14,7 +14,7 @@ ffi.cdef[[
                 size_t len);
 ]]
 
-function output.ffi_write(lua_string, offset, len)
+function _M.ffi_write(lua_string, offset, len)
     local r = getfenv(0).__ngx_req
 
     if not r then       
