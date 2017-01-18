@@ -18,7 +18,7 @@ function output.ffi_write(lua_string, offset, len)
     local r = getfenv(0).__ngx_req
 
     if not r then       
-       return false, rc
+       return false
     end
 
     local rc = C.ngx_http_lua_ffi_write(r,
