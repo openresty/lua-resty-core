@@ -1,10 +1,11 @@
 local ffi = require "ffi"
 local base = require "resty.core.base"
 local FFI_OK = base.FFI_OK
+local FFI_ERROR = base.FFI_ERROR
 local C = ffi.C
 
 local _M = {
-    _VERSION = base.version
+    version = base.version
 }
 
 ffi.cdef[[
@@ -16,9 +17,8 @@ ffi.cdef[[
 
 function _M.ffi_write(lua_string, offset, len)
     local r = getfenv(0).__ngx_req
-
-    if not r then       
-       return false
+    if not r then
+        return false, FFI_ERROR
     end
 
     local rc = C.ngx_http_lua_ffi_write(r,
@@ -26,12 +26,12 @@ function _M.ffi_write(lua_string, offset, len)
                                         offset,
                                         len)
 
-    if rc == FFI_OK then      
-      return true
-    else      
-      return false, rc
+    if rc == FFI_OK then
+        return true
+    else
+        return false, rc
     end
- end
+end
 
 
 return _M
