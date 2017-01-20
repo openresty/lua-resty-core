@@ -16,11 +16,9 @@ local _M = {
 
 
 ffi.cdef[[
-        int ngx_http_lua_ffi_write(ngx_http_request_t *r,
-                const char* str,
-                size_t offset,
-                size_t len,
-                char **err);
+    int ngx_http_lua_ffi_write(ngx_http_request_t *r,
+                               const char* str, size_t offset,
+                               size_t len, char **err);
 ]]
 
 
@@ -30,17 +28,14 @@ function _M.ffi_write(lua_string, offset, len)
         return error("no request found")
     end
 
-    local rc = C.ngx_http_lua_ffi_write(r,
-                                        lua_string,
-                                        offset,
-                                        len,
-                                        errmsg)
+    local rc = C.ngx_http_lua_ffi_write(r, lua_string, offset,
+                                        len, errmsg)
 
     if rc == FFI_OK then
         return true
-    else
-        return false, ffi_str(errmsg[0])
     end
+
+    return false, ffi_str(errmsg[0])
 end
 
 
