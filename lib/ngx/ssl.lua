@@ -33,6 +33,9 @@ int ngx_http_lua_ffi_ssl_set_der_private_key(ngx_http_request_t *r,
 
 int ngx_http_lua_ffi_ssl_raw_server_addr(ngx_http_request_t *r, char **addr,
     size_t *addrlen, int *addrtype, char **err);
+	
+int ngx_http_lua_ffi_ssl_raw_client_addr(ngx_http_request_t *r, char **addr,
+    size_t *addrlen, int *addrtype, char **err);
 
 int ngx_http_lua_ffi_ssl_server_name(ngx_http_request_t *r, char **name,
     size_t *namelen, char **err);
@@ -131,6 +134,27 @@ function _M.raw_server_addr()
     local sizep = get_size_ptr()
 
     local rc = C.ngx_http_lua_ffi_ssl_raw_server_addr(r, charpp, sizep,
+                                                      intp, errmsg)
+    if rc == FFI_OK then
+        local typ = addr_types[intp[0]]
+        if not typ then
+            return nil, nil, "unknown address type: " .. intp[0]
+        end
+        return ffi_str(charpp[0], sizep[0]), typ
+    end
+
+    return nil, nil, ffi_str(errmsg[0])
+end
+
+function _M.raw_client_addr()
+    local r = getfenv(0).__ngx_req
+    if not r then
+        return error("no request found")
+    end
+
+    local sizep = get_size_ptr()
+
+    local rc = C.ngx_http_lua_ffi_ssl_raw_client_addr(r, charpp, sizep,
                                                       intp, errmsg)
     if rc == FFI_OK then
         local typ = addr_types[intp[0]]
