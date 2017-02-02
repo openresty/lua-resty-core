@@ -23,6 +23,7 @@ Table of Contents
     * [parse_pem_priv_key](#parse_pem_priv_key)
     * [set_cert](#set_cert)
     * [set_priv_key](#set_priv_key)
+    * [set_ciphers](#set_ciphers)
 * [Community](#community)
     * [English Mailing List](#english-mailing-list)
     * [Chinese Mailing List](#chinese-mailing-list)
@@ -378,6 +379,20 @@ Sets the SSL private key opaque pointer returned by the
 Returns `true` on success, or a `nil` value and a string describing the error otherwise.
 
 This function was first added in version `0.1.7`.
+
+[Back to TOC](#table-of-contents)
+
+set_ciphers
+------------
+**syntax:** *ok, err = ssl.set_ciphers(ciphers)*
+
+**context:** *ssl_certificate_by_lua&#42;*
+
+Sets the enabled SSL ciphers for the current SSL connection. The `ciphers` string format is the same as the one accepted by OpenSSL.
+
+Returns `true` on success, or a `nil` value and a string describing the error otherwise.
+
+This function was first added in version `0.2.0`.
 
 [Back to TOC](#table-of-contents)
 
