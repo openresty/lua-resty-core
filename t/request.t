@@ -570,3 +570,90 @@ qr/\[TRACE   \d+ content_by_lua\(nginx\.conf:\d+\):4 loop\]/
 [error]
 bad argument type
 stitch
+
+
+
+=== TEST 17: ngx.req.get_post_args
+--- http_config eval: $::HttpConfig
+--- config
+    location = /t {
+        set $foo hello;
+        content_by_lua_block {
+            ngx.req.read_body()
+            local args
+            for i = 1, 200 do
+                args = ngx.req.get_post_args()
+            end
+            if type(args) ~= "table" then
+                ngx.say("bad args type found: ", args)
+                return
+            end
+            local keys = {}
+            for k, _ in pairs(args) do
+                keys[#keys + 1] = k
+            end
+            table.sort(keys)
+            for _, k in ipairs(keys) do
+                local v = args[k]
+                if type(v) == "table" then
+                    ngx.say(k, ": ", table.concat(v, ", "))
+                else
+                    ngx.say(k, ": ", v)
+                end
+            end
+        }
+    }
+--- request
+GET /t
+a=3%200&foo%20bar=&a=hello&blah
+--- response_body
+a: 3 0, hello
+blah: true
+foo bar: 
+--- error_log eval
+qr/\[TRACE   \d+ .*? -> \d+\]/
+--- no_error_log
+[error]
+ -- NYI:
+--- wait: 0.2
+
+
+
+=== TEST 18: ngx.req.get_post_args (empty)
+--- http_config eval: $::HttpConfig
+--- config
+    location = /t {
+        set $foo hello;
+        content_by_lua_block {
+            ngx.req.read_body()
+            local args
+            for i = 1, 200 do
+                args = ngx.req.get_post_args()
+            end
+            if type(args) ~= "table" then
+                ngx.say("bad args type found: ", args)
+                return
+            end
+            local keys = {}
+            for k, _ in pairs(args) do
+                keys[#keys + 1] = k
+            end
+            table.sort(keys)
+            for _, k in ipairs(keys) do
+                local v = args[k]
+                if type(v) == "table" then
+                    ngx.say(k, ": ", table.concat(v, ", "))
+                else
+                    ngx.say(k, ": ", v)
+                end
+            end
+        }
+    }
+--- request
+GET /t?
+--- response_body
+--- error_log eval
+qr/\[TRACE   \d+ content_by_lua\(nginx\.conf:\d+\):4 loop\]/
+--- no_error_log
+[error]
+ -- NYI:

@@ -46,6 +46,15 @@ ffi.cdef[[
     int ngx_http_lua_ffi_req_get_uri_args(ngx_http_request_t *r,
         unsigned char *buf, ngx_http_lua_ffi_table_elt_t *out, int count);
 
+    int ngx_http_lua_ffi_req_get_post_args_len(ngx_http_request_t *r);
+
+    int ngx_http_lua_ffi_req_get_post_args_count(ngx_http_request_t *r,
+        unsigned char *buf, int len, int max);
+
+    int ngx_http_lua_ffi_req_get_post_args(ngx_http_request_t *r,
+        unsigned char *buf, int len, ngx_http_lua_ffi_table_elt_t *out,
+        int count);
+
     double ngx_http_lua_ffi_req_start_time(ngx_http_request_t *r);
 
     int ngx_http_lua_ffi_req_get_method(ngx_http_request_t *r);
@@ -129,6 +138,80 @@ function ngx.req.get_headers(max_headers, raw)
     end
 
     return nil
+end
+
+
+function ngx.req.get_post_args(max_args)
+    local r = getfenv(0).__ngx_req
+    if not r then
+        return error("no request found")
+    end
+
+    if not max_args then
+        max_args = -1
+    end
+
+    local n = C.ngx_http_lua_ffi_req_get_post_args_len(r)
+    if n == FFI_BAD_CONTEXT then
+        return error("API disabled in the current context")
+    end
+
+    -- either r->discard_body or r->request_body->bufs == NULL
+    if n == -1 then
+        return {}
+    end
+
+    -- r->request_body == NULL
+    if n == -2 then
+        return error("no request body found; maybe you should turn on lua_need_request_body?")
+    end
+
+    -- r->request_body->temp_file
+    if n == -3 then
+        return nil, "request body in temp file not supported"
+    end
+
+    if n == 0 then
+        return {}
+    end
+
+    local strbuf = get_string_buf(n)
+    local kvbuf = ffi_cast(table_elt_type, strbuf + n)
+
+    local args_count = C.ngx_http_lua_ffi_req_get_post_args_count(r, strbuf,
+        n, max_args)
+
+    local nargs = C.ngx_http_lua_ffi_req_get_post_args(r, strbuf, n,
+        kvbuf, args_count)
+
+    local args = new_tab(0, nargs)
+    for i = 0, nargs - 1 do
+        local arg = kvbuf[i]
+
+        local key = arg.key
+        key = ffi_str(key.data, key.len)
+
+        local value = arg.value
+        local len = value.len
+        if len == -1 then
+            value = true
+        else
+            value = ffi_str(value.data, len)
+        end
+
+        local existing = args[key]
+        if existing then
+            if type(existing) == "table" then
+                existing[#existing + 1] = value
+            else
+                args[key] = {existing, value}
+            end
+
+        else
+            args[key] = value
+        end
+    end
+    return args
 end
 
 
