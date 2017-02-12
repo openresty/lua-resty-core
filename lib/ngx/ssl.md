@@ -46,8 +46,8 @@ Synopsis
 lua_package_path "/path/to/lua-resty-core/lib/?.lua;;";
 
 server {
-    listen 443 ssl;
-    server_name   test.com;
+    listen 443 ssl http2;
+    server_name   test.com hello.com;
 
     # useless placeholders: just to shut up NGINX configuration
     # loader errors:
@@ -91,6 +91,15 @@ server {
         if not ok then
             ngx.log(ngx.ERR, "failed to set DER private key: ", err)
             return ngx.exit(ngx.ERROR)
+        end
+
+        local sn, err = ssl.server_name()
+        if not sn then
+            ngx.log(ngx.ERR, "failed to get server name: ", err)
+            return ngx.exit(ngx.ERROR)
+        end
+        if sn == "test.com" then
+            ssl.set_http_version(1)
         end
     }
 
