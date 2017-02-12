@@ -23,6 +23,7 @@ Table of Contents
     * [parse_pem_priv_key](#parse_pem_priv_key)
     * [set_cert](#set_cert)
     * [set_priv_key](#set_priv_key)
+    * [set_http_version](#set_http_version)
 * [Community](#community)
     * [English Mailing List](#english-mailing-list)
     * [Chinese Mailing List](#chinese-mailing-list)
@@ -378,6 +379,23 @@ Sets the SSL private key opaque pointer returned by the
 Returns `true` on success, or a `nil` value and a string describing the error otherwise.
 
 This function was first added in version `0.1.7`.
+
+[Back to TOC](#table-of-contents)
+
+set_http_version
+------------
+**syntax:** *ok, err = ssl.set_http_version(http_version)*
+
+**context:** *ssl_certificate_by_lua&#42;*
+
+Mondify the http version.
+
+http_version:
+
+* 1 - http1.1
+* 2 - http2
+
+Returns `true` on success, or a `nil` value and a string describing the error otherwise.
 
 [Back to TOC](#table-of-contents)
 
