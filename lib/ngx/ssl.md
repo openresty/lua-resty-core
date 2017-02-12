@@ -388,7 +388,7 @@ set_http_version
 
 **context:** *ssl_certificate_by_lua&#42;*
 
-Mondify the http version.
+Modify the http version.
 
 http_version:
 
