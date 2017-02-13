@@ -15,7 +15,7 @@ my $pwd = cwd();
 
 our $HttpConfig = <<_EOC_;
     lua_package_path "$pwd/lib/?.lua;../lua-resty-lrucache/lib/?.lua;;";
-    init_by_lua '
+    init_by_lua_block {
         -- local verbose = true
         local verbose = false
         local outfile = "$Test::Nginx::Util::ErrLogFile"
@@ -32,7 +32,7 @@ our $HttpConfig = <<_EOC_;
         -- jit.opt.start("hotloop=1")
         -- jit.opt.start("loopunroll=1000000")
         -- jit.off()
-    ';
+    }
 _EOC_
 
 #no_diff();
@@ -47,7 +47,7 @@ __DATA__
 --- config
     location = /re {
         access_log off;
-        content_by_lua '
+        content_by_lua_block {
             local from, to, err
             local find = ngx.re.find
             local s = "a"
@@ -65,7 +65,7 @@ __DATA__
             ngx.say("from: ", from)
             ngx.say("to: ", to)
             ngx.say("matched: ", string.sub(s, from, to))
-        ';
+        }
     }
 --- request
 GET /re
@@ -86,7 +86,7 @@ bad argument type
 --- config
     location = /re {
         access_log off;
-        content_by_lua '
+        content_by_lua_block {
             local from, to, err
             local find = ngx.re.find
             local s = "a"
@@ -104,7 +104,7 @@ bad argument type
             ngx.say("from: ", from)
             ngx.say("to: ", to)
             ngx.say("matched: ", string.sub(s, from, to))
-        ';
+        }
     }
 --- request
 GET /re
@@ -125,7 +125,7 @@ NYI
 --- config
     location = /re {
         access_log off;
-        content_by_lua '
+        content_by_lua_block {
             local from, to, err
             local find = ngx.re.find
             local s = "b"
@@ -143,7 +143,7 @@ NYI
             ngx.say("from: ", from)
             ngx.say("to: ", to)
             ngx.say("matched: ", string.sub(s, from, to))
-        ';
+        }
     }
 --- request
 GET /re
@@ -161,7 +161,7 @@ NYI
 --- http_config eval: $::HttpConfig
 --- config
     location /re {
-        content_by_lua '
+        content_by_lua_block {
             local s = "hello, 1234"
             local from, to, err
             for i = 1, 100 do
@@ -178,7 +178,7 @@ NYI
                 end
                 ngx.say("not matched!")
             end
-        ';
+        }
     }
 --- request
     GET /re
@@ -196,7 +196,7 @@ qr/\[TRACE   \d+ content_by_lua\(nginx\.conf:\d+\):4 loop\]/
 --- http_config eval: $::HttpConfig
 --- config
     location /re {
-        content_by_lua '
+        content_by_lua_block {
             local s = "hello, 1234"
             local from, to, err
             for i = 1, 400 do
@@ -213,7 +213,7 @@ qr/\[TRACE   \d+ content_by_lua\(nginx\.conf:\d+\):4 loop\]/
                 end
                 ngx.say("not matched!")
             end
-        ';
+        }
     }
 --- request
     GET /re
@@ -231,7 +231,7 @@ qr/\[TRACE   \d+ content_by_lua\(nginx\.conf:\d+\):4 loop\]/
 --- http_config eval: $::HttpConfig
 --- config
     location /re {
-        content_by_lua '
+        content_by_lua_block {
             local s = "hello, 1234"
             local from, to, err
             for i = 1, 100 do
@@ -247,7 +247,7 @@ qr/\[TRACE   \d+ content_by_lua\(nginx\.conf:\d+\):4 loop\]/
                 end
                 ngx.say("not matched!")
             end
-        ';
+        }
     }
 --- request
     GET /re

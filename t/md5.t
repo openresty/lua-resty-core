@@ -15,11 +15,11 @@ my $pwd = cwd();
 
 our $HttpConfig = <<_EOC_;
     lua_package_path "$pwd/lib/?.lua;../lua-resty-lrucache/lib/?.lua;;";
-    init_by_lua '
+    init_by_lua_block {
         local v = require "jit.v"
         v.on("$Test::Nginx::Util::ErrLogFile")
         require "resty.core"
-    ';
+    }
 _EOC_
 
 #no_diff();
@@ -33,13 +33,13 @@ __DATA__
 --- http_config eval: $::HttpConfig
 --- config
     location = /md5 {
-        content_by_lua '
+        content_by_lua_block {
             local s
             for i = 1, 100 do
                 s = ngx.md5("hello")
             end
             ngx.say(s)
-        ';
+        }
     }
 --- request
 GET /md5
@@ -56,13 +56,13 @@ qr/\[TRACE   1 content_by_lua\(nginx\.conf:\d+\):3 loop\]/
 --- http_config eval: $::HttpConfig
 --- config
     location = /md5 {
-        content_by_lua '
+        content_by_lua_block {
             local s
             for i = 1, 100 do
                 s = ngx.md5(nil)
             end
             ngx.say(s)
-        ';
+        }
     }
 --- request
 GET /md5
@@ -79,13 +79,13 @@ qr/\[TRACE   1 content_by_lua\(nginx\.conf:\d+\):3 loop\]/
 --- http_config eval: $::HttpConfig
 --- config
     location /md5 {
-        content_by_lua '
+        content_by_lua_block {
             local s
             for i = 1, 100 do
                 s = ngx.md5("")
             end
             ngx.say(s)
-        ';
+        }
     }
 --- request
 GET /md5
@@ -102,13 +102,13 @@ qr/\[TRACE   1 content_by_lua\(nginx\.conf:\d+\):3 loop\]/
 --- http_config eval: $::HttpConfig
 --- config
     location /md5 {
-        content_by_lua '
+        content_by_lua_block {
             local s
             for i = 1, 100 do
                 s = ngx.md5(3.14)
             end
             ngx.say(s)
-        ';
+        }
     }
 --- request
 GET /md5
