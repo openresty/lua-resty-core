@@ -16,7 +16,7 @@ my $pwd = cwd();
 
 our $HttpConfig = <<_EOC_;
     lua_package_path "$pwd/lib/?.lua;\$prefix/html/?.lua;../lua-resty-lrucache/lib/?.lua;;";
-    init_by_lua '
+    init_by_lua_block {
         local verbose = false
         if verbose then
             local dump = require "jit.dump"
@@ -28,7 +28,7 @@ our $HttpConfig = <<_EOC_;
 
         require "resty.core"
         -- jit.off()
-    ';
+    }
 _EOC_
 
 #no_diff();
@@ -43,13 +43,13 @@ __DATA__
 --- config
     location = /t {
         return 201;
-        header_filter_by_lua '
+        header_filter_by_lua_block {
             local sum = 0
             for i = 1, 100 do
                 sum = sum + ngx.status
             end
             ngx.log(ngx.WARN, "sum: ", sum)
-        ';
+        }
     }
 --- request
 GET /t
@@ -71,12 +71,12 @@ qr/\[TRACE\s+\d+\s+header_filter_by_lua:3 loop\]/
 --- config
     location = /t {
         return 201;
-        header_filter_by_lua '
+        header_filter_by_lua_block {
             for i = 100, 200 do
                 ngx.status = i
             end
             ngx.log(ngx.WARN, "status: ", ngx.status)
-        ';
+        }
     }
 --- request
 GET /t

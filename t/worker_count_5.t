@@ -17,7 +17,7 @@ my $pwd = cwd();
 our $HttpConfig = <<_EOC_;
     lua_shared_dict dogs 1m;
     lua_package_path "$pwd/lib/?.lua;../lua-resty-lrucache/lib/?.lua;;";
-    init_by_lua '
+    init_by_lua_block {
         local verbose = false
         if verbose then
             local dump = require "jit.dump"
@@ -29,7 +29,7 @@ our $HttpConfig = <<_EOC_;
 
         require "resty.core"
         -- jit.off()
-    ';
+    }
 _EOC_
 
 #no_diff();
@@ -43,14 +43,14 @@ __DATA__
 --- http_config eval: $::HttpConfig
 --- config
     location = /t {
-        content_by_lua '
+        content_by_lua_block {
             local v
             local count = ngx.worker.count
             for i = 1, 400 do
                 v = count()
             end
             ngx.say("workers: ", v)
-        ';
+        }
     }
 --- request
 GET /t

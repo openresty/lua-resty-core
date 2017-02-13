@@ -16,7 +16,7 @@ my $pwd = cwd();
 
 our $HttpConfig = <<_EOC_;
     lua_package_path "$pwd/lib/?.lua;\$prefix/html/?.lua;../lua-resty-lrucache/lib/?.lua;;";
-    init_by_lua '
+    init_by_lua_block {
         local verbose = false
         if verbose then
             local dump = require "jit.dump"
@@ -28,7 +28,7 @@ our $HttpConfig = <<_EOC_;
 
         require "resty.core"
         -- jit.off()
-    ';
+    }
 _EOC_
 
 #no_diff();
@@ -41,9 +41,9 @@ __DATA__
 --- http_config eval: $::HttpConfig
 --- config
     location = /t {
-        content_by_lua '
+        content_by_lua_block {
             ngx.exit(403)
-        ';
+        }
     }
 --- request
 GET /t
@@ -60,10 +60,10 @@ qr/ -- NYI: (?!FastFunc coroutine.yield)/,
 --- http_config eval: $::HttpConfig
 --- config
     location = /t {
-        content_by_lua '
+        content_by_lua_block {
             local foo = require "foo"
             foo.go()
-        ';
+        }
     }
 --- user_files
 >>> foo.lua
