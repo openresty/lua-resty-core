@@ -58,6 +58,18 @@ int ngx_http_lua_ffi_set_priv_key(void *r, void *cdata, char **err);
 void ngx_http_lua_ffi_free_cert(void *cdata);
 
 void ngx_http_lua_ffi_free_priv_key(void *cdata);
+
+void *ngx_http_lua_ffi_ssl_ctx_init(const unsigned char *method,
+    size_t method_len, char **err);
+
+void ngx_http_lua_ffi_ssl_ctx_free(void *cdata);
+
+int ngx_http_lua_ffi_ssl_ctx_set_priv_key(void *cdata_ctx,
+    void *cdata_key, char **err);
+
+int ngx_http_lua_ffi_ssl_ctx_set_cert(void *cdata_ctx,
+    void *cdata_cert, char **err);
+
 ]]
 
 
@@ -258,6 +270,43 @@ function _M.set_priv_key(priv_key)
     end
 
     return nil, ffi_str(errmsg[0])
+end
+
+
+function _M.create_ctx(options)
+    if type(options) ~= 'table' then
+        return nil, "no options found"
+    end
+
+    local method = "SSLv23_method"
+    if options.method ~= nil then
+        method = options.method
+    end
+
+    local ctx = C.ngx_http_lua_ffi_ssl_ctx_init(method, #method, errmsg)
+    if ctx == nil then
+        return nil, ffi_str(errmsg[0])
+    end
+
+    ctx = ffi_gc(ctx, C.ngx_http_lua_ffi_ssl_ctx_free)
+
+    if options.cert ~= nil then
+        local rc = C.ngx_http_lua_ffi_ssl_ctx_set_cert(ctx,
+                                                       options.cert, errmsg)
+        if rc ~= FFI_OK then
+            return nil, ffi_str(errmsg[0])
+        end
+    end
+
+    if options.priv_key ~= nil then
+        local rc = C.ngx_http_lua_ffi_ssl_ctx_set_priv_key(ctx,
+                                                      options.priv_key, errmsg)
+        if rc ~= FFI_OK then
+            return nil, ffi_str(errmsg[0])
+        end
+    end
+
+    return ctx
 end
 
 
