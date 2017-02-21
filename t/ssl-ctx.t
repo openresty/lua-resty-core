@@ -6,12 +6,13 @@ use Digest::MD5 qw(md5_hex);
 
 repeat_each(2);
 
-plan tests => repeat_each() * (blocks() + 5);
+plan tests => repeat_each() * (blocks() + 7);
 
 our $CWD = cwd();
 $ENV{TEST_NGINX_LUA_PACKAGE_PATH} = "$::CWD/lib/?.lua;;";
 $ENV{TEST_NGINX_HTML_DIR} ||= html_dir();
 our $TEST_NGINX_LUA_PACKAGE_PATH = $ENV{TEST_NGINX_LUA_PACKAGE_PATH};
+our $TEST_NGINX_HTML_DIR = $ENV{TEST_NGINX_HTML_DIR};
 
 log_level 'debug';
 
@@ -36,7 +37,7 @@ our $serverCrt = read_file("t/cert/ca-client-server/server.crt");
 our $caKey = read_file("t/cert/ca-client-server/ca.key");
 our $caCrt = read_file("t/cert/ca-client-server/ca.crt");
 our $http_config = <<_EOS_;
-lua_package_path "$TEST_NGINX_LUA_PACKAGE_PATH/?.lua;;";
+lua_package_path "$TEST_NGINX_LUA_PACKAGE_PATH/?.lua;;../lua-resty-lrucache/lib/?.lua;";
 
 init_by_lua_block {
     require "resty.core.socket.tcp"
@@ -46,6 +47,26 @@ init_by_lua_block {
         local content = f:read("*all")
         f:close()
         return content
+    end
+
+    local lrucache = require "resty.lrucache"
+    local c, err = lrucache.new(1)
+    if not c then
+        return error("failed to create the cache: " .. (err or "unknown"))
+    end
+    local ssl = require "ngx.ssl"
+    local cert =  ssl.parse_pem_cert(read_file("$TEST_NGINX_HTML_DIR/client.crt"))
+    local priv_key = ssl.parse_pem_priv_key(read_file("$TEST_NGINX_HTML_DIR/client.unsecure.key"))
+
+    local ssl_ctx, err = ssl.create_ctx({
+        priv_key = priv_key,
+        cert = cert
+    })
+
+    c:set("sslctx", ssl_ctx)
+
+    function lrucache_getsslctx()
+        return c:get("sslctx")
     end
 
     function get_response_body(response)
@@ -262,7 +283,31 @@ TLSv1.2
 
 
 
-=== TEST 4: ssl ctx - send client certificate
+=== TEST 4: ssl ctx - dismatch priv_key and cert
+--- config
+    location /t {
+        content_by_lua_block {
+            local ssl = require "ngx.ssl"
+            local cert = ssl.parse_pem_cert(read_file("$TEST_NGINX_HTML_DIR/server.crt"))
+            local priv_key = ssl.parse_pem_priv_key(read_file("$TEST_NGINX_HTML_DIR/client.unsecure.key"))
+            local ssl_ctx, err = ssl.create_ctx({
+                priv_key = priv_key,
+                cert = cert
+            })
+            if ssl_ctx == nil then
+                ngx.say("create_ctx err: ", err)
+            end
+        }
+    }
+
+--- request
+GET /t
+--- response_body
+create_ctx err: SSL_CTX_use_PrivateKey() failed
+
+
+
+=== TEST 5: ssl ctx - send client certificate
 --- config
     location /t {
         content_by_lua_block {
@@ -279,6 +324,23 @@ TLSv1.2
                 ngx.say("failed to init ssl ctx: ", err)
                 return
             end
+            local response = https_get("127.0.0.1", 1983, "/cert", ssl_ctx)
+            ngx.say(get_response_body(response))
+        }
+    }
+--- request
+GET /t
+--- response_body eval
+"$::clientCrtMd5
+"
+
+
+
+=== TEST 6: ssl ctx - setsslctx with cached ssl_ctx
+--- config
+    location /t {
+        content_by_lua_block {
+            local ssl_ctx = lrucache_getsslctx()
             local response = https_get("127.0.0.1", 1983, "/cert", ssl_ctx)
             ngx.say(get_response_body(response))
         }
