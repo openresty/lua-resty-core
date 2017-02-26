@@ -3,6 +3,7 @@
 
 local ffi = require "ffi"
 local base = require "resty.core.base"
+local bit = require "bit"
 
 
 local C = ffi.C
@@ -16,6 +17,7 @@ local get_string_buf = base.get_string_buf
 local get_size_ptr = base.get_size_ptr
 local FFI_DECLINED = base.FFI_DECLINED
 local FFI_OK = base.FFI_OK
+local bor = bit.bor
 
 
 ffi.cdef[[
@@ -59,8 +61,7 @@ void ngx_http_lua_ffi_free_cert(void *cdata);
 
 void ngx_http_lua_ffi_free_priv_key(void *cdata);
 
-void *ngx_http_lua_ffi_ssl_ctx_init(const unsigned char *method,
-    size_t method_len, char **err);
+void *ngx_http_lua_ffi_ssl_ctx_init(unsigned int protocols, char **err);
 
 void ngx_http_lua_ffi_ssl_ctx_free(void *cdata);
 
@@ -273,17 +274,27 @@ function _M.set_priv_key(priv_key)
 end
 
 
+_M.PROTOCOL_SSLv2 = 0x0002
+_M.PROTOCOL_SSLv3 = 0x0004
+_M.PROTOCOL_TLSv1 = 0x0008
+_M.PROTOCOL_TLSv1_1 = 0x0010
+_M.PROTOCOL_TLSv1_2 = 0x0020
+local default_protocols = bor(bor(bor(_M.PROTOCOL_SSLv3,_M.PROTOCOL_TLSv1),
+                          _M.PROTOCOL_TLSv1_1), _M.PROTOCOL_TLSv1_2)
+
+
 function _M.create_ctx(options)
     if type(options) ~= 'table' then
         return nil, "no options found"
     end
 
-    local method = "SSLv23_method"
-    if options.method ~= nil then
-        method = options.method
+    local protocols = default_protocols
+
+    if options.protocols ~= nil then
+        protocols = options.protocols
     end
 
-    local ctx = C.ngx_http_lua_ffi_ssl_ctx_init(method, #method, errmsg)
+    local ctx = C.ngx_http_lua_ffi_ssl_ctx_init(protocols, errmsg)
     if ctx == nil then
         return nil, ffi_str(errmsg[0])
     end

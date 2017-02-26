@@ -6,7 +6,7 @@ use Digest::MD5 qw(md5_hex);
 
 repeat_each(2);
 
-plan tests => repeat_each() * (blocks() + 7);
+plan tests => repeat_each() * (blocks() + 6);
 
 our $CWD = cwd();
 $ENV{TEST_NGINX_LUA_PACKAGE_PATH} = "$::CWD/lib/?.lua;;";
@@ -127,7 +127,7 @@ server {
     ssl_certificate ../html/server.crt;
     ssl_certificate_key ../html/server.unsecure.key;
 
-    ssl on;                                                                             
+    ssl on;
     ssl_client_certificate ../html/ca.crt;
     ssl_verify_client on;
 
@@ -208,43 +208,17 @@ no options found
 
 
 
-=== TEST 2: ssl ctx - disable ssl protocols method SSLv2 SSLv3
---- config
-    location /t{
-        content_by_lua_block {
-            local ssl = require "ngx.ssl"
-            local ssl_ctx, err = ssl.create_ctx({
-                method = "SSLv2_method",
-            })
-            if ssl_ctx == nil then
-                ngx.say(err)
-            end
-            local ssl_ctx, err = ssl.create_ctx({
-                method = "SSLv3_method",
-            })
-            if ssl_ctx == nil then
-                ngx.say(err)
-            end
-        }
-    }
---- request
-GET /t
---- response_body
-SSLv2 methods disabled
-SSLv3 methods disabled
-
-
-
-=== TEST 3: ssl ctx - specify ssl protocols method TLSv1、TLSv1.1、TLSv1.2
+=== TEST 2: ssl ctx - specify ssl protocols TLSv1、TLSv1.1、TLSv1.2
 --- config
     location /t {
         content_by_lua_block {
             local ssl = require "ngx.ssl"
-            function test_ssl_method(method)
+            function test_ssl_protocol(protocols)
+                local ssl = require "ngx.ssl"
                 local cert = ssl.parse_pem_cert(read_file("$TEST_NGINX_HTML_DIR/client.crt"))
                 local priv_key = ssl.parse_pem_priv_key(read_file("$TEST_NGINX_HTML_DIR/client.unsecure.key"))
                 local ssl_ctx, err = ssl.create_ctx({
-                    method = method,
+                    protocols = protocols,
                     priv_key = priv_key,
                     cert = cert
                 })
@@ -265,9 +239,13 @@ SSLv3 methods disabled
                 return body
             end
 
-            ngx.say(test_ssl_method("TLSv1_method"))
-            ngx.say(test_ssl_method("TLSv1_1_method"))
-            ngx.say(test_ssl_method("TLSv1_2_method"))
+            local bit = require "bit"
+            local bor = bit.bor
+
+            ngx.say(test_ssl_protocol(ssl.PROTOCOL_TLSv1))
+            ngx.say(test_ssl_protocol(ssl.PROTOCOL_TLSv1_1))
+            ngx.say(test_ssl_protocol(ssl.PROTOCOL_TLSv1_2))
+            ngx.say(test_ssl_protocol(bor(ssl.PROTOCOL_SSLv2, ssl.PROTOCOL_TLSv1_2)))
         }
     }
 
@@ -277,13 +255,14 @@ GET /t
 TLSv1
 TLSv1.1
 TLSv1.2
+TLSv1.2
 
 --- no_error_log
 [error]
 
 
 
-=== TEST 4: ssl ctx - dismatch priv_key and cert
+=== TEST 3: ssl ctx - dismatch priv_key and cert
 --- config
     location /t {
         content_by_lua_block {
@@ -307,7 +286,7 @@ create_ctx err: SSL_CTX_use_PrivateKey() failed
 
 
 
-=== TEST 5: ssl ctx - send client certificate
+=== TEST 4: ssl ctx - send client certificate
 --- config
     location /t {
         content_by_lua_block {
@@ -336,7 +315,7 @@ GET /t
 
 
 
-=== TEST 6: ssl ctx - setsslctx with cached ssl_ctx
+=== TEST 5: ssl ctx - setsslctx with cached ssl_ctx
 --- config
     location /t {
         content_by_lua_block {
