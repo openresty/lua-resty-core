@@ -47,7 +47,7 @@ local function setsslctx(tcp, ssl_ctx)
 
     local rc = C.ngx_http_lua_ffi_socket_tcp_setsslctx(r, tcp, ssl_ctx, errmsg)
     if rc ~= FFI_OK then
-        return false, ffi_str(errmsg[0])
+        return nil, ffi_str(errmsg[0])
     end
 
     return true
