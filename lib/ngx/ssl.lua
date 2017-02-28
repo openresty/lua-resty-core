@@ -279,8 +279,8 @@ _M.PROTOCOL_SSLv3 = 0x0004
 _M.PROTOCOL_TLSv1 = 0x0008
 _M.PROTOCOL_TLSv1_1 = 0x0010
 _M.PROTOCOL_TLSv1_2 = 0x0020
-local default_protocols = bor(bor(bor(_M.PROTOCOL_SSLv3,_M.PROTOCOL_TLSv1),
-                          _M.PROTOCOL_TLSv1_1), _M.PROTOCOL_TLSv1_2)
+local default_protocols = bor(_M.PROTOCOL_SSLv3, _M.PROTOCOL_TLSv1,
+                              _M.PROTOCOL_TLSv1_1, _M.PROTOCOL_TLSv1_2)
 
 
 function _M.create_ctx(options)
@@ -288,11 +288,7 @@ function _M.create_ctx(options)
         return nil, "no options found"
     end
 
-    local protocols = default_protocols
-
-    if options.protocols ~= nil then
-        protocols = options.protocols
-    end
+    local protocols = options.protocols or default_protocols
 
     local ctx = C.ngx_http_lua_ffi_ssl_ctx_init(protocols, errmsg)
     if ctx == nil then

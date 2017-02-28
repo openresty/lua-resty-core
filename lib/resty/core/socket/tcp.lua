@@ -2,12 +2,13 @@
 
 
 local ffi = require "ffi"
+local debug = require 'debug'
 local base = require "resty.core.base"
 
 
 local C = ffi.C
 local ffi_str = ffi.string
-local getfenv = getfenv
+local registry = debug.getregistry()
 local error = error
 local errmsg = base.get_errmsg_ptr()
 local FFI_OK = base.FFI_OK
@@ -53,7 +54,7 @@ local function setsslctx(tcp, ssl_ctx)
 end
 
 
-local mt = getfenv(0).__ngx_socket_tcp_mt
+local mt = registry.__ngx_socket_tcp_mt
 if mt then
     mt = mt.__index
     if mt then
