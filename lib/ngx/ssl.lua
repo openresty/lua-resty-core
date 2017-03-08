@@ -14,6 +14,7 @@ local error = error
 local tonumber = tonumber
 local errmsg = base.get_errmsg_ptr()
 local get_string_buf = base.get_string_buf
+local get_string_buf_size = base.get_string_buf_size
 local get_size_ptr = base.get_size_ptr
 local FFI_DECLINED = base.FFI_DECLINED
 local FFI_OK = base.FFI_OK
@@ -66,10 +67,10 @@ void *ngx_http_lua_ffi_ssl_ctx_init(unsigned int protocols, char **err);
 void ngx_http_lua_ffi_ssl_ctx_free(void *cdata);
 
 int ngx_http_lua_ffi_ssl_ctx_set_priv_key(void *cdata_ctx,
-    void *cdata_key, char **err);
+    void *cdata_key, unsigned char **err_buf, size_t err_buf_len);
 
 int ngx_http_lua_ffi_ssl_ctx_set_cert(void *cdata_ctx,
-    void *cdata_cert, char **err);
+    void *cdata_cert, unsigned char **err_buf, size_t err_buf_len);
 
 ]]
 
@@ -79,6 +80,7 @@ local _M = { version = base.version }
 
 local charpp = ffi.new("char*[1]")
 local intp = ffi.new("int[1]")
+local err_buf = ffi.new("unsigned char *[1]")
 
 
 function _M.clear_certs()
@@ -297,19 +299,24 @@ function _M.create_ctx(options)
 
     ctx = ffi_gc(ctx, C.ngx_http_lua_ffi_ssl_ctx_free)
 
+    local size = get_string_buf_size()
+    local buf = get_string_buf(size)
+    err_buf[0] = buf
+
     if options.cert ~= nil then
-        local rc = C.ngx_http_lua_ffi_ssl_ctx_set_cert(ctx,
-                                                       options.cert, errmsg)
+        local rc = C.ngx_http_lua_ffi_ssl_ctx_set_cert(ctx, options.cert,
+                                                       err_buf, size)
         if rc ~= FFI_OK then
-            return nil, ffi_str(errmsg[0])
+            return nil, ffi_str(err_buf[0])
         end
     end
 
     if options.priv_key ~= nil then
         local rc = C.ngx_http_lua_ffi_ssl_ctx_set_priv_key(ctx,
-                                                      options.priv_key, errmsg)
+                                                           options.priv_key,
+                                                           err_buf, size)
         if rc ~= FFI_OK then
-            return nil, ffi_str(errmsg[0])
+            return nil, ffi_str(err_buf[0])
         end
     end
 

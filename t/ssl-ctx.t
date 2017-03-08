@@ -274,7 +274,7 @@ TLSv1.2
                 cert = cert
             })
             if ssl_ctx == nil then
-                ngx.say("create_ctx err: ", err)
+                ngx.say(err)
             end
         }
     }
@@ -282,7 +282,7 @@ TLSv1.2
 --- request
 GET /t
 --- response_body
-create_ctx err: SSL_CTX_use_PrivateKey() failed
+error:0B080074:x509 certificate routines:X509_check_private_key:key values mismatch
 
 
 
