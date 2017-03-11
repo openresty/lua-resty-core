@@ -14,7 +14,6 @@ local error = error
 local tonumber = tonumber
 local errmsg = base.get_errmsg_ptr()
 local get_string_buf = base.get_string_buf
-local get_string_buf_size = base.get_string_buf_size
 local get_size_ptr = base.get_size_ptr
 local FFI_DECLINED = base.FFI_DECLINED
 local FFI_OK = base.FFI_OK
@@ -81,7 +80,6 @@ local _M = { version = base.version }
 
 local charpp = ffi.new("char*[1]")
 local intp = ffi.new("int[1]")
-local err_buf = ffi.new("unsigned char *[1]")
 
 
 function _M.clear_certs()
