@@ -19,6 +19,7 @@ local get_size_ptr = base.get_size_ptr
 local FFI_DECLINED = base.FFI_DECLINED
 local FFI_OK = base.FFI_OK
 local bor = bit.bor
+local ERR_BUF_SIZE = 256
 
 
 ffi.cdef[[
@@ -66,11 +67,11 @@ void *ngx_http_lua_ffi_ssl_ctx_init(unsigned int protocols, char **err);
 
 void ngx_http_lua_ffi_ssl_ctx_free(void *cdata);
 
-int ngx_http_lua_ffi_ssl_ctx_set_priv_key(void *cdata_ctx,
-    void *cdata_key, unsigned char **err_buf, size_t err_buf_len);
+int ngx_http_lua_ffi_ssl_ctx_set_priv_key(void *cdata_ctx, void *cdata_key,
+    unsigned char *ssl_err_buf, size_t *ssl_err_buf_len);
 
-int ngx_http_lua_ffi_ssl_ctx_set_cert(void *cdata_ctx,
-    void *cdata_cert, unsigned char **err_buf, size_t err_buf_len);
+int ngx_http_lua_ffi_ssl_ctx_set_cert(void *cdata_ctx, void *cdata_cert,
+    unsigned char *ssl_err_buf, size_t *ssl_err_buf_len);
 
 ]]
 
@@ -299,24 +300,26 @@ function _M.create_ctx(options)
 
     ctx = ffi_gc(ctx, C.ngx_http_lua_ffi_ssl_ctx_free)
 
-    local size = get_string_buf_size()
-    local buf = get_string_buf(size)
-    err_buf[0] = buf
+    local err_buf = get_string_buf(ERR_BUF_SIZE)
+    local err_buf_len = get_size_ptr()
+    err_buf_len[0] = ERR_BUF_SIZE
 
     if options.cert ~= nil then
         local rc = C.ngx_http_lua_ffi_ssl_ctx_set_cert(ctx, options.cert,
-                                                       err_buf, size)
+                                                       err_buf,
+                                                       err_buf_len)
         if rc ~= FFI_OK then
-            return nil, ffi_str(err_buf[0])
+            return nil, ffi_str(err_buf, err_buf_len[0])
         end
     end
 
     if options.priv_key ~= nil then
         local rc = C.ngx_http_lua_ffi_ssl_ctx_set_priv_key(ctx,
                                                            options.priv_key,
-                                                           err_buf, size)
+                                                           err_buf,
+                                                           err_buf_len)
         if rc ~= FFI_OK then
-            return nil, ffi_str(err_buf[0])
+            return nil, ffi_str(err_buf, err_buf_len[0])
         end
     end
 
