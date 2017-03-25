@@ -1,4 +1,4 @@
-# vim:set ft=ts=4 sw=4 et fdm=marker:
+# vim:set ft= ts=4 sw=4 et fdm=marker:
 
 use Test::Nginx::Socket::Lua;
 use Cwd qw(abs_path realpath cwd);
@@ -211,7 +211,7 @@ In practice, never store session in plaintext on persistent storage.
         local sess = ssl.get_serialized_session()
         print("session size: ", #sess)
 
-        local f = assert(io.open("t/servroot/html/session.tmp", "w"))
+        local f = assert(io.open("$TEST_NGINX_SERVER_ROOT/html/session.tmp", "w"))
         f:write(sess)
         f:close()
     }
@@ -220,7 +220,7 @@ In practice, never store session in plaintext on persistent storage.
         local ssl = require "ngx.ssl.session"
         local sid = ssl.get_session_id()
         print("session id: ", sid)
-        local f = assert(io.open("t/servroot/html/session.tmp"))
+        local f = assert(io.open("$TEST_NGINX_SERVER_ROOT/html/session.tmp"))
         local sess = f:read("*a")
         f:close()
         ssl.set_serialized_session(sess)
