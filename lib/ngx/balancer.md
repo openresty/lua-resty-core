@@ -173,7 +173,7 @@ Zero and negative timeout values are not allowed.
 
 You can specify millisecond precision in the timeout values by using floating point numbers like 0.001 (which means 1ms).
 
-Returns `true` when the operation is successul; returns `nil` and a string describing the error
+Returns `true` when the operation is successful; returns `nil` and a string describing the error
 otherwise.
 
 This only affects the current downstream request. It is not a global change.
