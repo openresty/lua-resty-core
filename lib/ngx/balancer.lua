@@ -1,6 +1,11 @@
 -- Copyright (C) Yichun Zhang (agentzh)
 
 
+if ngx.config.subsystem == "stream" then
+    return require "ngx.balancer.stream"
+end
+
+
 local ffi = require "ffi"
 local base = require "resty.core.base"
 

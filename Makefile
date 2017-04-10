@@ -14,10 +14,12 @@ install: all
 	$(INSTALL) -d $(DESTDIR)$(LUA_LIB_DIR)/resty/core/
 	$(INSTALL) -d $(DESTDIR)$(LUA_LIB_DIR)/ngx/
 	$(INSTALL) -d $(DESTDIR)$(LUA_LIB_DIR)/ngx/ssl
+	$(INSTALL) -d $(DESTDIR)$(LUA_LIB_DIR)/ngx/balancer
 	$(INSTALL) lib/resty/*.lua $(DESTDIR)$(LUA_LIB_DIR)/resty/
 	$(INSTALL) lib/resty/core/*.lua $(DESTDIR)$(LUA_LIB_DIR)/resty/core/
 	$(INSTALL) lib/ngx/*.lua $(DESTDIR)$(LUA_LIB_DIR)/ngx/
 	$(INSTALL) lib/ngx/ssl/*.lua $(DESTDIR)$(LUA_LIB_DIR)/ngx/ssl/
+	$(INSTALL) lib/ngx/balancer/*.lua $(DESTDIR)$(LUA_LIB_DIR)/ngx/balancer/
 
 test: all
 	PATH=$(OPENRESTY_PREFIX)/nginx/sbin:$$PATH prove -I../test-nginx/lib -r t
