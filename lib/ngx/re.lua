@@ -84,6 +84,9 @@ end
 
 
 function _M.split(subj, regex, opts, ctx, max, res)
+    if subj == nil then
+        return nil, nil
+    end
     -- we need to cast this to strings to avoid exceptions when they are
     -- something else.
     -- needed because of further calls to string.sub in this function.
