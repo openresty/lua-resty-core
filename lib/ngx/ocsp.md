@@ -115,7 +115,7 @@ server {
             end
 
             -- set the OCSP stapling
-            ok, err = ocsp.set_ocsp_status_resp(resp)
+            ok, err = ocsp.set_ocsp_status_resp(ocsp_resp)
             if not ok then
                 ngx.log(ngx.ERR, "failed to set ocsp status resp: ", err)
                 return ngx.exit(ngx.ERROR)
