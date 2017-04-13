@@ -384,7 +384,7 @@ qr/\[TRACE   \d+ content_by_lua\(nginx\.conf:\d+\):11 loop\]/
             local dogs = ngx.shared.dogs
             -- local cd = ffi.cast("void *", dogs)
             dogs:set("foo", 56)
-            for i = 1, 100 do
+            for i = 1, 150 do
                 val, err = dogs:incr("foo", 2.1)
             end
             ngx.say("value: ", val)
@@ -394,7 +394,7 @@ qr/\[TRACE   \d+ content_by_lua\(nginx\.conf:\d+\):11 loop\]/
 --- request
 GET /t
 --- response_body
-value: 266
+value: 371
 err: nil
 --- error_log eval
 qr/\[TRACE   \d+ content_by_lua\(nginx\.conf:\d+\):7 loop\]/

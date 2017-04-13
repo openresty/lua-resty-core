@@ -30,8 +30,8 @@ Table of Contents
     * [ngx.ssl](#ngxssl)
     * [ngx.ssl.session](#ngxsslsession)
     * [ngx.re](#ngxre)
-    * [ngx.process](ngxprocess)
-
+    * [ngx.process](#ngxprocess)
+    * [ngx.errlog](#ngxerrlog)
 * [Caveat](#caveat)
 * [TODO](#todo)
 * [Author](#author)
@@ -256,6 +256,16 @@ See the [documentation](./lib/ngx/re.md) for this Lua module for more details.
 This Lua module is used to manage the nginx process in Lua.
 
 See the [documentation](./lib/ngx/process.md) for this Lua module for more details.
+
+This module was first introduced in lua-resty-core v0.1.12.
+
+[Back to TOC](#table-of-contents)
+
+## ngx.errlog
+
+This Lua module provides Lua API to capture and manage nginx error log messages.
+
+See the [documentation](./lib/ngx/errlog.md) for this Lua module for more details.
 
 This module was first introduced in lua-resty-core v0.1.12.
 
