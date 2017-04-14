@@ -6,6 +6,7 @@ local base = require "resty.core.base"
 
 
 local C = ffi.C
+local ffi_new = ffi.new
 local ffi_str = ffi.string
 local getfenv = getfenv
 local error = error
@@ -31,9 +32,16 @@ int ngx_http_lua_ffi_ssl_validate_ocsp_response(const unsigned char *resp,
     size_t resp_len, const char *chain_data, size_t chain_len,
     unsigned char *errbuf, size_t *errbuf_size);
 
+int ngx_http_lua_ffi_ssl_ocsp_get_nextupdate(const unsigned char *resp,
+    size_t resp_len, const char *chain_data, size_t chain_len,
+    time_t* nextupdate, unsigned char *errbuf, size_t *errbuf_size);
+
 int ngx_http_lua_ffi_ssl_set_ocsp_status_resp(ngx_http_request_t *r,
     const unsigned char *resp, size_t resp_len, char **err);
 ]]
+
+
+local nextupdatep = ffi_new("time_t[1]")
 
 
 local _M = { version = base.version }
@@ -113,6 +121,33 @@ function _M.validate_ocsp_response(resp, chain, max_errmsg_len)
 
     if rc == FFI_OK then
         return true
+    end
+
+    -- rc == FFI_ERROR
+
+    return nil, ffi_str(errbuf, sizep[0])
+end
+
+
+function _M.get_ocsp_nextupdate(resp, chain, max_errmsg_len)
+
+    local errbuf_size = max_errmsg_len
+    if not errbuf_size then
+        errbuf_size = get_string_buf_size()
+    end
+    local errbuf = get_string_buf(errbuf_size)
+
+    local sizep = get_size_ptr()
+    sizep[0] = errbuf_size
+
+    local rc = C.ngx_http_lua_ffi_ssl_ocsp_get_nextupdate(
+                        resp, #resp, chain, #chain, nextupdatep, errbuf, sizep)
+
+    if rc == FFI_OK then
+        -- Casting an int64 date to double is considered safe here because it
+        -- provides 52 bits of precision, which is ~143 million years before
+        -- and after the epoch
+        return tonumber(nextupdatep[0])
     end
 
     -- rc == FFI_ERROR

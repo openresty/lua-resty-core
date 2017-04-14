@@ -1547,3 +1547,94 @@ ocsp status resp set ok: no status req,
 [error]
 [alert]
 [emerg]
+
+
+
+=== TEST 18: missing nextUpdate in OCSP response
+--- http_config
+    lua_package_path "$TEST_NGINX_LUA_PACKAGE_PATH/?.lua;;";
+
+    server {
+        listen unix:$TEST_NGINX_HTML_DIR/nginx.sock ssl;
+        server_name   test.com;
+        ssl_certificate_by_lua_block {
+            local ssl = require "ngx.ssl"
+            local ocsp = require "ngx.ocsp"
+
+            local f = assert(io.open("t/cert/ocsp/chain.pem"))
+            local cert_data = f:read("*a")
+            f:close()
+
+            cert_data, err = ssl.cert_pem_to_der(cert_data)
+            if not cert_data then
+                ngx.log(ngx.ERR, "failed to convert pem cert to der cert: ", err)
+                return
+            end
+
+            local f = assert(io.open("t/cert/ocsp/ocsp-resp.der"))
+            local resp = f:read("*a")
+            f:close()
+
+            local nextupdate, err = ocsp.get_ocsp_nextupdate(resp, cert_data)
+            if not nextupdate then
+                ngx.log(ngx.ERR, "failed to get OCSP nextUpdate: ", err)
+                return
+            end
+
+            ngx.log(ngx.WARN, "successfully got OCSP nextUpdate")
+        }
+        ssl_certificate ../../cert/test.crt;
+        ssl_certificate_key ../../cert/test.key;
+
+        server_tokens off;
+        location /foo {
+            default_type 'text/plain';
+            content_by_lua_block {ngx.status = 201 ngx.say("foo") ngx.exit(201)}
+            more_clear_headers Date;
+        }
+    }
+--- config
+    server_tokens off;
+    lua_ssl_trusted_certificate ../../cert/test.crt;
+    lua_ssl_verify_depth 3;
+
+    location /t {
+        content_by_lua_block {
+            do
+                local sock = ngx.socket.tcp()
+
+                sock:settimeout(3000)
+
+                local ok, err = sock:connect("unix:$TEST_NGINX_HTML_DIR/nginx.sock")
+                if not ok then
+                    ngx.say("failed to connect: ", err)
+                    return
+                end
+
+                ngx.say("connected: ", ok)
+
+                local sess, err = sock:sslhandshake(nil, "test.com", true)
+                if not sess then
+                    ngx.say("failed to do SSL handshake: ", err)
+                    return
+                end
+
+                ngx.say("ssl handshake: ", type(sess))
+            end  -- do
+        }
+    }
+
+--- request
+GET /t
+--- response_body
+connected: 1
+ssl handshake: userdata
+
+--- error_log
+lua ssl server name: "test.com"
+failed to get OCSP nextUpdate: nextUpdate not found in the OCSP response
+
+--- no_error_log
+[error]
+[alert]
+[emerg]

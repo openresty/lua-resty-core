@@ -204,8 +204,27 @@ server certificate chain in DER format as specified in the `der_cert_chain` argu
 
 Returns true when the validation is successful.
 
-In case of failures, returns `nil` and a string
-describing the failure. The maximum
+In case of failures, returns `nil` and a string describing the failure. The maximum
+length of the error string is controlled by the optional `max_err_msg` argument (which defaults
+to the default internal string buffer size used throughout this `lua-resty-core` library, usually
+being 4KB).
+
+[Back to TOC](#table-of-contents)
+
+get_ocsp_nextupdate
+----------------------
+**syntax:** *ok, err = ocsp.get_ocsp_nextupdate(ocsp_resp, der_cert_chain, max_err_msg_len)*
+
+**context:** *any*
+
+Extracts the nextUpdate timestamp from the raw OCSP response data specified by the `ocsp_resp`
+argument using the SSL server certificate chain in DER format as specified in the `der_cert_chain`
+argument.
+
+Returns the timestamp value of nextUpdate in seconds. This value can be passed into `os.date()`
+for formatting or compared with `os.time()` to determine when it should be updated next.
+
+In case of failures, returns `nil` and a string describing the failure. The maximum
 length of the error string is controlled by the optional `max_err_msg` argument (which defaults
 to the default internal string buffer size used throughout this `lua-resty-core` library, usually
 being 4KB).
