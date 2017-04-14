@@ -37,7 +37,7 @@ local split_ctx = new_tab(0, 1)
 
 ffi.cdef[[
     int ngx_http_lua_ffi_set_jit_stack_size(int size, unsigned char *errstr,
-                                            size_t errstr_size);
+                                            size_t *errstr_size);
 ]]
 
 
