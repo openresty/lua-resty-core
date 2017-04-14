@@ -246,7 +246,7 @@ function _M.opt(option, value)
         local rc = C.ngx_http_lua_ffi_set_jit_stack_size(value, errbuf, sizep)
 
         if rc ~= FFI_OK then
-            return error(ffi_str(errbuf, sizep[0])
+            return error(ffi_str(errbuf, sizep[0]))
         end
     end
 
