@@ -9,6 +9,7 @@ local core_regex = require "resty.core.regex"
 
 
 local C = ffi.C
+local ffi_str = ffi.string
 local sub = string.sub
 local error = error
 local type = type
@@ -25,6 +26,7 @@ local FFI_ERROR = base.FFI_ERROR
 local FFI_OK = base.FFI_OK
 
 
+local MAX_ERR_MSG_LEN        = 128
 local FLAG_DFA               = 0x02
 local PCRE_ERROR_NOMATCH     = -1
 local DEFAULT_SPLIT_RES_SIZE = 4
@@ -34,7 +36,8 @@ local split_ctx = new_tab(0, 1)
 
 
 ffi.cdef[[
-    int ngx_http_lua_ffi_set_jit_stack_size(int size);
+    int ngx_http_lua_ffi_set_jit_stack_size(int size, unsigned char *errstr,
+                                            size_t errstr_size);
 ]]
 
 
@@ -236,21 +239,15 @@ function _M.opt(option, value)
                          "regexs have already been compiled and cached")
         end
 
-        local rc = C.ngx_http_lua_ffi_set_jit_stack_size(value)
+        local errbuf = get_string_buf(MAX_ERR_MSG_LEN)
+        local sizep = get_size_ptr()
+        sizep[0] = MAX_ERR_MSG_LEN
 
-        if rc == FFI_OK then
-            return
+        local rc = C.ngx_http_lua_ffi_set_jit_stack_size(value, errbuf, sizep)
+
+        if rc ~= FFI_OK then
+            return error(ffi_str(errbuf, sizep[0])
         end
-
-        if rc == FFI_ERROR then
-            return error("pcre jit stack allocation failed")
-        end
-
-        if rc == FFI_DECLINED then
-            return error("no pcre jit support found")
-        end
-
-        return error("received unexpected return code: " .. rc)
     end
 
     return error("unrecognized option name")
