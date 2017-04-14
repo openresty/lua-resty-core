@@ -62,7 +62,6 @@ function ngx.errlog()
     local raw_buf = get_string_buf(n * table_elt_size)
     local buf = ffi_cast(table_elt_type, raw_buf)
 
-    errlen[0] = ERR_BUF_SIZE
     local rc = C.ngx_http_lua_ffi_errlog(buf, err, errlen)
     if rc == FFI_ERROR then
         return error(ffi_string(err, errlen[0]))

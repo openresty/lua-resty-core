@@ -13,6 +13,20 @@ plan tests => repeat_each() * (blocks() * 3 - 5);
 
 my $pwd = cwd();
 
+add_block_preprocessor(sub {
+    my $block = shift;
+
+    my $http_config = $block->http_config || '';
+    $http_config .= <<'_EOC_';
+
+    lua_package_path "$pwd/lib/?.lua;../lua-resty-lrucache/lib/?.lua;;";
+    init_by_lua_block {
+        require "resty.core"
+    }
+_EOC_
+    $block->set_value("http_config", $http_config);
+});
+
 #no_diff();
 #no_long_string();
 #check_accum_error_log();
@@ -22,13 +36,6 @@ __DATA__
 
 === TEST 1: sanity
 --- http_config
-    lua_package_path "$pwd/lib/?.lua;../lua-resty-lrucache/lib/?.lua;;";
-    init_by_lua_block {
-        local v = require "jit.v"
-        v.on("$Test::Nginx::Util::ErrLogFile")
-        require "resty.core"
-    }
-
     lua_intercept_error_log 4m;
 --- config
     location /t {
@@ -61,13 +68,6 @@ enter 11
 
 === TEST 2: overflow intercepted error logs
 --- http_config
-    lua_package_path "$pwd/lib/?.lua;../lua-resty-lrucache/lib/?.lua;;";
-    init_by_lua_block {
-        local v = require "jit.v"
-        v.on("$Test::Nginx::Util::ErrLogFile")
-        require "resty.core"
-    }
-
     lua_intercept_error_log 4k;
 --- config
     location /t {
@@ -100,13 +100,6 @@ enter 22
 
 === TEST 3: 404 error(not found)
 --- http_config
-    lua_package_path "$pwd/lib/?.lua;../lua-resty-lrucache/lib/?.lua;;";
-    init_by_lua_block {
-        local v = require "jit.v"
-        v.on("$Test::Nginx::Util::ErrLogFile")
-        require "resty.core"
-    }
-
     lua_intercept_error_log 4m;
 --- config
     log_by_lua_block {
@@ -133,13 +126,6 @@ $/
 
 === TEST 4: 500 error
 --- http_config
-    lua_package_path "$pwd/lib/?.lua;../lua-resty-lrucache/lib/?.lua;;";
-    init_by_lua_block {
-        local v = require "jit.v"
-        v.on("$Test::Nginx::Util::ErrLogFile")
-        require "resty.core"
-    }
-
     lua_intercept_error_log 4m;
 --- config
     location /t {
@@ -171,13 +157,6 @@ $/
 
 === TEST 5: no error log
 --- http_config
-    lua_package_path "$pwd/lib/?.lua;../lua-resty-lrucache/lib/?.lua;;";
-    init_by_lua_block {
-        local v = require "jit.v"
-        v.on("$Test::Nginx::Util::ErrLogFile")
-        require "resty.core"
-    }
-
     lua_intercept_error_log 4m;
 --- config
     location /t {
@@ -206,13 +185,6 @@ $/
 
 === TEST 6: customize the log path
 --- http_config
-    lua_package_path "$pwd/lib/?.lua;../lua-resty-lrucache/lib/?.lua;;";
-    init_by_lua_block {
-        local v = require "jit.v"
-        v.on("$Test::Nginx::Util::ErrLogFile")
-        require "resty.core"
-    }
-
     lua_intercept_error_log 4m;
     error_log logs/error_http.log error;
 --- config
@@ -290,14 +262,6 @@ invalid number of arguments in "lua_intercept_error_log" directive
 
 
 === TEST 10: without directive + ngx.errlog
---- http_config
-    lua_package_path "$pwd/lib/?.lua;../lua-resty-lrucache/lib/?.lua;;";
-    init_by_lua_block {
-        local v = require "jit.v"
-        v.on("$Test::Nginx::Util::ErrLogFile")
-        require "resty.core"
-    }
-
 --- config
     location /t {
         access_by_lua_block {
@@ -318,14 +282,6 @@ API "ngx.errlog" depends on directive "lua_intercept_error_log"
 
 
 === TEST 11: without directive + ngx.filter_log
---- http_config
-    lua_package_path "$pwd/lib/?.lua;../lua-resty-lrucache/lib/?.lua;;";
-    init_by_lua_block {
-        local v = require "jit.v"
-        v.on("$Test::Nginx::Util::ErrLogFile")
-        require "resty.core"
-    }
-
 --- config
     location /t {
         access_by_lua_block {
@@ -341,3 +297,118 @@ API "ngx.filter_log" depends on directive "lua_intercept_error_log"
 --- skip_nginx: 3: <1.11.2
 
 
+
+=== TEST 12: log level(ngx.INFO)
+--- http_config
+    lua_intercept_error_log 4m;
+--- config
+    location /t {
+        access_by_lua_block {
+            ngx.filter_log(ngx.INFO);
+
+            ngx.log(ngx.INFO, "-->1")
+            ngx.log(ngx.WARN, "-->2")
+            ngx.log(ngx.ERR, "-->3")
+        }
+        content_by_lua_block {
+            local log = ngx.errlog()
+            ngx.say("log lines:", #log)
+        }
+    }
+--- log_level: info
+--- request
+GET /t
+--- response_body
+log lines:3
+--- grep_error_log eval
+qr/-->\d+/
+--- grep_error_log_out eval
+[
+"-->1
+-->2
+-->3
+",
+"-->1
+-->2
+-->3
+"
+]
+--- skip_nginx: 3: <1.11.2
+
+
+
+=== TEST 13: log level(ngx.WARN)
+--- http_config
+    lua_intercept_error_log 4m;
+--- config
+    location /t {
+        access_by_lua_block {
+            ngx.filter_log(ngx.WARN);
+
+            ngx.log(ngx.INFO, "-->1")
+            ngx.log(ngx.WARN, "-->2")
+            ngx.log(ngx.ERR, "-->3")
+        }
+        content_by_lua_block {
+            local log = ngx.errlog()
+            ngx.say("log lines:", #log)
+        }
+    }
+--- log_level: info
+--- request
+GET /t
+--- response_body
+log lines:2
+--- grep_error_log eval
+qr/-->\d+/
+--- grep_error_log_out eval
+[
+"-->1
+-->2
+-->3
+",
+"-->1
+-->2
+-->3
+"
+]
+--- skip_nginx: 3: <1.11.2
+
+
+
+=== TEST 14: log level(ngx.CRIT)
+--- http_config
+    lua_intercept_error_log 4m;
+--- log_level: info
+--- config
+    location /t {
+        access_by_lua_block {
+            ngx.filter_log(ngx.CRIT);
+
+            ngx.log(ngx.INFO, "-->1")
+            ngx.log(ngx.WARN, "-->2")
+            ngx.log(ngx.ERR, "-->3")
+        }
+        content_by_lua_block {
+            local log = ngx.errlog()
+            ngx.say("log lines:", #log)
+        }
+    }
+--- request
+GET /t
+--- response_body
+log lines:0
+--- grep_error_log eval
+qr/-->\d+/
+--- grep_error_log_out eval
+[
+"-->1
+-->2
+-->3
+",
+"-->1
+-->2
+-->3
+"
+]
+--- skip_nginx: 3: <1.11.2
