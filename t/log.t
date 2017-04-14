@@ -1,5 +1,5 @@
 # vim:set ft= ts=4 sw=4 et fdm=marker:
-use lib 'lib';
+
 use Test::Nginx::Socket::Lua;
 use Cwd qw(cwd);
 
@@ -17,7 +17,7 @@ add_block_preprocessor(sub {
     my $block = shift;
 
     my $http_config = $block->http_config || '';
-    $http_config .= <<'_EOC_';
+    $http_config .= <<_EOC_;
 
     lua_package_path "$pwd/lib/?.lua;../lua-resty-lrucache/lib/?.lua;;";
     init_by_lua_block {
@@ -28,7 +28,7 @@ _EOC_
 });
 
 #no_diff();
-#no_long_string();
+no_long_string();
 #check_accum_error_log();
 run_tests();
 
