@@ -1,4 +1,4 @@
--- Copyright (C) OpenResty Inc.
+-- Copyright (C) Yichun Zhang (agentzh)
 
 
 local ffi = require 'ffi'
@@ -10,6 +10,8 @@ local get_size_ptr = base.get_size_ptr
 local C = ffi.C
 local ffi_cast = ffi.cast
 local new_tab = base.new_tab
+local clear_tab = base.clear_tab
+local error = error
 
 
 ffi.cdef[[
@@ -18,11 +20,11 @@ ffi.cdef[[
         ngx_http_lua_ffi_str_t   value;
     } ngx_http_lua_ffi_table_elt_t;
 
-    int ngx_http_lua_ffi_filter_log(int level, unsigned char *err,
+    int ngx_http_lua_ffi_errlog_set_filter_level(int level, unsigned char *err,
         size_t *errlen);
     int ngx_http_lua_ffi_errlog_count(unsigned char *err, size_t *errlen);
     int ngx_http_lua_ffi_errlog(ngx_http_lua_ffi_table_elt_t *out,
-        unsigned char *err, size_t *errlen);
+        int max, unsigned char *err, size_t *errlen);
 ]]
 
 
@@ -33,11 +35,11 @@ local ERR_BUF_SIZE = 128
 local FFI_ERROR = base.FFI_ERROR
 
 
-function ngx.filter_log(level)
+function ngx.errlog_filter(level)
     local err = get_string_buf(ERR_BUF_SIZE)
     local errlen = get_size_ptr()
     errlen[0] = ERR_BUF_SIZE
-    local rc = C.ngx_http_lua_ffi_filter_log(level, err, errlen)
+    local rc = C.ngx_http_lua_ffi_errlog_set_filter_level(level, err, errlen)
 
     if rc == FFI_ERROR then
         return error(ffi_string(err, errlen[0]))
@@ -45,7 +47,7 @@ function ngx.filter_log(level)
 end
 
 
-function ngx.errlog()
+function ngx.errlog(max, logs)
     local err = get_string_buf(ERR_BUF_SIZE)
     local errlen = get_size_ptr()
     errlen[0] = ERR_BUF_SIZE
@@ -55,19 +57,28 @@ function ngx.errlog()
         return error(ffi_string(err, errlen[0]))
     end
 
+    if logs then
+        clear_tab(logs)
+    else
+        logs = new_tab(n, 0)
+    end
+
     if n == 0 then
-        return {}
+        return logs or {}
+    end
+
+    if max and n > max then
+        n = max
     end
 
     local raw_buf = get_string_buf(n * table_elt_size)
     local buf = ffi_cast(table_elt_type, raw_buf)
 
-    local rc = C.ngx_http_lua_ffi_errlog(buf, err, errlen)
+    local rc = C.ngx_http_lua_ffi_errlog(buf, n, err, errlen)
     if rc == FFI_ERROR then
         return error(ffi_string(err, errlen[0]))
     end
 
-    local logs = new_tab(n, 0)
     for i = 1, n do
         local log = new_tab(2, 0)
         local k = buf[i - 1].key
@@ -78,7 +89,7 @@ function ngx.errlog()
         logs[i] = log
     end
 
-    return logs;
+    return logs
 end
 
 

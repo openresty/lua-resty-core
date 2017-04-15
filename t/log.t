@@ -228,26 +228,12 @@ $/
     }
 --- must_die
 --- error_log
-invalid intercept error log size "3k", minimum size is 4KB
+invalid intercept error log size "3k", minimum size is 4096
 --- skip_nginx: 2: <1.11.2
 
 
 
-=== TEST 8: invalid size (> 32m)
---- http_config
-    lua_intercept_error_log 33m;
---- config
-    location /t {
-        echo "hello";
-    }
---- must_die
---- error_log
-invalid intercept error log size "33m", max size is 32MB
---- skip_nginx: 2: <1.11.2
-
-
-
-=== TEST 9: invalid size (no argu)
+=== TEST 8: invalid size (no argu)
 --- http_config
     lua_intercept_error_log;
 --- config
@@ -261,7 +247,7 @@ invalid number of arguments in "lua_intercept_error_log" directive
 
 
 
-=== TEST 10: without directive + ngx.errlog
+=== TEST 9: without directive + ngx.errlog
 --- config
     location /t {
         access_by_lua_block {
@@ -281,11 +267,11 @@ API "ngx.errlog" depends on directive "lua_intercept_error_log"
 
 
 
-=== TEST 11: without directive + ngx.filter_log
+=== TEST 10: without directive + ngx.errlog_filter
 --- config
     location /t {
         access_by_lua_block {
-            ngx.filter_log(ngx.ERR)
+            ngx.errlog_filter(ngx.ERR)
         }
     }
 --- request
@@ -293,18 +279,18 @@ GET /t
 --- response_body_like: 500 Internal Server Error
 --- error_code: 500
 --- error_log
-API "ngx.filter_log" depends on directive "lua_intercept_error_log"
+API "ngx.errlog_filter" depends on directive "lua_intercept_error_log"
 --- skip_nginx: 3: <1.11.2
 
 
 
-=== TEST 12: log level(ngx.INFO)
+=== TEST 11: log level(ngx.INFO)
 --- http_config
     lua_intercept_error_log 4m;
 --- config
     location /t {
         access_by_lua_block {
-            ngx.filter_log(ngx.INFO);
+            ngx.errlog_filter(ngx.INFO);
 
             ngx.log(ngx.INFO, "-->1")
             ngx.log(ngx.WARN, "-->2")
@@ -337,13 +323,13 @@ qr/-->\d+/
 
 
 
-=== TEST 13: log level(ngx.WARN)
+=== TEST 12: log level(ngx.WARN)
 --- http_config
     lua_intercept_error_log 4m;
 --- config
     location /t {
         access_by_lua_block {
-            ngx.filter_log(ngx.WARN);
+            ngx.errlog_filter(ngx.WARN);
 
             ngx.log(ngx.INFO, "-->1")
             ngx.log(ngx.WARN, "-->2")
@@ -376,14 +362,14 @@ qr/-->\d+/
 
 
 
-=== TEST 14: log level(ngx.CRIT)
+=== TEST 13: log level(ngx.CRIT)
 --- http_config
     lua_intercept_error_log 4m;
 --- log_level: info
 --- config
     location /t {
         access_by_lua_block {
-            ngx.filter_log(ngx.CRIT);
+            ngx.errlog_filter(ngx.CRIT);
 
             ngx.log(ngx.INFO, "-->1")
             ngx.log(ngx.WARN, "-->2")
@@ -412,3 +398,32 @@ qr/-->\d+/
 "
 ]
 --- skip_nginx: 3: <1.11.2
+
+
+
+=== TEST 14: set max count and reuse table
+--- http_config
+    lua_intercept_error_log 4m;
+--- config
+    location /t {
+        access_by_lua_block {
+            tab_clear = require "table.clear"
+            ngx.log(ngx.ERR, "enter 1")
+            ngx.log(ngx.ERR, "enter 22")
+            ngx.log(ngx.ERR, "enter 333")
+
+            local t = {}
+            ngx.errlog(2, t)
+            ngx.say("log lines:", #t)
+
+            tab_clear(t)
+            ngx.errlog(2, t)
+            ngx.say("log lines:", #t)
+        }
+    }
+--- request
+GET /t
+--- response_body
+log lines:2
+log lines:1
+--- skip_nginx: 2: <1.11.2
