@@ -54,7 +54,7 @@ install:
   - if [ ! -f download-cache/pcre-$PCRE_VER.tar.gz ]; then wget -P download-cache http://ftp.cs.stanford.edu/pub/exim/pcre/pcre-$PCRE_VER.tar.gz; fi
   - wget http://nginx.org/download/nginx-${NGINX_VERSION}.tar.gz
   - git clone https://github.com/openresty/openresty.git ../openresty
-  - git clone https://github.com/openresty/nginx-devel-utils.git
+  - git clone https://github.com/openresty/openresty-devel-utils.git
   - git clone https://github.com/simpl/ngx_devel_kit.git ../ndk-nginx-module
   - git clone https://github.com/openresty/lua-nginx-module.git ../lua-nginx-module
   - git clone https://github.com/openresty/no-pool-nginx.git ../no-pool-nginx
@@ -80,7 +80,7 @@ script:
   - sudo make PATH=$PATH install_sw > build.log 2>&1 || (cat build.log && exit 1)
   - cd ../mockeagain/ && make CC=$CC -j$JOBS && cd ..
   - tar zxf download-cache/pcre-$PCRE_VER.tar.gz
-  - export PATH=$PWD/work/nginx/sbin:$PWD/nginx-devel-utils:$PATH
+  - export PATH=$PWD/work/nginx/sbin:$PWD/openresty-devel-utils:$PATH
   - export LD_PRELOAD=$PWD/mockeagain/mockeagain.so
   - export LD_LIBRARY_PATH=$PWD/mockeagain:$LD_LIBRARY_PATH
   - export TEST_NGINX_RESOLVER=8.8.4.4
