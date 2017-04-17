@@ -32,7 +32,7 @@ our $HttpConfig = <<_EOC_;
 
     init_worker_by_lua_block {
         local v
-        local typ = ngx.process.type
+        local typ = (require "ngx.process").type
         for i = 1, 400 do
             v = typ()
         end
@@ -53,7 +53,7 @@ __DATA__
     location = /t {
         content_by_lua_block {
             local v
-            local typ = ngx.process.type
+            local typ = (require "ngx.process").type
             for i = 1, 400 do
                 v = typ()
             end

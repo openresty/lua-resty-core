@@ -27,14 +27,14 @@ our $HttpConfig = <<_EOC_;
         end
 
         require "resty.core"
-        -- jit.off()
-        ngx.process.privelege(1)
+        local process = require "ngx.process"
+        process.privilege(true)
     }
 
     init_worker_by_lua_block {
         local base = require "resty.core.base"
         local v
-        local typ = ngx.process.type
+        local typ = (require "ngx.process").type
         for i = 1, 400 do
             v = typ()
         end
@@ -59,7 +59,7 @@ __DATA__
         content_by_lua_block {
             ngx.sleep(0.1)
             local v
-            local typ = ngx.process.type
+            local typ = require "ngx.process".type
             for i = 1, 400 do
                 v = typ()
             end
@@ -97,7 +97,8 @@ init_worker_by_lua:10: process type: 5
 --- config
     location = /t {
         content_by_lua_block {
-            ngx.process.privelege(1)
+            local process = require "ngx.process"
+            process.privilege(true)
         }
     }
 --- request
