@@ -211,9 +211,9 @@ being 4KB).
 
 [Back to TOC](#table-of-contents)
 
-get_ocsp_nextupdate
+get_ocsp_next_update
 ----------------------
-**syntax:** *ok, err = ocsp.get_ocsp_nextupdate(ocsp_resp, der_cert_chain, max_err_msg_len)*
+**syntax:** *next_update, err = ocsp.get_ocsp_next_update(ocsp_resp, der_cert_chain, max_err_msg_len)*
 
 **context:** *any*
 

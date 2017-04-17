@@ -1575,8 +1575,8 @@ ocsp status resp set ok: no status req,
             local resp = f:read("*a")
             f:close()
 
-            local nextupdate, err = ocsp.get_ocsp_nextupdate(resp, cert_data)
-            if not nextupdate then
+            local next_update, err = ocsp.get_ocsp_next_update(resp, cert_data)
+            if not next_update then
                 ngx.log(ngx.ERR, "failed to get OCSP nextUpdate: ", err)
                 return
             end

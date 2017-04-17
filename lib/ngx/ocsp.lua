@@ -129,7 +129,7 @@ function _M.validate_ocsp_response(resp, chain, max_errmsg_len)
 end
 
 
-function _M.get_ocsp_nextupdate(resp, chain, max_errmsg_len)
+function _M.get_ocsp_next_update(resp, chain, max_errmsg_len)
 
     local errbuf_size = max_errmsg_len
     if not errbuf_size then
