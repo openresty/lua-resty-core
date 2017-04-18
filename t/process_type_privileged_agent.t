@@ -28,7 +28,7 @@ our $HttpConfig = <<_EOC_;
 
         require "resty.core"
         local process = require "ngx.process"
-        process.privilege(true)
+        process.privileged_agent(true)
     }
 
     init_worker_by_lua_block {
@@ -98,7 +98,7 @@ init_worker_by_lua:10: process type: 5
     location = /t {
         content_by_lua_block {
             local process = require "ngx.process"
-            process.privilege(true)
+            process.privileged_agent(true)
         }
     }
 --- request

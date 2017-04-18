@@ -11,23 +11,23 @@ local _M = { version = base.version }
 
 
 ffi.cdef[[
-void ngx_http_lua_ffi_worker_privileged(int enable);
-int ngx_http_lua_ffi_worker_type(void);
+void ngx_http_lua_ffi_privileged_agent(int enable);
+int ngx_http_lua_ffi_process_type(void);
 ]]
 
 
 function _M.type()
-    return C.ngx_http_lua_ffi_worker_type()
+    return C.ngx_http_lua_ffi_process_type()
 end
 
 
-function _M.privilege(enable)
+function _M.privileged_agent(enable)
     local r = getfenv(0).__ngx_req
     if r ~= nil then
         error("API disabled in the current context")
     end
 
-    C.ngx_http_lua_ffi_worker_privileged(enable)
+    C.ngx_http_lua_ffi_privileged_agent(enable)
     return true
 end
 
