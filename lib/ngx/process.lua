@@ -5,6 +5,15 @@ local ffi = require 'ffi'
 local base = require "resty.core.base"
 local getfenv = getfenv
 
+local process_types = {
+    [base.FFI_PROCESS_SINGLE    ]  = "single process",
+    [base.FFI_PROCESS_MASTER    ]  = "master process",
+    [base.FFI_PROCESS_SIGNALLER ]  = "signaller process",
+    [base.FFI_PROCESS_WORKER    ]  = "worker process",
+    [base.FFI_PROCESS_HELPER    ]  = "helper process",
+    [base.FFI_PROCESS_PRIVILEGED]  = "privileged agent process",
+}
+
 
 local C = ffi.C
 local _M = { version = base.version }
@@ -18,6 +27,11 @@ int ngx_http_lua_ffi_process_type(void);
 
 function _M.type()
     return C.ngx_http_lua_ffi_process_type()
+end
+
+
+function _M.type_name(typ)
+    return process_types[typ]
 end
 
 

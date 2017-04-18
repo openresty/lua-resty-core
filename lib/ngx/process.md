@@ -9,10 +9,11 @@ Table of Contents
 * [Name](#name)
 * [Status](#status)
 * [Synopsis](#synopsis)
-    * [Enable privilege process and get process type](#enable-privilege-process-and-get-process-type)
+    * [Enable privileged agent process and get process type](#enable-privileged-agent-process-and-get-process-type)
 * [Methods](#methods)
     * [type](#type)
-    * [privilege](#privilege)
+    * [type_name](#type_name)
+    * [privileged_agent](#privileged_agent)
 * [Community](#community)
     * [English Mailing List](#english-mailing-list)
     * [Chinese Mailing List](#chinese-mailing-list)
@@ -25,11 +26,12 @@ Status
 ======
 
 This Lua module is currently considered experimental.
+The API is still in flux and may change in the future without notice.
 
 Synopsis
 ========
 
-Enable privilege process and get process type
+Enable privileged agent process and get process type
 -----------------------------------------
 
 ```nginx
@@ -37,16 +39,16 @@ Enable privilege process and get process type
 init_by_lua_block {
     local process = require "ngx.process"
 
-    -- enable privileged process
-    process.privilege(true)
+    -- enable privileged agent process
+    process.privileged_agent(true)
 
     -- output process type
-    ngx.log(ngx.INFO, "process type:", process.type())
+    ngx.log(ngx.INFO, "process type: ", process.type_name(process.type()))
 }
 
 init_worker_by_lua_block {
     local process = require "ngx.process"
-    ngx.log(ngx.INFO, "process type:", process.type())
+    ngx.log(ngx.INFO, "process type: ", process.type_name(process.type()))
 }
 
 server {
@@ -54,7 +56,7 @@ server {
     location = /t {
         content_by_lua_block {
             local process = require "ngx.process"
-            ngx.say("process type:", process.type())
+            ngx.say("process type: ", process.type_name(process.type()))
         }
     }
 }
@@ -65,15 +67,15 @@ The example config above produces an output to `error.log` when
 server starts:
 
 ```
-[lua] init_by_lua:8: process type:0             --> master process
-[lua] init_worker_by_lua:3: process type:5      --> privilege process
-[lua] init_worker_by_lua:3: process type:3      --> worker process
+[lua] init_by_lua:8: process type: master process
+[lua] init_worker_by_lua:3: process type: privileged agent process
+[lua] init_worker_by_lua:3: process type: worker process
 ```
 
 The example location above produces a response:
 
 ```
-process type:3                                  --> worker process
+process type: worker process
 ```
 
 [Back to TOC](#table-of-contents)
@@ -83,7 +85,7 @@ Methods
 
 type
 ---
-**syntax:** *type = process_module.type(n?)*
+**syntax:** *type = process_module.type()*
 
 **context:** *init_by_lua&#42;, init_worker_by_lua&#42;, set_by_lua&#42;, rewrite_by_lua&#42;, access_by_lua&#42;, content_by_lua&#42;, header_filter_by_lua&#42;, body_filter_by_lua&#42;, log_by_lua&#42;, ngx.timer.&#42;*
 
@@ -96,7 +98,7 @@ _M.FFI_PROCESS_MASTER     = 1
 _M.FFI_PROCESS_SIGNALLER  = 2
 _M.FFI_PROCESS_WORKER     = 3
 _M.FFI_PROCESS_HELPER     = 4
-_M.FFI_PROCESS_PRIVILEGE  = 5
+_M.FFI_PROCESS_PRIVILEGED = 5
 ```
 
 For example,
@@ -108,13 +110,26 @@ For example,
 
 [Back to TOC](#table-of-contents)
 
-privilege
+type_name
 ---
-**syntax:** *status = process_module.privilege(enable)*
+**syntax:** *status = process_module.type_name(process_type)*
+
+**context:** *init_by_lua&#42;, init_worker_by_lua&#42;, set_by_lua&#42;, rewrite_by_lua&#42;, access_by_lua&#42;, content_by_lua&#42;, header_filter_by_lua&#42;, body_filter_by_lua&#42;, log_by_lua&#42;, ngx.timer.&#42;*
+
+Returns the process type name, eg: "worker process", "helper process".
+
+```nginx
+ local process = require "ngx.process"
+ ngx.say("process type: ", process.type_name(process.type()))
+```
+
+privileged_agent
+---
+**syntax:** *status = process_module.privileged_agent(enable)*
 
 **context:** *init_by_lua&#42;*
 
-Enable/disable the privileged process in Nginx.
+Enable/disable the privileged agent process in Nginx.
 
 Here is an example:
 
@@ -123,8 +138,8 @@ Here is an example:
 init_by_lua_block {
     local process = require "ngx.process"
 
-    -- enable privileged process
-    process.privilege(true)
+    -- enable privileged agent process
+    process.privileged_agent(true)
 }
 ```
 
@@ -162,7 +177,7 @@ Please report bugs or submit patches by
 Author
 ======
 
-Yichun Zhang &lt;agentzh@gmail.com&gt; (agentzh), OpenResty Inc.
+Yichun Zhang &lt;membphis@gmail.com&gt; (Yuansheng), OpenResty Inc.
 
 [Back to TOC](#table-of-contents)
 
@@ -171,7 +186,7 @@ Copyright and License
 
 This module is licensed under the BSD license.
 
-Copyright (C) 2015-2017, by Yichun "agentzh" Zhang, OpenResty Inc.
+Copyright (C) 2017, by Yichun "agentzh" Zhang, OpenResty Inc.
 
 All rights reserved.
 

@@ -39,8 +39,9 @@ our $HttpConfig = <<_EOC_;
             v = typ()
         end
 
-        if v == base.FFI_PROCESS_PRIVILEGE then
-            ngx.log(ngx.WARN, "process type: ", v)
+        if v == base.FFI_PROCESS_PRIVILEGED then
+            local type_name = (require "ngx.process").type_name
+            ngx.log(ngx.WARN, "process type: ", type_name(v))
         end
     }
 _EOC_
@@ -63,26 +64,27 @@ __DATA__
             for i = 1, 400 do
                 v = typ()
             end
-            ngx.say("type: ", v)
+            local type_name = (require "ngx.process").type_name
+            ngx.say("type: ", type_name(v))
         }
     }
 --- request
 GET /t
 --- response_body
-type: 3
+type: worker process
 --- grep_error_log eval
-qr/\[TRACE   \d+ init_worker_by_lua:\d loop\]|\[TRACE   \d+ content_by_lua\(nginx\.conf:\d+\):\d loop\]|init_worker_by_lua:\d+: process type: \d/
+qr/\[TRACE   \d+ init_worker_by_lua:\d+ loop\]|\[TRACE   \d+ content_by_lua\(nginx\.conf:\d+\):\d+ loop\]|init_worker_by_lua:\d+: process type: \w+/
 --- grep_error_log_out eval
 [
 "[TRACE   1 init_worker_by_lua:5 loop]
 [TRACE   1 init_worker_by_lua:5 loop]
-[TRACE   1 content_by_lua(nginx.conf:77):5 loop]
-init_worker_by_lua:10: process type: 5
+[TRACE   1 content_by_lua(nginx.conf:79):5 loop]
+init_worker_by_lua:11: process type: privileged
 ",
 "[TRACE   1 init_worker_by_lua:5 loop]
 [TRACE   1 init_worker_by_lua:5 loop]
-[TRACE   1 content_by_lua(nginx.conf:77):5 loop]
-init_worker_by_lua:10: process type: 5
+[TRACE   1 content_by_lua(nginx.conf:79):5 loop]
+init_worker_by_lua:11: process type: privileged
 "
 ]
 --- no_error_log
