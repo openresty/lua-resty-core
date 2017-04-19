@@ -123,7 +123,7 @@ local function is_subreq()
         return error("API disabled in the current context")
     end
 
-    return rc == 1 and true or false
+    return rc == 1
 end
 register_getter("is_subrequest", is_subreq)
 
