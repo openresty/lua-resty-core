@@ -1,9 +1,6 @@
--- Copyright (C) Yichun Zhang (agentzh)
-
 
 local ffi = require 'ffi'
 local ffi_string = ffi.string
-local ngx = ngx
 local base = require "resty.core.base"
 local get_string_buf = base.get_string_buf
 local get_size_ptr = base.get_size_ptr
@@ -14,16 +11,19 @@ local clear_tab = base.clear_tab
 local error = error
 
 
+local _M = { version = base.version }
+
+
 ffi.cdef[[
     typedef struct {
         ngx_http_lua_ffi_str_t   key;
         ngx_http_lua_ffi_str_t   value;
     } ngx_http_lua_ffi_table_elt_t;
 
-    int ngx_http_lua_ffi_errlog_set_filter_level(int level, unsigned char *err,
+    int ngx_http_lua_ffi_set_errlog_filter(int level, unsigned char *err,
         size_t *errlen);
-    int ngx_http_lua_ffi_errlog_count(unsigned char *err, size_t *errlen);
-    int ngx_http_lua_ffi_errlog(ngx_http_lua_ffi_table_elt_t *out,
+    int ngx_http_lua_ffi_get_errlog_count(unsigned char *err, size_t *errlen);
+    int ngx_http_lua_ffi_get_errlog(ngx_http_lua_ffi_table_elt_t *out,
         int max, unsigned char *err, size_t *errlen);
 ]]
 
@@ -35,11 +35,11 @@ local ERR_BUF_SIZE = 128
 local FFI_ERROR = base.FFI_ERROR
 
 
-function ngx.errlog_filter(level)
+function _M.set_errlog_filter(level)
     local err = get_string_buf(ERR_BUF_SIZE)
     local errlen = get_size_ptr()
     errlen[0] = ERR_BUF_SIZE
-    local rc = C.ngx_http_lua_ffi_errlog_set_filter_level(level, err, errlen)
+    local rc = C.ngx_http_lua_ffi_set_errlog_filter(level, err, errlen)
 
     if rc == FFI_ERROR then
         return error(ffi_string(err, errlen[0]))
@@ -47,24 +47,27 @@ function ngx.errlog_filter(level)
 end
 
 
-function ngx.errlog(max, logs)
+function _M.get_errlog(max, logs)
     local err = get_string_buf(ERR_BUF_SIZE)
     local errlen = get_size_ptr()
     errlen[0] = ERR_BUF_SIZE
-    local n = C.ngx_http_lua_ffi_errlog_count(err, errlen)
+    local n = C.ngx_http_lua_ffi_get_errlog_count(err, errlen)
 
     if n == FFI_ERROR then
         return error(ffi_string(err, errlen[0]))
     end
 
-    if logs then
-        clear_tab(logs)
-    else
+    if not logs then
         logs = new_tab(n, 0)
     end
 
     if n == 0 then
+        logs[1] = nil
         return logs or {}
+    end
+
+    if max and max <= 0 then
+        max = nil
     end
 
     if max and n > max then
@@ -74,7 +77,7 @@ function ngx.errlog(max, logs)
     local raw_buf = get_string_buf(n * table_elt_size)
     local buf = ffi_cast(table_elt_type, raw_buf)
 
-    local rc = C.ngx_http_lua_ffi_errlog(buf, n, err, errlen)
+    local rc = C.ngx_http_lua_ffi_get_errlog(buf, n, err, errlen)
     if rc == FFI_ERROR then
         return error(ffi_string(err, errlen[0]))
     end
@@ -88,11 +91,10 @@ function ngx.errlog(max, logs)
         log[2] = ffi_string(v.data, v.len)
         logs[i] = log
     end
+    logs[n + 1] = nil
 
     return logs
 end
 
 
-return {
-    _VERSION = base.version
-}
+return _M

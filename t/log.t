@@ -43,8 +43,9 @@ __DATA__
             ngx.log(ngx.ERR, "enter 1")
             ngx.log(ngx.ERR, "enter 11")
 
-            local t = ngx.errlog()
-            ngx.say("log lines:", #t)
+            local ngx_log = require "ngx.log"
+            local res = ngx_log.get_errlog()
+            ngx.say("log lines:", #res)
         }
     }
 --- request
@@ -75,8 +76,9 @@ enter 11
             ngx.log(ngx.ERR, "enter 1")
             ngx.log(ngx.ERR, "enter 22" .. string.rep("a", 4096))
 
-            local t = ngx.errlog()
-            ngx.say("log lines:", #t)
+            local ngx_log = require "ngx.log"
+            local res = ngx_log.get_errlog()
+            ngx.say("log lines:", #res)
         }
     }
 --- request
@@ -103,8 +105,9 @@ enter 22
     lua_intercept_error_log 4m;
 --- config
     log_by_lua_block {
-        local t = ngx.errlog()
-        ngx.log(ngx.ERR, "intercept log line:", #t)
+        local ngx_log = require "ngx.log"
+        local res = ngx_log.get_errlog()
+        ngx.log(ngx.ERR, "intercept log line:", #res)
     }
 --- request
 GET /t
@@ -134,8 +137,9 @@ $/
         }
     }
     log_by_lua_block {
-        local t = ngx.errlog()
-        ngx.log(ngx.ERR, "intercept log line:", #t)
+        local ngx_log = require "ngx.log"
+        local res = ngx_log.get_errlog()
+        ngx.log(ngx.ERR, "intercept log line:", #res)
     }
 --- request
 GET /t
@@ -163,8 +167,9 @@ $/
         echo "hello";
     }
     log_by_lua_block {
-        local t = ngx.errlog()
-        ngx.log(ngx.ERR, "intercept log line:", #t)
+        local ngx_log = require "ngx.log"
+        local res = ngx_log.get_errlog()
+        ngx.log(ngx.ERR, "intercept log line:", #res)
     }
 --- request
 GET /t
@@ -196,8 +201,9 @@ $/
         echo "hello";
     }
     log_by_lua_block {
-        local t = ngx.errlog()
-        ngx.log(ngx.ERR, "intercept log line:", #t)
+        local ngx_log = require "ngx.log"
+        local res = ngx_log.get_errlog()
+        ngx.log(ngx.ERR, "intercept log line:", #res)
 
     }
 --- request
@@ -253,8 +259,9 @@ invalid number of arguments in "lua_intercept_error_log" directive
         access_by_lua_block {
             ngx.log(ngx.ERR, "enter 1")
 
-            local t = ngx.errlog()
-            ngx.say("log lines:", #t)
+            local ngx_log = require "ngx.log"
+            local res = ngx_log.get_errlog()
+            ngx.say("log lines:", #res)
         }
     }
 --- request
@@ -262,16 +269,17 @@ GET /t
 --- response_body_like: 500 Internal Server Error
 --- error_code: 500
 --- error_log
-API "ngx.errlog" depends on directive "lua_intercept_error_log"
+API "get_errlog_count" depends on directive "lua_intercept_error_log"
 --- skip_nginx: 3: <1.11.2
 
 
 
-=== TEST 10: without directive + ngx.errlog_filter
+=== TEST 10: without directive + ngx.set_errlog_filter
 --- config
     location /t {
         access_by_lua_block {
-            ngx.errlog_filter(ngx.ERR)
+            local ngx_log = require "ngx.log"
+            ngx_log.set_errlog_filter(ngx.ERR)
         }
     }
 --- request
@@ -279,26 +287,28 @@ GET /t
 --- response_body_like: 500 Internal Server Error
 --- error_code: 500
 --- error_log
-API "ngx.errlog_filter" depends on directive "lua_intercept_error_log"
+API "set_errlog_filter" depends on directive "lua_intercept_error_log"
 --- skip_nginx: 3: <1.11.2
 
 
 
-=== TEST 11: log level(ngx.INFO)
+=== TEST 11: filter log by level(ngx.INFO)
 --- http_config
     lua_intercept_error_log 4m;
 --- config
     location /t {
         access_by_lua_block {
-            ngx.errlog_filter(ngx.INFO);
+            local ngx_log = require "ngx.log"
+            ngx_log.set_errlog_filter(ngx.INFO);
 
             ngx.log(ngx.INFO, "-->1")
             ngx.log(ngx.WARN, "-->2")
             ngx.log(ngx.ERR, "-->3")
         }
         content_by_lua_block {
-            local log = ngx.errlog()
-            ngx.say("log lines:", #log)
+            local ngx_log = require "ngx.log"
+            local res = ngx_log.get_errlog()
+            ngx.say("log lines:", #res)
         }
     }
 --- log_level: info
@@ -323,21 +333,23 @@ qr/-->\d+/
 
 
 
-=== TEST 12: log level(ngx.WARN)
+=== TEST 12: filter log by level(ngx.WARN)
 --- http_config
     lua_intercept_error_log 4m;
 --- config
     location /t {
         access_by_lua_block {
-            ngx.errlog_filter(ngx.WARN);
+            local ngx_log = require "ngx.log"
+            ngx_log.set_errlog_filter(ngx.WARN);
 
             ngx.log(ngx.INFO, "-->1")
             ngx.log(ngx.WARN, "-->2")
             ngx.log(ngx.ERR, "-->3")
         }
         content_by_lua_block {
-            local log = ngx.errlog()
-            ngx.say("log lines:", #log)
+            local ngx_log = require "ngx.log"
+            local res = ngx_log.get_errlog()
+            ngx.say("log lines:", #res)
         }
     }
 --- log_level: info
@@ -362,22 +374,24 @@ qr/-->\d+/
 
 
 
-=== TEST 13: log level(ngx.CRIT)
+=== TEST 13: filter log by level(ngx.CRIT)
 --- http_config
     lua_intercept_error_log 4m;
 --- log_level: info
 --- config
     location /t {
         access_by_lua_block {
-            ngx.errlog_filter(ngx.CRIT);
+            local ngx_log = require "ngx.log"
+            ngx_log.set_errlog_filter(ngx.CRIT);
 
             ngx.log(ngx.INFO, "-->1")
             ngx.log(ngx.WARN, "-->2")
             ngx.log(ngx.ERR, "-->3")
         }
         content_by_lua_block {
-            local log = ngx.errlog()
-            ngx.say("log lines:", #log)
+            local ngx_log = require "ngx.log"
+            local res = ngx_log.get_errlog()
+            ngx.say("log lines:", #res)
         }
     }
 --- request
@@ -412,12 +426,13 @@ qr/-->\d+/
             ngx.log(ngx.ERR, "enter 22")
             ngx.log(ngx.ERR, "enter 333")
 
+            local ngx_log = require "ngx.log"
             local t = {}
-            ngx.errlog(2, t)
+            ngx_log.get_errlog(2, t)
             ngx.say("log lines:", #t)
 
             tab_clear(t)
-            ngx.errlog(2, t)
+            ngx_log.get_errlog(2, t)
             ngx.say("log lines:", #t)
         }
     }
