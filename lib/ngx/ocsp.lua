@@ -32,6 +32,7 @@ int ngx_http_lua_ffi_ssl_validate_ocsp_response(const unsigned char *resp,
     size_t resp_len, const char *chain_data, size_t chain_len,
     unsigned char *errbuf, size_t *errbuf_size);
 
+typedef long time_t;
 int ngx_http_lua_ffi_ssl_ocsp_get_nextupdate(const unsigned char *resp,
     size_t resp_len, const char *chain_data, size_t chain_len,
     time_t* nextupdate, unsigned char *errbuf, size_t *errbuf_size);
