@@ -17,7 +17,7 @@ int ngx_http_lua_ffi_worker_count(void);
 
 
 function ngx.worker.exiting()
-    return C.ngx_http_lua_ffi_worker_exiting() ~= 0 and true or false
+    return C.ngx_http_lua_ffi_worker_exiting() ~= 0
 end
 
 
