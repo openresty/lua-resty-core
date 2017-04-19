@@ -43,7 +43,11 @@ http {
 
     init_by_lua_block {
         local ngx_log = require "ngx.log"
-        ngx_log.set_errlog_filter(ngx.WARN)
+        local status, err = ngx_log.set_errlog_filter(ngx.WARN)
+        if not status then
+            ngx.log(ngx.ERR, err)
+        end
+        ngx.log(ngx.WARN, "set error filter level: WARN")
     }
 
     server {
@@ -55,8 +59,12 @@ http {
                 ngx.log(ngx.WARN, "test2")
                 ngx.log(ngx.ERR, "test3")
 
-                local logs = ngx_log.get_errlog(10)
-                local str_sub = string.sub
+                local logs, err = ngx_log.get_errlog(10)
+                if not logs then
+                    ngx.say("FAILED ", err)
+                    return
+                end
+
                 for _, log in ipairs(logs) do
                     ngx.say("level: ", log[1], " data: ", log[2])
                 end
@@ -67,15 +75,15 @@ http {
 
 ```
 
-The example location above produces a response:
+The example location above produces a response like this:
 
 ```
 level: 5 data: 2017/04/19 22:20:03 [warn] 63176#0:
-    [lua] init_by_lua:4: set error filter level: WARN
+    [lua] init_by_lua:7: set error filter level: WARN
 level: 5 data: 2017/04/19 22:20:05 [warn] 63176#0: *1
-    [lua] content_by_lua(nginx.conf:52):4: test2
+    [lua] content_by_lua(nginx.conf:59):4: test2
 level: 4 data: 2017/04/19 22:20:05 [error] 63176#0: *1
-    [lua] content_by_lua(nginx.conf:52):5: test3
+    [lua] content_by_lua(nginx.conf:59):5: test3
 ```
 
 [Back to TOC](#table-of-contents)
@@ -85,12 +93,15 @@ Methods
 
 set_errlog_filter
 ---
-**syntax:** *log_module.set_errlog_filter(log_level)*
+**syntax:** *status, err = log_module.set_errlog_filter(log_level)*
 
 **context:** *init_by_lua&#42;*
 
 Specify the filter log level, only to intercept the error log we need.
 If we don't call this API, all of the error logs will be intercepted by default.
+
+In case of error, `nil` will be returned as well as a string describing the
+error.
 
 This API should always work with directive [lua_intercept_error_log](https://github.com/openresty/lua-nginx-module#lua_intercept_error_log).
 
@@ -109,11 +120,14 @@ For example,
 
 get_errlog
 ---
-**syntax:** *res = log_module.get_errlog(max, res?)*
+**syntax:** *res, err = log_module.get_errlog(max, res?)*
 
 **context:** *init_by_lua&#42;, init_worker_by_lua&#42;, set_by_lua&#42;, rewrite_by_lua&#42;, access_by_lua&#42;, content_by_lua&#42;, header_filter_by_lua&#42;, body_filter_by_lua&#42;, log_by_lua&#42;, ngx.timer.&#42;*
 
-Return the intercepted nginx error logs.
+Return the intercepted nginx error logs if successful.
+
+In case of error, `nil` will be returned as well as a string describing the
+error.
 
 The optional `max` argument is a number that when specified, will prevent
 `ngx_log.get_errlog` from adding more than `max` logs to the `res` array.

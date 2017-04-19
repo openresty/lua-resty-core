@@ -7,8 +7,6 @@ local get_size_ptr = base.get_size_ptr
 local C = ffi.C
 local ffi_cast = ffi.cast
 local new_tab = base.new_tab
-local clear_tab = base.clear_tab
-local error = error
 
 
 local _M = { version = base.version }
@@ -42,8 +40,10 @@ function _M.set_errlog_filter(level)
     local rc = C.ngx_http_lua_ffi_set_errlog_filter(level, err, errlen)
 
     if rc == FFI_ERROR then
-        return error(ffi_string(err, errlen[0]))
+        return nil, ffi_string(err, errlen[0])
     end
+
+    return true
 end
 
 
@@ -54,7 +54,7 @@ function _M.get_errlog(max, logs)
     local n = C.ngx_http_lua_ffi_get_errlog_count(err, errlen)
 
     if n == FFI_ERROR then
-        return error(ffi_string(err, errlen[0]))
+        return nil, ffi_string(err, errlen[0])
     end
 
     if not logs then
@@ -79,7 +79,7 @@ function _M.get_errlog(max, logs)
 
     local rc = C.ngx_http_lua_ffi_get_errlog(buf, n, err, errlen)
     if rc == FFI_ERROR then
-        return error(ffi_string(err, errlen[0]))
+        return nil, ffi_string(err, errlen[0])
     end
 
     for i = 1, n do
