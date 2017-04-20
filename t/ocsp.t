@@ -9,7 +9,7 @@ use Cwd qw(cwd);
 
 repeat_each(2);
 
-plan tests => repeat_each() * (blocks() * 6 + 13);
+plan tests => repeat_each() * (blocks() * 6 + 14);
 
 our $CWD = cwd();
 
