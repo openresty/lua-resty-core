@@ -260,4 +260,3 @@ matched: 234
 NYI
 --- error_log eval
 qr/\[TRACE   \d+ content_by_lua\(nginx\.conf:\d+\):4 loop\]/
-

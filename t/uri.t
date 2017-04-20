@@ -259,4 +259,3 @@ GET /uri
 qr/\[TRACE   \d+ content_by_lua\(nginx\.conf:\d+\):3 loop\]/
 --- no_error_log
 [error]
-

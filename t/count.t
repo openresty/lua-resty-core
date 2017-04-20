@@ -69,4 +69,3 @@ probe process("$LIBLUA_PATH").function("rehashtab") {
 base size: 16
 --- no_error_log
 [error]
-

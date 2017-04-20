@@ -89,4 +89,3 @@ GET /t
 ["status: 200,",
 qr/\[TRACE\s+\d+\s+header_filter_by_lua:2 loop\]/
 ]
-

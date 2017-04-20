@@ -114,4 +114,3 @@ headers sent: true
  bad argument
 --- error_log eval
 qr/\[TRACE\s+\d+\s+content_by_lua\(nginx\.conf:\d+\):4 loop\]/
-

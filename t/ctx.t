@@ -83,4 +83,3 @@ ctx.foo = 100
  bad argument
 --- error_log eval
 qr/\[TRACE\s+\d+\s+content_by_lua\(nginx\.conf:\d+\):2 loop\]/
-
