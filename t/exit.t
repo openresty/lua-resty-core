@@ -83,4 +83,3 @@ GET /t
 ["[error]",
 qr/ -- NYI: (?!FastFunc coroutine.yield)/,
 " bad argument"]
-

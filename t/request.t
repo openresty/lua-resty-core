@@ -570,4 +570,3 @@ qr/\[TRACE   \d+ content_by_lua\(nginx\.conf:\d+\):4 loop\]/
 [error]
 bad argument type
 stitch
-

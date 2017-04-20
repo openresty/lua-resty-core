@@ -590,4 +590,3 @@ attempt to get length of local 'subj' (a number value)
 --- no_error_log
 [error]
 attempt to get length of local 'regex' (a number value)
-
