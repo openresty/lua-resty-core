@@ -90,6 +90,4 @@ init_worker_by_lua:6: process type: privileged
 ]
 --- no_error_log
 [error]
---- skip_nginx: 5: < 1.11.2
-
-
+--- skip_nginx: 4: < 1.11.2

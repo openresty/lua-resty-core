@@ -78,16 +78,16 @@ type: worker
 qr/\[TRACE   \d+ init_worker_by_lua:\d+ loop\]|\[TRACE   \d+ content_by_lua\(nginx\.conf:\d+\):\d+ loop\]|init_worker_by_lua:\d+: process type: \w+/
 --- grep_error_log_out eval
 [
-"[TRACE   1 init_worker_by_lua:5 loop]
-[TRACE   1 init_worker_by_lua:5 loop]
-[TRACE   2 content_by_lua(nginx.conf:81):5 loop]
+qr/\[TRACE   \d init_worker_by_lua:5 loop\]
+\[TRACE   \d init_worker_by_lua:5 loop\]
+\[TRACE   \d content_by_lua\(nginx.conf:81\):5 loop\]
 init_worker_by_lua:10: process type: privileged
-",
-"[TRACE   1 init_worker_by_lua:5 loop]
-[TRACE   1 init_worker_by_lua:5 loop]
-[TRACE   2 content_by_lua(nginx.conf:81):5 loop]
+/,
+qr/\[TRACE   \d init_worker_by_lua:5 loop\]
+\[TRACE   \d init_worker_by_lua:5 loop\]
+\[TRACE   \d content_by_lua\(nginx.conf:81\):5 loop\]
 init_worker_by_lua:10: process type: privileged
-"
+/
 ]
 --- no_error_log
 [error]
