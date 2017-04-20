@@ -12,8 +12,7 @@ Table of Contents
     * [Enable privileged agent process and get process type](#enable-privileged-agent-process-and-get-process-type)
 * [Methods](#methods)
     * [type](#type)
-    * [type_name](#type_name)
-    * [privileged_agent](#privileged_agent)
+    * [enable_privileged_agent](#enable_privileged_agent)
 * [Community](#community)
     * [English Mailing List](#english-mailing-list)
     * [Chinese Mailing List](#chinese-mailing-list)
@@ -40,15 +39,15 @@ init_by_lua_block {
     local process = require "ngx.process"
 
     -- enable privileged agent process
-    process.privileged_agent(true)
+    process.enable_privileged_agent(true)
 
     -- output process type
-    ngx.log(ngx.INFO, "process type: ", process.type_name(process.type()))
+    ngx.log(ngx.INFO, "process type: ", process.type(true))
 }
 
 init_worker_by_lua_block {
     local process = require "ngx.process"
-    ngx.log(ngx.INFO, "process type: ", process.type_name(process.type()))
+    ngx.log(ngx.INFO, "process type: ", process.type(true))
 }
 
 server {
@@ -56,7 +55,7 @@ server {
     location = /t {
         content_by_lua_block {
             local process = require "ngx.process"
-            ngx.say("process type: ", process.type_name(process.type()))
+            ngx.say("process type: ", process.type(true))
         }
     }
 }
@@ -85,11 +84,16 @@ Methods
 
 type
 ---
-**syntax:** *type = process_module.type()*
+**syntax:** *type = process_module.type(is_str_name?)*
 
 **context:** *init_by_lua&#42;, init_worker_by_lua&#42;, set_by_lua&#42;, rewrite_by_lua&#42;, access_by_lua&#42;, content_by_lua&#42;, header_filter_by_lua&#42;, body_filter_by_lua&#42;, log_by_lua&#42;, ngx.timer.&#42;*
 
-Returns the current process's type, here is all of the types:
+The first optional argument `is_str_name` is Bool value.
+
+* if the argument `is_str_name` was not expecified or `false` value, it'll return the number format of process type.
+* if the argument `is_str_name` was `true` value, it'll return the string format of process type.
+
+Returns the current process's type, here is all of the number types:
 
 ```
 -- core/base.lua
@@ -98,34 +102,22 @@ _M.FFI_PROCESS_MASTER     = 1
 _M.FFI_PROCESS_SIGNALLER  = 2
 _M.FFI_PROCESS_WORKER     = 3
 _M.FFI_PROCESS_HELPER     = 4
-_M.FFI_PROCESS_PRIVILEGED = 5
+_M.FFI_PROCESS_PRIVILEGED = 99
 ```
 
 For example,
 
 ```lua
  local process = require "ngx.process"
- ngx.say("process type:", process.type())
+ ngx.say("process type:", process.type())       -- 3
+ ngx.say("process type:", process.type(true))   -- worker process
 ```
 
 [Back to TOC](#table-of-contents)
 
-type_name
+enable_privileged_agent
 ---
-**syntax:** *status = process_module.type_name(process_type)*
-
-**context:** *init_by_lua&#42;, init_worker_by_lua&#42;, set_by_lua&#42;, rewrite_by_lua&#42;, access_by_lua&#42;, content_by_lua&#42;, header_filter_by_lua&#42;, body_filter_by_lua&#42;, log_by_lua&#42;, ngx.timer.&#42;*
-
-Returns the process type name, eg: "worker process", "helper process".
-
-```nginx
- local process = require "ngx.process"
- ngx.say("process type: ", process.type_name(process.type()))
-```
-
-privileged_agent
----
-**syntax:** *status = process_module.privileged_agent(enable)*
+**syntax:** *status = process_module.enable_privileged_agent(enable)*
 
 **context:** *init_by_lua&#42;*
 
@@ -139,7 +131,7 @@ init_by_lua_block {
     local process = require "ngx.process"
 
     -- enable privileged agent process
-    process.privileged_agent(true)
+    process.enable_privileged_agent(true)
 }
 ```
 
@@ -177,7 +169,7 @@ Please report bugs or submit patches by
 Author
 ======
 
-Yichun Zhang &lt;membphis@gmail.com&gt; (Yuansheng), OpenResty Inc.
+Yuansheng Wang &lt;membphis@gmail.com&gt; (membphis), OpenResty Inc.
 
 [Back to TOC](#table-of-contents)
 

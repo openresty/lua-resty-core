@@ -78,14 +78,14 @@ qr/\[TRACE   \d+ init_worker_by_lua:\d loop\]|\[TRACE   \d+ content_by_lua\(ngin
 "[TRACE   1 init_worker_by_lua:5 loop]
 [TRACE   1 init_worker_by_lua:5 loop]
 [TRACE   1 init_worker_by_lua:5 loop]
-[TRACE   1 content_by_lua(nginx.conf:78):5 loop]
+[TRACE   2 content_by_lua(nginx.conf:78):5 loop]
 process type: 4
 process type: 4
 ",
 "[TRACE   1 init_worker_by_lua:5 loop]
 [TRACE   1 init_worker_by_lua:5 loop]
 [TRACE   1 init_worker_by_lua:5 loop]
-[TRACE   1 content_by_lua(nginx.conf:78):5 loop]
+[TRACE   2 content_by_lua(nginx.conf:78):5 loop]
 process type: 4
 process type: 4
 "

@@ -6,12 +6,12 @@ local base = require "resty.core.base"
 local getfenv = getfenv
 
 local process_types = {
-    [base.FFI_PROCESS_SINGLE    ]  = "single process",
-    [base.FFI_PROCESS_MASTER    ]  = "master process",
-    [base.FFI_PROCESS_SIGNALLER ]  = "signaller process",
-    [base.FFI_PROCESS_WORKER    ]  = "worker process",
-    [base.FFI_PROCESS_HELPER    ]  = "helper process",
-    [base.FFI_PROCESS_PRIVILEGED]  = "privileged agent process",
+    [base.FFI_PROCESS_SINGLE    ]  = "single",
+    [base.FFI_PROCESS_MASTER    ]  = "master",
+    [base.FFI_PROCESS_SIGNALLER ]  = "signaller",
+    [base.FFI_PROCESS_WORKER    ]  = "worker",
+    [base.FFI_PROCESS_HELPER    ]  = "helper",
+    [base.FFI_PROCESS_PRIVILEGED]  = "privileged agent",
 }
 
 
@@ -20,29 +20,27 @@ local _M = { version = base.version }
 
 
 ffi.cdef[[
-void ngx_http_lua_ffi_privileged_agent(int enable);
-int ngx_http_lua_ffi_process_type(void);
+int ngx_http_lua_ffi_enable_privileged_agent(void);
+int ngx_http_lua_ffi_get_process_type(void);
 ]]
 
 
-function _M.type()
-    return C.ngx_http_lua_ffi_process_type()
+function _M.type(is_str_name)
+    local typ = C.ngx_http_lua_ffi_get_process_type()
+    if is_str_name then
+        return process_types[typ]
+    end
+    return typ
 end
 
 
-function _M.type_name(typ)
-    return process_types[typ]
-end
-
-
-function _M.privileged_agent(enable)
+function _M.enable_privileged_agent()
     local r = getfenv(0).__ngx_req
     if r ~= nil then
-        error("API disabled in the current context")
+        return nil, "API disabled in the current context"
     end
 
-    C.ngx_http_lua_ffi_privileged_agent(enable)
-    return true
+    return C.ngx_http_lua_ffi_enable_privileged_agent()
 end
 
 

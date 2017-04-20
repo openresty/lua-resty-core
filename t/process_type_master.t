@@ -37,8 +37,7 @@ our $HttpConfig = <<_EOC_;
             v = typ()
         end
 
-        local type_name = (require "ngx.process").type_name
-        ngx.log(ngx.WARN, "process type: ", type_name(v))
+        ngx.log(ngx.WARN, "process type: ", typ(true))
     }
 _EOC_
 
@@ -60,25 +59,24 @@ __DATA__
                 v = typ()
             end
 
-            local type_name = (require "ngx.process").type_name
-            ngx.say("process type: ", type_name(v))
+            ngx.say("process type: ", typ(true))
         }
     }
 --- request
 GET /t
 --- response_body
-process type: worker process
+process type: worker
 --- grep_error_log eval
 qr/\[TRACE   \d+ init_worker_by_lua:4 loop\]|\[TRACE   \d+ content_by_lua\(nginx\.conf:\d+\):4 loop\]|init_worker_by_lua:\d: process type: \w+/
 --- grep_error_log_out eval
 [
 "[TRACE   1 init_worker_by_lua:4 loop]
-[TRACE   1 content_by_lua(nginx.conf:75):4 loop]
-init_worker_by_lua:9: process type: worker
+[TRACE   2 content_by_lua(nginx.conf:73):4 loop]
+init_worker_by_lua:8: process type: worker
 ",
 "[TRACE   1 init_worker_by_lua:4 loop]
-[TRACE   1 content_by_lua(nginx.conf:75):4 loop]
-init_worker_by_lua:9: process type: worker
+[TRACE   2 content_by_lua(nginx.conf:73):4 loop]
+init_worker_by_lua:8: process type: worker
 "
 ]
 --- no_error_log
