@@ -1,7 +1,7 @@
 
 local ffi = require 'ffi'
-local ffi_string = ffi.string
 local base = require "resty.core.base"
+local ffi_string = ffi.string
 local get_string_buf = base.get_string_buf
 local get_size_ptr = base.get_size_ptr
 local C = ffi.C
@@ -21,7 +21,7 @@ ffi.cdef[[
     int ngx_http_lua_ffi_set_errlog_filter(int level, unsigned char *err,
         size_t *errlen);
     int ngx_http_lua_ffi_get_errlog_count(unsigned char *err, size_t *errlen);
-    int ngx_http_lua_ffi_get_errlog(ngx_http_lua_ffi_table_elt_t *out,
+    int ngx_http_lua_ffi_get_errlog_data(ngx_http_lua_ffi_table_elt_t *out,
         int max, unsigned char *err, size_t *errlen);
 ]]
 
@@ -77,7 +77,7 @@ function _M.get_errlog(max, logs)
     local raw_buf = get_string_buf(n * table_elt_size)
     local buf = ffi_cast(table_elt_type, raw_buf)
 
-    local rc = C.ngx_http_lua_ffi_get_errlog(buf, n, err, errlen)
+    local rc = C.ngx_http_lua_ffi_get_errlog_data(buf, n, err, errlen)
     if rc == FFI_ERROR then
         return nil, ffi_string(err, errlen[0])
     end
