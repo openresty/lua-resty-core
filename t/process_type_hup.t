@@ -58,7 +58,7 @@ __DATA__
         content_by_lua_block {
             local typ = require "ngx.process".type
 
-            local f, err = io.open("t/servroot/logs/nginx.pid", "r")
+            local f, err = io.open(ngx.config.prefix() .. "/logs/nginx.pid", "r")
             if not f then
                 ngx.say("failed to open nginx.pid: ", err)
                 return
