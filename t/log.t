@@ -290,7 +290,7 @@ GET /t
 --- response_body_like: 500 Internal Server Error
 --- error_code: 500
 --- error_log
-API "get_errlog_count" depends on directive "lua_intercept_error_log"
+API "get_errlog_data" depends on directive "lua_intercept_error_log"
 --- skip_nginx: 3: <1.11.2
 
 
