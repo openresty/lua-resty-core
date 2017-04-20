@@ -482,3 +482,33 @@ GET /t
 log lines:2
 log lines:1
 --- skip_nginx: 2: <1.11.2
+
+
+
+=== TEST 15: wrong argument
+--- http_config
+    lua_intercept_error_log 4m;
+--- config
+    location /t {
+        access_by_lua_block {
+            local ngx_log = require "ngx.log"
+            local status, err = ngx_log.set_errlog_filter()
+            if not status then
+                error(err)
+            end
+        }
+    }
+--- request
+GET /t
+--- error_code: 500
+--- response_body_like: 500
+--- grep_error_log eval
+qr/missing \"level\" argument/
+--- grep_error_log_out eval
+[
+"missing \"level\" argument
+",
+"missing \"level\" argument
+",
+]
+--- skip_nginx: 3: <1.11.2

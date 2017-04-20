@@ -34,6 +34,10 @@ local FFI_ERROR = base.FFI_ERROR
 
 
 function _M.set_errlog_filter(level)
+    if not level then
+        return nil, [[missing "level" argument]]
+    end
+
     local err = get_string_buf(ERR_BUF_SIZE)
     local errlen = get_size_ptr()
     errlen[0] = ERR_BUF_SIZE

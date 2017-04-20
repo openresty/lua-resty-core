@@ -1,7 +1,7 @@
 Name
 ====
 
-`ngx.log` - intercept the nginx error log for OpenResty/ngx_lua.
+`ngx.log` - manage the nginx error log for OpenResty/ngx_lua.
 
 Table of Contents
 =================
@@ -34,11 +34,10 @@ Intercept nginx error logs with specified log level
 -----------------------------------------
 
 ```nginx
-# main config
 error logs/error.log info;
 
 http {
-    # http config
+    # enable intercept error log
     lua_intercept_error_log 32m;
 
     init_by_lua_block {
@@ -46,6 +45,7 @@ http {
         local status, err = ngx_log.set_errlog_filter(ngx.WARN)
         if not status then
             ngx.log(ngx.ERR, err)
+            return
         end
         ngx.log(ngx.WARN, "set error filter level: WARN")
     }
@@ -59,7 +59,7 @@ http {
                 ngx.log(ngx.WARN, "test2")
                 ngx.log(ngx.ERR, "test3")
 
-                local logs, err = ngx_log.get_errlog(10)
+                local logs, err = ngx_log.get_errlog()
                 if not logs then
                     ngx.say("FAILED ", err)
                     return
