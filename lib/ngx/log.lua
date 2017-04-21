@@ -1,4 +1,5 @@
 
+
 local ffi = require 'ffi'
 local base = require "resty.core.base"
 local ffi_string = ffi.string
@@ -15,10 +16,10 @@ local _M = { version = base.version }
 
 
 ffi.cdef[[
-    int ngx_http_lua_ffi_set_errlog_filter(int level, unsigned char *err,
-        size_t *errlen);
-    int ngx_http_lua_ffi_get_errlog_data(char **log, size_t *loglen,
-        int *loglevel, unsigned char *err, size_t *errlen);
+int ngx_http_lua_ffi_set_errlog_filter(int level, unsigned char *err,
+    size_t *errlen);
+int ngx_http_lua_ffi_get_errlog_data(char **log, size_t *loglen,
+    int *loglevel, unsigned char *err, size_t *errlen);
 ]]
 
 
