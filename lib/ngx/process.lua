@@ -4,6 +4,9 @@
 local ffi = require 'ffi'
 local base = require "resty.core.base"
 local getfenv = getfenv
+local errmsg = base.get_errmsg_ptr()
+local FFI_ERROR = base.FFI_ERROR
+local ffi_str = ffi.string
 
 local process_types = {
     [base.FFI_PROCESS_SINGLE    ]  = "single",
@@ -20,7 +23,7 @@ local _M = { version = base.version }
 
 
 ffi.cdef[[
-int ngx_http_lua_ffi_enable_privileged_agent(void);
+int ngx_http_lua_ffi_enable_privileged_agent(char **err);
 int ngx_http_lua_ffi_get_process_type(void);
 ]]
 
@@ -40,7 +43,13 @@ function _M.enable_privileged_agent()
         return nil, "API disabled in the current context"
     end
 
-    return C.ngx_http_lua_ffi_enable_privileged_agent()
+    local rc = C.ngx_http_lua_ffi_enable_privileged_agent(errmsg)
+
+    if rc == FFI_ERROR then
+        return nil, ffi_str(errmsg[0])
+    end
+
+    return true
 end
 
 

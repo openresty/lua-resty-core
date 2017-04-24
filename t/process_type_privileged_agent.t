@@ -9,7 +9,7 @@ master_process_enabled(1);
 
 repeat_each(2);
 
-plan tests => repeat_each() * (blocks() * 5 - 2);
+plan tests => repeat_each() * (blocks() * 5 - 3);
 
 my $pwd = cwd();
 
@@ -28,9 +28,9 @@ our $HttpConfig = <<_EOC_;
 
         require "resty.core"
         local process = require "ngx.process"
-        local status, err = process.enable_privileged_agent()
-        if not status then
-            error(err)
+        local ok, err = process.enable_privileged_agent()
+        if not ok then
+            ngx.log(ngx.ERR, "enable_privileged_agent failed: ", err)
         end
     }
 
@@ -96,14 +96,14 @@ init_worker_by_lua:10: process type: privileged
 
 
 
-=== TEST 2: `enable_privileged_agent` disabled in other phases
+=== TEST 2: `enable_privileged_agent` disabled
 --- http_config eval: $::HttpConfig
 --- config
     location = /t {
         content_by_lua_block {
             local process = require "ngx.process"
-            local status, err = process.enable_privileged_agent()
-            if not status then
+            local ok, err = process.enable_privileged_agent()
+            if not ok then
                 error(err)
             end
         }
@@ -114,3 +114,27 @@ GET /t
 --- error_code: 500
 --- error_log eval
 qr/\[error\] .*? API disabled in the current context/
+--- skip_nginx: 3: < 1.11.2
+
+
+
+=== TEST 3: `enable_privileged_agent` not patched
+--- http_config eval: $::HttpConfig
+--- config
+    location = /t {
+        content_by_lua_block {
+            local process = require "ngx.process"
+            local ok, err = process.enable_privileged_agent()
+            if not ok then
+                error(err)
+            end
+        }
+    }
+--- request
+GET /t
+--- response_body_like: 500 Internal Server Error
+--- error_code: 500
+--- error_log
+missing privileged agent process patch in the nginx core
+API disabled in the current context
+--- skip_nginx: 4: >= 1.11.2

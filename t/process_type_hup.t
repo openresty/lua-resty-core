@@ -31,7 +31,10 @@ our $HttpConfig = <<_EOC_;
     init_by_lua_block {
         require "resty.core"
         local process = require "ngx.process"
-        process.enable_privileged_agent()
+        local ok, err = process.enable_privileged_agent()
+        if not ok then
+            ngx.log(ngx.ERR, "enable_privileged_agent failed: ", err)
+        end
     }
 
     init_worker_by_lua_block {

@@ -39,7 +39,10 @@ init_by_lua_block {
     local process = require "ngx.process"
 
     -- enable privileged agent process
-    process.enable_privileged_agent(true)
+    local ok, err = process.enable_privileged_agent(true)
+    if not ok then
+        ngx.log(ngx.ERR, "enable privileged agent failed error:", err)
+    end
 
     -- output process type
     ngx.log(ngx.INFO, "process type: ", process.type(true))
@@ -66,7 +69,7 @@ The example config above produces an output to `error.log` when
 server starts:
 
 ```
-[lua] init_by_lua:8: process type: master process
+[lua] init_by_lua:11: process type: master process
 [lua] init_worker_by_lua:3: process type: privileged agent process
 [lua] init_worker_by_lua:3: process type: worker process
 ```
@@ -83,15 +86,15 @@ Methods
 =======
 
 type
----
-**syntax:** *type = process_module.type(is_str_name?)*
+----
+**syntax:** *type = process_module.type(to_str_name?)*
 
-**context:** *init_by_lua&#42;, init_worker_by_lua&#42;, set_by_lua&#42;, rewrite_by_lua&#42;, access_by_lua&#42;, content_by_lua&#42;, header_filter_by_lua&#42;, body_filter_by_lua&#42;, log_by_lua&#42;, ngx.timer.&#42;*
+**context:** *any*
 
-The first optional argument `is_str_name` is Bool value.
+The first optional argument `to_str_name` is Bool value.
 
-* if the argument `is_str_name` was not expecified or `false` value, it'll return the number format of process type.
-* if the argument `is_str_name` was `true` value, it'll return the string format of process type.
+* if the argument `to_str_name` was not expecified or `false` value, return the number format of process type.
+* if the argument `to_str_name` was `true` value, return the string format of process type.
 
 Returns the current process's type, here is all of the number types:
 
@@ -116,24 +119,14 @@ For example,
 [Back to TOC](#table-of-contents)
 
 enable_privileged_agent
----
-**syntax:** *status = process_module.enable_privileged_agent(enable)*
+-----------------------
+**syntax:** *ok, err = process_module.enable_privileged_agent()*
 
 **context:** *init_by_lua&#42;*
 
-Enable/disable the privileged agent process in Nginx.
+Enable the privileged agent process in Nginx.
 
-Here is an example:
-
-```nginx
-# http config
-init_by_lua_block {
-    local process = require "ngx.process"
-
-    -- enable privileged agent process
-    process.enable_privileged_agent(true)
-}
-```
+In case of failures, returns `nil` and a string describing the error.
 
 [Back to TOC](#table-of-contents)
 
