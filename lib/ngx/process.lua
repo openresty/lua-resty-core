@@ -8,13 +8,14 @@ local errmsg = base.get_errmsg_ptr()
 local FFI_ERROR = base.FFI_ERROR
 local ffi_str = ffi.string
 
-local process_types = {
-    [base.FFI_PROCESS_SINGLE    ]  = "single",
-    [base.FFI_PROCESS_MASTER    ]  = "master",
-    [base.FFI_PROCESS_SIGNALLER ]  = "signaller",
-    [base.FFI_PROCESS_WORKER    ]  = "worker",
-    [base.FFI_PROCESS_HELPER    ]  = "helper",
-    [base.FFI_PROCESS_PRIVILEGED]  = "privileged agent",
+
+local process_type_name = {
+    [0 ]  = "single",
+    [1 ]  = "master",
+    [2 ]  = "signaller",
+    [3 ]  = "worker",
+    [4 ]  = "helper",
+    [99]  = "privileged agent",
 }
 
 
@@ -28,12 +29,9 @@ int ngx_http_lua_ffi_get_process_type(void);
 ]]
 
 
-function _M.type(is_str_name)
+function _M.type()
     local typ = C.ngx_http_lua_ffi_get_process_type()
-    if is_str_name then
-        return process_types[typ]
-    end
-    return typ
+    return process_type_name[typ]
 end
 
 

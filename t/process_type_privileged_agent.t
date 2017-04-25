@@ -42,8 +42,8 @@ our $HttpConfig = <<_EOC_;
             v = typ()
         end
 
-        if v == base.FFI_PROCESS_PRIVILEGED then
-            ngx.log(ngx.WARN, "process type: ", typ(true))
+        if v == "privileged agent" then
+            ngx.log(ngx.WARN, "process type: ", v)
         end
     }
 _EOC_
@@ -67,7 +67,7 @@ __DATA__
                 v = typ()
             end
 
-            ngx.say("type: ", typ(true))
+            ngx.say("type: ", v)
         }
     }
 --- request

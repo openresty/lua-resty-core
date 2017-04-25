@@ -41,8 +41,8 @@ our $HttpConfig = <<_EOC_;
         local base = require "resty.core.base"
         local typ = require "ngx.process".type
 
-        if typ() == base.FFI_PROCESS_PRIVILEGED then
-            ngx.log(ngx.WARN, "process type: ", typ(true))
+        if typ() == "privileged agent" then
+            ngx.log(ngx.WARN, "process type: ", typ())
         end
     }
 _EOC_

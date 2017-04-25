@@ -87,33 +87,29 @@ Methods
 
 type
 ----
-**syntax:** *type = process_module.type(to_str_name?)*
+**syntax:** *type_name = process_module.type()*
 
 **context:** *any*
 
-The first optional argument `to_str_name` is Bool value.
+Returns the current process's type name, here is all of the names:
 
-* if the argument `to_str_name` was not expecified or `false` value, return the number format of process type.
-* if the argument `to_str_name` was `true` value, return the string format of process type.
-
-Returns the current process's type, here is all of the number types:
-
-```
+```lua
 -- core/base.lua
-_M.FFI_PROCESS_SINGLE     = 0
-_M.FFI_PROCESS_MASTER     = 1
-_M.FFI_PROCESS_SIGNALLER  = 2
-_M.FFI_PROCESS_WORKER     = 3
-_M.FFI_PROCESS_HELPER     = 4
-_M.FFI_PROCESS_PRIVILEGED = 99
+local process_type_name = {
+    [0 ]  = "single",
+    [1 ]  = "master",
+    [2 ]  = "signaller",
+    [3 ]  = "worker",
+    [4 ]  = "helper",
+    [99]  = "privileged agent",
+}
 ```
 
 For example,
 
 ```lua
  local process = require "ngx.process"
- ngx.say("process type:", process.type())       -- 3
- ngx.say("process type:", process.type(true))   -- worker process
+ ngx.say("process type:", process.type())   -- worker
 ```
 
 [Back to TOC](#table-of-contents)

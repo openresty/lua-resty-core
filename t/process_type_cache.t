@@ -40,7 +40,7 @@ our $HttpConfig = <<_EOC_;
             v = typ()
         end
 
-        if v == base.FFI_PROCESS_HELPER then
+        if v == "helper" then
             ngx.log(ngx.WARN, "process type: ", v)
         end
     }
@@ -70,24 +70,24 @@ __DATA__
 --- request
 GET /t
 --- response_body
-type: 3
+type: worker
 --- grep_error_log eval
-qr/\[TRACE   \d+ init_worker_by_lua:\d loop\]|\[TRACE   \d+ content_by_lua\(nginx\.conf:\d+\):\d loop\]|process type: \d/
+qr/\[TRACE   \d+ init_worker_by_lua:\d loop\]|\[TRACE   \d+ content_by_lua\(nginx\.conf:\d+\):\d loop\]|process type: \w+/
 --- grep_error_log_out eval
 [
 qr/\[TRACE   \d init_worker_by_lua:5 loop\]
 \[TRACE   \d init_worker_by_lua:5 loop\]
 \[TRACE   \d init_worker_by_lua:5 loop\]
 \[TRACE   \d content_by_lua\(nginx.conf:78\):5 loop\]
-process type: 4
-process type: 4
+process type: helper
+process type: helper
 /,
 qr/\[TRACE   \d init_worker_by_lua:5 loop\]
 \[TRACE   \d init_worker_by_lua:5 loop\]
 \[TRACE   \d init_worker_by_lua:5 loop\]
 \[TRACE   \d content_by_lua\(nginx.conf:78\):5 loop\]
-process type: 4
-process type: 4
+process type: helper
+process type: helper
 /
 ]
 --- no_error_log

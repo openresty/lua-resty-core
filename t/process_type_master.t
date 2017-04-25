@@ -37,7 +37,7 @@ our $HttpConfig = <<_EOC_;
             v = typ()
         end
 
-        ngx.log(ngx.WARN, "process type: ", typ(true))
+        ngx.log(ngx.WARN, "process type: ", v)
     }
 _EOC_
 
@@ -59,7 +59,7 @@ __DATA__
                 v = typ()
             end
 
-            ngx.say("process type: ", typ(true))
+            ngx.say("process type: ", v)
         }
     }
 --- request
