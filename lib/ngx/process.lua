@@ -3,10 +3,10 @@
 
 local ffi = require 'ffi'
 local base = require "resty.core.base"
-local getfenv = getfenv
 local errmsg = base.get_errmsg_ptr()
 local FFI_ERROR = base.FFI_ERROR
 local ffi_str = ffi.string
+local ngx_phase = ngx.get_phase
 
 
 local process_type_name = {
@@ -36,8 +36,7 @@ end
 
 
 function _M.enable_privileged_agent()
-    local r = getfenv(0).__ngx_req
-    if r ~= nil then
+    if ngx_phase() ~= "init" then
         return nil, "API disabled in the current context"
     end
 
