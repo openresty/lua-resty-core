@@ -32,6 +32,7 @@ Table of Contents
     * [ngx.re](#ngxre)
     * [ngx.process](#ngxprocess)
     * [ngx.errlog](#ngxerrlog)
+    * [ngx.req](#ngxreq)
 * [Caveat](#caveat)
 * [TODO](#todo)
 * [Author](#author)
@@ -268,6 +269,15 @@ This Lua module provides Lua API to capture and manage nginx error log messages.
 See the [documentation](./lib/ngx/errlog.md) for this Lua module for more details.
 
 This module was first introduced in lua-resty-core v0.1.12.
+
+[Back to TOC](#table-of-contents)
+
+## ngx.req
+
+This Lua module provides a Lua API which implements convenience utilities for
+the `ngx.req` API.
+
+See the [documentation](./lib/ngx/req.md) for this Lua module for more details.
 
 [Back to TOC](#table-of-contents)
 
