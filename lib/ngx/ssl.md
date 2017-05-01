@@ -199,7 +199,7 @@ This function can be called in whatever contexts.
 
 set_der_priv_key
 ----------------
-**syntax:** *ok, err = ssl.set_der_priv_key(der_cert_chain)*
+**syntax:** *ok, err = ssl.set_der_priv_key(der_priv_key)*
 
 **context:** *ssl_certificate_by_lua&#42;*
 
