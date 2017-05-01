@@ -140,6 +140,7 @@ local _M = {
 
 local buf_grow_ratio = 2
 
+
 function _M.set_buf_grow_ratio(ratio)
     buf_grow_ratio = ratio
 end
@@ -151,6 +152,20 @@ local function get_max_regex_cache_size()
     end
     max_regex_cache_size = C.ngx_http_lua_ffi_max_regex_cache_size()
     return max_regex_cache_size
+end
+
+
+local regex_cache_is_empty = true
+
+
+function _M.is_regex_cache_empty()
+    return regex_cache_is_empty
+end
+
+
+local function lrucache_set_wrapper(...)
+    regex_cache_is_empty = false
+    lrucache_set(...)
 end
 
 
@@ -341,7 +356,7 @@ local function re_match_compile(regex, opts)
 
         if compile_once then
             -- print("inserting compiled regex into cache")
-            lrucache_set(regex_match_cache, key, compiled)
+            lrucache_set_wrapper(regex_match_cache, key, compiled)
         end
     end
 

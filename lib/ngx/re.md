@@ -34,6 +34,10 @@ local ngx_re = require "ngx.re"
 -- split
 local res, err = ngx_re.split("a,b,c,d", ",")
 --> res is now {"a", "b", "c", "d"}
+
+-- opt
+ngx_re.opt("jit_stack_size", 128 * 1024)
+--> the PCRE jit stack can now handle more complex regular expressions
 ```
 
 [Back to TOC](#table-of-contents)
@@ -140,6 +144,39 @@ local res, err = ngx_re.split("a,b", ",", nil, nil, nil, my_table)
 
 When the trailing `nil` is not enough for your purpose, you should
 clear the table yourself before feeding it into the `split` function.
+
+opt
+-----
+**syntax:** *ngx_re.opt(option, value)*
+
+Allows changing of regex settings. Currently, it can only change the
+`jit_stack_size` of the PCRE engine, like so:
+
+```nginx
+
+ init_by_lua_block { ngx.re.opt("jit_stack_size", 128 * 1024) }
+
+ server {
+     location /re {
+         content_by_lua_block {
+             -- full regex and string are taken from https://github.com/JuliaLang/julia/issues/8278
+             local very_long_string = [[71.163.72.113 - - [30/Jul/2014:16:40:55 -0700] ...]]
+             local very_complicated_regex = [[([\d\.]+) ([\w.-]+) ([\w.-]+) (\[.+\]) ...]]
+             local from, to, err = ngx.re.find(very_long_string, very_complicated_regex, "jo")
+
+             -- with the regular jit_stack_size, we would get the error 'pcre_exec() failed: -27'
+             -- instead, we get a match
+             ngx.print(from .. "-" .. to) -- prints '1-1563'
+         }
+     }
+ }
+```
+
+The `jit_stack_size` cannot be set to a value lower than PCRE's default of 32K.
+
+This method requires the PCRE library enabled in Nginx.
+
+This feature was first introduced in the `XXX` release.
 
 [Back to TOC](#table-of-contents)
 
