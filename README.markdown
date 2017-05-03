@@ -249,7 +249,7 @@ See the [documentation](./lib/ngx/re.md) for this Lua module for more details.
 
 ## ngx.process
 
-This Lua module implements is used to manage the nginx process in Lua.
+This Lua module is used to manage the nginx process in Lua.
 
 See the [documentation](./lib/ngx/process.md) for this Lua module for more details.
 

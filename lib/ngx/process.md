@@ -9,7 +9,7 @@ Table of Contents
 * [Name](#name)
 * [Status](#status)
 * [Synopsis](#synopsis)
-    * [Enable privileged agent process and get process type](#enable-privileged-agent-process-and-get-process-type)
+    * [Enables privileged agent process and get process type](#enables-privileged-agent-process-and-get-process-type)
 * [Methods](#methods)
     * [type](#type)
     * [enable_privileged_agent](#enable_privileged_agent)
@@ -30,7 +30,7 @@ The API is still in flux and may change in the future without notice.
 Synopsis
 ========
 
-Enable privileged agent process and get process type
+Enables privileged agent process and get process type
 -----------------------------------------
 
 ```nginx
@@ -38,19 +38,19 @@ Enable privileged agent process and get process type
 init_by_lua_block {
     local process = require "ngx.process"
 
-    -- enable privileged agent process
-    local ok, err = process.enable_privileged_agent(true)
+    -- enables privileged agent process
+    local ok, err = process.enable_privileged_agent()
     if not ok then
-        ngx.log(ngx.ERR, "enable privileged agent failed error:", err)
+        ngx.log(ngx.ERR, "enables privileged agent failed error:", err)
     end
 
     -- output process type
-    ngx.log(ngx.INFO, "process type: ", process.type(true))
+    ngx.log(ngx.INFO, "process type: ", process.type())
 }
 
 init_worker_by_lua_block {
     local process = require "ngx.process"
-    ngx.log(ngx.INFO, "process type: ", process.type(true))
+    ngx.log(ngx.INFO, "process type: ", process.type())
 }
 
 server {
@@ -58,7 +58,7 @@ server {
     location = /t {
         content_by_lua_block {
             local process = require "ngx.process"
-            ngx.say("process type: ", process.type(true))
+            ngx.say("process type: ", process.type())
         }
     }
 }
@@ -69,15 +69,15 @@ The example config above produces an output to `error.log` when
 server starts:
 
 ```
-[lua] init_by_lua:11: process type: master process
-[lua] init_worker_by_lua:3: process type: privileged agent process
-[lua] init_worker_by_lua:3: process type: worker process
+[lua] init_by_lua:11: process type: master
+[lua] init_worker_by_lua:3: process type: privileged agent
+[lua] init_worker_by_lua:3: process type: worker
 ```
 
-The example location above produces a response:
+The example location above produces the following response body:
 
 ```
-process type: worker process
+process type: worker
 ```
 
 [Back to TOC](#table-of-contents)
@@ -91,18 +91,15 @@ type
 
 **context:** *any*
 
-Returns the current process's type name, here is all of the names:
+Returns the current process's type name. Here are all of the names:
 
-```lua
--- core/base.lua
-local process_type_name = {
-    [0 ]  = "single",
-    [1 ]  = "master",
-    [2 ]  = "signaller",
-    [3 ]  = "worker",
-    [4 ]  = "helper",
-    [99]  = "privileged agent",
-}
+```
+single
+master
+signaller
+worker
+helper
+privileged agent
 ```
 
 For example,
@@ -120,7 +117,7 @@ enable_privileged_agent
 
 **context:** *init_by_lua&#42;*
 
-Enable the privileged agent process in Nginx.
+Enables the privileged agent process in Nginx.
 
 In case of failures, returns `nil` and a string describing the error.
 

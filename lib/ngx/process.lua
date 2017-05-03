@@ -7,9 +7,10 @@ local errmsg = base.get_errmsg_ptr()
 local FFI_ERROR = base.FFI_ERROR
 local ffi_str = ffi.string
 local ngx_phase = ngx.get_phase
+local tonumber = tonumber
 
 
-local process_type_name = {
+local process_type_names = {
     [0 ]  = "single",
     [1 ]  = "master",
     [2 ]  = "signaller",
@@ -31,7 +32,7 @@ int ngx_http_lua_ffi_get_process_type(void);
 
 function _M.type()
     local typ = C.ngx_http_lua_ffi_get_process_type()
-    return process_type_name[typ]
+    return process_type_names[tonumber(typ)]
 end
 
 
