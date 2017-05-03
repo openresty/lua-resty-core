@@ -48,7 +48,7 @@ __DATA__
             if not res then
                 error("FAILED " .. err)
             end
-            ngx.say("log lines:", #res)
+            ngx.say("log lines:", #res / 2)
         }
     }
 --- request
@@ -84,7 +84,7 @@ enter 11
             if not res then
                 error("FAILED " .. err)
             end
-            ngx.say("log lines:", #res)
+            ngx.say("log lines:", #res / 2)
         }
     }
 --- request
@@ -116,7 +116,7 @@ enter 22
         if not res then
             error("FAILED " .. err)
         end
-        ngx.log(ngx.ERR, "intercept log line:", #res)
+        ngx.log(ngx.ERR, "intercept log line:", #res / 2)
     }
 --- request
 GET /t
@@ -151,7 +151,7 @@ $/
         if not res then
             error("FAILED " .. err)
         end
-        ngx.log(ngx.ERR, "intercept log line:", #res)
+        ngx.log(ngx.ERR, "intercept log line:", #res / 2)
     }
 --- request
 GET /t
@@ -184,7 +184,7 @@ $/
         if not res then
             error("FAILED " .. err)
         end
-        ngx.log(ngx.ERR, "intercept log line:", #res)
+        ngx.log(ngx.ERR, "intercept log line:", #res / 2)
     }
 --- request
 GET /t
@@ -221,7 +221,7 @@ $/
         if not res then
             error("FAILED " .. err)
         end
-        ngx.log(ngx.ERR, "intercept log line:", #res)
+        ngx.log(ngx.ERR, "intercept log line:", #res / 2)
 
     }
 --- request
@@ -282,7 +282,7 @@ invalid number of arguments in "lua_intercept_error_log" directive
             if not res then
                 error("FAILED " .. err)
             end
-            ngx.say("log lines:", #res)
+            ngx.say("log lines:", #res / 2)
         }
     }
 --- request
@@ -335,7 +335,7 @@ API "set_errlog_filter" depends on directive "lua_intercept_error_log"
         content_by_lua_block {
             local ngx_log = require "ngx.log"
             local res = ngx_log.get_errlog()
-            ngx.say("log lines:", #res)
+            ngx.say("log lines:", #res / 2)
         }
     }
 --- log_level: info
@@ -379,7 +379,7 @@ qr/-->\d+/
         content_by_lua_block {
             local ngx_log = require "ngx.log"
             local res = ngx_log.get_errlog()
-            ngx.say("log lines:", #res)
+            ngx.say("log lines:", #res / 2)
         }
     }
 --- log_level: info
@@ -424,7 +424,7 @@ qr/-->\d+/
         content_by_lua_block {
             local ngx_log = require "ngx.log"
             local res = ngx_log.get_errlog()
-            ngx.say("log lines:", #res)
+            ngx.say("log lines:", #res / 2)
         }
     }
 --- request
@@ -466,14 +466,14 @@ qr/-->\d+/
             if not res then
                 error("FAILED " .. err)
             end
-            ngx.say("log lines:", #res)
+            ngx.say("log lines:", #res / 2)
 
             tab_clear(res)
             res, err = ngx_log.get_errlog(2, res)
             if not res then
                 error("FAILED " .. err)
             end
-            ngx.say("log lines:", #res)
+            ngx.say("log lines:", #res / 2)
         }
     }
 --- request

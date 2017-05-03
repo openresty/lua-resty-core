@@ -1,3 +1,4 @@
+-- Copyright (C) Yichun Zhang (agentzh)
 
 
 local ffi = require 'ffi'
@@ -56,7 +57,7 @@ function _M.get_errlog(max, logs)
     max = max or 10
 
     if not logs then
-        logs = new_tab(max, 0)
+        logs = new_tab(max * 2 + 1, 0)
     end
 
     for i = 1, max do
@@ -67,11 +68,12 @@ function _M.get_errlog(max, logs)
         end
 
         if loglen > 0 then
-            logs[i] = {loglevel[0], ffi_string(log[0], loglen)}
+            logs[i * 2 - 1] = loglevel[0]
+            logs[i * 2] = ffi_string(log[0], loglen)
         end
 
         if loglen < 0 or i == max then    -- last one
-            logs[i + 1] = nil
+            logs[i * 2 + 1] = nil
             break
         end
     end

@@ -31,7 +31,7 @@ Synopsis
 ========
 
 Intercept nginx error logs with specified log level
------------------------------------------
+---------------------------------------------------
 
 ```nginx
 error logs/error.log info;
@@ -92,12 +92,12 @@ Methods
 =======
 
 set_errlog_filter
----
+-----------------
 **syntax:** *status, err = log_module.set_errlog_filter(log_level)*
 
 **context:** *init_by_lua&#42;*
 
-Specify the filter log level, only to intercept the error log we need.
+Specifies the filter log level, only to intercept the error log we need.
 If we don't call this API, all of the error logs will be intercepted by default.
 
 In case of error, `nil` will be returned as well as a string describing the
@@ -116,15 +116,17 @@ For example,
  }
 ```
 
+*NOTE:* The debugging logs since when OpenResty or NGINX is not built with `--with-debug`, all the debug level logs are suppressed regardless.
+
 [Back to TOC](#table-of-contents)
 
 get_errlog
----
+----------
 **syntax:** *res, err = log_module.get_errlog(max, res?)*
 
 **context:** *init_by_lua&#42;, init_worker_by_lua&#42;, set_by_lua&#42;, rewrite_by_lua&#42;, access_by_lua&#42;, content_by_lua&#42;, header_filter_by_lua&#42;, body_filter_by_lua&#42;, log_by_lua&#42;, ngx.timer.&#42;*
 
-Return the intercepted nginx error logs if successful.
+Returns the intercepted nginx error logs if successful.
 
 In case of error, `nil` will be returned as well as a string describing the
 error.
