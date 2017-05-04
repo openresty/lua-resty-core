@@ -15,6 +15,9 @@ local error = error
 local tonumber = tonumber
 
 
+local DEFAULT_EXT_MAXSIZE = 255
+
+
 local _M = { version = base.version }
 
 
@@ -30,9 +33,9 @@ function _M.get_uri_ext(ext_len)
         return error("no request found")
     end
 
-    ext_len = tonumber(ext_len) or 255
+    ext_len = tonumber(ext_len) or DEFAULT_EXT_MAXSIZE
     if ext_len <= 0 then
-        ext_len = 255
+        ext_len = DEFAULT_EXT_MAXSIZE
     end
 
     local buf = get_string_buf(ext_len)

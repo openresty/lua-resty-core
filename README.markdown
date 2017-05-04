@@ -274,8 +274,8 @@ This module was first introduced in lua-resty-core v0.1.12.
 
 ## ngx.req
 
-This Lua module provides a Lua API which implements convenience utilities for
-the `ngx.req` API.
+This Lua module provides a Lua API which implements convenient utilities for
+handling nginx requests.
 
 See the [documentation](./lib/ngx/req.md) for this Lua module for more details.
 

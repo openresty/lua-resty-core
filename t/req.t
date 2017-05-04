@@ -135,3 +135,41 @@ GET /test.m3u8
 "m3\n"
 --- no_error_log
 [error]
+
+
+
+=== TEST 6: ngx_req.get_uri_ext (.tar.gz)
+--- http_config eval: $::HttpConfig
+--- config
+    location = /test.tar.gz {
+        content_by_lua_block {
+            local ngx_req = require "ngx.req"
+            local ext = ngx_req.get_uri_ext()
+            ngx.say(ext)
+        }
+    }
+--- request
+GET /test.tar.gz
+--- response_body eval
+"gz\n"
+--- no_error_log
+[error]
+
+
+
+=== TEST 7: ngx_req.get_uri_ext (.html)
+--- http_config eval: $::HttpConfig
+--- config
+    location = /test.html {
+        content_by_lua_block {
+            local ngx_req = require "ngx.req"
+            local ext = ngx_req.get_uri_ext()
+            ngx.say(ext)
+        }
+    }
+--- request
+GET /test.html
+--- response_body eval
+"html\n"
+--- no_error_log
+[error]
