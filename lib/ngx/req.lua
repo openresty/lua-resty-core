@@ -5,10 +5,8 @@ local ffi = require 'ffi'
 local base = require "resty.core.base"
 
 
-local FFI_BAD_CONTEXT = base.FFI_BAD_CONTEXT
 local C = ffi.C
 local ffi_str = ffi.string
-local get_string_buf = base.get_string_buf
 local get_size_ptr = base.get_size_ptr
 local getfenv = getfenv
 local error = error
