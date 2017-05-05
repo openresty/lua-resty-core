@@ -22,8 +22,7 @@ local _M = { version = base.version }
 
 
 ffi.cdef[[
-    int ngx_http_lua_ffi_req_get_ext(ngx_http_request_t *r, char *out,
-        size_t *len);
+    char * ngx_http_lua_ffi_req_get_ext(ngx_http_request_t *r, size_t *len);
 ]]
 
 
@@ -38,16 +37,15 @@ function _M.get_uri_ext(ext_len)
         ext_len = DEFAULT_EXT_MAXSIZE
     end
 
-    local buf = get_string_buf(ext_len)
     local sizep = get_size_ptr()
     sizep[0] = ext_len
 
-    local rc = C.ngx_http_lua_ffi_req_get_ext(r, buf, sizep)
-    if rc == FFI_BAD_CONTEXT then
-        return error("API disabled in the current context")
+    local ext = C.ngx_http_lua_ffi_req_get_ext(r, sizep)
+    if ext == nil then
+        return ""
     end
 
-    return ffi_str(buf, sizep[0])
+    return ffi_str(ext, sizep[0])
 end
 
 

@@ -54,8 +54,8 @@ __DATA__
     }
 --- request
 GET /test.m3u8
---- response_body eval
-"m3u8\n"
+--- response_body
+m3u8
 --- no_error_log
 [error]
 
@@ -93,8 +93,8 @@ GET /test
     }
 --- request
 GET /test.m3u8
---- response_body eval
-"ts\n"
+--- response_body
+ts
 --- no_error_log
 [error]
 
@@ -112,8 +112,8 @@ GET /test.m3u8
     }
 --- request
 GET /test.m3u8
---- response_body eval
-"m3u8\n"
+--- response_body
+m3u8
 --- no_error_log
 [error]
 
@@ -131,8 +131,8 @@ GET /test.m3u8
     }
 --- request
 GET /test.m3u8
---- response_body eval
-"m3\n"
+--- response_body
+m3
 --- no_error_log
 [error]
 
@@ -150,8 +150,8 @@ GET /test.m3u8
     }
 --- request
 GET /test.tar.gz
---- response_body eval
-"gz\n"
+--- response_body
+gz
 --- no_error_log
 [error]
 
@@ -169,7 +169,7 @@ GET /test.tar.gz
     }
 --- request
 GET /test.html
---- response_body eval
-"html\n"
+--- response_body
+html
 --- no_error_log
 [error]

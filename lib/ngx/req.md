@@ -41,8 +41,8 @@ local ext = ngx_req.get_uri_ext()
 Description
 ===========
 
-This Lua module provides a Lua API which implements convenience utilities for
-the `ngx.req` API.
+This Lua module provides a Lua API which implements convenient utilities for
+handling nginx requests.
 
 [Back to TOC](#table-of-contents)
 
@@ -114,7 +114,7 @@ Please report bugs or submit patches by
 Author
 ======
 
-Thibault Charbonnier - ([@thibaultcha](https://github.com/thibaultcha))
+Liang Hong - ([@hongliang5316](https://github.com/hongliang5316))
 
 [Back to TOC](#table-of-contents)
 
