@@ -16,9 +16,8 @@ local FFI_OK = base.FFI_OK
 
 ffi.cdef[[
 
-    int
-    ngx_http_lua_ffi_socket_tcp_setsslctx(ngx_http_request_t *r,
-        void *u, void *cdata_ctx, char **err);
+int ngx_http_lua_ffi_socket_tcp_setsslctx(ngx_http_request_t *r, void *u,
+    void *cdata_ctx, char **err);
 
 ]]
 
