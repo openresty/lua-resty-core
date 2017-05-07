@@ -295,7 +295,7 @@ function _M.create_ctx(options)
         return nil, ffi_str(errmsg[0])
     end
 
-    ctx = ffi_gc(ctx, C.ngx_http_lua_ffi_ssl_ctx_free)
+    ffi_gc(ctx, C.ngx_http_lua_ffi_ssl_ctx_free)
 
     local err_buf = get_string_buf(ERR_BUF_SIZE)
     local err_buf_len = get_size_ptr()
