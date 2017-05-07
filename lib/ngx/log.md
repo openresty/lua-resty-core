@@ -124,7 +124,7 @@ get_errlog
 ----------
 **syntax:** *res, err = log_module.get_errlog(max, res?)*
 
-**context:** *init_by_lua&#42;, init_worker_by_lua&#42;, set_by_lua&#42;, rewrite_by_lua&#42;, access_by_lua&#42;, content_by_lua&#42;, header_filter_by_lua&#42;, body_filter_by_lua&#42;, log_by_lua&#42;, ngx.timer.&#42;*
+**context:** *any*
 
 Returns the intercepted nginx error logs if successful.
 
