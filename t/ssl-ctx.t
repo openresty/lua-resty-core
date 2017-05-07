@@ -242,10 +242,10 @@ no options found
             local bit = require "bit"
             local bor = bit.bor
 
-            ngx.say(test_ssl_protocol(ssl.PROTOCOL_TLSv1))
-            ngx.say(test_ssl_protocol(ssl.PROTOCOL_TLSv1_1))
-            ngx.say(test_ssl_protocol(ssl.PROTOCOL_TLSv1_2))
-            ngx.say(test_ssl_protocol(bor(ssl.PROTOCOL_SSLv2, ssl.PROTOCOL_TLSv1_2)))
+            ngx.say(test_ssl_protocol(ssl.TLSv1))
+            ngx.say(test_ssl_protocol(ssl.TLSv1_1))
+            ngx.say(test_ssl_protocol(ssl.TLSv1_2))
+            ngx.say(test_ssl_protocol(bor(ssl.SSLv2, ssl.TLSv1_2)))
         }
     }
 

@@ -275,13 +275,12 @@ function _M.set_priv_key(priv_key)
 end
 
 
-_M.PROTOCOL_SSLv2 = 0x0002
-_M.PROTOCOL_SSLv3 = 0x0004
-_M.PROTOCOL_TLSv1 = 0x0008
-_M.PROTOCOL_TLSv1_1 = 0x0010
-_M.PROTOCOL_TLSv1_2 = 0x0020
-local default_protocols = bor(_M.PROTOCOL_SSLv3, _M.PROTOCOL_TLSv1,
-                              _M.PROTOCOL_TLSv1_1, _M.PROTOCOL_TLSv1_2)
+_M.SSLv2 = 0x0002
+_M.SSLv3 = 0x0004
+_M.TLSv1 = 0x0008
+_M.TLSv1_1 = 0x0010
+_M.TLSv1_2 = 0x0020
+local default_protocols = bor(_M.SSLv3, _M.TLSv1, _M.TLSv1_1, _M.TLSv1_2)
 
 
 function _M.create_ctx(options)
