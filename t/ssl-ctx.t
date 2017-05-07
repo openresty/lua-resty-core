@@ -195,7 +195,7 @@ __DATA__
     location /t{
         content_by_lua_block {
             local ssl = require "ngx.ssl"
-            local ssl_ctx, err = ssl.create_ctx{}
+            local ssl_ctx, err = ssl.create_ctx()
             if ssl_ctx == nil then
                 ngx.say(err)
             end
