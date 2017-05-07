@@ -58,10 +58,10 @@ init_by_lua_block {
     local cert =  ssl.parse_pem_cert(read_file("$TEST_NGINX_HTML_DIR/client.crt"))
     local priv_key = ssl.parse_pem_priv_key(read_file("$TEST_NGINX_HTML_DIR/client.unsecure.key"))
 
-    local ssl_ctx, err = ssl.create_ctx({
+    local ssl_ctx, err = ssl.create_ctx{
         priv_key = priv_key,
         cert = cert
-    })
+    }
 
     c:set("sslctx", ssl_ctx)
 
@@ -195,7 +195,7 @@ __DATA__
     location /t{
         content_by_lua_block {
             local ssl = require "ngx.ssl"
-            local ssl_ctx, err = ssl.create_ctx()
+            local ssl_ctx, err = ssl.create_ctx{}
             if ssl_ctx == nil then
                 ngx.say(err)
             end
@@ -217,11 +217,11 @@ no options found
                 local ssl = require "ngx.ssl"
                 local cert = ssl.parse_pem_cert(read_file("$TEST_NGINX_HTML_DIR/client.crt"))
                 local priv_key = ssl.parse_pem_priv_key(read_file("$TEST_NGINX_HTML_DIR/client.unsecure.key"))
-                local ssl_ctx, err = ssl.create_ctx({
+                local ssl_ctx, err = ssl.create_ctx{
                     protocols = protocols,
                     priv_key = priv_key,
                     cert = cert
-                })
+                }
                 if ssl_ctx == nil then
                     return err
                 end
@@ -269,10 +269,10 @@ TLSv1.2
             local ssl = require "ngx.ssl"
             local cert = ssl.parse_pem_cert(read_file("$TEST_NGINX_HTML_DIR/server.crt"))
             local priv_key = ssl.parse_pem_priv_key(read_file("$TEST_NGINX_HTML_DIR/client.unsecure.key"))
-            local ssl_ctx, err = ssl.create_ctx({
+            local ssl_ctx, err = ssl.create_ctx{
                 priv_key = priv_key,
                 cert = cert
-            })
+            }
             if ssl_ctx == nil then
                 ngx.say(err)
             end
@@ -294,10 +294,10 @@ error:0B080074:x509 certificate routines:X509_check_private_key:key values misma
             local cert =  ssl.parse_pem_cert(read_file("$TEST_NGINX_HTML_DIR/client.crt"))
             local priv_key = ssl.parse_pem_priv_key(read_file("$TEST_NGINX_HTML_DIR/client.unsecure.key"))
 
-            local ssl_ctx, err = ssl.create_ctx({
+            local ssl_ctx, err = ssl.create_ctx{
                 priv_key = priv_key,
                 cert = cert
-            })
+            }
 
             if ssl_ctx == nil then
                 ngx.say("failed to init ssl ctx: ", err)
