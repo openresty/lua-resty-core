@@ -5,6 +5,7 @@ local ffi = require 'ffi'
 local base = require "resty.core.base"
 
 
+local FFI_BAD_CONTEXT = base.FFI_BAD_CONTEXT
 local C = ffi.C
 local ffi_str = ffi.string
 local get_size_ptr = base.get_size_ptr
@@ -19,8 +20,13 @@ local DEFAULT_EXT_MAXSIZE = 255
 local _M = { version = base.version }
 
 
+local charpp = ffi.new("char*[1]")
+
+
 ffi.cdef[[
-    char * ngx_http_lua_ffi_req_get_ext(ngx_http_request_t *r, size_t *len);
+
+int ngx_http_lua_ffi_req_get_ext(ngx_http_request_t *r, char **buf,
+    size_t *len);
 ]]
 
 
@@ -38,12 +44,12 @@ function _M.get_uri_ext(ext_len)
     local sizep = get_size_ptr()
     sizep[0] = ext_len
 
-    local ext = C.ngx_http_lua_ffi_req_get_ext(r, sizep)
-    if ext == nil then
-        return ""
+    local rc = C.ngx_http_lua_ffi_req_get_ext(r, charpp, sizep)
+    if rc == FFI_BAD_CONTEXT then
+        return error("API disabled in the current context")
     end
 
-    return ffi_str(ext, sizep[0])
+    return ffi_str(charpp[0], sizep[0])
 end
 
 
