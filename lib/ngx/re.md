@@ -12,6 +12,7 @@ Table of Contents
 * [Description](#description)
 * [Methods](#methods)
     * [split](#split)
+    * [opt](#opt)
 * [Community](#community)
     * [English Mailing List](#english-mailing-list)
     * [Chinese Mailing List](#chinese-mailing-list)
