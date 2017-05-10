@@ -119,6 +119,14 @@ enable_privileged_agent
 
 Enables the privileged agent process in Nginx.
 
+The priviledged agent process does not listen on any virtual server ports like those worker processes.
+And it uses the same system account as the nginx master process, which is usually a privileged account
+like `root`.
+
+The `init_worker_by_lua*` directive handler still runs in the privileged agent process. And one can
+use the [type](#type) function provided by this module to check if the current process is a privileged
+agent.
+
 In case of failures, returns `nil` and a string describing the error.
 
 [Back to TOC](#table-of-contents)
