@@ -106,7 +106,7 @@ For example,
 
 ```lua
  local process = require "ngx.process"
- ngx.say("process type:", process.type())   -- worker
+ ngx.say("process type:", process.type())   -- RESPONSE: worker
 ```
 
 [Back to TOC](#table-of-contents)
