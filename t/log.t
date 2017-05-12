@@ -566,7 +566,7 @@ qr/-->\d+/
 
 
 
-=== TEST 16: flood the capturing buffer
+=== TEST 17: flood the capturing buffer
 --- http_config
     lua_intercept_error_log 4k;
 --- config
@@ -608,10 +608,11 @@ log level:5
 log body:.*access_by_lua\(nginx.conf:\d+\):\d+: --> 100, client: 127.0.0.1,.*host: "localhost".*
 log level:4
 log body:.*access_by_lua\(nginx.conf:\d+\):\d+: --> 100, client: 127.0.0.1,.*host: "localhost".*
---- skip_nginx: 3: <1.11.2
+--- skip_nginx: 2: <1.11.2
 
 
-=== TEST 16: multi-line error log
+
+=== TEST 18: multi-line error log
 --- http_config
     lua_intercept_error_log 4k;
 --- config
@@ -644,4 +645,4 @@ GET /t
 log lines: #1
 log level:4
 log body:.*access_by_lua\(nginx.conf:\d+\):\d+: --> \nnew line, client: 127.0.0.1,.*host: "localhost".*
---- skip_nginx: 3: <1.11.2
+--- skip_nginx: 2: <1.11.2
