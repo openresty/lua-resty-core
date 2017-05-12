@@ -546,9 +546,9 @@ qr/missing \"level\" argument/
 GET /t
 --- response_body_like
 log level:5
-log body:.*access_by_lua\(nginx.conf:\d+\):9: -->2,.*
+log body:.*access_by_lua\(nginx.conf:\d+\):9: -->2, client: 127.0.0.1,.*host: "localhost".*
 log level:4
-log body:.*access_by_lua\(nginx.conf:\d+\):10: -->3,.*
+log body:.*access_by_lua\(nginx.conf:\d+\):10: -->3, client: 127.0.0.1,.*host: "localhost".*
 --- grep_error_log eval
 qr/-->\d+/
 --- grep_error_log_out eval
@@ -603,11 +603,11 @@ GET /t
 --- response_body_like
 log lines: #22
 log level:4
-log body:.*access_by_lua\(nginx.conf:\d+\):\d+: --> 99,.*
+log body:.*access_by_lua\(nginx.conf:\d+\):\d+: --> 99, client: 127.0.0.1,.*host: "localhost".*
 log level:5
-log body:.*access_by_lua\(nginx.conf:\d+\):\d+: --> 100,.*
+log body:.*access_by_lua\(nginx.conf:\d+\):\d+: --> 100, client: 127.0.0.1,.*host: "localhost".*
 log level:4
-log body:.*access_by_lua\(nginx.conf:\d+\):\d+: --> 100,.*
+log body:.*access_by_lua\(nginx.conf:\d+\):\d+: --> 100, client: 127.0.0.1,.*host: "localhost".*
 --- skip_nginx: 3: <1.11.2
 
 
@@ -643,5 +643,5 @@ GET /t
 --- response_body_like
 log lines: #1
 log level:4
-log body:.*access_by_lua\(nginx.conf:\d+\):\d+: --> \nnew line,.*
+log body:.*access_by_lua\(nginx.conf:\d+\):\d+: --> \nnew line, client: 127.0.0.1,.*host: "localhost".*
 --- skip_nginx: 3: <1.11.2
