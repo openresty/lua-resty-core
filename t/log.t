@@ -9,7 +9,7 @@ log_level('error');
 
 repeat_each(2);
 
-plan tests => repeat_each() * (blocks() * 3 - 6);
+plan tests => repeat_each() * (blocks() * 3 - 7);
 
 my $pwd = cwd();
 
@@ -608,4 +608,40 @@ log level:5
 log body:.*access_by_lua\(nginx.conf:\d+\):\d+: --> 100,.*
 log level:4
 log body:.*access_by_lua\(nginx.conf:\d+\):\d+: --> 100,.*
+--- skip_nginx: 3: <1.11.2
+
+
+=== TEST 16: multi-line error log
+--- http_config
+    lua_intercept_error_log 4k;
+--- config
+    location /t {
+        access_by_lua_block {
+            local ngx_log = require "ngx.log"
+            local status, err = ngx_log.set_errlog_filter(ngx.WARN)
+            if not status then
+                error(err)
+            end
+
+            ngx.log(ngx.ERR, "--> \n", "new line")
+        }
+
+        content_by_lua_block {
+            local ngx_log = require "ngx.log"
+            local res = ngx_log.get_error_logs()
+            ngx.say("log lines: #", #res / 2)
+
+            for i = 1, #res, 2 do
+                ngx.say("log level:", res[i])
+                ngx.say("log body:", res[i + 1])
+            end
+        }
+    }
+--- log_level: info
+--- request
+GET /t
+--- response_body_like
+log lines: #1
+log level:4
+log body:.*access_by_lua\(nginx.conf:\d+\):\d+: --> \nnew line,.*
 --- skip_nginx: 3: <1.11.2
