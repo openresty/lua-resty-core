@@ -46,7 +46,7 @@ function _M.set_errlog_filter(level)
 end
 
 
-function _M.get_errlog(max, logs)
+function _M.get_error_logs(max, logs)
     local err = get_string_buf(ERR_BUF_SIZE)
     local errlen = get_size_ptr()
     errlen[0] = ERR_BUF_SIZE

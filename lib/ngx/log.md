@@ -12,7 +12,7 @@ Table of Contents
     * [Intercept nginx error logs with specified log level](#intercept-nginx-error-logs-with-specified-log-level)
 * [Methods](#methods)
     * [set_errlog_filter](#set_errlog_filter)
-    * [get_errlog](#get_errlog)
+    * [get_error_logs](#get_error_logs)
 * [Community](#community)
     * [English Mailing List](#english-mailing-list)
     * [Chinese Mailing List](#chinese-mailing-list)
@@ -59,7 +59,7 @@ http {
                 ngx.log(ngx.WARN, "test2")
                 ngx.log(ngx.ERR, "test3")
 
-                local logs, err = ngx_log.get_errlog()
+                local logs, err = ngx_log.get_error_logs()
                 if not logs then
                     ngx.say("FAILED ", err)
                     return
@@ -120,9 +120,9 @@ For example,
 
 [Back to TOC](#table-of-contents)
 
-get_errlog
+get_error_logs
 ----------
-**syntax:** *res, err = log_module.get_errlog(max, res?)*
+**syntax:** *res, err = log_module.get_error_logs(max, res?)*
 
 **context:** *any*
 
@@ -132,7 +132,7 @@ In case of error, `nil` will be returned as well as a string describing the
 error.
 
 The optional `max` argument is a number that when specified, will prevent
-`ngx_log.get_errlog` from adding more than `max` logs to the `res` array.
+`ngx_log.get_error_logs` from adding more than `max` logs to the `res` array.
 
 ```lua
  for i = 1, 20 do
@@ -140,14 +140,14 @@ The optional `max` argument is a number that when specified, will prevent
  end
 
  local ngx_log = require "ngx.log"
- local res = ngx_log.get_errlog(10)
+ local res = ngx_log.get_error_logs(10)
  -- the number of `logs` is 10
 ```
 
 Specifying `max <= 0` disables this behavior, meaning that the number of
 results won't be limited.
 
-The optional 2th argument `res` can be a table that `ngx_log.get_errlog` will
+The optional 2th argument `res` can be a table that `ngx_log.get_error_logs` will
 re-use to hold the results instead of creating a new one, which can improve
 performance in hot code paths. It is used like so:
 
@@ -157,16 +157,16 @@ local ngx_log = require "ngx.log"
 local my_table = {"hello world"}
 
 local ngx_log = require "ngx.log"
-local res = ngx_log.get_errlog(0, my_table)
+local res = ngx_log.get_error_logs(0, my_table)
 -- res/my_table is same
 ```
 
-When provided with a `res` table, `ngx_log.get_errlog` won't clear the table
+When provided with a `res` table, `ngx_log.get_error_logs` won't clear the table
 for performance reasons, but will rather insert a trailing `nil` value
-when the `get_errlog` is completed.
+when the `get_error_logs` is completed.
 
 When the trailing `nil` is not enough for your purpose, you should
-clear the table yourself before feeding it into the `ngx_log.get_errlog` function.
+clear the table yourself before feeding it into the `ngx_log.get_error_logs` function.
 
 Community
 =========

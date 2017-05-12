@@ -9,7 +9,7 @@ log_level('error');
 
 repeat_each(2);
 
-plan tests => repeat_each() * (blocks() * 3 - 5);
+plan tests => repeat_each() * (blocks() * 3 - 6);
 
 my $pwd = cwd();
 
@@ -44,7 +44,7 @@ __DATA__
             ngx.log(ngx.ERR, "enter 11")
 
             local ngx_log = require "ngx.log"
-            local res, err = ngx_log.get_errlog()
+            local res, err = ngx_log.get_error_logs()
             if not res then
                 error("FAILED " .. err)
             end
@@ -80,7 +80,7 @@ enter 11
             ngx.log(ngx.ERR, "enter 22" .. string.rep("a", 4096))
 
             local ngx_log = require "ngx.log"
-            local res, err = ngx_log.get_errlog()
+            local res, err = ngx_log.get_error_logs()
             if not res then
                 error("FAILED " .. err)
             end
@@ -112,7 +112,7 @@ enter 22
 --- config
     log_by_lua_block {
         local ngx_log = require "ngx.log"
-        local res, err = ngx_log.get_errlog()
+        local res, err = ngx_log.get_error_logs()
         if not res then
             error("FAILED " .. err)
         end
@@ -147,7 +147,7 @@ $/
     }
     log_by_lua_block {
         local ngx_log = require "ngx.log"
-        local res, err = ngx_log.get_errlog()
+        local res, err = ngx_log.get_error_logs()
         if not res then
             error("FAILED " .. err)
         end
@@ -180,7 +180,7 @@ $/
     }
     log_by_lua_block {
         local ngx_log = require "ngx.log"
-        local res, err = ngx_log.get_errlog()
+        local res, err = ngx_log.get_error_logs()
         if not res then
             error("FAILED " .. err)
         end
@@ -217,7 +217,7 @@ $/
     }
     log_by_lua_block {
         local ngx_log = require "ngx.log"
-        local res, err = ngx_log.get_errlog()
+        local res, err = ngx_log.get_error_logs()
         if not res then
             error("FAILED " .. err)
         end
@@ -278,7 +278,7 @@ invalid number of arguments in "lua_intercept_error_log" directive
             ngx.log(ngx.ERR, "enter 1")
 
             local ngx_log = require "ngx.log"
-            local res, err = ngx_log.get_errlog()
+            local res, err = ngx_log.get_error_logs()
             if not res then
                 error("FAILED " .. err)
             end
@@ -334,7 +334,7 @@ API "set_errlog_filter" depends on directive "lua_intercept_error_log"
         }
         content_by_lua_block {
             local ngx_log = require "ngx.log"
-            local res = ngx_log.get_errlog()
+            local res = ngx_log.get_error_logs()
             ngx.say("log lines:", #res / 2)
         }
     }
@@ -378,7 +378,7 @@ qr/-->\d+/
         }
         content_by_lua_block {
             local ngx_log = require "ngx.log"
-            local res = ngx_log.get_errlog()
+            local res = ngx_log.get_error_logs()
             ngx.say("log lines:", #res / 2)
         }
     }
@@ -423,7 +423,7 @@ qr/-->\d+/
         }
         content_by_lua_block {
             local ngx_log = require "ngx.log"
-            local res = ngx_log.get_errlog()
+            local res = ngx_log.get_error_logs()
             ngx.say("log lines:", #res / 2)
         }
     }
@@ -462,14 +462,14 @@ qr/-->\d+/
             local ngx_log = require "ngx.log"
             local res = {}
             local err
-            res, err = ngx_log.get_errlog(2, res)
+            res, err = ngx_log.get_error_logs(2, res)
             if not res then
                 error("FAILED " .. err)
             end
             ngx.say("log lines:", #res / 2)
 
             tab_clear(res)
-            res, err = ngx_log.get_errlog(2, res)
+            res, err = ngx_log.get_error_logs(2, res)
             if not res then
                 error("FAILED " .. err)
             end
@@ -511,4 +511,101 @@ qr/missing \"level\" argument/
 "missing \"level\" argument
 ",
 ]
+--- skip_nginx: 3: <1.11.2
+
+
+
+=== TEST 16: check the intercepted error log body
+--- http_config
+    lua_intercept_error_log 4m;
+--- config
+    location /t {
+        access_by_lua_block {
+            local ngx_log = require "ngx.log"
+            local status, err = ngx_log.set_errlog_filter(ngx.WARN)
+            if not status then
+                error(err)
+            end
+
+            ngx.log(ngx.INFO, "-->1")
+            ngx.log(ngx.WARN, "-->2")
+            ngx.log(ngx.ERR, "-->3")
+        }
+
+        content_by_lua_block {
+            local ngx_log = require "ngx.log"
+            local res = ngx_log.get_error_logs()
+            for i = 1, #res, 2 do
+                ngx.say("log level:", res[i])
+                ngx.say("log body:", res[i + 1])
+            end
+        }
+    }
+--- log_level: info
+--- request
+GET /t
+--- response_body_like
+log level:5
+log body:.*access_by_lua\(nginx.conf:\d+\):9: -->2,.*
+log level:4
+log body:.*access_by_lua\(nginx.conf:\d+\):10: -->3,.*
+--- grep_error_log eval
+qr/-->\d+/
+--- grep_error_log_out eval
+[
+"-->1
+-->2
+-->3
+",
+"-->1
+-->2
+-->3
+"
+]
+--- skip_nginx: 3: <1.11.2
+
+
+
+=== TEST 16: flood the capturing buffer
+--- http_config
+    lua_intercept_error_log 4k;
+--- config
+    location /t {
+        access_by_lua_block {
+            local ngx_log = require "ngx.log"
+            local status, err = ngx_log.set_errlog_filter(ngx.WARN)
+            if not status then
+                error(err)
+            end
+
+            for i = 1, 100 do
+                ngx.log(ngx.INFO, "--> ", i)
+                ngx.log(ngx.WARN, "--> ", i)
+                ngx.log(ngx.ERR, "--> ", i)
+            end
+        }
+
+        content_by_lua_block {
+            local ngx_log = require "ngx.log"
+            local res = ngx_log.get_error_logs(1000)
+            ngx.say("log lines: #", #res / 2)
+
+            -- last 3 logs
+            for i = #res - 5, #res, 2 do
+                ngx.say("log level:", res[i])
+                ngx.say("log body:", res[i + 1])
+            end
+        }
+    }
+--- log_level: info
+--- request
+GET /t
+--- response_body_like
+log lines: #22
+log level:4
+log body:.*access_by_lua\(nginx.conf:\d+\):\d+: --> 99,.*
+log level:5
+log body:.*access_by_lua\(nginx.conf:\d+\):\d+: --> 100,.*
+log level:4
+log body:.*access_by_lua\(nginx.conf:\d+\):\d+: --> 100,.*
 --- skip_nginx: 3: <1.11.2
