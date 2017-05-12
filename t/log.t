@@ -546,9 +546,9 @@ qr/missing \"level\" argument/
 GET /t
 --- response_body_like
 log level:5
-log body:.*access_by_lua\(nginx.conf:\d+\):9: -->2, client: 127.0.0.1,.*host: "localhost".*
+log body:\d{4}/\d{2}/\d{2} \d{2}:\d{2}:\d{2} \[warn\] (\d+).*access_by_lua\(nginx.conf:\d+\):\d+: -->2, client: 127.0.0.1, server: localhost, request: "GET /t HTTP/1.1", host: "localhost"
 log level:4
-log body:.*access_by_lua\(nginx.conf:\d+\):10: -->3, client: 127.0.0.1,.*host: "localhost".*
+log body:\d{4}/\d{2}/\d{2} \d{2}:\d{2}:\d{2} \[error\] (\d+).*access_by_lua\(nginx.conf:\d+\):\d+: -->3, client: 127.0.0.1, server: localhost, request: "GET /t HTTP/1.1", host: "localhost"
 --- grep_error_log eval
 qr/-->\d+/
 --- grep_error_log_out eval
@@ -603,11 +603,11 @@ GET /t
 --- response_body_like
 log lines: #22
 log level:4
-log body:.*access_by_lua\(nginx.conf:\d+\):\d+: --> 99, client: 127.0.0.1,.*host: "localhost".*
+log body:\d{4}/\d{2}/\d{2} \d{2}:\d{2}:\d{2} \[error\] (\d+).*access_by_lua\(nginx.conf:\d+\):\d+: --> 99, client: 127.0.0.1, server: localhost, request: "GET /t HTTP/1.1", host: "localhost"
 log level:5
-log body:.*access_by_lua\(nginx.conf:\d+\):\d+: --> 100, client: 127.0.0.1,.*host: "localhost".*
+log body:\d{4}/\d{2}/\d{2} \d{2}:\d{2}:\d{2} \[warn\] (\d+).*access_by_lua\(nginx.conf:\d+\):\d+: --> 100, client: 127.0.0.1, server: localhost, request: "GET /t HTTP/1.1", host: "localhost"
 log level:4
-log body:.*access_by_lua\(nginx.conf:\d+\):\d+: --> 100, client: 127.0.0.1,.*host: "localhost".*
+log body:\d{4}/\d{2}/\d{2} \d{2}:\d{2}:\d{2} \[error\] (\d+).*access_by_lua\(nginx.conf:\d+\):\d+: --> 100, client: 127.0.0.1, server: localhost, request: "GET /t HTTP/1.1", host: "localhost"
 --- skip_nginx: 2: <1.11.2
 
 
@@ -624,7 +624,7 @@ log body:.*access_by_lua\(nginx.conf:\d+\):\d+: --> 100, client: 127.0.0.1,.*hos
                 error(err)
             end
 
-            ngx.log(ngx.ERR, "--> \n", "new line")
+            ngx.log(ngx.ERR, "-->\n", "new line")
         }
 
         content_by_lua_block {
@@ -644,5 +644,6 @@ GET /t
 --- response_body_like
 log lines: #1
 log level:4
-log body:.*access_by_lua\(nginx.conf:\d+\):\d+: --> \nnew line, client: 127.0.0.1,.*host: "localhost".*
+log body:\d{4}/\d{2}/\d{2} \d{2}:\d{2}:\d{2} \[error\] (\d+).*access_by_lua\(nginx.conf:\d+\):\d+: -->
+new line, client: 127.0.0.1, server: localhost, request: "GET /t HTTP/1.1", host: "localhost"
 --- skip_nginx: 2: <1.11.2
