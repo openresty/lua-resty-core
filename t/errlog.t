@@ -36,7 +36,7 @@ __DATA__
 
 === TEST 1: sanity
 --- http_config
-    lua_intercept_error_log 4m;
+    lua_capture_error_log 4m;
 --- config
     location /t {
         access_by_lua_block {
@@ -70,9 +70,9 @@ enter 11
 
 
 
-=== TEST 2: overflow intercepted error logs
+=== TEST 2: overflow captured error logs
 --- http_config
-    lua_intercept_error_log 4k;
+    lua_capture_error_log 4k;
 --- config
     location /t {
         access_by_lua_block {
@@ -108,7 +108,7 @@ enter 22
 
 === TEST 3: 404 error(not found)
 --- http_config
-    lua_intercept_error_log 4m;
+    lua_capture_error_log 4m;
 --- config
     log_by_lua_block {
         local errlog = require "ngx.errlog"
@@ -116,20 +116,20 @@ enter 22
         if not res then
             error("FAILED " .. err)
         end
-        ngx.log(ngx.ERR, "intercept log line:", #res / 2)
+        ngx.log(ngx.ERR, "capture log line:", #res / 2)
     }
 --- request
 GET /t
 --- error_code: 404
 --- grep_error_log eval
-qr/intercept log line:\d+|No such file or directory/
+qr/capture log line:\d+|No such file or directory/
 --- grep_error_log_out eval
 [
 qr/^No such file or directory
-intercept log line:1
+capture log line:1
 $/,
 qr/^No such file or directory
-intercept log line:2
+capture log line:2
 $/
 ]
 --- skip_nginx: 2: <1.11.2
@@ -138,7 +138,7 @@ $/
 
 === TEST 4: 500 error
 --- http_config
-    lua_intercept_error_log 4m;
+    lua_capture_error_log 4m;
 --- config
     location /t {
         content_by_lua_block {
@@ -151,20 +151,20 @@ $/
         if not res then
             error("FAILED " .. err)
         end
-        ngx.log(ngx.ERR, "intercept log line:", #res / 2)
+        ngx.log(ngx.ERR, "capture log line:", #res / 2)
     }
 --- request
 GET /t
 --- error_code: 500
 --- grep_error_log eval
-qr/intercept log line:\d+|attempt to perform arithmetic on a table value/
+qr/capture log line:\d+|attempt to perform arithmetic on a table value/
 --- grep_error_log_out eval
 [
 qr/^attempt to perform arithmetic on a table value
-intercept log line:1
+capture log line:1
 $/,
 qr/^attempt to perform arithmetic on a table value
-intercept log line:2
+capture log line:2
 $/
 ]
 --- skip_nginx: 2: <1.11.2
@@ -173,7 +173,7 @@ $/
 
 === TEST 5: no error log
 --- http_config
-    lua_intercept_error_log 4m;
+    lua_capture_error_log 4m;
 --- config
     location /t {
         echo "hello";
@@ -184,19 +184,19 @@ $/
         if not res then
             error("FAILED " .. err)
         end
-        ngx.log(ngx.ERR, "intercept log line:", #res / 2)
+        ngx.log(ngx.ERR, "capture log line:", #res / 2)
     }
 --- request
 GET /t
 --- response_body
 hello
 --- grep_error_log eval
-qr/intercept log line:\d+/
+qr/capture log line:\d+/
 --- grep_error_log_out eval
 [
-qr/^intercept log line:0
+qr/^capture log line:0
 $/,
-qr/^intercept log line:1
+qr/^capture log line:1
 $/
 ]
 --- skip_nginx: 3: <1.11.2
@@ -205,7 +205,7 @@ $/
 
 === TEST 6: customize the log path
 --- http_config
-    lua_intercept_error_log 4m;
+    lua_capture_error_log 4m;
     error_log logs/error_http.log error;
 --- config
     location /t {
@@ -221,7 +221,7 @@ $/
         if not res then
             error("FAILED " .. err)
         end
-        ngx.log(ngx.ERR, "intercept log line:", #res / 2)
+        ngx.log(ngx.ERR, "capture log line:", #res / 2)
 
     }
 --- request
@@ -229,14 +229,14 @@ GET /t
 --- response_body
 hello
 --- grep_error_log eval
-qr/intercept log line:\d+|enter access/
+qr/capture log line:\d+|enter access/
 --- grep_error_log_out eval
 [
 qr/^enter access
-intercept log line:1
+capture log line:1
 $/,
 qr/^enter access
-intercept log line:2
+capture log line:2
 $/
 ]
 --- skip_nginx: 3: <1.11.2
@@ -245,28 +245,28 @@ $/
 
 === TEST 7: invalid size (< 4k)
 --- http_config
-    lua_intercept_error_log 3k;
+    lua_capture_error_log 3k;
 --- config
     location /t {
         echo "hello";
     }
 --- must_die
 --- error_log
-invalid intercept error log size "3k", minimum size is 4096
+invalid capture error log size "3k", minimum size is 4096
 --- skip_nginx: 2: <1.11.2
 
 
 
 === TEST 8: invalid size (no argu)
 --- http_config
-    lua_intercept_error_log;
+    lua_capture_error_log;
 --- config
     location /t {
         echo "hello";
     }
 --- must_die
 --- error_log
-invalid number of arguments in "lua_intercept_error_log" directive
+invalid number of arguments in "lua_capture_error_log" directive
 --- skip_nginx: 2: <1.11.2
 
 
@@ -290,7 +290,7 @@ GET /t
 --- response_body_like: 500 Internal Server Error
 --- error_code: 500
 --- error_log
-API "get_errlog_data" depends on directive "lua_intercept_error_log"
+API "get_errlog_data" depends on directive "lua_capture_error_log"
 --- skip_nginx: 3: <1.11.2
 
 
@@ -311,14 +311,14 @@ GET /t
 --- response_body_like: 500 Internal Server Error
 --- error_code: 500
 --- error_log
-API "set_errlog_filter" depends on directive "lua_intercept_error_log"
+API "set_errlog_filter" depends on directive "lua_capture_error_log"
 --- skip_nginx: 3: <1.11.2
 
 
 
 === TEST 11: filter log by level(ngx.INFO)
 --- http_config
-    lua_intercept_error_log 4m;
+    lua_capture_error_log 4m;
 --- config
     location /t {
         access_by_lua_block {
@@ -362,7 +362,7 @@ qr/-->\d+/
 
 === TEST 12: filter log by level(ngx.WARN)
 --- http_config
-    lua_intercept_error_log 4m;
+    lua_capture_error_log 4m;
 --- config
     location /t {
         access_by_lua_block {
@@ -406,7 +406,7 @@ qr/-->\d+/
 
 === TEST 13: filter log by level(ngx.CRIT)
 --- http_config
-    lua_intercept_error_log 4m;
+    lua_capture_error_log 4m;
 --- log_level: info
 --- config
     location /t {
@@ -450,7 +450,7 @@ qr/-->\d+/
 
 === TEST 14: set max count and reuse table
 --- http_config
-    lua_intercept_error_log 4m;
+    lua_capture_error_log 4m;
 --- config
     location /t {
         access_by_lua_block {
@@ -487,7 +487,7 @@ log lines:1
 
 === TEST 15: wrong argument
 --- http_config
-    lua_intercept_error_log 4m;
+    lua_capture_error_log 4m;
 --- config
     location /t {
         access_by_lua_block {
@@ -515,9 +515,9 @@ qr/missing \"level\" argument/
 
 
 
-=== TEST 16: check the intercepted error log body
+=== TEST 16: check the captured error log body
 --- http_config
-    lua_intercept_error_log 4m;
+    lua_capture_error_log 4m;
 --- config
     location /t {
         access_by_lua_block {
@@ -568,7 +568,7 @@ qr/-->\d+/
 
 === TEST 17: flood the capturing buffer (4k)
 --- http_config
-    lua_intercept_error_log 4k;
+    lua_capture_error_log 4k;
 --- config
     location /t {
         access_by_lua_block {
@@ -627,7 +627,7 @@ log body:\d{4}/\d{2}/\d{2} \d{2}:\d{2}:\d{2} \[error\] (\d+).*access_by_lua\(ngi
 
 === TEST 18: flood the capturing buffer (5k)
 --- http_config
-    lua_intercept_error_log 5k;
+    lua_capture_error_log 5k;
 --- config
     location /t {
         access_by_lua_block {
@@ -686,7 +686,7 @@ log body:\d{4}/\d{2}/\d{2} \d{2}:\d{2}:\d{2} \[error\] (\d+).*access_by_lua\(ngi
 
 === TEST 19: fetch a few and generate a few, then fetch again (overflown again)
 --- http_config
-    lua_intercept_error_log 5k;
+    lua_capture_error_log 5k;
 --- config
     location /t {
         access_by_lua_block {
@@ -768,7 +768,7 @@ log body:\d{4}/\d{2}/\d{2} \d{2}:\d{2}:\d{2} \[error\] (\d+).*?content_by_lua\(n
 
 === TEST 20: fetch a few and generate a few, then fetch again (not overflown again)
 --- http_config
-    lua_intercept_error_log 5k;
+    lua_capture_error_log 5k;
 --- config
     location /t {
         access_by_lua_block {
@@ -848,7 +848,7 @@ log body:\d{4}/\d{2}/\d{2} \d{2}:\d{2}:\d{2} \[error\] (\d+).*?content_by_lua\(n
 
 === TEST 21: multi-line error log
 --- http_config
-    lua_intercept_error_log 4k;
+    lua_capture_error_log 4k;
 --- config
     location /t {
         access_by_lua_block {

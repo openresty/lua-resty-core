@@ -9,7 +9,7 @@ Table of Contents
 * [Name](#name)
 * [Status](#status)
 * [Synopsis](#synopsis)
-    * [Intercept nginx error logs with specified log level](#intercept-nginx-error-logs-with-specified-log-level)
+    * [Capturing nginx error logs with specified log filtering level](#capturing-nginx-error-logs-with-specified-log-filtering-level)
 * [Methods](#methods)
     * [set_errlog_filter](#set_errlog_filter)
     * [get_error_logs](#get_error_logs)
@@ -31,15 +31,15 @@ The API is still in flux and may change in the future without notice.
 Synopsis
 ========
 
-Intercept nginx error logs with specified log level
----------------------------------------------------
+Capturing nginx error logs with specified log filtering level
+-------------------------------------------------------------
 
 ```nginx
 error logs/error.log info;
 
 http {
-    # enable intercept error log
-    lua_intercept_error_log 32m;
+    # enable capturing error logs
+    lua_capture_error_log 32m;
 
     init_by_lua_block {
         local errlog = require "ngx.errlog"
@@ -98,14 +98,16 @@ set_errlog_filter
 
 **context:** *init_by_lua&#42;*
 
-Specifies the filter log level, only to intercept, capture, and buffer the error log we need.
-If we don't call this API, all of the error logs will be intercepted by default.
+Specifies the filter log level, only to capture and buffer the error logs with a log level
+no lower than the specified level.
+
+If we don't call this API, all of the error logs will be captured by default.
 
 In case of error, `nil` will be returned as well as a string describing the
 error.
 
 This API should always work with directive
-[lua_intercept_error_log](https://github.com/openresty/lua-nginx-module#lua_intercept_error_log).
+[lua_capture_error_log](https://github.com/openresty/lua-nginx-module#lua_capture_error_log).
 
 See [Nginx log level constants](https://github.com/openresty/lua-nginx-module#nginx-log-level-constants) for all nginx log levels.
 
@@ -130,7 +132,7 @@ get_error_logs
 
 Fetches the captured nginx error log messages if any in the global data buffer
 specified by `ngx_lua`'s
-[lua_intercept_error_log](https://github.com/openresty/lua-nginx-module#lua_intercept_error_log)
+[lua_capture_error_log](https://github.com/openresty/lua-nginx-module#lua_capture_error_log)
 directive. Upon return, this Lua function also *removes* those messages from
 that global capturing buffer to make room for future new error log data.
 
