@@ -98,13 +98,14 @@ set_errlog_filter
 
 **context:** *init_by_lua&#42;*
 
-Specifies the filter log level, only to intercept the error log we need.
+Specifies the filter log level, only to intercept, capture, and buffer the error log we need.
 If we don't call this API, all of the error logs will be intercepted by default.
 
 In case of error, `nil` will be returned as well as a string describing the
 error.
 
-This API should always work with directive [lua_intercept_error_log](https://github.com/openresty/lua-nginx-module#lua_intercept_error_log).
+This API should always work with directive
+[lua_intercept_error_log](https://github.com/openresty/lua-nginx-module#lua_intercept_error_log).
 
 See [Nginx log level constants](https://github.com/openresty/lua-nginx-module#nginx-log-level-constants) for all nginx log levels.
 
@@ -127,7 +128,11 @@ get_error_logs
 
 **context:** *any*
 
-Returns the intercepted nginx error logs if successful.
+Fetches the captured nginx error log messages if any in the global data buffer
+specified by `ngx_lua`'s
+[lua_intercept_error_log](https://github.com/openresty/lua-nginx-module#lua_intercept_error_log)
+directive. Upon return, this Lua function also *removes* those messages from
+that global capturing buffer to make room for future new error log data.
 
 In case of error, `nil` will be returned as well as a string describing the
 error.
