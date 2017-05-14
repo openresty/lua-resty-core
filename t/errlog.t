@@ -44,7 +44,7 @@ __DATA__
             ngx.log(ngx.ERR, "enter 11")
 
             local errlog = require "ngx.errlog"
-            local res, err = errlog.get_error_logs()
+            local res, err = errlog.get_logs()
             if not res then
                 error("FAILED " .. err)
             end
@@ -80,7 +80,7 @@ enter 11
             ngx.log(ngx.ERR, "enter 22" .. string.rep("a", 4096))
 
             local errlog = require "ngx.errlog"
-            local res, err = errlog.get_error_logs()
+            local res, err = errlog.get_logs()
             if not res then
                 error("FAILED " .. err)
             end
@@ -112,7 +112,7 @@ enter 22
 --- config
     log_by_lua_block {
         local errlog = require "ngx.errlog"
-        local res, err = errlog.get_error_logs()
+        local res, err = errlog.get_logs()
         if not res then
             error("FAILED " .. err)
         end
@@ -147,7 +147,7 @@ $/
     }
     log_by_lua_block {
         local errlog = require "ngx.errlog"
-        local res, err = errlog.get_error_logs()
+        local res, err = errlog.get_logs()
         if not res then
             error("FAILED " .. err)
         end
@@ -180,7 +180,7 @@ $/
     }
     log_by_lua_block {
         local errlog = require "ngx.errlog"
-        local res, err = errlog.get_error_logs()
+        local res, err = errlog.get_logs()
         if not res then
             error("FAILED " .. err)
         end
@@ -217,7 +217,7 @@ $/
     }
     log_by_lua_block {
         local errlog = require "ngx.errlog"
-        local res, err = errlog.get_error_logs()
+        local res, err = errlog.get_logs()
         if not res then
             error("FAILED " .. err)
         end
@@ -278,7 +278,7 @@ invalid number of arguments in "lua_capture_error_log" directive
             ngx.log(ngx.ERR, "enter 1")
 
             local errlog = require "ngx.errlog"
-            local res, err = errlog.get_error_logs()
+            local res, err = errlog.get_logs()
             if not res then
                 error("FAILED " .. err)
             end
@@ -290,17 +290,17 @@ GET /t
 --- response_body_like: 500 Internal Server Error
 --- error_code: 500
 --- error_log
-API "get_errlog_data" depends on directive "lua_capture_error_log"
+directive "lua_capture_error_log" is not set
 --- skip_nginx: 3: <1.11.2
 
 
 
-=== TEST 10: without directive + ngx.set_errlog_filter
+=== TEST 10: without directive + ngx.set_filter_level
 --- config
     location /t {
         access_by_lua_block {
             local errlog = require "ngx.errlog"
-            local status, err = errlog.set_errlog_filter(ngx.ERR)
+            local status, err = errlog.set_filter_level(ngx.ERR)
             if not status then
                 error(err)
             end
@@ -311,7 +311,7 @@ GET /t
 --- response_body_like: 500 Internal Server Error
 --- error_code: 500
 --- error_log
-API "set_errlog_filter" depends on directive "lua_capture_error_log"
+directive "lua_capture_error_log" is not set
 --- skip_nginx: 3: <1.11.2
 
 
@@ -323,7 +323,7 @@ API "set_errlog_filter" depends on directive "lua_capture_error_log"
     location /t {
         access_by_lua_block {
             local errlog = require "ngx.errlog"
-            local status, err = errlog.set_errlog_filter(ngx.INFO)
+            local status, err = errlog.set_filter_level(ngx.INFO)
             if not status then
                 error(err)
             end
@@ -334,7 +334,7 @@ API "set_errlog_filter" depends on directive "lua_capture_error_log"
         }
         content_by_lua_block {
             local errlog = require "ngx.errlog"
-            local res = errlog.get_error_logs()
+            local res = errlog.get_logs()
             ngx.say("log lines:", #res / 2)
         }
     }
@@ -367,7 +367,7 @@ qr/-->\d+/
     location /t {
         access_by_lua_block {
             local errlog = require "ngx.errlog"
-            local status, err = errlog.set_errlog_filter(ngx.WARN)
+            local status, err = errlog.set_filter_level(ngx.WARN)
             if not status then
                 error(err)
             end
@@ -378,7 +378,7 @@ qr/-->\d+/
         }
         content_by_lua_block {
             local errlog = require "ngx.errlog"
-            local res = errlog.get_error_logs()
+            local res = errlog.get_logs()
             ngx.say("log lines:", #res / 2)
         }
     }
@@ -412,7 +412,7 @@ qr/-->\d+/
     location /t {
         access_by_lua_block {
             local errlog = require "ngx.errlog"
-            local status, err = errlog.set_errlog_filter(ngx.CRIT)
+            local status, err = errlog.set_filter_level(ngx.CRIT)
             if not status then
                 error(err)
             end
@@ -423,7 +423,7 @@ qr/-->\d+/
         }
         content_by_lua_block {
             local errlog = require "ngx.errlog"
-            local res = errlog.get_error_logs()
+            local res = errlog.get_logs()
             ngx.say("log lines:", #res / 2)
         }
     }
@@ -462,14 +462,14 @@ qr/-->\d+/
             local errlog = require "ngx.errlog"
             local res = {}
             local err
-            res, err = errlog.get_error_logs(2, res)
+            res, err = errlog.get_logs(2, res)
             if not res then
                 error("FAILED " .. err)
             end
             ngx.say("log lines:", #res / 2)
 
             tab_clear(res)
-            res, err = errlog.get_error_logs(2, res)
+            res, err = errlog.get_logs(2, res)
             if not res then
                 error("FAILED " .. err)
             end
@@ -492,7 +492,7 @@ log lines:1
     location /t {
         access_by_lua_block {
             local errlog = require "ngx.errlog"
-            local status, err = errlog.set_errlog_filter()
+            local status, err = errlog.set_filter_level()
             if not status then
                 error(err)
             end
@@ -522,7 +522,7 @@ qr/missing \"level\" argument/
     location /t {
         access_by_lua_block {
             local errlog = require "ngx.errlog"
-            local status, err = errlog.set_errlog_filter(ngx.WARN)
+            local status, err = errlog.set_filter_level(ngx.WARN)
             if not status then
                 error(err)
             end
@@ -534,7 +534,7 @@ qr/missing \"level\" argument/
 
         content_by_lua_block {
             local errlog = require "ngx.errlog"
-            local res = errlog.get_error_logs()
+            local res = errlog.get_logs()
             for i = 1, #res, 2 do
                 ngx.say("log level:", res[i])
                 ngx.say("log body:", res[i + 1])
@@ -573,7 +573,7 @@ qr/-->\d+/
     location /t {
         access_by_lua_block {
             local errlog = require "ngx.errlog"
-            local status, err = errlog.set_errlog_filter(ngx.WARN)
+            local status, err = errlog.set_filter_level(ngx.WARN)
             if not status then
                 error(err)
             end
@@ -587,7 +587,7 @@ qr/-->\d+/
 
         content_by_lua_block {
             local errlog = require "ngx.errlog"
-            local res = errlog.get_error_logs(1000)
+            local res = errlog.get_logs(1000)
             ngx.say("log lines: #", #res / 2)
 
             -- first 3 logs
@@ -632,7 +632,7 @@ log body:\d{4}/\d{2}/\d{2} \d{2}:\d{2}:\d{2} \[error\] (\d+).*access_by_lua\(ngi
     location /t {
         access_by_lua_block {
             local errlog = require "ngx.errlog"
-            local status, err = errlog.set_errlog_filter(ngx.WARN)
+            local status, err = errlog.set_filter_level(ngx.WARN)
             if not status then
                 error(err)
             end
@@ -646,7 +646,7 @@ log body:\d{4}/\d{2}/\d{2} \d{2}:\d{2}:\d{2} \[error\] (\d+).*access_by_lua\(ngi
 
         content_by_lua_block {
             local errlog = require "ngx.errlog"
-            local res = errlog.get_error_logs(1000)
+            local res = errlog.get_logs(1000)
             ngx.say("log lines: #", #res / 2)
 
             -- first 3 logs
@@ -691,7 +691,7 @@ log body:\d{4}/\d{2}/\d{2} \d{2}:\d{2}:\d{2} \[error\] (\d+).*access_by_lua\(ngi
     location /t {
         access_by_lua_block {
             local errlog = require "ngx.errlog"
-            local status, err = errlog.set_errlog_filter(ngx.WARN)
+            local status, err = errlog.set_filter_level(ngx.WARN)
             if not status then
                 error(err)
             end
@@ -706,7 +706,7 @@ log body:\d{4}/\d{2}/\d{2} \d{2}:\d{2}:\d{2} \[error\] (\d+).*access_by_lua\(ngi
         content_by_lua_block {
             local errlog = require "ngx.errlog"
 
-            local res = errlog.get_error_logs(3)
+            local res = errlog.get_logs(3)
             ngx.say("msg count: ", #res / 2)
 
             -- first 3 logs
@@ -720,7 +720,7 @@ log body:\d{4}/\d{2}/\d{2} \d{2}:\d{2}:\d{2} \[error\] (\d+).*access_by_lua\(ngi
             ngx.log(ngx.ERR, "--> 103")
             ngx.log(ngx.ERR, "--> 104")
 
-            local res = errlog.get_error_logs(3)
+            local res = errlog.get_logs(3)
             ngx.say("msg count: ", #res / 2)
 
             -- first 3 logs
@@ -729,7 +729,7 @@ log body:\d{4}/\d{2}/\d{2} \d{2}:\d{2}:\d{2} \[error\] (\d+).*access_by_lua\(ngi
                 ngx.say("log body:", res[i + 1])
             end
 
-            local res = errlog.get_error_logs(1000)
+            local res = errlog.get_logs(1000)
             -- last 3 logs
             for i = #res - 5, #res, 2 do
                 ngx.say("log level:", res[i])
@@ -773,7 +773,7 @@ log body:\d{4}/\d{2}/\d{2} \d{2}:\d{2}:\d{2} \[error\] (\d+).*?content_by_lua\(n
     location /t {
         access_by_lua_block {
             local errlog = require "ngx.errlog"
-            local status, err = errlog.set_errlog_filter(ngx.WARN)
+            local status, err = errlog.set_filter_level(ngx.WARN)
             if not status then
                 error(err)
             end
@@ -788,7 +788,7 @@ log body:\d{4}/\d{2}/\d{2} \d{2}:\d{2}:\d{2} \[error\] (\d+).*?content_by_lua\(n
         content_by_lua_block {
             local errlog = require "ngx.errlog"
 
-            local res = errlog.get_error_logs(3)
+            local res = errlog.get_logs(3)
             ngx.say("msg count: ", #res / 2)
 
             -- first 3 logs
@@ -800,7 +800,7 @@ log body:\d{4}/\d{2}/\d{2} \d{2}:\d{2}:\d{2} \[error\] (\d+).*?content_by_lua\(n
             ngx.log(ngx.ERR, "howdy, something new!")
             ngx.log(ngx.ERR, "howdy, something even newer!")
 
-            local res = errlog.get_error_logs(3)
+            local res = errlog.get_logs(3)
             ngx.say("msg count: ", #res / 2)
 
             -- first 3 logs
@@ -809,7 +809,7 @@ log body:\d{4}/\d{2}/\d{2} \d{2}:\d{2}:\d{2} \[error\] (\d+).*?content_by_lua\(n
                 ngx.say("log body:", res[i + 1])
             end
 
-            local res = errlog.get_error_logs(1000)
+            local res = errlog.get_logs(1000)
             -- last 3 logs
             for i = #res - 5, #res, 2 do
                 ngx.say("log level:", res[i])
@@ -853,7 +853,7 @@ log body:\d{4}/\d{2}/\d{2} \d{2}:\d{2}:\d{2} \[error\] (\d+).*?content_by_lua\(n
     location /t {
         access_by_lua_block {
             local errlog = require "ngx.errlog"
-            local status, err = errlog.set_errlog_filter(ngx.WARN)
+            local status, err = errlog.set_filter_level(ngx.WARN)
             if not status then
                 error(err)
             end
@@ -863,7 +863,7 @@ log body:\d{4}/\d{2}/\d{2} \d{2}:\d{2}:\d{2} \[error\] (\d+).*?content_by_lua\(n
 
         content_by_lua_block {
             local errlog = require "ngx.errlog"
-            local res = errlog.get_error_logs()
+            local res = errlog.get_logs()
             ngx.say("log lines: #", #res / 2)
 
             for i = 1, #res, 2 do

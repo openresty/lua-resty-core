@@ -11,8 +11,8 @@ Table of Contents
 * [Synopsis](#synopsis)
     * [Capturing nginx error logs with specified log filtering level](#capturing-nginx-error-logs-with-specified-log-filtering-level)
 * [Methods](#methods)
-    * [set_errlog_filter](#set_errlog_filter)
-    * [get_error_logs](#get_error_logs)
+    * [set_filter_level](#set_filter_level)
+    * [get_logs](#get_logs)
 * [Community](#community)
     * [English Mailing List](#english-mailing-list)
     * [Chinese Mailing List](#chinese-mailing-list)
@@ -43,7 +43,7 @@ http {
 
     init_by_lua_block {
         local errlog = require "ngx.errlog"
-        local status, err = errlog.set_errlog_filter(ngx.WARN)
+        local status, err = errlog.set_filter_level(ngx.WARN)
         if not status then
             ngx.log(ngx.ERR, err)
             return
@@ -60,7 +60,7 @@ http {
                 ngx.log(ngx.WARN, "test2")
                 ngx.log(ngx.ERR, "test3")
 
-                local logs, err = errlog.get_error_logs()
+                local logs, err = errlog.get_logs(10)
                 if not logs then
                     ngx.say("FAILED ", err)
                     return
@@ -92,9 +92,9 @@ level: 4 data: 2017/04/19 22:20:05 [error] 63176#0: *1
 Methods
 =======
 
-set_errlog_filter
+set_filter_level
 -----------------
-**syntax:** *status, err = log_module.set_errlog_filter(log_level)*
+**syntax:** *status, err = log_module.set_filter_level(log_level)*
 
 **context:** *init_by_lua&#42;*
 
@@ -116,7 +116,7 @@ For example,
 ```lua
  init_by_lua_block {
      local errlog = require "ngx.errlog"
-     errlog.set_errlog_filter(ngx.WARN)
+     errlog.set_filter_level(ngx.WARN)
  }
 ```
 
@@ -124,9 +124,9 @@ For example,
 
 [Back to TOC](#table-of-contents)
 
-get_error_logs
---------------
-**syntax:** *res, err = log_module.get_error_logs(max, res?)*
+get_logs
+--------
+**syntax:** *res, err = log_module.get_logs(max?, res?)*
 
 **context:** *any*
 
@@ -140,7 +140,7 @@ In case of error, `nil` will be returned as well as a string describing the
 error.
 
 The optional `max` argument is a number that when specified, will prevent
-`errlog.get_error_logs` from adding more than `max` messages to the `res` array.
+`errlog.get_logs` from adding more than `max` messages to the `res` array.
 
 ```lua
 for i = 1, 20 do
@@ -148,7 +148,7 @@ for i = 1, 20 do
 end
 
 local errlog = require "ngx.errlog"
-local res = errlog.get_error_logs(10)
+local res = errlog.get_logs(10)
 -- the number of messages in the `res` table is 10 and the `res` table
 -- has 20 elements.
 ```
@@ -187,7 +187,7 @@ local new_tab = require "table.new"
 local buffer = new_tab(100 * 2, 0)  -- for 100 messages
 
 local errlog = require "ngx.errlog"
-local res, err = errlog.get_error_logs(0, buffer)
+local res, err = errlog.get_logs(0, buffer)
 if res then
     -- res is the same table as `buffer`
     for i = 1, #res, 2 do
@@ -201,12 +201,12 @@ if res then
 end
 ```
 
-When provided with a `res` table, `errlog.get_error_logs` won't clear the table
+When provided with a `res` table, `errlog.get_logs` won't clear the table
 for performance reasons, but will rather insert a trailing `nil` value
 after the last table element.
 
 When the trailing `nil` is not enough for your purpose, you should
-clear the table yourself before feeding it into the `errlog.get_error_logs` function.
+clear the table yourself before feeding it into the `errlog.get_logs` function.
 
 [Back to TOC](#table-of-contents)
 

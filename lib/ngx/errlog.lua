@@ -17,9 +17,9 @@ local _M = { version = base.version }
 
 
 ffi.cdef[[
-int ngx_http_lua_ffi_set_errlog_filter(int level, unsigned char *err,
+int ngx_http_lua_ffi_errlog_set_filter_level(int level, unsigned char *err,
     size_t *errlen);
-int ngx_http_lua_ffi_get_errlog_data(char **log, int *loglevel,
+int ngx_http_lua_ffi_errlog_get_msg(char **log, int *loglevel,
     unsigned char *err, size_t *errlen);
 ]]
 
@@ -28,7 +28,7 @@ local ERR_BUF_SIZE = 128
 local FFI_ERROR = base.FFI_ERROR
 
 
-function _M.set_errlog_filter(level)
+function _M.set_filter_level(level)
     if not level then
         return nil, [[missing "level" argument]]
     end
@@ -36,7 +36,7 @@ function _M.set_errlog_filter(level)
     local err = get_string_buf(ERR_BUF_SIZE)
     local errlen = get_size_ptr()
     errlen[0] = ERR_BUF_SIZE
-    local rc = C.ngx_http_lua_ffi_set_errlog_filter(level, err, errlen)
+    local rc = C.ngx_http_lua_ffi_errlog_set_filter_level(level, err, errlen)
 
     if rc == FFI_ERROR then
         return nil, ffi_string(err, errlen[0])
@@ -46,7 +46,7 @@ function _M.set_errlog_filter(level)
 end
 
 
-function _M.get_error_logs(max, logs)
+function _M.get_logs(max, logs)
     local err = get_string_buf(ERR_BUF_SIZE)
     local errlen = get_size_ptr()
     errlen[0] = ERR_BUF_SIZE
@@ -61,8 +61,8 @@ function _M.get_error_logs(max, logs)
     end
 
     for i = 1, max do
-        local loglen = C.ngx_http_lua_ffi_get_errlog_data(log,
-                                                      loglevel, err, errlen)
+        local loglen = C.ngx_http_lua_ffi_errlog_get_msg(log,
+                                                         loglevel, err, errlen)
         if loglen == FFI_ERROR then
             return nil, ffi_string(err, errlen[0])
         end
