@@ -157,7 +157,7 @@ Allows changing of regex settings. Currently, it can only change the
 
 ```nginx
 
- init_by_lua_block { ngx.re.opt("jit_stack_size", 128 * 1024) }
+ init_by_lua_block { require "ngx.re".opt("jit_stack_size", 200 * 1024) }
 
  server {
      location /re {
