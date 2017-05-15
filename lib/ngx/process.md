@@ -138,7 +138,7 @@ signal_graceful_exit
 
 **context:** *any*
 
-Signals the current nginx process to quit gracefully, i.e., after all the timers have expired (in time or expired prematurely).
+Signals the *current* nginx (worker) process to quit gracefully, i.e., after all the timers have expired (in time or expired prematurely).
 
 Note that this API function simply sets the nginx global C variable `ngx_quit` to signal the nginx event
 loop directly. No UNIX signals or IPC are involved here.
