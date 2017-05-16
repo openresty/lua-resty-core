@@ -766,13 +766,48 @@ GET /re
 4
 5
 len: 5
+--- error_log eval
+qr/\[TRACE   \d+/
 --- no_error_log
 [error]
-[TRACE
 
 
 
-=== TEST 23: regex is "" with pos
+=== TEST 23: regex is "" with max
+--- http_config eval: $::HttpConfig
+--- config
+    location /re {
+        content_by_lua_block {
+            local ngx_re = require "ngx.re"
+
+            local res, err = ngx_re.split("12345", "", "jo", nil, 3)
+            if err then
+                ngx.log(ngx.ERR, "failed: ", err)
+                return
+            end
+
+            for i = 1, #res do
+                ngx.say(res[i])
+            end
+
+            ngx.say("len: ", #res)
+        }
+    }
+--- request
+GET /re
+--- response_body
+1
+2
+345
+len: 3
+--- error_log eval
+qr/\[TRACE   \d+/
+--- no_error_log
+[error]
+
+
+
+=== TEST 24: regex is "" with pos
 --- http_config eval: $::HttpConfig
 --- config
     location /re {
@@ -800,13 +835,14 @@ GET /re
 4
 5
 len: 4
+--- error_log eval
+qr/\[TRACE   \d+/
 --- no_error_log
 [error]
-[TRACE
 
 
 
-=== TEST 24: regex is "" with pos larger than subject length
+=== TEST 25: regex is "" with pos larger than subject length
 --- http_config eval: $::HttpConfig
 --- config
     location /re {
@@ -836,7 +872,7 @@ len: 0
 
 
 
-=== TEST 25: regex is "" with pos & max
+=== TEST 26: regex is "" with pos & max
 --- http_config eval: $::HttpConfig
 --- config
     location /re {
@@ -862,6 +898,286 @@ GET /re
 2
 345
 len: 2
+--- error_log eval
+qr/\[TRACE   \d+/
 --- no_error_log
 [error]
-[TRACE
+
+
+
+=== TEST 27: no match separator (github issue #104)
+--- http_config eval: $::HttpConfig
+--- config
+    location /re {
+        content_by_lua_block {
+            local ngx_re = require "ngx.re"
+
+            local res, err = ngx_re.split("abcd", "|")
+            if err then
+                ngx.log(ngx.ERR, "failed: ", err)
+                return
+            end
+
+            ngx.say(table.concat(res, ":"))
+            ngx.say("len: ", #res)
+        }
+    }
+--- request
+GET /re
+--- response_body
+a:b:c:d
+len: 4
+--- error_log eval
+qr/\[TRACE   \d+/
+--- no_error_log
+[error]
+
+
+
+=== TEST 28: no match separator (github issue #104) & max
+--- http_config eval: $::HttpConfig
+--- config
+    location /re {
+        content_by_lua_block {
+            local ngx_re = require "ngx.re"
+
+            local res, err = ngx_re.split("abcd", "|", nil, nil, 2)
+            if err then
+                ngx.log(ngx.ERR, "failed: ", err)
+                return
+            end
+
+            ngx.say(table.concat(res, ":"))
+            ngx.say("len: ", #res)
+        }
+    }
+--- request
+GET /re
+--- response_body
+a:bcd
+len: 2
+--- error_log eval
+qr/\[TRACE   \d+/
+--- no_error_log
+[error]
+
+
+
+=== TEST 29: no match separator bis (github issue #104)
+--- http_config eval: $::HttpConfig
+--- config
+    location /re {
+        content_by_lua_block {
+            local ngx_re = require "ngx.re"
+
+            local res, err = ngx_re.split("abcd", "()")
+            if err then
+                ngx.log(ngx.ERR, "failed: ", err)
+                return
+            end
+
+            ngx.say(table.concat(res, ":"))
+            ngx.say("len: ", #res)
+        }
+    }
+--- request
+GET /re
+--- response_body
+a::b::c::d
+len: 7
+--- error_log eval
+qr/\[TRACE   \d+/
+--- no_error_log
+[error]
+
+
+
+=== TEST 30: behavior with /^/ differs from Perl's split
+--- http_config eval: $::HttpConfig
+--- config
+    location /re {
+        content_by_lua_block {
+            local ngx_re = require "ngx.re"
+
+            local res, err = ngx_re.split("ab\ncd\nef", "^")
+            if err then
+                ngx.log(ngx.ERR, "failed: ", err)
+                return
+            end
+
+            ngx.say(table.concat(res, ":"))
+
+            ngx.say("len: ", #res)
+        }
+    }
+--- request
+GET /re
+--- response_body
+ab
+cd
+ef
+len: 1
+--- error_log eval
+qr/\[TRACE   \d+/
+--- no_error_log
+[error]
+
+
+
+=== TEST 31: behavior with /^/m
+--- http_config eval: $::HttpConfig
+--- config
+    location /re {
+        content_by_lua_block {
+            local ngx_re = require "ngx.re"
+
+            local res, err = ngx_re.split("ab\ncd\nef", "^", "m")
+            if err then
+                ngx.log(ngx.ERR, "failed: ", err)
+                return
+            end
+
+            ngx.say(table.concat(res, ":"))
+
+            ngx.say("len: ", #res)
+        }
+    }
+--- request
+GET /re
+--- response_body
+ab
+:cd
+:ef
+len: 3
+--- error_log eval
+qr/\[TRACE   \d+/
+--- no_error_log
+[error]
+
+
+
+=== TEST 32: behavior with /^()/m (capture)
+--- http_config eval: $::HttpConfig
+--- config
+    location /re {
+        content_by_lua_block {
+            local ngx_re = require "ngx.re"
+
+            local res, err = ngx_re.split("ab\ncd\nef", "^()", "m")
+            if err then
+                ngx.log(ngx.ERR, "failed: ", err)
+                return
+            end
+
+            ngx.say(table.concat(res, ":"))
+
+            ngx.say("len: ", #res)
+        }
+    }
+--- request
+GET /re
+--- response_body
+ab
+::cd
+::ef
+len: 5
+--- error_log eval
+qr/\[TRACE   \d+/
+--- no_error_log
+[error]
+
+
+
+=== TEST 33: behavior with /^/m & max
+--- http_config eval: $::HttpConfig
+--- config
+    location /re {
+        content_by_lua_block {
+            local ngx_re = require "ngx.re"
+
+            local res, err = ngx_re.split("ab\ncd\nef", "^", "m", nil, 2)
+            if err then
+                ngx.log(ngx.ERR, "failed: ", err)
+                return
+            end
+
+            ngx.say(table.concat(res, ":"))
+
+            ngx.say("len: ", #res)
+        }
+    }
+--- request
+GET /re
+--- response_body
+ab
+:cd
+ef
+len: 2
+--- error_log eval
+qr/\[TRACE   \d+/
+--- no_error_log
+[error]
+
+
+
+=== TEST 34: behavior with /^\d/m
+--- http_config eval: $::HttpConfig
+--- config
+    location /re {
+        content_by_lua_block {
+            local ngx_re = require "ngx.re"
+
+            local res, err = ngx_re.split("ab\n1cdefg\n2hij", "^\\d", "m")
+            if err then
+                ngx.log(ngx.ERR, "failed: ", err)
+                return
+            end
+
+            ngx.say(table.concat(res, ":"))
+
+            ngx.say("len: ", #res)
+        }
+    }
+--- request
+GET /re
+--- response_body
+ab
+:cdefg
+:hij
+len: 3
+--- error_log eval
+qr/\[TRACE   \d+/
+--- no_error_log
+[error]
+
+
+
+=== TEST 35: behavior with /^(\d)/m (capture)
+--- http_config eval: $::HttpConfig
+--- config
+    location /re {
+        content_by_lua_block {
+            local ngx_re = require "ngx.re"
+
+            local res, err = ngx_re.split("ab\n1cdefg\n2hij", "^(\\d)", "m")
+            if err then
+                ngx.log(ngx.ERR, "failed: ", err)
+                return
+            end
+
+            ngx.say(table.concat(res, ":"))
+
+            ngx.say("len: ", #res)
+        }
+    }
+--- request
+GET /re
+--- response_body
+ab
+:1:cdefg
+:2:hij
+len: 5
+--- error_log eval
+qr/\[TRACE   \d+/
+--- no_error_log
+[error]

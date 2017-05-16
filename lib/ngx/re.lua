@@ -77,13 +77,17 @@ local function re_split_helper(subj, compiled, compile_once, flags, ctx)
     local caps = compiled.captures
     local ncaps = compiled.ncaptures
 
-    local from = caps[0] + 1
+    local from = caps[0]
     local to = caps[1]
 
     if from < 0 or to < 0 then
         return nil, nil, nil
     end
 
+    -- convert to Lua string indexes
+
+    from = from + 1
+    to = to + 1
     ctx.pos = to + 1
 
     -- retrieve the first sub-match capture if any
@@ -134,26 +138,6 @@ function _M.split(subj, regex, opts, ctx, max, res)
         return res
     end
 
-    if regex == "" then
-        local pos = ctx.pos
-        local last = len
-        if max > 0 then
-            last = math_min(len, pos + max - 1)
-        end
-
-        local res_idx = 1
-        while pos < last do
-            res[res_idx] = sub(subj, pos, pos)
-            res_idx = res_idx + 1
-            pos = pos + 1
-        end
-
-        res[res_idx] = sub(subj, pos)
-        res[res_idx + 1] = nil
-
-        return res
-    end
-
     -- compile regex
 
     local compiled, compile_once, flags = re_match_compile(regex, opts)
@@ -164,6 +148,7 @@ function _M.split(subj, regex, opts, ctx, max, res)
 
     local sub_idx = ctx.pos
     local res_idx = 0
+    local last_empty_match
 
     -- splitting: with and without a max limiter
 
@@ -181,16 +166,30 @@ function _M.split(subj, regex, opts, ctx, max, res)
                 break
             end
 
-            count = count + 1
-            res_idx = res_idx + 1
-            res[res_idx] = sub(subj, sub_idx, from - 1)
-
-            if capture then
-                res_idx = res_idx + 1
-                res[res_idx] = capture
+            if last_empty_match then
+                sub_idx = last_empty_match
             end
 
-            sub_idx = to + 1
+            if from == to then
+                last_empty_match = from
+            end
+
+            if from > sub_idx or not last_empty_match then
+                count = count + 1
+                res_idx = res_idx + 1
+                res[res_idx] = sub(subj, sub_idx, from - 1)
+
+                if capture then
+                    res_idx = res_idx + 1
+                    res[res_idx] = capture
+                end
+
+                sub_idx = to
+
+                if sub_idx >= len then
+                    break
+                end
+            end
         end
 
         if count == max then
@@ -211,16 +210,31 @@ function _M.split(subj, regex, opts, ctx, max, res)
                 break
             end
 
-            res_idx = res_idx + 1
-            res[res_idx] = sub(subj, sub_idx, from - 1)
-
-            if capture then
-                res_idx = res_idx + 1
-                res[res_idx] = capture
+            if last_empty_match then
+                sub_idx = last_empty_match
             end
 
-            sub_idx = to + 1
+            if from == to then
+                last_empty_match = from
+            end
+
+            if from > sub_idx or not last_empty_match then
+                res_idx = res_idx + 1
+                res[res_idx] = sub(subj, sub_idx, from - 1)
+
+                if capture then
+                    res_idx = res_idx + 1
+                    res[res_idx] = capture
+                end
+
+                sub_idx = to
+
+                if sub_idx >= len then
+                    break
+                end
+            end
         end
+
     end
 
     -- trailing nil for non-cleared res tables
