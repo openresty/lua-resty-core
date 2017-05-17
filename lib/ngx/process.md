@@ -10,9 +10,10 @@ Table of Contents
 * [Status](#status)
 * [Synopsis](#synopsis)
     * [Enables privileged agent process and get process type](#enables-privileged-agent-process-and-get-process-type)
-* [Methods](#methods)
+* [Functions](#functions)
     * [type](#type)
     * [enable_privileged_agent](#enable_privileged_agent)
+    * [signal_graceful_exit](#signal_graceful_exit)
 * [Community](#community)
     * [English Mailing List](#english-mailing-list)
     * [Chinese Mailing List](#chinese-mailing-list)
@@ -82,8 +83,8 @@ process type: worker
 
 [Back to TOC](#table-of-contents)
 
-Methods
-=======
+Functions
+=========
 
 type
 ----
@@ -106,7 +107,7 @@ For example,
 
 ```lua
  local process = require "ngx.process"
- ngx.say("process type:", process.type())   -- worker
+ ngx.say("process type:", process.type())   -- RESPONSE: worker
 ```
 
 [Back to TOC](#table-of-contents)
@@ -119,7 +120,33 @@ enable_privileged_agent
 
 Enables the privileged agent process in Nginx.
 
+The priviledged agent process does not listen on any virtual server ports like those worker processes.
+And it uses the same system account as the nginx master process, which is usually a privileged account
+like `root`.
+
+The `init_worker_by_lua*` directive handler still runs in the privileged agent process. And one can
+use the [type](#type) function provided by this module to check if the current process is a privileged
+agent.
+
 In case of failures, returns `nil` and a string describing the error.
+
+[Back to TOC](#table-of-contents)
+
+signal_graceful_exit
+--------------------
+**syntax:** *process_module.signal_graceful_exit()*
+
+**context:** *any*
+
+Signals the *current* nginx (worker) process to quit gracefully, i.e., after all the timers have expired (in time or expired prematurely).
+
+Note that this API function simply sets the nginx global C variable `ngx_quit` to signal the nginx event
+loop directly. No UNIX signals or IPC are involved here.
+
+WARNING: the official NGINX core does not perform the graceful exiting procedure when the [master_process](http://nginx.org/r/master_process)
+directive is turned `off`. The OpenResty's NGINX core has a
+[custom patch](https://github.com/openresty/openresty/blob/master/patches/nginx-1.11.2-single_process_graceful_exit.patch)
+applied, which fixes this issue.
 
 [Back to TOC](#table-of-contents)
 

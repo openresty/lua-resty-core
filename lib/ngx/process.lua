@@ -27,6 +27,7 @@ local _M = { version = base.version }
 ffi.cdef[[
 int ngx_http_lua_ffi_enable_privileged_agent(char **err);
 int ngx_http_lua_ffi_get_process_type(void);
+void ngx_http_lua_ffi_process_signal_graceful_exit(void);
 ]]
 
 
@@ -48,6 +49,11 @@ function _M.enable_privileged_agent()
     end
 
     return true
+end
+
+
+function _M.signal_graceful_exit()
+    C.ngx_http_lua_ffi_process_signal_graceful_exit()
 end
 
 

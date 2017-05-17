@@ -12,6 +12,7 @@ Table of Contents
 * [Description](#description)
 * [Methods](#methods)
     * [split](#split)
+    * [opt](#opt)
 * [Community](#community)
     * [English Mailing List](#english-mailing-list)
     * [Chinese Mailing List](#chinese-mailing-list)
@@ -145,6 +146,8 @@ local res, err = ngx_re.split("a,b", ",", nil, nil, nil, my_table)
 When the trailing `nil` is not enough for your purpose, you should
 clear the table yourself before feeding it into the `split` function.
 
+[Back to TOC](#table-of-contents)
+
 opt
 -----
 **syntax:** *ngx_re.opt(option, value)*
@@ -154,7 +157,7 @@ Allows changing of regex settings. Currently, it can only change the
 
 ```nginx
 
- init_by_lua_block { ngx.re.opt("jit_stack_size", 128 * 1024) }
+ init_by_lua_block { require "ngx.re".opt("jit_stack_size", 200 * 1024) }
 
  server {
      location /re {

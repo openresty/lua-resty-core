@@ -72,7 +72,7 @@ __DATA__
 
             f:close()
 
-            ngx.say("type: ", typ(true))
+            ngx.say("type: ", typ())
             os.execute("kill -HUP " .. pid)
         }
     }
