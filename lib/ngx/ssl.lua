@@ -67,10 +67,10 @@ void *ngx_http_lua_ffi_ssl_ctx_init(unsigned int protocols, char **err);
 void ngx_http_lua_ffi_ssl_ctx_free(void *cdata);
 
 int ngx_http_lua_ffi_ssl_ctx_set_priv_key(void *cdata_ctx, void *cdata_key,
-    unsigned char *ssl_err_buf, size_t *ssl_err_buf_len);
+    unsigned char *err, size_t *err_len);
 
 int ngx_http_lua_ffi_ssl_ctx_set_cert(void *cdata_ctx, void *cdata_cert,
-    unsigned char *ssl_err_buf, size_t *ssl_err_buf_len);
+    unsigned char *err, size_t *err_len);
 
 ]]
 
