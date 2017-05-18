@@ -116,7 +116,7 @@ ssl_session_store_by_lua_block {
     end
 
     -- create a 0-delay timer here...
-    local ok, err = ngx.timer.at(0, save_it)
+    local ok, err = ngx.timer.at(0, save_it, sess_id, sess)
     if not ok then
         ngx.log(ngx.ERR, "failed to create a 0-delay timer: ", err)
         return
