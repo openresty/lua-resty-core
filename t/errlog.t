@@ -882,3 +882,53 @@ log body:\d{4}/\d{2}/\d{2} \d{2}:\d{2}:\d{2} \[error\] (\d+).*access_by_lua\(ngi
 new line, client: 127.0.0.1, server: localhost, request: "GET /t HTTP/1.1", host: "localhost"
 \z
 --- skip_nginx: 2: <1.11.2
+
+
+
+=== TEST 22: ctx table
+--- http_config
+    lua_capture_error_log 4k;
+--- config
+    location /t {
+        access_by_lua_block {
+            local errlog = require "ngx.errlog"
+            local status, err = errlog.set_filter_level(ngx.WARN)
+            if not status then
+                error(err)
+            end
+
+            ngx.log(ngx.ERR, "-->\n", "new line")
+        }
+
+        content_by_lua_block {
+            local errlog = require "ngx.errlog"
+            local t = {}
+
+            for i = 1, 2 do
+                local res = errlog.get_logs(10, t)
+                ngx.say("maybe log lines: #", #res / 2)
+                for j = 1, #res, 2 do
+                    local level, msg = res[j], res[j + 1]
+                    if not level then
+                        break
+                    end
+                    ngx.say("log level:", level)
+                    ngx.say("log body:", msg)
+                end
+                ngx.say("end")
+            end
+        }
+    }
+--- log_level: info
+--- request
+GET /t
+--- response_body_like chomp
+\Amaybe log lines: #1
+log level:4
+log body:\d{4}/\d{2}/\d{2} \d{2}:\d{2}:\d{2} \[error\] (\d+).*access_by_lua\(nginx.conf:\d+\):\d+: -->
+new line, client: 127.0.0.1, server: localhost, request: "GET /t HTTP/1.1", host: "localhost"
+end
+maybe log lines: #1
+end
+\z
+--- skip_nginx: 2: <1.11.2
