@@ -106,7 +106,7 @@ enter 22
 
 
 
-=== TEST 3: 404 error(not found)
+=== TEST 3: 404 error (not found)
 --- http_config
     lua_capture_error_log 4m;
 --- config
@@ -885,7 +885,7 @@ new line, client: 127.0.0.1, server: localhost, request: "GET /t HTTP/1.1", host
 
 
 
-=== TEST 22: user-supplied Lua table to hold the result(with no error log)
+=== TEST 22: user-supplied Lua table to hold the result (get one log + no log)
 --- http_config
     lua_capture_error_log 4k;
 --- config
