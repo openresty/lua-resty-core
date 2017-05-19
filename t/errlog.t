@@ -885,7 +885,7 @@ new line, client: 127.0.0.1, server: localhost, request: "GET /t HTTP/1.1", host
 
 
 
-=== TEST 22: ctx table
+=== TEST 22: user-supplied Lua table to hold the result(with no error log)
 --- http_config
     lua_capture_error_log 4k;
 --- config
