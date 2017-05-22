@@ -13,6 +13,7 @@ Table of Contents
 * [Methods](#methods)
     * [set_filter_level](#set_filter_level)
     * [get_logs](#get_logs)
+    * [get_sys_filter_level](#get_sys_filter_level)
 * [Community](#community)
     * [English Mailing List](#english-mailing-list)
     * [Chinese Mailing List](#chinese-mailing-list)
@@ -207,6 +208,33 @@ after the last table element.
 
 When the trailing `nil` is not enough for your purpose, you should
 clear the table yourself before feeding it into the `errlog.get_logs` function.
+
+[Back to TOC](#table-of-contents)
+
+get_sys_filter_level
+--------------------
+**syntax:** *log_level = log_module.get_sys_filter_level()*
+
+**context:** *any*
+
+Return the nginx core's error log filter level (defined via the [error_log](http://nginx.org/r/error_log)
+configuration directive in `nginx.conf`) as an integer value matching the nginx error log level
+constants documented below:
+
+https://github.com/openresty/lua-nginx-module/#nginx-log-level-constants
+
+For example:
+
+```lua
+local errlog = require "ngx.errlog"
+local log_level = errlog.get_sys_filter_level()
+-- Now the filter level is always one level higher than system default log level on priority
+local status, err = errlog.set_filter_level(log_level - 1)
+if not status then
+    ngx.log(ngx.ERR, err)
+    return
+end
+```
 
 [Back to TOC](#table-of-contents)
 

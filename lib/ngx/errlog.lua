@@ -11,6 +11,8 @@ local new_tab = base.new_tab
 local ffi_new = ffi.new
 local charpp = ffi_new("char *[1]")
 local intp = ffi.new("int[1]")
+local getfenv = getfenv
+local tonumber = tonumber
 
 
 local _M = { version = base.version }
@@ -21,6 +23,8 @@ int ngx_http_lua_ffi_errlog_set_filter_level(int level, unsigned char *err,
     size_t *errlen);
 int ngx_http_lua_ffi_errlog_get_msg(char **log, int *loglevel,
     unsigned char *err, size_t *errlen);
+
+int ngx_http_lua_ffi_errlog_get_sys_filter_level(ngx_http_request_t *r);
 ]]
 
 
@@ -84,6 +88,12 @@ function _M.get_logs(max, logs)
     end
 
     return logs
+end
+
+
+function _M.get_sys_filter_level()
+    local r = getfenv(0).__ngx_req
+    return tonumber(C.ngx_http_lua_ffi_errlog_get_sys_filter_level(r))
 end
 
 
