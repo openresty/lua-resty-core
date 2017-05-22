@@ -9,7 +9,7 @@ log_level('error');
 
 repeat_each(2);
 
-plan tests => repeat_each() * (blocks() * 2 + 11);
+plan tests => repeat_each() * (blocks() * 2 + 12);
 
 my $pwd = cwd();
 
@@ -932,3 +932,64 @@ maybe log lines: #1
 end
 \z
 --- skip_nginx: 2: <1.11.2
+
+
+
+=== TEST 23: the error log level is "debug"
+--- config
+    location /t {
+        content_by_lua_block {
+            local errlog = require "ngx.errlog"
+            ngx.print('Is "debug" the current error log level? ', errlog.log_level() == ngx.DEBUG)
+        }
+    }
+--- log_level: debug
+--- request
+GET /t
+--- response_body chomp
+Is "debug" the current error log level? true
+
+
+
+=== TEST 24: the error log level is "emerg"
+--- config
+    location /t {
+        content_by_lua_block {
+            local errlog = require "ngx.errlog"
+            ngx.print('Is "emerg" the current error log level? ', errlog.log_level() == ngx.EMERG)
+        }
+    }
+--- log_level: emerg
+--- request
+GET /t
+--- response_body chomp
+Is "emerg" the current error log level? true
+
+
+
+=== TEST 25: get error log level during Nginx worker starts
+--- http_config
+    init_worker_by_lua_block {
+        local errlog = require "ngx.errlog"
+        package.loaded.log_level = errlog.log_level()
+    }
+--- config
+    location /t {
+        content_by_lua_block {
+            local log_level = package.loaded.log_level
+
+            if log_level >= ngx.WARN then
+                ngx.log(ngx.WARN, "log a warning event")
+            end
+            if log_level >= ngx.NOTICE then
+                ngx.log(ngx.NOTICE, "log a notice event")
+            end
+        }
+    }
+--- log_level: warn
+--- request
+GET /t
+--- error_log
+log a warning event
+--- no_error_log
+log a notice event

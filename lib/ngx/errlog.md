@@ -13,6 +13,7 @@ Table of Contents
 * [Methods](#methods)
     * [set_filter_level](#set_filter_level)
     * [get_logs](#get_logs)
+    * [log_level](#log_level)
 * [Community](#community)
     * [English Mailing List](#english-mailing-list)
     * [Chinese Mailing List](#chinese-mailing-list)
@@ -207,6 +208,33 @@ after the last table element.
 
 When the trailing `nil` is not enough for your purpose, you should
 clear the table yourself before feeding it into the `errlog.get_logs` function.
+
+[Back to TOC](#table-of-contents)
+
+log_level
+--------
+**syntax:** *log_level = log_module.log_level()*
+
+**context:** *any*
+
+Return configured error log level as an integer. Later the return value could be
+interacted with other Nginx log level constants. For example:
+
+```lua
+-- config.lua
+local errlog = require "ngx.errlog"
+_M.log_level = error_log.log_level()
+return _M
+```
+
+```lua
+-- req.lua
+local log_level = config.log_level
+if log_level >= ngx.WARN then
+    -- Now we save an `encode` operation if we configure error_log level to `error`.
+    ngx.log(ngx.WARN, cjson.encode(obj), ...)
+end
+```
 
 [Back to TOC](#table-of-contents)
 
