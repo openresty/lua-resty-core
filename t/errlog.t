@@ -935,43 +935,45 @@ end
 
 
 
-=== TEST 23: the error log level is "debug"
+=== TEST 23: the system default filtering level is "debug"
 --- config
     location /t {
         content_by_lua_block {
             local errlog = require "ngx.errlog"
-            ngx.print('Is "debug" the current error log level? ', errlog.log_level() == ngx.DEBUG)
+            ngx.print('Is "debug" the system default filtering level? ',
+                      errlog.get_sys_filtering_level() == ngx.DEBUG)
         }
     }
 --- log_level: debug
 --- request
 GET /t
 --- response_body chomp
-Is "debug" the current error log level? true
+Is "debug" the system default filtering level? true
 
 
 
-=== TEST 24: the error log level is "emerg"
+=== TEST 24: the system default filtering level is "emerg"
 --- config
     location /t {
         content_by_lua_block {
             local errlog = require "ngx.errlog"
-            ngx.print('Is "emerg" the current error log level? ', errlog.log_level() == ngx.EMERG)
+            ngx.print('Is "emerg" the system default filtering level? ',
+                      errlog.get_sys_filtering_level() == ngx.EMERG)
         }
     }
 --- log_level: emerg
 --- request
 GET /t
 --- response_body chomp
-Is "emerg" the current error log level? true
+Is "emerg" the system default filtering level? true
 
 
 
-=== TEST 25: get error log level during Nginx worker starts
+=== TEST 25: get system default filtering level during Nginx worker starts
 --- http_config
     init_worker_by_lua_block {
         local errlog = require "ngx.errlog"
-        package.loaded.log_level = errlog.log_level()
+        package.loaded.log_level = errlog.get_sys_filtering_level()
     }
 --- config
     location /t {

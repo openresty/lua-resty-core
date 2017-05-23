@@ -22,7 +22,7 @@ int ngx_http_lua_ffi_errlog_set_filter_level(int level, unsigned char *err,
 int ngx_http_lua_ffi_errlog_get_msg(char **log, int *loglevel,
     unsigned char *err, size_t *errlen);
 
-int ngx_http_lua_ffi_errlog_log_level(ngx_http_request_t *r);
+int ngx_http_lua_ffi_errlog_get_sys_filtering_level(ngx_http_request_t *r);
 ]]
 
 
@@ -89,9 +89,9 @@ function _M.get_logs(max, logs)
 end
 
 
-function _M.log_level()
+function _M.get_sys_filtering_level()
     local r = getfenv(0).__ngx_req
-    return C.ngx_http_lua_ffi_errlog_log_level(r)
+    return C.ngx_http_lua_ffi_errlog_get_sys_filtering_level(r)
 end
 
 

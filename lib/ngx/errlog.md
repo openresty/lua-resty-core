@@ -13,7 +13,7 @@ Table of Contents
 * [Methods](#methods)
     * [set_filter_level](#set_filter_level)
     * [get_logs](#get_logs)
-    * [log_level](#log_level)
+    * [get_sys_filtering_level](#get_sys_filtering_level)
 * [Community](#community)
     * [English Mailing List](#english-mailing-list)
     * [Chinese Mailing List](#chinese-mailing-list)
@@ -211,29 +211,26 @@ clear the table yourself before feeding it into the `errlog.get_logs` function.
 
 [Back to TOC](#table-of-contents)
 
-log_level
---------
-**syntax:** *log_level = log_module.log_level()*
+get_sys_filtering_level
+-----------------------
+**syntax:** *log_level = log_module.get_sys_filtering_level()*
 
 **context:** *any*
 
-Return configured error log level as an integer. Later the return value could be
-interacted with other Nginx log level constants. For example:
+Return system default filtering level as an integer. Later the return value
+could be used as Nginx log level constant. For example:
 
 ```lua
 -- config.lua
 local errlog = require "ngx.errlog"
-_M.log_level = error_log.log_level()
+_M.log_level = error_log.get_sys_filtering_level()
 return _M
 ```
 
 ```lua
 -- req.lua
 local log_level = config.log_level
-if log_level >= ngx.WARN then
-    -- Now we save an `encode` operation if we configure error_log level to `error`.
-    ngx.log(ngx.WARN, cjson.encode(obj), ...)
-end
+errlog.set_filter_level(log_level)
 ```
 
 [Back to TOC](#table-of-contents)
