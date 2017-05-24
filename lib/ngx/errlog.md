@@ -221,16 +221,16 @@ Return system default filtering level as an integer. Later the return value
 could be used as Nginx log level constant. For example:
 
 ```lua
--- config.lua
-local errlog = require "ngx.errlog"
-_M.log_level = error_log.get_sys_filtering_level()
-return _M
-```
-
-```lua
--- req.lua
-local log_level = config.log_level
-errlog.set_filter_level(log_level)
+init_by_lua_block {
+    local errlog = require "ngx.errlog"
+    local log_level = error_log.get_sys_filtering_level()
+    -- Now the filter level is always one level lower than system default log level
+    local status, err = errlog.set_filter_level(log_level - 1)
+    if not status then
+        ngx.log(ngx.ERR, err)
+        return
+    end
+}
 ```
 
 [Back to TOC](#table-of-contents)
