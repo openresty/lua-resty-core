@@ -72,7 +72,12 @@ function _M.get_logs(max, logs)
             logs[i * 2] = ffi_string(log[0], loglen)
         end
 
-        if loglen < 0 or i == max then    -- last one
+        if loglen < 0 then  -- no error log
+            logs[i * 2 - 1] = nil
+            break
+        end
+
+        if i == max then    -- last one
             logs[i * 2 + 1] = nil
             break
         end

@@ -84,7 +84,14 @@ server {
 
         -- assuming the user already defines the my_load_private_key()
         -- function herself.
-        local der_pkey = assert(my_load_private_key())
+        local pem_pkey = assert(my_load_private_key())
+
+        local der_pkey, err = ssl.priv_key_pem_to_der(pem_pkey)
+        if not der_pkey then
+            ngx.log(ngx.ERR, "failed to convert private key ",
+                    "from PEM to DER: ", err)
+            return ngx.exit(ngx.ERROR)
+        end
 
         local ok, err = ssl.set_der_priv_key(der_pkey)
         if not ok then
