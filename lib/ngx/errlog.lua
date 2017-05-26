@@ -91,7 +91,7 @@ end
 
 function _M.get_sys_filtering_level()
     local r = getfenv(0).__ngx_req
-    return C.ngx_http_lua_ffi_errlog_get_sys_filtering_level(r)
+    return tonumber(C.ngx_http_lua_ffi_errlog_get_sys_filtering_level(r))
 end
 
 
