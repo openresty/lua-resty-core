@@ -217,13 +217,13 @@ get_sys_filtering_level
 
 **context:** *any*
 
-Return system default filtering level as an integer. Later the return value
-could be used as Nginx log level constant. For example:
+Return the system's default filtering level as an integer. Later, the returned
+value could be used as an Nginx log level constant. For example:
 
 ```lua
 local errlog = require "ngx.errlog"
 local log_level = error_log.get_sys_filtering_level()
--- Now the filter level is always a level higher than system default log level on priority
+-- Now the filter level is always one level higher than system default log level on priority
 local status, err = errlog.set_filter_level(log_level - 1)
 if not status then
     ngx.log(ngx.ERR, err)
