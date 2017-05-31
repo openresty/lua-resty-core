@@ -13,7 +13,7 @@ Table of Contents
 * [Methods](#methods)
     * [set_filter_level](#set_filter_level)
     * [get_logs](#get_logs)
-    * [get_sys_filtering_level](#get_sys_filtering_level)
+    * [get_sys_filter_level](#get_sys_filter_level)
 * [Community](#community)
     * [English Mailing List](#english-mailing-list)
     * [Chinese Mailing List](#chinese-mailing-list)
@@ -211,18 +211,18 @@ clear the table yourself before feeding it into the `errlog.get_logs` function.
 
 [Back to TOC](#table-of-contents)
 
-get_sys_filtering_level
------------------------
-**syntax:** *log_level = log_module.get_sys_filtering_level()*
+get_sys_filter_level
+--------------------
+**syntax:** *log_level = log_module.get_sys_filter_level()*
 
 **context:** *any*
 
-Return the system's default filtering level as an integer. Later, the returned
+Return the system's default filter level as an integer. Later, the returned
 value could be used as an Nginx log level constant. For example:
 
 ```lua
 local errlog = require "ngx.errlog"
-local log_level = error_log.get_sys_filtering_level()
+local log_level = error_log.get_sys_filter_level()
 -- Now the filter level is always one level higher than system default log level on priority
 local status, err = errlog.set_filter_level(log_level - 1)
 if not status then
