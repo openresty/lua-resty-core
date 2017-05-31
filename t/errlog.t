@@ -982,8 +982,7 @@ Is "emerg" the system default filter level? true
 
             if log_level >= ngx.WARN then
                 ngx.log(ngx.WARN, "log a warning event")
-            end
-            if log_level < ngx.WARN then
+            else
                 ngx.log(ngx.WARN, "do not log another warning event")
             end
         }

@@ -222,7 +222,7 @@ value could be used as an Nginx log level constant. For example:
 
 ```lua
 local errlog = require "ngx.errlog"
-local log_level = error_log.get_sys_filter_level()
+local log_level = errlog.get_sys_filter_level()
 -- Now the filter level is always one level higher than system default log level on priority
 local status, err = errlog.set_filter_level(log_level - 1)
 if not status then
