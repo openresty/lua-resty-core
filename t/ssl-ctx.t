@@ -46,6 +46,9 @@ init_by_lua_block {
 
     function read_file(file)
         local f = io.open(file, "rb")
+        if f == nil then
+            return error(file)
+        end
         local content = f:read("*all")
         f:close()
         return content
