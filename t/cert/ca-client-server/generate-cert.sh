@@ -22,6 +22,7 @@ openssl req -passin "pass:$PASSWORD" -new -subj "$SUBJECT/CN=client" -key client
 
 # CA key、crt
 openssl req -passin "pass:$PASSWORD" -passout "pass:$PASSWORD" -new -x509 -subj "$SUBJET/CN=ca"  -keyout ca.key -out ca.crt
+openssl rsa -passin "pass:$PASSWORD" -in ca.key -out ca.unsecure.key
 
 # Client key、Server key、 ECC-Server key
 openssl x509 -req -sha256 -days 30650 -passin "pass:$PASSWORD" -in client.csr  -CA ca.crt -CAkey ca.key -set_serial 1 -out client.crt
