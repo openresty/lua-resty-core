@@ -26,6 +26,13 @@ sub read_file {
     $cert;
 }
 
+our $system_cert_path = "/etc/pki/tls/cert.pem";
+
+if (-e "/usr/local/share/ca-certificates") {
+    $system_cert_path = "/usr/local/share/ca-certificates";
+}
+
+our $SystemCerts = read_file($system_cert_path);
 our $TestCertificate = read_file("t/cert/test.crt");
 our $TestCertificateKey = read_file("t/cert/test.key");
 our $TestCRL = read_file("t/cert/test.crl");
@@ -70,7 +77,7 @@ init_by_lua_block {
 
     c:set("sslctx", ssl_ctx)
 
-    local system_cert =  read_file("/etc/pki/tls/cert.pem")
+    local system_cert =  read_file("$system_cert_path")
     local cert_store, err = ssl.create_x509_store(system_cert)
     if cert_store == nil then
         return ngx.say(err)
@@ -203,6 +210,8 @@ $caCrt
 OpenResty
 >>> wrong.key
 OpenResty
+>>> system.crt
+$SystemCerts
 _EOS_
 
 add_block_preprocessor(sub {
@@ -590,7 +599,7 @@ foo
     location /t {
         content_by_lua_block {
             local ssl = require "ngx.ssl"
-            local ca =  read_file("/etc/pki/tls/cert.pem")
+            local ca =  read_file("$TEST_NGINX_HTML_DIR/system.crt")
             local cert =  ssl.parse_pem_cert(read_file("$TEST_NGINX_HTML_DIR/client.crt"))
             local priv_key = ssl.parse_pem_priv_key(read_file("$TEST_NGINX_HTML_DIR/client.unsecure.key"))
 
@@ -637,7 +646,7 @@ GET /t
 --- response_body
 20: unable to get local issuer certificate
 success
-
+--- timeout: 5
 
 
 === TEST 12: ssl ctx - set cert store with lrucache
@@ -646,7 +655,7 @@ success
     location /t {
         content_by_lua_block {
             local ssl = require "ngx.ssl"
-            local ca =  read_file("/etc/pki/tls/cert.pem")
+            local ca =  read_file("$TEST_NGINX_HTML_DIR/system.crt")
             local cert =  ssl.parse_pem_cert(read_file("$TEST_NGINX_HTML_DIR/client.crt"))
             local priv_key = ssl.parse_pem_priv_key(read_file("$TEST_NGINX_HTML_DIR/client.unsecure.key"))
 
@@ -673,7 +682,7 @@ success
 GET /t
 --- response_body
 success
-
+--- timeout: 5
 
 
 === TEST 13: ssl ctx - set cert store self-signed and system cert
@@ -683,7 +692,7 @@ success
     location /t {
         content_by_lua_block {
             local ssl = require "ngx.ssl"
-            local system_cert =  read_file("/etc/pki/tls/cert.pem")
+            local system_cert =  read_file("$TEST_NGINX_HTML_DIR/system.crt")
             local local_cert  = read_file("$TEST_NGINX_HTML_DIR/ca.crt")
             local cert =  ssl.parse_pem_cert(read_file("$TEST_NGINX_HTML_DIR/client.crt"))
             local priv_key = ssl.parse_pem_priv_key(read_file("$TEST_NGINX_HTML_DIR/client.unsecure.key"))
