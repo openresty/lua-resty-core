@@ -28,8 +28,12 @@ sub read_file {
 
 our $system_cert_path = "/etc/pki/tls/cert.pem";
 
-if (-e "/usr/local/share/ca-certificates") {
-    $system_cert_path = "/usr/local/share/ca-certificates";
+if (-e "/usr/local/share/ca-certificates/ca.crt") {
+    $system_cert_path = "/usr/local/share/ca-certificates/ca.crt";
+}
+
+if (-e "/etc/ssl/certs/ca-certificates.crt") {
+    $system_cert_path = "/etc/ssl/certs/ca-certificates.crt";
 }
 
 our $SystemCerts = read_file($system_cert_path);
