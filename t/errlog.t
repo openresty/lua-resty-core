@@ -9,7 +9,7 @@ log_level('error');
 
 repeat_each(2);
 
-plan tests => repeat_each() * (blocks() * 2 + 11);
+plan tests => repeat_each() * (blocks() * 2 + 12);
 
 my $pwd = cwd();
 
@@ -17,13 +17,16 @@ add_block_preprocessor(sub {
     my $block = shift;
 
     my $http_config = $block->http_config || '';
+    my $init_by_lua_block = $block->init_by_lua_block || 'require "resty.core"';
+
     $http_config .= <<_EOC_;
 
     lua_package_path "$pwd/lib/?.lua;../lua-resty-lrucache/lib/?.lua;;";
     init_by_lua_block {
-        require "resty.core"
+        $init_by_lua_block
     }
 _EOC_
+
     $block->set_value("http_config", $http_config);
 });
 
@@ -932,3 +935,65 @@ maybe log lines: #1
 end
 \z
 --- skip_nginx: 2: <1.11.2
+
+
+
+=== TEST 23: the system default filter level is "debug"
+--- config
+    location /t {
+        content_by_lua_block {
+            local errlog = require "ngx.errlog"
+            ngx.print('Is "debug" the system default filter level? ',
+                      errlog.get_sys_filter_level() == ngx.DEBUG)
+        }
+    }
+--- log_level: debug
+--- request
+GET /t
+--- response_body chomp
+Is "debug" the system default filter level? true
+
+
+
+=== TEST 24: the system default filter level is "emerg"
+--- config
+    location /t {
+        content_by_lua_block {
+            local errlog = require "ngx.errlog"
+            ngx.print('Is "emerg" the system default filter level? ',
+                      errlog.get_sys_filter_level() == ngx.EMERG)
+        }
+    }
+--- log_level: emerg
+--- request
+GET /t
+--- response_body chomp
+Is "emerg" the system default filter level? true
+
+
+
+=== TEST 25: get system default filter level during Nginx starts
+--- init_by_lua_block
+    require "resty.core"
+    local errlog = require "ngx.errlog"
+    package.loaded.log_level = errlog.get_sys_filter_level()
+
+--- config
+    location /t {
+        content_by_lua_block {
+            local log_level = package.loaded.log_level
+
+            if log_level >= ngx.WARN then
+                ngx.log(ngx.WARN, "log a warning event")
+            else
+                ngx.log(ngx.WARN, "do not log another warning event")
+            end
+        }
+    }
+--- log_level: warn
+--- request
+GET /t
+--- error_log
+log a warning event
+--- no_error_log
+do not log another warning event
