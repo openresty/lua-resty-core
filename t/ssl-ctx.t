@@ -742,8 +742,6 @@ self-signed success
 
 === TEST 14: ssl ctx - cert store init and free
 --- config
---- config
-    resolver $TEST_NGINX_RESOLVER;
     location /t {
         content_by_lua_block {
             local ssl = require "ngx.ssl"
@@ -772,7 +770,6 @@ $/
 
 === TEST 15: ssl ctx - cert store init and up reference then free
 --- config
-    resolver $TEST_NGINX_RESOLVER;
     location /t {
         content_by_lua_block {
             local ssl = require "ngx.ssl"
@@ -809,3 +806,4 @@ lua ssl x509 store free: ([0-9A-F]+):2
 lua ssl ctx x509 store reference: ([0-9A-F]+):1
 lua ssl ctx free: ([0-9A-F]+):1
 $/
+
