@@ -16,24 +16,16 @@ my $pwd = cwd();
 add_block_preprocessor(sub {
     my $block = shift;
 
-    my $test_name = $block->name();
     my $http_config = $block->http_config || '';
+    my $init_by_lua_block = $block->init_by_lua_block || 'require "resty.core"';
 
-    if (index($test_name, "TEST 25: ") != -1) {
-        my $lua_package_path = <<_EOC_;
-        lua_package_path "$pwd/lib/?.lua;../lua-resty-lrucache/lib/?.lua;;";
-_EOC_
-        $http_config = $lua_package_path . $http_config;
-    }
-    else {
-        $http_config .= <<_EOC_;
+    $http_config .= <<_EOC_;
 
-        lua_package_path "$pwd/lib/?.lua;../lua-resty-lrucache/lib/?.lua;;";
-        init_by_lua_block {
-            require "resty.core"
-        }
-_EOC_
+    lua_package_path "$pwd/lib/?.lua;../lua-resty-lrucache/lib/?.lua;;";
+    init_by_lua_block {
+        $init_by_lua_block
     }
+_EOC_
 
     $block->set_value("http_config", $http_config);
 });
@@ -981,12 +973,11 @@ Is "emerg" the system default filter level? true
 
 
 === TEST 25: get system default filter level during Nginx starts
---- http_config
-    init_by_lua_block {
-        require "resty.core"
-        local errlog = require "ngx.errlog"
-        package.loaded.log_level = errlog.get_sys_filter_level()
-    }
+--- init_by_lua_block
+    require "resty.core"
+    local errlog = require "ngx.errlog"
+    package.loaded.log_level = errlog.get_sys_filter_level()
+
 --- config
     location /t {
         content_by_lua_block {
