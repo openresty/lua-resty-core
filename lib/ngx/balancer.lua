@@ -19,7 +19,7 @@ local tonumber = tonumber
 
 ffi.cdef[[
 int ngx_http_lua_ffi_balancer_set_current_peer(ngx_http_request_t *r,
-    const unsigned char *addr, size_t addr_len, int port, char **err);
+    const unsigned char *addr, size_t addr_len, int port, int ssl, char **err);
 
 int ngx_http_lua_ffi_balancer_set_more_tries(ngx_http_request_t *r,
     int count, char **err);
@@ -43,7 +43,7 @@ local peer_state_names = {
 local _M = { version = base.version }
 
 
-function _M.set_current_peer(addr, port)
+function _M.set_current_peer(addr, port, ssl)
     local r = getfenv(0).__ngx_req
     if not r then
         return error("no request found")
@@ -55,8 +55,17 @@ function _M.set_current_peer(addr, port)
         port = tonumber(port)
     end
 
+    if ssl == true then
+        ssl = 1
+    elseif ssl == false then
+        ssl = 0
+    else
+        -- nil, not set, by default
+        ssl = -1
+    end
+
     local rc = C.ngx_http_lua_ffi_balancer_set_current_peer(r, addr, #addr,
-                                                            port, errmsg)
+                                                            port, ssl, errmsg)
     if rc == FFI_OK then
         return true
     end
