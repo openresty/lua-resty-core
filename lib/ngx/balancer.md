@@ -80,8 +80,8 @@ Description
 ===========
 
 This Lua module provides API functions to allow defining highly dynamic NGINX load balancers for
-any existing nginx upstream modules like [http://nginx.org/en/docs/http/ngx_http_proxy_module.html ngx_proxy] and
-[http://nginx.org/en/docs/http/ngx_http_fastcgi_module.html ngx_fastcgi].
+any existing nginx upstream modules like [ngx_proxy](http://nginx.org/en/docs/http/ngx_http_proxy_module.html) and
+[ngx_fastcgi](http://nginx.org/en/docs/http/ngx_http_fastcgi_module.html).
 
 It allows you to dynamically select a backend peer to connect to (or retry) on a per-request
 basis from a list of backend peers which may also be dynamic.
