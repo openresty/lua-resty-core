@@ -72,7 +72,7 @@ server {
         -- use cosocket-based HTTP client libraries like lua-resty-http-simple
         -- to send the request (url + ocsp_req as POST params or URL args) to
         -- CA's OCSP server. assuming the server returns the OCSP response
-        -- in the Lua varaible, resp.
+        -- in the Lua variable, resp.
 
         local schema, host, port, ocsp_uri, err = parse_url(ocsp_url)
 
