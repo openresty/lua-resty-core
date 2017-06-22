@@ -569,12 +569,12 @@ attempt to get length of local 'subj' (a number value)
 
 
 
-=== TEST 15: subject is not a string type
+=== TEST 15: regex is not a string type
 --- http_config eval: $::HttpConfig
 --- config
     location /re {
         content_by_lua_block {
-            local m = ngx.re.match(12345, "123", "jo")
+            local m = ngx.re.match(12345, 123, "jo")
 
             if m then
                 ngx.say(m[0])
