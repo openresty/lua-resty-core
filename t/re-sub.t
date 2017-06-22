@@ -393,3 +393,41 @@ hello, 55
 --- no_error_log
 [error]
 attempt to get length of local 'bit' (a number value)
+
+
+
+=== TEST 12: regex is not a string type (ngx.re.sub)
+--- http_config eval: $::HttpConfig
+--- config
+    location /re {
+        content_by_lua_block {
+            local newstr, n, err = ngx.re.sub(1234, 12, 5, "jo")
+            ngx.say(newstr)
+        }
+    }
+--- request
+GET /re
+--- response_body
+534
+--- no_error_log
+[error]
+attempt to get length of local 'regex' (a number value)
+
+
+
+=== TEST 13: regex is not a string type (ngx.re.gsub)
+--- http_config eval: $::HttpConfig
+--- config
+    location /re {
+        content_by_lua_block {
+            local newstr, n, err = ngx.re.gsub(123412, 12, 5, "jo")
+            ngx.say(newstr)
+        }
+    }
+--- request
+GET /re
+--- response_body
+5345
+--- no_error_log
+[error]
+attempt to get length of local 'regex' (a number value)

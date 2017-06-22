@@ -342,6 +342,7 @@ local function re_match_compile(regex, opts)
         -- print("compiled regex not found, compiling regex...")
         local errbuf = get_string_buf(MAX_ERR_MSG_LEN)
 
+        regex = tostring(regex)
         compiled = C.ngx_http_lua_ffi_compile_regex(regex, #regex,
                                                     flags, pcre_opts,
                                                     errbuf, MAX_ERR_MSG_LEN)
@@ -550,6 +551,7 @@ local function re_sub_compile(regex, opts, replace, func)
         -- print("compiled regex not found, compiling regex...")
         local errbuf = get_string_buf(MAX_ERR_MSG_LEN)
 
+        regex = tostring(regex)
         compiled = C.ngx_http_lua_ffi_compile_regex(regex, #regex, flags,
                                                     pcre_opts, errbuf,
                                                     MAX_ERR_MSG_LEN)
