@@ -67,8 +67,9 @@ http {
                     return
                 end
 
-                for _, log in ipairs(logs) do
-                    ngx.say("level: ", log[1], " data: ", log[2])
+                for i = 1, #logs, 3 do
+                    ngx.say("level: ", logs[i], " time: ", logs[i + 1],
+                            " data: ", logs[i + 2])
                 end
             }
         }
@@ -80,12 +81,12 @@ http {
 The example location above produces a response like this:
 
 ```
-level: 5 data: 2017/04/19 22:20:03 [warn] 63176#0:
-    [lua] init_by_lua:7: set error filter level: WARN
-level: 5 data: 2017/04/19 22:20:05 [warn] 63176#0: *1
-    [lua] content_by_lua(nginx.conf:59):4: test2
-level: 4 data: 2017/04/19 22:20:05 [error] 63176#0: *1
-    [lua] content_by_lua(nginx.conf:59):5: test3
+level: 5 time: 1498546995.304 data: 2017/06/27 15:03:15 [warn] 46877#0:
+    [lua] init_by_lua:8: set error filter level: WARN
+level: 5 time: 1498546999.178 data: 2017/06/27 15:03:19 [warn] 46879#0: *1
+    [lua] test.lua:5: test2, client: 127.0.0.1, server: localhost, ......
+level: 4 time: 1498546999.178 data: 2017/06/27 15:03:19 [error] 46879#0: *1
+    [lua] test.lua:6: test3, client: 127.0.0.1, server: localhost, ......
 ```
 
 [Back to TOC](#table-of-contents)
@@ -157,20 +158,33 @@ local res = errlog.get_logs(10)
 The resulting table has the following structure:
 
 ```lua
-{ level1, msg1, level2, msg2, ... }
+{ level1, time1, msg1, level2, time2, msg2, ... }
 ```
+
+The `levelX` values are constants defined below:
+
+https://github.com/openresty/lua-nginx-module/#nginx-log-level-constants
+
+The `timeX` values are UNIX timestamps in seconds with millisecond precision. The sub-second part is presented as the decimal part.
+The time format is exactly the same as the value returned by [ngx.now](https://github.com/openresty/lua-nginx-module/#ngxnow). It is
+also subject to NGINX core's time caching.
+
+The `msgX` values are the error log message texts.
 
 So to traverse this array, the user can use a loop like this:
 
 ```lua
-for i = 1, #res, 2 do
+for i = 1, #res, 3 do
     local level = res[i]
     if not level then
         break
     end
-    local msg = res[i + 1]
-    -- handle the current message with log level in `level` and
-    -- log message body in `msg`.
+
+    local time = res[i + 1]
+    local msg = res[i + 2]
+
+    -- handle the current message with log level in `level`,
+    -- log time in `time`, and log message body in `msg`.
 end
 ```
 
@@ -185,18 +199,19 @@ unnecessary table dynamic allocations on hot Lua code paths. It is used like thi
 local errlog = require "ngx.errlog"
 local new_tab = require "table.new"
 
-local buffer = new_tab(100 * 2, 0)  -- for 100 messages
+local buffer = new_tab(100 * 3, 0)  -- for 100 messages
 
 local errlog = require "ngx.errlog"
 local res, err = errlog.get_logs(0, buffer)
 if res then
     -- res is the same table as `buffer`
-    for i = 1, #res, 2 do
+    for i = 1, #res, 3 do
         local level = res[i]
         if not level then
             break
         end
-        local msg = res[i + 1]
+        local time = res[i + 1]
+        local msg  = res[i + 2]
         ...
     end
 end
