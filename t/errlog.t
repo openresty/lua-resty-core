@@ -9,7 +9,7 @@ log_level('error');
 
 repeat_each(2);
 
-plan tests => repeat_each() * (blocks() * 2 + 13);
+plan tests => repeat_each() * (blocks() * 2 + 15);
 
 my $pwd = cwd();
 
@@ -610,9 +610,7 @@ qr/-->\d+/
 --- request
 GET /t
 --- response_body_like chomp
-\Alog lines: #22
-log level:5
-log body:\d{4}/\d{2}/\d{2} \d{2}:\d{2}:\d{2} \[warn\] (\d+).*access_by_lua\(nginx.conf:\d+\):\d+: --> 90, client: 127.0.0.1, server: localhost, request: "GET /t HTTP/1.1", host: "localhost"
+\Alog lines: #21
 log level:4
 log body:\d{4}/\d{2}/\d{2} \d{2}:\d{2}:\d{2} \[error\] (\d+).*access_by_lua\(nginx.conf:\d+\):\d+: --> 90, client: 127.0.0.1, server: localhost, request: "GET /t HTTP/1.1", host: "localhost"
 log level:5
@@ -669,13 +667,13 @@ log body:\d{4}/\d{2}/\d{2} \d{2}:\d{2}:\d{2} \[error\] (\d+).*access_by_lua\(ngi
 --- request
 GET /t
 --- response_body_like chomp
-\Alog lines: #28
-log level:5
-log body:\d{4}/\d{2}/\d{2} \d{2}:\d{2}:\d{2} \[warn\] (\d+).*access_by_lua\(nginx.conf:\d+\):\d+: --> 87, client: 127.0.0.1, server: localhost, request: "GET /t HTTP/1.1", host: "localhost"
-log level:4
-log body:\d{4}/\d{2}/\d{2} \d{2}:\d{2}:\d{2} \[error\] (\d+).*access_by_lua\(nginx.conf:\d+\):\d+: --> 87, client: 127.0.0.1, server: localhost, request: "GET /t HTTP/1.1", host: "localhost"
+\Alog lines: #26
 log level:5
 log body:\d{4}/\d{2}/\d{2} \d{2}:\d{2}:\d{2} \[warn\] (\d+).*access_by_lua\(nginx.conf:\d+\):\d+: --> 88, client: 127.0.0.1, server: localhost, request: "GET /t HTTP/1.1", host: "localhost"
+log level:4
+log body:\d{4}/\d{2}/\d{2} \d{2}:\d{2}:\d{2} \[error\] (\d+).*access_by_lua\(nginx.conf:\d+\):\d+: --> 88, client: 127.0.0.1, server: localhost, request: "GET /t HTTP/1.1", host: "localhost"
+log level:5
+log body:\d{4}/\d{2}/\d{2} \d{2}:\d{2}:\d{2} \[warn\] (\d+).*access_by_lua\(nginx.conf:\d+\):\d+: --> 89, client: 127.0.0.1, server: localhost, request: "GET /t HTTP/1.1", host: "localhost"
 log level:4
 log body:\d{4}/\d{2}/\d{2} \d{2}:\d{2}:\d{2} \[error\] (\d+).*access_by_lua\(nginx.conf:\d+\):\d+: --> 99, client: 127.0.0.1, server: localhost, request: "GET /t HTTP/1.1", host: "localhost"
 log level:5
@@ -746,18 +744,18 @@ GET /t
 --- response_body_like chomp
 \Amsg count: 3
 log level:5
-log body:\d{4}/\d{2}/\d{2} \d{2}:\d{2}:\d{2} \[warn\] (\d+).*?access_by_lua\(nginx.conf:\d+\):\d+: --> 87, client: 127.0.0.1, server: localhost, request: "GET /t HTTP/1.1", host: "localhost"
-log level:4
-log body:\d{4}/\d{2}/\d{2} \d{2}:\d{2}:\d{2} \[error\] (\d+).*?access_by_lua\(nginx.conf:\d+\):\d+: --> 87, client: 127.0.0.1, server: localhost, request: "GET /t HTTP/1.1", host: "localhost"
-log level:5
 log body:\d{4}/\d{2}/\d{2} \d{2}:\d{2}:\d{2} \[warn\] (\d+).*?access_by_lua\(nginx.conf:\d+\):\d+: --> 88, client: 127.0.0.1, server: localhost, request: "GET /t HTTP/1.1", host: "localhost"
-msg count: 3
+log level:4
+log body:\d{4}/\d{2}/\d{2} \d{2}:\d{2}:\d{2} \[error\] (\d+).*?access_by_lua\(nginx.conf:\d+\):\d+: --> 88, client: 127.0.0.1, server: localhost, request: "GET /t HTTP/1.1", host: "localhost"
 log level:5
 log body:\d{4}/\d{2}/\d{2} \d{2}:\d{2}:\d{2} \[warn\] (\d+).*?access_by_lua\(nginx.conf:\d+\):\d+: --> 89, client: 127.0.0.1, server: localhost, request: "GET /t HTTP/1.1", host: "localhost"
-log level:4
-log body:\d{4}/\d{2}/\d{2} \d{2}:\d{2}:\d{2} \[error\] (\d+).*?access_by_lua\(nginx.conf:\d+\):\d+: --> 89, client: 127.0.0.1, server: localhost, request: "GET /t HTTP/1.1", host: "localhost"
+msg count: 3
 log level:5
 log body:\d{4}/\d{2}/\d{2} \d{2}:\d{2}:\d{2} \[warn\] (\d+).*?access_by_lua\(nginx.conf:\d+\):\d+: --> 90, client: 127.0.0.1, server: localhost, request: "GET /t HTTP/1.1", host: "localhost"
+log level:4
+log body:\d{4}/\d{2}/\d{2} \d{2}:\d{2}:\d{2} \[error\] (\d+).*?access_by_lua\(nginx.conf:\d+\):\d+: --> 90, client: 127.0.0.1, server: localhost, request: "GET /t HTTP/1.1", host: "localhost"
+log level:5
+log body:\d{4}/\d{2}/\d{2} \d{2}:\d{2}:\d{2} \[warn\] (\d+).*?access_by_lua\(nginx.conf:\d+\):\d+: --> 91, client: 127.0.0.1, server: localhost, request: "GET /t HTTP/1.1", host: "localhost"
 log level:4
 log body:\d{4}/\d{2}/\d{2} \d{2}:\d{2}:\d{2} \[error\] (\d+).*?content_by_lua\(nginx.conf:\d+\):\d+: --> 102, client: 127.0.0.1, server: localhost, request: "GET /t HTTP/1.1", host: "localhost"
 log level:4
@@ -826,18 +824,18 @@ GET /t
 --- response_body_like chomp
 \Amsg count: 3
 log level:5
-log body:\d{4}/\d{2}/\d{2} \d{2}:\d{2}:\d{2} \[warn\] (\d+).*?access_by_lua\(nginx.conf:\d+\):\d+: --> 87, client: 127.0.0.1, server: localhost, request: "GET /t HTTP/1.1", host: "localhost"
-log level:4
-log body:\d{4}/\d{2}/\d{2} \d{2}:\d{2}:\d{2} \[error\] (\d+).*?access_by_lua\(nginx.conf:\d+\):\d+: --> 87, client: 127.0.0.1, server: localhost, request: "GET /t HTTP/1.1", host: "localhost"
-log level:5
 log body:\d{4}/\d{2}/\d{2} \d{2}:\d{2}:\d{2} \[warn\] (\d+).*?access_by_lua\(nginx.conf:\d+\):\d+: --> 88, client: 127.0.0.1, server: localhost, request: "GET /t HTTP/1.1", host: "localhost"
-msg count: 3
 log level:4
 log body:\d{4}/\d{2}/\d{2} \d{2}:\d{2}:\d{2} \[error\] (\d+).*?access_by_lua\(nginx.conf:\d+\):\d+: --> 88, client: 127.0.0.1, server: localhost, request: "GET /t HTTP/1.1", host: "localhost"
 log level:5
 log body:\d{4}/\d{2}/\d{2} \d{2}:\d{2}:\d{2} \[warn\] (\d+).*?access_by_lua\(nginx.conf:\d+\):\d+: --> 89, client: 127.0.0.1, server: localhost, request: "GET /t HTTP/1.1", host: "localhost"
+msg count: 3
 log level:4
 log body:\d{4}/\d{2}/\d{2} \d{2}:\d{2}:\d{2} \[error\] (\d+).*?access_by_lua\(nginx.conf:\d+\):\d+: --> 89, client: 127.0.0.1, server: localhost, request: "GET /t HTTP/1.1", host: "localhost"
+log level:5
+log body:\d{4}/\d{2}/\d{2} \d{2}:\d{2}:\d{2} \[warn\] (\d+).*?access_by_lua\(nginx.conf:\d+\):\d+: --> 90, client: 127.0.0.1, server: localhost, request: "GET /t HTTP/1.1", host: "localhost"
+log level:4
+log body:\d{4}/\d{2}/\d{2} \d{2}:\d{2}:\d{2} \[error\] (\d+).*?access_by_lua\(nginx.conf:\d+\):\d+: --> 90, client: 127.0.0.1, server: localhost, request: "GET /t HTTP/1.1", host: "localhost"
 log level:4
 log body:\d{4}/\d{2}/\d{2} \d{2}:\d{2}:\d{2} \[error\] (\d+).*?access_by_lua\(nginx.conf:\d+\):\d+: --> 100, client: 127.0.0.1, server: localhost, request: "GET /t HTTP/1.1", host: "localhost"
 log level:4
@@ -1025,3 +1023,92 @@ GET /t
 log a warning event
 --- no_error_log
 do not log another warning event
+
+
+
+=== TEST 27: sanity (with log time)
+--- http_config
+    lua_capture_error_log 4m;
+--- config
+    location /t {
+        access_by_lua_block {
+            ngx.log(ngx.ERR, "enter 1")
+            ngx.log(ngx.ERR, "enter 11")
+
+            local errlog = require "ngx.errlog"
+            local res, err = errlog.get_logs(nil, nil, {fetch_time = true})
+            if not res then
+                error("FAILED " .. err)
+            end
+            ngx.say("log lines:", #res / 3)
+        }
+    }
+--- request
+GET /t
+--- response_body
+log lines:2
+--- grep_error_log eval
+qr/enter \d+/
+--- grep_error_log_out eval
+[
+"enter 1
+enter 11
+",
+"enter 1
+enter 11
+"
+]
+--- skip_nginx: 3: <1.11.2
+
+
+
+
+=== TEST 27: log time eq ngx.now
+--- http_config
+    lua_capture_error_log 4m;
+--- config
+    location /t {
+        access_by_lua_block {
+            local now = ngx.now()
+            ngx.log(ngx.CRIT, "enter 1")
+            ngx.log(ngx.ERR, "enter 11")
+
+            local errlog = require "ngx.errlog"
+            local res, err = errlog.get_logs(nil, nil, {fetch_time = true})
+            if not res then
+                error("FAILED " .. err)
+            end
+            ngx.say("log lines: ", #res / 3)
+
+            for i = 1, #res, 3 do
+                ngx.say("log level: ", res[i])
+                ngx.say("log body: ",  res[i + 1])
+                ngx.say("log time: ", res[i + 2])
+                ngx.say("same with now: ",  res[i + 2] == now)
+            end
+        }
+    }
+--- request
+GET /t
+--- response_body_like chomp
+\Alog lines: 2
+log level: 3
+log body: \d{4}/\d{2}/\d{2} \d{2}:\d{2}:\d{2} \[crit\] (\d+).*?access_by_lua\(nginx.conf:\d+\):\d+: enter 1, client: 127.0.0.1, server: localhost, request: "GET /t HTTP/1.1", host: "localhost"
+log time: \d+\.\d+
+same with now: true
+log level: 4
+log body: \d{4}/\d{2}/\d{2} \d{2}:\d{2}:\d{2} \[error\] (\d+).*?access_by_lua\(nginx.conf:\d+\):\d+: enter 11, client: 127.0.0.1, server: localhost, request: "GET /t HTTP/1.1", host: "localhost"
+log time: \d{10}\.\d+
+same with now: true
+--- grep_error_log eval
+qr/enter \d+/
+--- grep_error_log_out eval
+[
+"enter 1
+enter 11
+",
+"enter 1
+enter 11
+"
+]
+--- skip_nginx: 3: <1.11.2
