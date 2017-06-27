@@ -1062,8 +1062,7 @@ enter 11
 
 
 
-
-=== TEST 27: log time eq ngx.now
+=== TEST 28: log time eq ngx.now
 --- http_config
     lua_capture_error_log 4m;
 --- config
