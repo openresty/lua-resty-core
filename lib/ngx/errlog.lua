@@ -51,20 +51,19 @@ function _M.set_filter_level(level)
 end
 
 
-function _M.get_logs(max, logs, opts)
-    local is_fetch_time = opts and opts.fetch_time
+function _M.get_logs(max, logs)
     local err = get_string_buf(ERR_BUF_SIZE)
     local errlen = get_size_ptr()
     errlen[0] = ERR_BUF_SIZE
 
     local log = charpp
     local loglevel = intp
-    local log_time = is_fetch_time and num_value
+    local log_time = num_value
 
     max = max or 10
 
     if not logs then
-        logs = new_tab(max * 2 + 1, 0)
+        logs = new_tab(max * 3 + 1, 0)
     end
 
     local count = 0
@@ -79,14 +78,8 @@ function _M.get_logs(max, logs, opts)
         if loglen > 0 then
             logs[count + 1] = loglevel[0]
             logs[count + 2] = ffi_string(log[0], loglen)
-
-            if is_fetch_time then
-                logs[count + 3] = log_time[0]
-                count = count + 3
-
-            else
-                count = count + 2
-            end
+            logs[count + 3] = log_time[0]
+            count = count + 3
         end
 
         if loglen < 0 then  -- no error log

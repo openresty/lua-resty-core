@@ -51,7 +51,7 @@ __DATA__
             if not res then
                 error("FAILED " .. err)
             end
-            ngx.say("log lines:", #res / 2)
+            ngx.say("log lines:", #res / 3)
         }
     }
 --- request
@@ -87,7 +87,7 @@ enter 11
             if not res then
                 error("FAILED " .. err)
             end
-            ngx.say("log lines:", #res / 2)
+            ngx.say("log lines:", #res / 3)
         }
     }
 --- request
@@ -119,7 +119,7 @@ enter 22
         if not res then
             error("FAILED " .. err)
         end
-        ngx.log(ngx.ERR, "capture log line:", #res / 2)
+        ngx.log(ngx.ERR, "capture log line:", #res / 3)
     }
 --- request
 GET /t
@@ -154,7 +154,7 @@ $/
         if not res then
             error("FAILED " .. err)
         end
-        ngx.log(ngx.ERR, "capture log line:", #res / 2)
+        ngx.log(ngx.ERR, "capture log line:", #res / 3)
     }
 --- request
 GET /t
@@ -187,7 +187,7 @@ $/
         if not res then
             error("FAILED " .. err)
         end
-        ngx.log(ngx.ERR, "capture log line:", #res / 2)
+        ngx.log(ngx.ERR, "capture log line:", #res / 3)
     }
 --- request
 GET /t
@@ -224,7 +224,7 @@ $/
         if not res then
             error("FAILED " .. err)
         end
-        ngx.log(ngx.ERR, "capture log line:", #res / 2)
+        ngx.log(ngx.ERR, "capture log line:", #res / 3)
 
     }
 --- request
@@ -285,7 +285,7 @@ invalid number of arguments in "lua_capture_error_log" directive
             if not res then
                 error("FAILED " .. err)
             end
-            ngx.say("log lines:", #res / 2)
+            ngx.say("log lines:", #res / 3)
         }
     }
 --- request
@@ -338,7 +338,7 @@ directive "lua_capture_error_log" is not set
         content_by_lua_block {
             local errlog = require "ngx.errlog"
             local res = errlog.get_logs()
-            ngx.say("log lines:", #res / 2)
+            ngx.say("log lines:", #res / 3)
         }
     }
 --- log_level: info
@@ -382,7 +382,7 @@ qr/-->\d+/
         content_by_lua_block {
             local errlog = require "ngx.errlog"
             local res = errlog.get_logs()
-            ngx.say("log lines:", #res / 2)
+            ngx.say("log lines:", #res / 3)
         }
     }
 --- log_level: info
@@ -427,7 +427,7 @@ qr/-->\d+/
         content_by_lua_block {
             local errlog = require "ngx.errlog"
             local res = errlog.get_logs()
-            ngx.say("log lines:", #res / 2)
+            ngx.say("log lines:", #res / 3)
         }
     }
 --- request
@@ -469,14 +469,14 @@ qr/-->\d+/
             if not res then
                 error("FAILED " .. err)
             end
-            ngx.say("log lines:", #res / 2)
+            ngx.say("log lines:", #res / 3)
 
             tab_clear(res)
             res, err = errlog.get_logs(2, res)
             if not res then
                 error("FAILED " .. err)
             end
-            ngx.say("log lines:", #res / 2)
+            ngx.say("log lines:", #res / 3)
         }
     }
 --- request
@@ -538,7 +538,7 @@ qr/missing \"level\" argument/
         content_by_lua_block {
             local errlog = require "ngx.errlog"
             local res = errlog.get_logs()
-            for i = 1, #res, 2 do
+            for i = 1, #res, 3 do
                 ngx.say("log level:", res[i])
                 ngx.say("log body:", res[i + 1])
             end
@@ -591,16 +591,16 @@ qr/-->\d+/
         content_by_lua_block {
             local errlog = require "ngx.errlog"
             local res = errlog.get_logs(1000)
-            ngx.say("log lines: #", #res / 2)
+            ngx.say("log lines: #", #res / 3)
 
             -- first 3 logs
-            for i = 1, 2 * 3, 2 do
+            for i = 1, 3 * 3, 3 do
                 ngx.say("log level:", res[i])
                 ngx.say("log body:", res[i + 1])
             end
 
             -- last 3 logs
-            for i = #res - 5, #res, 2 do
+            for i = #res - 8, #res, 3 do
                 ngx.say("log level:", res[i])
                 ngx.say("log body:", res[i + 1])
             end
@@ -648,16 +648,16 @@ log body:\d{4}/\d{2}/\d{2} \d{2}:\d{2}:\d{2} \[error\] (\d+).*access_by_lua\(ngi
         content_by_lua_block {
             local errlog = require "ngx.errlog"
             local res = errlog.get_logs(1000)
-            ngx.say("log lines: #", #res / 2)
+            ngx.say("log lines: #", #res / 3)
 
             -- first 3 logs
-            for i = 1, 2 * 3, 2 do
+            for i = 1, 3 * 3, 3 do
                 ngx.say("log level:", res[i])
                 ngx.say("log body:", res[i + 1])
             end
 
             -- last 3 logs
-            for i = #res - 5, #res, 2 do
+            for i = #res - 8, #res, 3 do
                 ngx.say("log level:", res[i])
                 ngx.say("log body:", res[i + 1])
             end
@@ -708,10 +708,10 @@ log body:\d{4}/\d{2}/\d{2} \d{2}:\d{2}:\d{2} \[error\] (\d+).*access_by_lua\(ngi
             local errlog = require "ngx.errlog"
 
             local res = errlog.get_logs(3)
-            ngx.say("msg count: ", #res / 2)
+            ngx.say("msg count: ", #res / 3)
 
             -- first 3 logs
-            for i = 1, #res, 2 do
+            for i = 1, #res, 3 do
                 ngx.say("log level:", res[i])
                 ngx.say("log body:", res[i + 1])
             end
@@ -722,17 +722,17 @@ log body:\d{4}/\d{2}/\d{2} \d{2}:\d{2}:\d{2} \[error\] (\d+).*access_by_lua\(ngi
             ngx.log(ngx.ERR, "--> 104")
 
             local res = errlog.get_logs(3)
-            ngx.say("msg count: ", #res / 2)
+            ngx.say("msg count: ", #res / 3)
 
             -- first 3 logs
-            for i = 1, #res, 2 do
+            for i = 1, #res, 3 do
                 ngx.say("log level:", res[i])
                 ngx.say("log body:", res[i + 1])
             end
 
             local res = errlog.get_logs(1000)
             -- last 3 logs
-            for i = #res - 5, #res, 2 do
+            for i = #res - 8, #res, 3 do
                 ngx.say("log level:", res[i])
                 ngx.say("log body:", res[i + 1])
             end
@@ -790,10 +790,10 @@ log body:\d{4}/\d{2}/\d{2} \d{2}:\d{2}:\d{2} \[error\] (\d+).*?content_by_lua\(n
             local errlog = require "ngx.errlog"
 
             local res = errlog.get_logs(3)
-            ngx.say("msg count: ", #res / 2)
+            ngx.say("msg count: ", #res / 3)
 
             -- first 3 logs
-            for i = 1, #res, 2 do
+            for i = 1, #res, 3 do
                 ngx.say("log level:", res[i])
                 ngx.say("log body:", res[i + 1])
             end
@@ -802,17 +802,17 @@ log body:\d{4}/\d{2}/\d{2} \d{2}:\d{2}:\d{2} \[error\] (\d+).*?content_by_lua\(n
             ngx.log(ngx.ERR, "howdy, something even newer!")
 
             local res = errlog.get_logs(3)
-            ngx.say("msg count: ", #res / 2)
+            ngx.say("msg count: ", #res / 3)
 
             -- first 3 logs
-            for i = 1, #res, 2 do
+            for i = 1, #res, 3 do
                 ngx.say("log level:", res[i])
                 ngx.say("log body:", res[i + 1])
             end
 
             local res = errlog.get_logs(1000)
             -- last 3 logs
-            for i = #res - 5, #res, 2 do
+            for i = #res - 8, #res, 3 do
                 ngx.say("log level:", res[i])
                 ngx.say("log body:", res[i + 1])
             end
@@ -865,9 +865,9 @@ log body:\d{4}/\d{2}/\d{2} \d{2}:\d{2}:\d{2} \[error\] (\d+).*?content_by_lua\(n
         content_by_lua_block {
             local errlog = require "ngx.errlog"
             local res = errlog.get_logs()
-            ngx.say("log lines: #", #res / 2)
+            ngx.say("log lines: #", #res / 3)
 
-            for i = 1, #res, 2 do
+            for i = 1, #res, 3 do
                 ngx.say("log level:", res[i])
                 ngx.say("log body:", res[i + 1])
             end
@@ -907,8 +907,8 @@ new line, client: 127.0.0.1, server: localhost, request: "GET /t HTTP/1.1", host
 
             for i = 1, 2 do
                 local res = errlog.get_logs(10, t)
-                ngx.say("maybe log lines: #", #res / 2)
-                for j = 1, #res, 2 do
+                ngx.say("maybe log lines: #", #res / 3)
+                for j = 1, #res, 3 do
                     local level, msg = res[j], res[j + 1]
                     if not level then
                         break
