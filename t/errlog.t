@@ -1111,3 +1111,123 @@ enter 11
 "
 ]
 --- skip_nginx: 3: <1.11.2
+
+
+
+
+=== TEST 29: ringbuf overflow bug
+--- http_config
+    lua_capture_error_log 4k;
+--- config
+    location /t {
+        access_by_lua_block {
+            local errlog = require "ngx.errlog"
+            local msg = string.rep("*", 10)
+
+            for i = 1, 10 do
+                ngx.log(ngx.ERR, msg)
+            end
+        }
+
+        content_by_lua_block {
+            local errlog = require "ngx.errlog"
+            local msg = string.rep("*", 10)
+
+            for i = 1, 40 do
+                local res = errlog.get_logs(1)
+                if res and #res then
+                    ngx.log(ngx.ERR, msg)
+                end
+            end
+
+            local res = errlog.get_logs(10)
+            ngx.say("log lines: #", #res / 3)
+        }
+    }
+--- log_level: info
+--- request
+GET /t
+--- response_body
+log lines: #10
+--- skip_nginx: 2: <1.11.2
+
+
+
+=== TEST 30: ringbuf sentinel bug1
+--- http_config
+    lua_capture_error_log 4k;
+--- config
+    location /t {
+        access_by_lua_block {
+            local errlog = require "ngx.errlog"
+            local msg = string.rep("a", 20)
+            local bigmsg = string.rep("A", 3000)
+
+            for i = 1, 10 do
+                ngx.log(ngx.ERR, msg)
+            end
+            ngx.log(ngx.ERR, bigmsg)
+            ngx.log(ngx.ERR, msg)
+        }
+
+        content_by_lua_block {
+            local errlog = require "ngx.errlog"
+
+            local res = errlog.get_logs(2)
+            ngx.say("log lines: #", #res / 3)
+
+            for i = 1, #res, 3 do
+                ngx.say(string.gsub(res[i + 2], "^.*([Aa][Aa][Aa]).*$", "%1"), "")
+            end
+        }
+    }
+--- log_level: info
+--- request
+GET /t
+--- response_body
+log lines: #2
+AAA
+aaa
+--- skip_nginx: 2: <1.11.2
+
+
+
+=== TEST 31: ringbuf sentinel bug2
+--- http_config
+    lua_capture_error_log 4k;
+--- config
+    location /t {
+        access_by_lua_block {
+            local errlog = require "ngx.errlog"
+            local msg = string.rep("a", 20)
+
+            for i = 1, 20 do
+                ngx.log(ngx.ERR, msg)
+            end
+        }
+
+        content_by_lua_block {
+            local errlog = require "ngx.errlog"
+            local msg = string.rep("a", 20)
+
+            local res = errlog.get_logs(18)
+            ngx.say("log lines: #", #res / 3)
+
+            for i = 1, 18 do
+                ngx.log(ngx.ERR, msg)
+            end
+
+            local bigmsg = string.rep("A", 2000)
+            ngx.log(ngx.ERR, bigmsg)
+
+            local res = errlog.get_logs(2)
+            ngx.say("log lines: #", #res / 3)
+        }
+    }
+--- log_level: info
+--- request
+GET /t
+--- response_body
+log lines: #18
+log lines: #2
+--- skip_nginx: 2: <1.11.2
