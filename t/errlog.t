@@ -9,7 +9,7 @@ log_level('error');
 
 repeat_each(2);
 
-plan tests => repeat_each() * (blocks() * 2 + 13);
+plan tests => repeat_each() * (blocks() * 2 + 15);
 
 my $pwd = cwd();
 
@@ -51,7 +51,7 @@ __DATA__
             if not res then
                 error("FAILED " .. err)
             end
-            ngx.say("log lines:", #res / 2)
+            ngx.say("log lines:", #res / 3)
         }
     }
 --- request
@@ -87,7 +87,7 @@ enter 11
             if not res then
                 error("FAILED " .. err)
             end
-            ngx.say("log lines:", #res / 2)
+            ngx.say("log lines:", #res / 3)
         }
     }
 --- request
@@ -119,7 +119,7 @@ enter 22
         if not res then
             error("FAILED " .. err)
         end
-        ngx.log(ngx.ERR, "capture log line:", #res / 2)
+        ngx.log(ngx.ERR, "capture log line:", #res / 3)
     }
 --- request
 GET /t
@@ -154,7 +154,7 @@ $/
         if not res then
             error("FAILED " .. err)
         end
-        ngx.log(ngx.ERR, "capture log line:", #res / 2)
+        ngx.log(ngx.ERR, "capture log line:", #res / 3)
     }
 --- request
 GET /t
@@ -187,7 +187,7 @@ $/
         if not res then
             error("FAILED " .. err)
         end
-        ngx.log(ngx.ERR, "capture log line:", #res / 2)
+        ngx.log(ngx.ERR, "capture log line:", #res / 3)
     }
 --- request
 GET /t
@@ -224,7 +224,7 @@ $/
         if not res then
             error("FAILED " .. err)
         end
-        ngx.log(ngx.ERR, "capture log line:", #res / 2)
+        ngx.log(ngx.ERR, "capture log line:", #res / 3)
 
     }
 --- request
@@ -285,7 +285,7 @@ invalid number of arguments in "lua_capture_error_log" directive
             if not res then
                 error("FAILED " .. err)
             end
-            ngx.say("log lines:", #res / 2)
+            ngx.say("log lines:", #res / 3)
         }
     }
 --- request
@@ -338,7 +338,7 @@ directive "lua_capture_error_log" is not set
         content_by_lua_block {
             local errlog = require "ngx.errlog"
             local res = errlog.get_logs()
-            ngx.say("log lines:", #res / 2)
+            ngx.say("log lines:", #res / 3)
         }
     }
 --- log_level: info
@@ -382,7 +382,7 @@ qr/-->\d+/
         content_by_lua_block {
             local errlog = require "ngx.errlog"
             local res = errlog.get_logs()
-            ngx.say("log lines:", #res / 2)
+            ngx.say("log lines:", #res / 3)
         }
     }
 --- log_level: info
@@ -427,7 +427,7 @@ qr/-->\d+/
         content_by_lua_block {
             local errlog = require "ngx.errlog"
             local res = errlog.get_logs()
-            ngx.say("log lines:", #res / 2)
+            ngx.say("log lines:", #res / 3)
         }
     }
 --- request
@@ -469,14 +469,14 @@ qr/-->\d+/
             if not res then
                 error("FAILED " .. err)
             end
-            ngx.say("log lines:", #res / 2)
+            ngx.say("log lines:", #res / 3)
 
             tab_clear(res)
             res, err = errlog.get_logs(2, res)
             if not res then
                 error("FAILED " .. err)
             end
-            ngx.say("log lines:", #res / 2)
+            ngx.say("log lines:", #res / 3)
         }
     }
 --- request
@@ -538,9 +538,9 @@ qr/missing \"level\" argument/
         content_by_lua_block {
             local errlog = require "ngx.errlog"
             local res = errlog.get_logs()
-            for i = 1, #res, 2 do
+            for i = 1, #res, 3 do
                 ngx.say("log level:", res[i])
-                ngx.say("log body:", res[i + 1])
+                ngx.say("log body:",  res[i + 2])
             end
         }
     }
@@ -591,18 +591,18 @@ qr/-->\d+/
         content_by_lua_block {
             local errlog = require "ngx.errlog"
             local res = errlog.get_logs(1000)
-            ngx.say("log lines: #", #res / 2)
+            ngx.say("log lines: #", #res / 3)
 
             -- first 3 logs
-            for i = 1, 2 * 3, 2 do
+            for i = 1, 3 * 3, 3 do
                 ngx.say("log level:", res[i])
-                ngx.say("log body:", res[i + 1])
+                ngx.say("log body:", res[i + 2])
             end
 
             -- last 3 logs
-            for i = #res - 5, #res, 2 do
+            for i = #res - 8, #res, 3 do
                 ngx.say("log level:", res[i])
-                ngx.say("log body:", res[i + 1])
+                ngx.say("log body:", res[i + 2])
             end
         }
     }
@@ -610,9 +610,7 @@ qr/-->\d+/
 --- request
 GET /t
 --- response_body_like chomp
-\Alog lines: #22
-log level:5
-log body:\d{4}/\d{2}/\d{2} \d{2}:\d{2}:\d{2} \[warn\] (\d+).*access_by_lua\(nginx.conf:\d+\):\d+: --> 90, client: 127.0.0.1, server: localhost, request: "GET /t HTTP/1.1", host: "localhost"
+\Alog lines: #21
 log level:4
 log body:\d{4}/\d{2}/\d{2} \d{2}:\d{2}:\d{2} \[error\] (\d+).*access_by_lua\(nginx.conf:\d+\):\d+: --> 90, client: 127.0.0.1, server: localhost, request: "GET /t HTTP/1.1", host: "localhost"
 log level:5
@@ -650,18 +648,18 @@ log body:\d{4}/\d{2}/\d{2} \d{2}:\d{2}:\d{2} \[error\] (\d+).*access_by_lua\(ngi
         content_by_lua_block {
             local errlog = require "ngx.errlog"
             local res = errlog.get_logs(1000)
-            ngx.say("log lines: #", #res / 2)
+            ngx.say("log lines: #", #res / 3)
 
             -- first 3 logs
-            for i = 1, 2 * 3, 2 do
+            for i = 1, 3 * 3, 3 do
                 ngx.say("log level:", res[i])
-                ngx.say("log body:", res[i + 1])
+                ngx.say("log body:", res[i + 2])
             end
 
             -- last 3 logs
-            for i = #res - 5, #res, 2 do
+            for i = #res - 8, #res, 3 do
                 ngx.say("log level:", res[i])
-                ngx.say("log body:", res[i + 1])
+                ngx.say("log body:", res[i + 2])
             end
         }
     }
@@ -669,13 +667,13 @@ log body:\d{4}/\d{2}/\d{2} \d{2}:\d{2}:\d{2} \[error\] (\d+).*access_by_lua\(ngi
 --- request
 GET /t
 --- response_body_like chomp
-\Alog lines: #28
-log level:5
-log body:\d{4}/\d{2}/\d{2} \d{2}:\d{2}:\d{2} \[warn\] (\d+).*access_by_lua\(nginx.conf:\d+\):\d+: --> 87, client: 127.0.0.1, server: localhost, request: "GET /t HTTP/1.1", host: "localhost"
-log level:4
-log body:\d{4}/\d{2}/\d{2} \d{2}:\d{2}:\d{2} \[error\] (\d+).*access_by_lua\(nginx.conf:\d+\):\d+: --> 87, client: 127.0.0.1, server: localhost, request: "GET /t HTTP/1.1", host: "localhost"
+\Alog lines: #26
 log level:5
 log body:\d{4}/\d{2}/\d{2} \d{2}:\d{2}:\d{2} \[warn\] (\d+).*access_by_lua\(nginx.conf:\d+\):\d+: --> 88, client: 127.0.0.1, server: localhost, request: "GET /t HTTP/1.1", host: "localhost"
+log level:4
+log body:\d{4}/\d{2}/\d{2} \d{2}:\d{2}:\d{2} \[error\] (\d+).*access_by_lua\(nginx.conf:\d+\):\d+: --> 88, client: 127.0.0.1, server: localhost, request: "GET /t HTTP/1.1", host: "localhost"
+log level:5
+log body:\d{4}/\d{2}/\d{2} \d{2}:\d{2}:\d{2} \[warn\] (\d+).*access_by_lua\(nginx.conf:\d+\):\d+: --> 89, client: 127.0.0.1, server: localhost, request: "GET /t HTTP/1.1", host: "localhost"
 log level:4
 log body:\d{4}/\d{2}/\d{2} \d{2}:\d{2}:\d{2} \[error\] (\d+).*access_by_lua\(nginx.conf:\d+\):\d+: --> 99, client: 127.0.0.1, server: localhost, request: "GET /t HTTP/1.1", host: "localhost"
 log level:5
@@ -710,12 +708,12 @@ log body:\d{4}/\d{2}/\d{2} \d{2}:\d{2}:\d{2} \[error\] (\d+).*access_by_lua\(ngi
             local errlog = require "ngx.errlog"
 
             local res = errlog.get_logs(3)
-            ngx.say("msg count: ", #res / 2)
+            ngx.say("msg count: ", #res / 3)
 
             -- first 3 logs
-            for i = 1, #res, 2 do
+            for i = 1, #res, 3 do
                 ngx.say("log level:", res[i])
-                ngx.say("log body:", res[i + 1])
+                ngx.say("log body:",  res[i + 2])
             end
 
             ngx.log(ngx.ERR, "--> 101")
@@ -724,19 +722,19 @@ log body:\d{4}/\d{2}/\d{2} \d{2}:\d{2}:\d{2} \[error\] (\d+).*access_by_lua\(ngi
             ngx.log(ngx.ERR, "--> 104")
 
             local res = errlog.get_logs(3)
-            ngx.say("msg count: ", #res / 2)
+            ngx.say("msg count: ", #res / 3)
 
             -- first 3 logs
-            for i = 1, #res, 2 do
+            for i = 1, #res, 3 do
                 ngx.say("log level:", res[i])
-                ngx.say("log body:", res[i + 1])
+                ngx.say("log body:",  res[i + 2])
             end
 
             local res = errlog.get_logs(1000)
             -- last 3 logs
-            for i = #res - 5, #res, 2 do
+            for i = #res - 8, #res, 3 do
                 ngx.say("log level:", res[i])
-                ngx.say("log body:", res[i + 1])
+                ngx.say("log body:",  res[i + 2])
             end
         }
     }
@@ -746,18 +744,18 @@ GET /t
 --- response_body_like chomp
 \Amsg count: 3
 log level:5
-log body:\d{4}/\d{2}/\d{2} \d{2}:\d{2}:\d{2} \[warn\] (\d+).*?access_by_lua\(nginx.conf:\d+\):\d+: --> 87, client: 127.0.0.1, server: localhost, request: "GET /t HTTP/1.1", host: "localhost"
-log level:4
-log body:\d{4}/\d{2}/\d{2} \d{2}:\d{2}:\d{2} \[error\] (\d+).*?access_by_lua\(nginx.conf:\d+\):\d+: --> 87, client: 127.0.0.1, server: localhost, request: "GET /t HTTP/1.1", host: "localhost"
-log level:5
 log body:\d{4}/\d{2}/\d{2} \d{2}:\d{2}:\d{2} \[warn\] (\d+).*?access_by_lua\(nginx.conf:\d+\):\d+: --> 88, client: 127.0.0.1, server: localhost, request: "GET /t HTTP/1.1", host: "localhost"
-msg count: 3
+log level:4
+log body:\d{4}/\d{2}/\d{2} \d{2}:\d{2}:\d{2} \[error\] (\d+).*?access_by_lua\(nginx.conf:\d+\):\d+: --> 88, client: 127.0.0.1, server: localhost, request: "GET /t HTTP/1.1", host: "localhost"
 log level:5
 log body:\d{4}/\d{2}/\d{2} \d{2}:\d{2}:\d{2} \[warn\] (\d+).*?access_by_lua\(nginx.conf:\d+\):\d+: --> 89, client: 127.0.0.1, server: localhost, request: "GET /t HTTP/1.1", host: "localhost"
-log level:4
-log body:\d{4}/\d{2}/\d{2} \d{2}:\d{2}:\d{2} \[error\] (\d+).*?access_by_lua\(nginx.conf:\d+\):\d+: --> 89, client: 127.0.0.1, server: localhost, request: "GET /t HTTP/1.1", host: "localhost"
+msg count: 3
 log level:5
 log body:\d{4}/\d{2}/\d{2} \d{2}:\d{2}:\d{2} \[warn\] (\d+).*?access_by_lua\(nginx.conf:\d+\):\d+: --> 90, client: 127.0.0.1, server: localhost, request: "GET /t HTTP/1.1", host: "localhost"
+log level:4
+log body:\d{4}/\d{2}/\d{2} \d{2}:\d{2}:\d{2} \[error\] (\d+).*?access_by_lua\(nginx.conf:\d+\):\d+: --> 90, client: 127.0.0.1, server: localhost, request: "GET /t HTTP/1.1", host: "localhost"
+log level:5
+log body:\d{4}/\d{2}/\d{2} \d{2}:\d{2}:\d{2} \[warn\] (\d+).*?access_by_lua\(nginx.conf:\d+\):\d+: --> 91, client: 127.0.0.1, server: localhost, request: "GET /t HTTP/1.1", host: "localhost"
 log level:4
 log body:\d{4}/\d{2}/\d{2} \d{2}:\d{2}:\d{2} \[error\] (\d+).*?content_by_lua\(nginx.conf:\d+\):\d+: --> 102, client: 127.0.0.1, server: localhost, request: "GET /t HTTP/1.1", host: "localhost"
 log level:4
@@ -792,31 +790,31 @@ log body:\d{4}/\d{2}/\d{2} \d{2}:\d{2}:\d{2} \[error\] (\d+).*?content_by_lua\(n
             local errlog = require "ngx.errlog"
 
             local res = errlog.get_logs(3)
-            ngx.say("msg count: ", #res / 2)
+            ngx.say("msg count: ", #res / 3)
 
             -- first 3 logs
-            for i = 1, #res, 2 do
+            for i = 1, #res, 3 do
                 ngx.say("log level:", res[i])
-                ngx.say("log body:", res[i + 1])
+                ngx.say("log body:",  res[i + 2])
             end
 
             ngx.log(ngx.ERR, "howdy, something new!")
             ngx.log(ngx.ERR, "howdy, something even newer!")
 
             local res = errlog.get_logs(3)
-            ngx.say("msg count: ", #res / 2)
+            ngx.say("msg count: ", #res / 3)
 
             -- first 3 logs
-            for i = 1, #res, 2 do
+            for i = 1, #res, 3 do
                 ngx.say("log level:", res[i])
-                ngx.say("log body:", res[i + 1])
+                ngx.say("log body:",  res[i + 2])
             end
 
             local res = errlog.get_logs(1000)
             -- last 3 logs
-            for i = #res - 5, #res, 2 do
+            for i = #res - 8, #res, 3 do
                 ngx.say("log level:", res[i])
-                ngx.say("log body:", res[i + 1])
+                ngx.say("log body:",  res[i + 2])
             end
         }
     }
@@ -826,18 +824,18 @@ GET /t
 --- response_body_like chomp
 \Amsg count: 3
 log level:5
-log body:\d{4}/\d{2}/\d{2} \d{2}:\d{2}:\d{2} \[warn\] (\d+).*?access_by_lua\(nginx.conf:\d+\):\d+: --> 87, client: 127.0.0.1, server: localhost, request: "GET /t HTTP/1.1", host: "localhost"
-log level:4
-log body:\d{4}/\d{2}/\d{2} \d{2}:\d{2}:\d{2} \[error\] (\d+).*?access_by_lua\(nginx.conf:\d+\):\d+: --> 87, client: 127.0.0.1, server: localhost, request: "GET /t HTTP/1.1", host: "localhost"
-log level:5
 log body:\d{4}/\d{2}/\d{2} \d{2}:\d{2}:\d{2} \[warn\] (\d+).*?access_by_lua\(nginx.conf:\d+\):\d+: --> 88, client: 127.0.0.1, server: localhost, request: "GET /t HTTP/1.1", host: "localhost"
-msg count: 3
 log level:4
 log body:\d{4}/\d{2}/\d{2} \d{2}:\d{2}:\d{2} \[error\] (\d+).*?access_by_lua\(nginx.conf:\d+\):\d+: --> 88, client: 127.0.0.1, server: localhost, request: "GET /t HTTP/1.1", host: "localhost"
 log level:5
 log body:\d{4}/\d{2}/\d{2} \d{2}:\d{2}:\d{2} \[warn\] (\d+).*?access_by_lua\(nginx.conf:\d+\):\d+: --> 89, client: 127.0.0.1, server: localhost, request: "GET /t HTTP/1.1", host: "localhost"
+msg count: 3
 log level:4
 log body:\d{4}/\d{2}/\d{2} \d{2}:\d{2}:\d{2} \[error\] (\d+).*?access_by_lua\(nginx.conf:\d+\):\d+: --> 89, client: 127.0.0.1, server: localhost, request: "GET /t HTTP/1.1", host: "localhost"
+log level:5
+log body:\d{4}/\d{2}/\d{2} \d{2}:\d{2}:\d{2} \[warn\] (\d+).*?access_by_lua\(nginx.conf:\d+\):\d+: --> 90, client: 127.0.0.1, server: localhost, request: "GET /t HTTP/1.1", host: "localhost"
+log level:4
+log body:\d{4}/\d{2}/\d{2} \d{2}:\d{2}:\d{2} \[error\] (\d+).*?access_by_lua\(nginx.conf:\d+\):\d+: --> 90, client: 127.0.0.1, server: localhost, request: "GET /t HTTP/1.1", host: "localhost"
 log level:4
 log body:\d{4}/\d{2}/\d{2} \d{2}:\d{2}:\d{2} \[error\] (\d+).*?access_by_lua\(nginx.conf:\d+\):\d+: --> 100, client: 127.0.0.1, server: localhost, request: "GET /t HTTP/1.1", host: "localhost"
 log level:4
@@ -867,11 +865,11 @@ log body:\d{4}/\d{2}/\d{2} \d{2}:\d{2}:\d{2} \[error\] (\d+).*?content_by_lua\(n
         content_by_lua_block {
             local errlog = require "ngx.errlog"
             local res = errlog.get_logs()
-            ngx.say("log lines: #", #res / 2)
+            ngx.say("log lines: #", #res / 3)
 
-            for i = 1, #res, 2 do
+            for i = 1, #res, 3 do
                 ngx.say("log level:", res[i])
-                ngx.say("log body:", res[i + 1])
+                ngx.say("log body:",  res[i + 2])
             end
         }
     }
@@ -909,14 +907,14 @@ new line, client: 127.0.0.1, server: localhost, request: "GET /t HTTP/1.1", host
 
             for i = 1, 2 do
                 local res = errlog.get_logs(10, t)
-                ngx.say("maybe log lines: #", #res / 2)
-                for j = 1, #res, 2 do
-                    local level, msg = res[j], res[j + 1]
+                ngx.say("maybe log lines: #", #res / 3)
+                for j = 1, #res, 3 do
+                    local level, msg = res[j], res[j + 2]
                     if not level then
                         break
                     end
                     ngx.say("log level:", level)
-                    ngx.say("log body:", msg)
+                    ngx.say("log body:",  msg)
                 end
                 ngx.say("end")
             end
@@ -1025,3 +1023,91 @@ GET /t
 log a warning event
 --- no_error_log
 do not log another warning event
+
+
+
+=== TEST 27: sanity (with log time)
+--- http_config
+    lua_capture_error_log 4m;
+--- config
+    location /t {
+        access_by_lua_block {
+            ngx.log(ngx.ERR, "enter 1")
+            ngx.log(ngx.ERR, "enter 11")
+
+            local errlog = require "ngx.errlog"
+            local res, err = errlog.get_logs(nil, nil, {fetch_time = true})
+            if not res then
+                error("FAILED " .. err)
+            end
+            ngx.say("log lines:", #res / 3)
+        }
+    }
+--- request
+GET /t
+--- response_body
+log lines:2
+--- grep_error_log eval
+qr/enter \d+/
+--- grep_error_log_out eval
+[
+"enter 1
+enter 11
+",
+"enter 1
+enter 11
+"
+]
+--- skip_nginx: 3: <1.11.2
+
+
+
+=== TEST 28: log time eq ngx.now
+--- http_config
+    lua_capture_error_log 4m;
+--- config
+    location /t {
+        access_by_lua_block {
+            local now = ngx.now()
+            ngx.log(ngx.CRIT, "enter 1")
+            ngx.log(ngx.ERR, "enter 11")
+
+            local errlog = require "ngx.errlog"
+            local res, err = errlog.get_logs(nil, nil, {fetch_time = true})
+            if not res then
+                error("FAILED " .. err)
+            end
+            ngx.say("log lines: ", #res / 3)
+
+            for i = 1, #res, 3 do
+                ngx.say("log level: ", res[i])
+                ngx.say("log time: ",  res[i + 1])
+                ngx.say("log body: ",  res[i + 2])
+                ngx.say("same with now: ",  res[i + 1] == now)
+            end
+        }
+    }
+--- request
+GET /t
+--- response_body_like chomp
+\Alog lines: 2
+log level: 3
+log time: \d+\.\d+
+log body: \d{4}/\d{2}/\d{2} \d{2}:\d{2}:\d{2} \[crit\] (\d+).*?access_by_lua\(nginx.conf:\d+\):\d+: enter 1, client: 127.0.0.1, server: localhost, request: "GET /t HTTP/1.1", host: "localhost"
+same with now: true
+log level: 4
+log time: \d{10}\.\d+
+log body: \d{4}/\d{2}/\d{2} \d{2}:\d{2}:\d{2} \[error\] (\d+).*?access_by_lua\(nginx.conf:\d+\):\d+: enter 11, client: 127.0.0.1, server: localhost, request: "GET /t HTTP/1.1", host: "localhost"
+same with now: true
+--- grep_error_log eval
+qr/enter \d+/
+--- grep_error_log_out eval
+[
+"enter 1
+enter 11
+",
+"enter 1
+enter 11
+"
+]
+--- skip_nginx: 3: <1.11.2
