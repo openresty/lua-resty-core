@@ -77,8 +77,9 @@ function _M.get_logs(max, logs)
 
         if loglen > 0 then
             logs[count + 1] = loglevel[0]
-            logs[count + 2] = ffi_string(log[0], loglen)
-            logs[count + 3] = log_time[0]
+            logs[count + 2] = log_time[0]
+            logs[count + 3] = ffi_string(log[0], loglen)
+
             count = count + 3
         end
 

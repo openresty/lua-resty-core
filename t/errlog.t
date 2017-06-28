@@ -540,7 +540,7 @@ qr/missing \"level\" argument/
             local res = errlog.get_logs()
             for i = 1, #res, 3 do
                 ngx.say("log level:", res[i])
-                ngx.say("log body:", res[i + 1])
+                ngx.say("log body:",  res[i + 2])
             end
         }
     }
@@ -596,13 +596,13 @@ qr/-->\d+/
             -- first 3 logs
             for i = 1, 3 * 3, 3 do
                 ngx.say("log level:", res[i])
-                ngx.say("log body:", res[i + 1])
+                ngx.say("log body:", res[i + 2])
             end
 
             -- last 3 logs
             for i = #res - 8, #res, 3 do
                 ngx.say("log level:", res[i])
-                ngx.say("log body:", res[i + 1])
+                ngx.say("log body:", res[i + 2])
             end
         }
     }
@@ -653,13 +653,13 @@ log body:\d{4}/\d{2}/\d{2} \d{2}:\d{2}:\d{2} \[error\] (\d+).*access_by_lua\(ngi
             -- first 3 logs
             for i = 1, 3 * 3, 3 do
                 ngx.say("log level:", res[i])
-                ngx.say("log body:", res[i + 1])
+                ngx.say("log body:", res[i + 2])
             end
 
             -- last 3 logs
             for i = #res - 8, #res, 3 do
                 ngx.say("log level:", res[i])
-                ngx.say("log body:", res[i + 1])
+                ngx.say("log body:", res[i + 2])
             end
         }
     }
@@ -713,7 +713,7 @@ log body:\d{4}/\d{2}/\d{2} \d{2}:\d{2}:\d{2} \[error\] (\d+).*access_by_lua\(ngi
             -- first 3 logs
             for i = 1, #res, 3 do
                 ngx.say("log level:", res[i])
-                ngx.say("log body:", res[i + 1])
+                ngx.say("log body:",  res[i + 2])
             end
 
             ngx.log(ngx.ERR, "--> 101")
@@ -727,14 +727,14 @@ log body:\d{4}/\d{2}/\d{2} \d{2}:\d{2}:\d{2} \[error\] (\d+).*access_by_lua\(ngi
             -- first 3 logs
             for i = 1, #res, 3 do
                 ngx.say("log level:", res[i])
-                ngx.say("log body:", res[i + 1])
+                ngx.say("log body:",  res[i + 2])
             end
 
             local res = errlog.get_logs(1000)
             -- last 3 logs
             for i = #res - 8, #res, 3 do
                 ngx.say("log level:", res[i])
-                ngx.say("log body:", res[i + 1])
+                ngx.say("log body:",  res[i + 2])
             end
         }
     }
@@ -795,7 +795,7 @@ log body:\d{4}/\d{2}/\d{2} \d{2}:\d{2}:\d{2} \[error\] (\d+).*?content_by_lua\(n
             -- first 3 logs
             for i = 1, #res, 3 do
                 ngx.say("log level:", res[i])
-                ngx.say("log body:", res[i + 1])
+                ngx.say("log body:",  res[i + 2])
             end
 
             ngx.log(ngx.ERR, "howdy, something new!")
@@ -807,14 +807,14 @@ log body:\d{4}/\d{2}/\d{2} \d{2}:\d{2}:\d{2} \[error\] (\d+).*?content_by_lua\(n
             -- first 3 logs
             for i = 1, #res, 3 do
                 ngx.say("log level:", res[i])
-                ngx.say("log body:", res[i + 1])
+                ngx.say("log body:",  res[i + 2])
             end
 
             local res = errlog.get_logs(1000)
             -- last 3 logs
             for i = #res - 8, #res, 3 do
                 ngx.say("log level:", res[i])
-                ngx.say("log body:", res[i + 1])
+                ngx.say("log body:",  res[i + 2])
             end
         }
     }
@@ -869,7 +869,7 @@ log body:\d{4}/\d{2}/\d{2} \d{2}:\d{2}:\d{2} \[error\] (\d+).*?content_by_lua\(n
 
             for i = 1, #res, 3 do
                 ngx.say("log level:", res[i])
-                ngx.say("log body:", res[i + 1])
+                ngx.say("log body:",  res[i + 2])
             end
         }
     }
@@ -909,12 +909,12 @@ new line, client: 127.0.0.1, server: localhost, request: "GET /t HTTP/1.1", host
                 local res = errlog.get_logs(10, t)
                 ngx.say("maybe log lines: #", #res / 3)
                 for j = 1, #res, 3 do
-                    local level, msg = res[j], res[j + 1]
+                    local level, msg = res[j], res[j + 2]
                     if not level then
                         break
                     end
                     ngx.say("log level:", level)
-                    ngx.say("log body:", msg)
+                    ngx.say("log body:",  msg)
                 end
                 ngx.say("end")
             end
@@ -1081,9 +1081,9 @@ enter 11
 
             for i = 1, #res, 3 do
                 ngx.say("log level: ", res[i])
-                ngx.say("log body: ",  res[i + 1])
-                ngx.say("log time: ", res[i + 2])
-                ngx.say("same with now: ",  res[i + 2] == now)
+                ngx.say("log time: ",  res[i + 1])
+                ngx.say("log body: ",  res[i + 2])
+                ngx.say("same with now: ",  res[i + 1] == now)
             end
         }
     }
@@ -1092,12 +1092,12 @@ GET /t
 --- response_body_like chomp
 \Alog lines: 2
 log level: 3
-log body: \d{4}/\d{2}/\d{2} \d{2}:\d{2}:\d{2} \[crit\] (\d+).*?access_by_lua\(nginx.conf:\d+\):\d+: enter 1, client: 127.0.0.1, server: localhost, request: "GET /t HTTP/1.1", host: "localhost"
 log time: \d+\.\d+
+log body: \d{4}/\d{2}/\d{2} \d{2}:\d{2}:\d{2} \[crit\] (\d+).*?access_by_lua\(nginx.conf:\d+\):\d+: enter 1, client: 127.0.0.1, server: localhost, request: "GET /t HTTP/1.1", host: "localhost"
 same with now: true
 log level: 4
-log body: \d{4}/\d{2}/\d{2} \d{2}:\d{2}:\d{2} \[error\] (\d+).*?access_by_lua\(nginx.conf:\d+\):\d+: enter 11, client: 127.0.0.1, server: localhost, request: "GET /t HTTP/1.1", host: "localhost"
 log time: \d{10}\.\d+
+log body: \d{4}/\d{2}/\d{2} \d{2}:\d{2}:\d{2} \[error\] (\d+).*?access_by_lua\(nginx.conf:\d+\):\d+: enter 11, client: 127.0.0.1, server: localhost, request: "GET /t HTTP/1.1", host: "localhost"
 same with now: true
 --- grep_error_log eval
 qr/enter \d+/

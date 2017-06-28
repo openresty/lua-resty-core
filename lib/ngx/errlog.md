@@ -68,8 +68,8 @@ http {
                 end
 
                 for i = 1, #logs, 3 do
-                    ngx.say("level: ", logs[i], " time: ", logs[i + 2],
-                            " data: ", logs[i + 1])
+                    ngx.say("level: ", logs[i], " time: ", logs[i + 1],
+                            " data: ", logs[i + 2])
                 end
             }
         }
@@ -158,7 +158,7 @@ local res = errlog.get_logs(10)
 The resulting table has the following structure:
 
 ```lua
-{ level1, msg1, time1, level2, msg2, time2, ... }
+{ level1, time1, msg1, level2, time2, msg2, ... }
 ```
 
 So to traverse this array, the user can use a loop like this:
@@ -170,8 +170,8 @@ for i = 1, #res, 3 do
         break
     end
 
-    local msg = res[i + 1]
-    local time = res[i + 2]
+    local time = res[i + 1]
+    local msg = res[i + 2]
 
     -- handle the current message with log level in `level`,
     -- log time in `time`, and log message body in `msg`.
@@ -200,8 +200,8 @@ if res then
         if not level then
             break
         end
-        local msg = res[i + 1]
-        local time = res[i + 2]
+        local time = res[i + 1]
+        local msg  = res[i + 2]
         ...
     end
 end
