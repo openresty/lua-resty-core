@@ -126,6 +126,7 @@ API Implemented
 ## resty.core.regex
 
 * [ngx.re.match](https://github.com/openresty/lua-nginx-module#ngxrematch)
+* [ngx.re.gmatch](https://github.com/openresty/lua-nginx-module#ngxregmatch)
 * [ngx.re.find](https://github.com/openresty/lua-nginx-module#ngxrefind)
 * [ngx.re.sub](https://github.com/openresty/lua-nginx-module#ngxresub)
 * [ngx.re.gsub](https://github.com/openresty/lua-nginx-module#ngxregsub)
