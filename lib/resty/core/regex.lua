@@ -24,6 +24,8 @@ local ngx = ngx
 local type = type
 local tostring = tostring
 local error = error
+local getfenv = getfenv
+local setmetatable = setmetatable
 local get_string_buf = base.get_string_buf
 local get_string_buf_size = base.get_string_buf_size
 local new_tab = base.new_tab
@@ -476,6 +478,77 @@ end
 
 function ngx.re.find(subj, regex, opts, ctx, nth)
     return re_match_helper(subj, regex, opts, ctx, false, nil, nth)
+end
+
+
+local function iterate_re_gmatch(self)
+    local r = getfenv(0).__ngx_req
+    if r ~= self._req then
+        error("attempt to use ngx.re.gmatch iterator in a request" ..
+            " that did not create it")
+    end
+    local compile_once = self._compile_once
+    local compiled = self._compiled
+    local subj = self._subj
+    local flags = self._flags
+    local pos = self._pos
+    -- The iterator is exhausted.
+    if not pos then
+        return nil
+    end
+
+    local rc = C.ngx_http_lua_ffi_exec_regex(compiled, flags, subj, #subj, pos)
+
+    if rc == PCRE_ERROR_NOMATCH then
+        if not compile_once then
+            destroy_compiled_regex(compiled)
+        end
+        self._pos = nil
+        return nil
+    end
+
+    if rc < 0 then
+        if not compile_once then
+            destroy_compiled_regex(compiled)
+        end
+        self._pos = nil
+        return nil, "pcre_exec() failed: " .. rc
+    end
+
+    if rc == 0 then
+        if band(flags, FLAG_DFA) == 0 then
+            self._pos = nil
+            return nil, "capture size too small"
+        end
+
+        rc = 1
+    end
+
+    self._pos = compiled.captures[1]
+    local res = collect_captures(compiled, rc, subj, flags)
+
+    return res
+end
+
+
+function ngx.re.gmatch(subj, regex, opts)
+    subj  = tostring(subj)
+
+    local compiled, compile_once, flags = re_match_compile(regex, opts)
+    if compiled == nil then
+        -- compiled_once holds the error string
+        return nil, compile_once
+    end
+
+    local re_gmatch_iterator = new_tab(0, 6)
+    re_gmatch_iterator._req = getfenv(0).__ngx_req
+    re_gmatch_iterator._compiled = compiled
+    re_gmatch_iterator._compile_once = compile_once
+    re_gmatch_iterator._subj = subj
+    re_gmatch_iterator._flags = flags
+    re_gmatch_iterator._pos = 0
+
+    return setmetatable(re_gmatch_iterator, { __call = iterate_re_gmatch })
 end
 
 
