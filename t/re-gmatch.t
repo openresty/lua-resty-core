@@ -9,7 +9,7 @@ use Cwd qw(cwd);
 
 repeat_each(2);
 
-plan tests => repeat_each() * (blocks() * 4 - 3);
+plan tests => repeat_each() * (blocks() * 4 - 2);
 
 my $pwd = cwd();
 
@@ -429,51 +429,7 @@ attempt to get length of local 'subj' (a number value)
 
 
 
-=== TEST 12: gmatch iterator used by another request
---- http_config eval: $::HttpConfig
---- config
-    location /re {
-        content_by_lua_block {
-            package.loaded.gmatch = nil
-
-            local res = ngx.location.capture("/t")
-            if res.status == 200 then
-                ngx.print(res.body)
-            else
-                ngx.say("sr failed: ", res.status)
-            end
-
-            res = ngx.location.capture("/t")
-            if res.status == 200 then
-                ngx.print(res.body)
-            else
-                ngx.say("sr failed: ", res.status)
-            end
-        }
-    }
-
-    location /t {
-        content_by_lua_block {
-            local g = package.loaded.gmatch or {}
-            if not g.iter then
-                g.iter = ngx.re.gmatch("hello world", "[a-z]", "jo")
-                package.loaded.gmatch = g
-            end
-            local m = g.iter()
-            ngx.say(m and "matched" or "no")
-        }
-    }
---- request
-GET /re
---- response_body
-matched
-sr failed: 500
---- error_log
-attempt to use ngx.re.gmatch iterator in a request that did not create it
-
-
-
-=== TEST 13: an exhausted gmatch iterator should return nil
+=== TEST 12: an exhausted gmatch iterator should return nil
 --- http_config eval: $::HttpConfig
 --- config
     location = /re {

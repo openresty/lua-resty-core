@@ -24,7 +24,6 @@ local ngx = ngx
 local type = type
 local tostring = tostring
 local error = error
-local getfenv = getfenv
 local setmetatable = setmetatable
 local get_string_buf = base.get_string_buf
 local get_string_buf_size = base.get_string_buf_size
@@ -482,11 +481,6 @@ end
 
 
 local function iterate_re_gmatch(self)
-    local r = getfenv(0).__ngx_req
-    if r ~= self._req then
-        error("attempt to use ngx.re.gmatch iterator in a request" ..
-            " that did not create it")
-    end
     local compile_once = self._compile_once
     local compiled = self._compiled
     local subj = self._subj
@@ -540,8 +534,7 @@ function ngx.re.gmatch(subj, regex, opts)
         return nil, compile_once
     end
 
-    local re_gmatch_iterator = new_tab(0, 6)
-    re_gmatch_iterator._req = getfenv(0).__ngx_req
+    local re_gmatch_iterator = new_tab(0, 5)
     re_gmatch_iterator._compiled = compiled
     re_gmatch_iterator._compile_once = compile_once
     re_gmatch_iterator._subj = subj
