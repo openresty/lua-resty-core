@@ -152,7 +152,7 @@ end
 local errlog = require "ngx.errlog"
 local res = errlog.get_logs(10)
 -- the number of messages in the `res` table is 10 and the `res` table
--- has 20 elements.
+-- has 30 elements.
 ```
 
 The resulting table has the following structure:
