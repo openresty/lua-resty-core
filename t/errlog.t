@@ -1124,8 +1124,8 @@ enter 11
             local errlog = require "ngx.errlog"
             local msg = string.rep("*", 10)
 
-            for i = 1, 10 do
-                ngx.log(ngx.ERR, msg)
+            for i = 1, 2 do
+                ngx.log(ngx.ERR, msg .. i)
             end
         }
 
@@ -1136,19 +1136,28 @@ enter 11
             for i = 1, 40 do
                 local res = errlog.get_logs(1)
                 if res and #res then
-                    ngx.log(ngx.ERR, msg)
+                    ngx.log(ngx.ERR, msg .. i)
                 end
             end
 
-            local res = errlog.get_logs(10)
-            ngx.say("log lines: #", #res / 3)
+            local res = errlog.get_logs()
+            for i = 1, #res, 3 do
+                ngx.say("log level: ", res[i])
+                ngx.say("log time: ",  res[i + 1])
+                ngx.say("log body: ",  res[i + 2])
+            end
         }
     }
 --- log_level: info
 --- request
 GET /t
---- response_body
-log lines: #10
+--- response_body_like chomp
+log level: 4
+log time: \d+\.\d+
+log body: \d{4}/\d{2}/\d{2} \d{2}:\d{2}:\d{2} \[error\] (\d+).*?content_by_lua\(nginx.conf:\d+\):\d+: \*\*\*\*\*\*\*\*\*\*39, client: 127.0.0.1, server: localhost, request: "GET /t HTTP/1.1", host: "localhost"
+log level: 4
+log time: \d{10}\.\d+
+log body: \d{4}/\d{2}/\d{2} \d{2}:\d{2}:\d{2} \[error\] (\d+).*?content_by_lua\(nginx.conf:\d+\):\d+: \*\*\*\*\*\*\*\*\*\*40, client: 127.0.0.1, server: localhost, request: "GET /t HTTP/1.1", host: "localhost"
 --- skip_nginx: 2: <1.11.2
 
 
@@ -1220,7 +1229,7 @@ aaa
             local bigmsg = string.rep("A", 2000)
             ngx.log(ngx.ERR, bigmsg)
 
-            local res = errlog.get_logs(2)
+            local res = errlog.get_logs()
             ngx.say("log lines: #", #res / 3)
         }
     }
@@ -1229,5 +1238,5 @@ aaa
 GET /t
 --- response_body
 log lines: #18
-log lines: #2
+log lines: #8
 --- skip_nginx: 2: <1.11.2
