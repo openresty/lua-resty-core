@@ -1,10 +1,15 @@
 # vim:set ft= ts=4 sw=4 et fdm=marker:
+
+BEGIN {
+    undef $ENV{TEST_NGINX_USE_STAP};
+}
+
 use lib 'lib';
 use Test::Nginx::Socket::Lua;
 use Cwd qw(cwd);
 
 #worker_connections(1014);
-master_process_enabled(1);
+master_on();
 #log_level('info');
 
 repeat_each(2);

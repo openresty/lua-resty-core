@@ -1,4 +1,9 @@
 # vim:set ft= ts=4 sw=4 et fdm=marker:
+
+BEGIN {
+    undef $ENV{TEST_NGINX_USE_STAP};
+}
+
 use lib 'lib';
 use Test::Nginx::Socket::Lua;
 use Cwd qw(cwd);
