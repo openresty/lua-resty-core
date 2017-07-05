@@ -1,4 +1,4 @@
-# vim:set ft=ts=4 sw=4 et fdm=marker:
+# vim:set ft= ts=4 sw=4 et fdm=marker:
 
 use Test::Nginx::Socket::Lua;
 use Cwd qw(cwd);
@@ -547,6 +547,7 @@ qr/Using unix socket file .*?nginx\.sock/
 --- no_error_log
 [error]
 [alert]
+--- no_check_leak
 
 
 
@@ -665,6 +666,7 @@ Using IPv4 address: 127.0.0.1
 --- no_error_log
 [error]
 [alert]
+--- no_check_leak
 
 
 
@@ -784,6 +786,7 @@ Using IPv6 address: 0.0.0.1
 [error]
 [alert]
 --- skip_eval: 6: system("ping6 -c 1 ::1 >/dev/null 2>&1") ne 0
+--- no_check_leak
 
 
 
