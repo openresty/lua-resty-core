@@ -80,17 +80,8 @@ __DATA__
 GET /t
 --- response_body
 type: worker
---- grep_error_log eval
-qr/init_worker_by_lua:\d+: process type: \w+/
---- grep_error_log_out eval
-[
-"init_worker_by_lua:6: process type: privileged
+--- error_log
 init_worker_by_lua:6: process type: privileged
-",
-"init_worker_by_lua:6: process type: privileged
-init_worker_by_lua:6: process type: privileged
-"
-]
 --- no_error_log
 [error]
 --- skip_nginx: 4: < 1.11.2
