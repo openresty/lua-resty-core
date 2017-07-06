@@ -66,7 +66,7 @@ __DATA__
             ngx.sleep(0.1)
             local v
             local typ = (require "ngx.process").type
-            for i = 1, 400 do
+            for i = 1, 200 do
                 v = typ()
             end
             ngx.say("type: ", v)
@@ -99,3 +99,4 @@ process type: helper
 [error]
  -- NYI:
 --- skip_nginx: 5: < 1.11.2
+--- wait: 0.2

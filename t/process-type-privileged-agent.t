@@ -68,7 +68,7 @@ __DATA__
             ngx.sleep(0.1)
             local v
             local typ = require "ngx.process".type
-            for i = 1, 400 do
+            for i = 1, 200 do
                 v = typ()
             end
 
@@ -84,13 +84,13 @@ qr/\[TRACE   \d+ init_worker_by_lua:\d+ loop\]|\[TRACE   \d+ content_by_lua\(ngi
 --- grep_error_log_out eval
 [
 qr/\[TRACE   \d init_worker_by_lua:5 loop\]
-\[TRACE   \d init_worker_by_lua:5 loop\]
-\[TRACE   \d content_by_lua\(nginx.conf:81\):5 loop\]
+(?:\[TRACE   \d init_worker_by_lua:5 loop\]
+)?\[TRACE   \d content_by_lua\(nginx.conf:81\):5 loop\]
 init_worker_by_lua:10: process type: privileged
 /,
 qr/\[TRACE   \d init_worker_by_lua:5 loop\]
-\[TRACE   \d init_worker_by_lua:5 loop\]
-\[TRACE   \d content_by_lua\(nginx.conf:81\):5 loop\]
+(?:\[TRACE   \d init_worker_by_lua:5 loop\]
+)?\[TRACE   \d content_by_lua\(nginx.conf:81\):5 loop\]
 init_worker_by_lua:10: process type: privileged
 /
 ]
@@ -98,6 +98,7 @@ init_worker_by_lua:10: process type: privileged
 [error]
  -- NYI:
 --- skip_nginx: 5: < 1.11.2
+--- wait: 0.2
 
 
 
