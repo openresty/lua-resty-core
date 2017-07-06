@@ -48,7 +48,7 @@ our $HttpConfig = <<_EOC_;
 _EOC_
 
 #no_diff();
-#no_long_string();
+no_long_string();
 check_accum_error_log();
 run_tests();
 
@@ -94,3 +94,4 @@ init_worker_by_lua:6: process type: privileged
 --- no_error_log
 [error]
 --- skip_nginx: 4: < 1.11.2
+--- wait: 0.1
