@@ -1220,6 +1220,7 @@ aaa
 
             local res = errlog.get_logs(18)
             ngx.say("log lines: #", #res / 3)
+            ngx.flush(true)
 
             for i = 1, 18 do
                 ngx.log(ngx.ERR, msg)
@@ -1230,6 +1231,7 @@ aaa
 
             local res = errlog.get_logs()
             ngx.say("log lines: #", #res / 3)
+            ngx.flush(true)
         }
     }
 --- log_level: info
