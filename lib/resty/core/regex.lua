@@ -481,20 +481,22 @@ end
 
 
 local function iterate_re_gmatch(self)
-    local compile_once = self._compile_once
     local compiled = self._compiled
     local subj = self._subj
+    local subj_len = self._subj_len
     local flags = self._flags
     local pos = self._pos
-    -- The iterator is exhausted.
+
     if not pos then
+        -- The iterator is exhausted.
         return nil
     end
 
-    local rc = C.ngx_http_lua_ffi_exec_regex(compiled, flags, subj, #subj, pos)
+    local rc = C.ngx_http_lua_ffi_exec_regex(compiled, flags, subj,
+                                             subj_len, pos)
 
     if rc == PCRE_ERROR_NOMATCH then
-        if not compile_once then
+        if not self._compile_once then
             destroy_compiled_regex(compiled)
         end
         self._pos = nil
@@ -502,7 +504,7 @@ local function iterate_re_gmatch(self)
     end
 
     if rc < 0 then
-        if not compile_once then
+        if not self._compile_once then
             destroy_compiled_regex(compiled)
         end
         self._pos = nil
@@ -519,9 +521,7 @@ local function iterate_re_gmatch(self)
     end
 
     self._pos = compiled.captures[1]
-    local res = collect_captures(compiled, rc, subj, flags)
-
-    return res
+    return collect_captures(compiled, rc, subj, flags)
 end
 
 
@@ -534,10 +534,11 @@ function ngx.re.gmatch(subj, regex, opts)
         return nil, compile_once
     end
 
-    local re_gmatch_iterator = new_tab(0, 5)
+    local re_gmatch_iterator = new_tab(0, 6)
     re_gmatch_iterator._compiled = compiled
     re_gmatch_iterator._compile_once = compile_once
     re_gmatch_iterator._subj = subj
+    re_gmatch_iterator._subj_len = #subj
     re_gmatch_iterator._flags = flags
     re_gmatch_iterator._pos = 0
 
