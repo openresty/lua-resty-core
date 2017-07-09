@@ -748,6 +748,7 @@ ok
 --- grep_error_log eval: qr{hello from balancer by lua!}
 --- grep_error_log_out
 hello from balancer by lua!
+--- no_check_leak
 
 
 
