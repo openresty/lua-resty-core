@@ -1092,11 +1092,11 @@ GET /t
 --- response_body_like chomp
 \Alog lines: 2
 log level: 3
-log time: \d+\.\d+
+log time: \d+(?:\.\d+)?
 log body: \d{4}/\d{2}/\d{2} \d{2}:\d{2}:\d{2} \[crit\] (\d+).*?access_by_lua\(nginx.conf:\d+\):\d+: enter 1, client: 127.0.0.1, server: localhost, request: "GET /t HTTP/1.1", host: "localhost"
 same with now: true
 log level: 4
-log time: \d{10}\.\d+
+log time: \d{10}(?:\.\d+)?
 log body: \d{4}/\d{2}/\d{2} \d{2}:\d{2}:\d{2} \[error\] (\d+).*?access_by_lua\(nginx.conf:\d+\):\d+: enter 11, client: 127.0.0.1, server: localhost, request: "GET /t HTTP/1.1", host: "localhost"
 same with now: true
 --- grep_error_log eval
@@ -1152,10 +1152,10 @@ enter 11
 GET /t
 --- response_body_like chomp
 log level: 4
-log time: \d+\.\d+
+log time: \d+(?:\.\d+)?
 log body: \d{4}/\d{2}/\d{2} \d{2}:\d{2}:\d{2} \[error\] (\d+).*?content_by_lua\(nginx.conf:\d+\):\d+: \*\*\*\*\*\*\*\*\*\*39, client: 127.0.0.1, server: localhost, request: "GET /t HTTP/1.1", host: "localhost"
 log level: 4
-log time: \d{10}\.\d+
+log time: \d{10}(?:\.\d+)?
 log body: \d{4}/\d{2}/\d{2} \d{2}:\d{2}:\d{2} \[error\] (\d+).*?content_by_lua\(nginx.conf:\d+\):\d+: \*\*\*\*\*\*\*\*\*\*40, client: 127.0.0.1, server: localhost, request: "GET /t HTTP/1.1", host: "localhost"
 --- skip_nginx: 2: <1.11.2
 
