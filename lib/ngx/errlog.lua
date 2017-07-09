@@ -17,6 +17,7 @@ local intp = ffi.new("int[1]")
 local num_value = ffi_new("double[1]")
 local getfenv = getfenv
 local tonumber = tonumber
+local type = type
 
 
 local _M = { version = base.version }
@@ -29,6 +30,9 @@ int ngx_http_lua_ffi_errlog_get_msg(char **log, int *loglevel,
     unsigned char *err, size_t *errlen, double *log_time);
 
 int ngx_http_lua_ffi_errlog_get_sys_filter_level(ngx_http_request_t *r);
+
+int ngx_http_lua_ffi_raw_log(ngx_http_request_t *r, unsigned int level,
+    const unsigned char *s, size_t s_len, unsigned char *err, size_t *errlen);
 ]]
 
 
@@ -104,6 +108,29 @@ end
 function _M.get_sys_filter_level()
     local r = getfenv(0).__ngx_req
     return tonumber(C.ngx_http_lua_ffi_errlog_get_sys_filter_level(r))
+end
+
+
+function _M.raw_log(level, msg)
+    if type(level) ~= "number" then
+        error("bad argument #1 to 'raw_log' (must be a number)", 2)
+    end
+
+    if type(msg) ~= "string" then
+        error("bad argument #2 to 'raw_log' (must be a string)", 2)
+    end
+
+    local r = getfenv(0).__ngx_req
+
+    local err = get_string_buf(ERR_BUF_SIZE)
+    local errlen = get_size_ptr()
+    errlen[0] = ERR_BUF_SIZE
+
+    local rc = C.ngx_http_lua_ffi_raw_log(r, level, msg, #msg, err, errlen)
+
+    if rc == FFI_ERROR then
+        error(ffi_string(err, errlen[0]), 2)
+    end
 end
 
 
