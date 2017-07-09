@@ -623,6 +623,7 @@ log level:4
 log body:\d{4}/\d{2}/\d{2} \d{2}:\d{2}:\d{2} \[error\] (\d+).*access_by_lua\(nginx.conf:\d+\):\d+: --> 100, client: 127.0.0.1, server: localhost, request: "GET /t HTTP/1.1", host: "localhost"
 \z
 --- skip_nginx: 2: <1.11.2
+--- wait: 0.1
 
 
 
