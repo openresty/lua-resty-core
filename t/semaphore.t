@@ -9,7 +9,7 @@ use Cwd qw(cwd);
 
 repeat_each(2);
 
-plan tests => repeat_each() * (blocks() * 3 + 3);
+plan tests => repeat_each() * (blocks() * 3 + 3) + 1;
 
 my $pwd = cwd();
 
@@ -1841,3 +1841,47 @@ true, nil
 --- no_error_log
 [error]
 [crit]
+
+
+
+=== TEST 41: timer + shutdown error log
+--- http_config eval: $::HttpConfig
+--- config
+    location /test {
+        content_by_lua_block {
+            local function test(pre)
+
+                local semaphore = require "ngx.semaphore"
+                local sem = semaphore.new()
+
+                local function sem_wait()
+
+                    local ok, err = sem:wait(10)
+                    if not ok then
+                        ngx.log(ngx.ERR, "err: ", err)
+                    else
+                        ngx.log(ngx.ERR, "wait success")
+                    end
+                end
+
+                while not ngx.worker.exiting() do
+                    local co = ngx.thread.spawn(sem_wait)
+                    ngx.thread.wait(co)
+                end
+            end
+
+            local ok, err = ngx.timer.at(0, test)
+            ngx.log(ngx.ERR, "hello, world")
+            ngx.say("time: ", ok)
+        }
+    }
+--- request
+GET /test
+--- response_body
+time: 1
+--- grep_error_log eval: qr/hello, world|semaphore gc wait queue is not empty/
+--- grep_error_log_out
+hello, world
+--- shutdown_error_log
+--- no_shutdown_error_log
+semaphore gc wait queue is not empty
