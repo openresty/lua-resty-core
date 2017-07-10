@@ -111,6 +111,7 @@ b = true
 
 
 === TEST 5: ngx.decode_args (empty value args)
+--- http_config eval: $::HttpConfig
 --- config
     location /lua {
         content_by_lua '
