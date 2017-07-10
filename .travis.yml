@@ -56,14 +56,14 @@ install:
   - git clone https://github.com/openresty/openresty.git ../openresty
   - git clone https://github.com/openresty/openresty-devel-utils.git
   - git clone https://github.com/simpl/ngx_devel_kit.git ../ndk-nginx-module
-  - git clone https://github.com/openresty/lua-nginx-module.git ../lua-nginx-module
+  - git clone -b semophore-error https://github.com/membphis/lua-nginx-module ../lua-nginx-module
   - git clone https://github.com/openresty/no-pool-nginx.git ../no-pool-nginx
   - git clone https://github.com/openresty/echo-nginx-module.git ../echo-nginx-module
   - git clone https://github.com/openresty/lua-resty-lrucache.git
   - git clone https://github.com/openresty/headers-more-nginx-module.git ../headers-more-nginx-module
   - git clone -b v2.1-agentzh https://github.com/openresty/luajit2.git
   - git clone https://github.com/openresty/mockeagain.git
-  - git clone https://github.com/openresty/test-nginx.git
+  - git clone -b shutdown_error_log https://github.com/iresty/test-nginx
 
 script:
   - cd luajit2/
