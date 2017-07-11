@@ -24,9 +24,8 @@ local charpp = ffi.new("char*[1]")
 
 
 ffi.cdef[[
-
-int ngx_http_lua_ffi_req_get_ext(ngx_http_request_t *r, char **buf,
-    size_t *len);
+    int ngx_http_lua_ffi_req_get_uri_ext(ngx_http_request_t *r, char **buf,
+        size_t *len);
 ]]
 
 
