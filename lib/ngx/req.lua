@@ -43,7 +43,7 @@ function _M.get_uri_ext(ext_len)
     local sizep = get_size_ptr()
     sizep[0] = ext_len
 
-    local rc = C.ngx_http_lua_ffi_req_get_ext(r, charpp, sizep)
+    local rc = C.ngx_http_lua_ffi_req_get_uri_ext(r, charpp, sizep)
     if rc == FFI_BAD_CONTEXT then
         return error("API disabled in the current context")
     end
