@@ -525,24 +525,28 @@ local function iterate_re_gmatch(self)
 end
 
 
-function ngx.re.gmatch(subj, regex, opts)
-    subj  = tostring(subj)
+do
+    local re_gmatch_iterator_mt = { __call = iterate_re_gmatch }
 
-    local compiled, compile_once, flags = re_match_compile(regex, opts)
-    if compiled == nil then
-        -- compiled_once holds the error string
-        return nil, compile_once
+    function ngx.re.gmatch(subj, regex, opts)
+        subj  = tostring(subj)
+
+        local compiled, compile_once, flags = re_match_compile(regex, opts)
+        if compiled == nil then
+            -- compiled_once holds the error string
+            return nil, compile_once
+        end
+
+        local re_gmatch_iterator = new_tab(0, 6)
+        re_gmatch_iterator._compiled = compiled
+        re_gmatch_iterator._compile_once = compile_once
+        re_gmatch_iterator._subj = subj
+        re_gmatch_iterator._subj_len = #subj
+        re_gmatch_iterator._flags = flags
+        re_gmatch_iterator._pos = 0
+
+        return setmetatable(re_gmatch_iterator, re_gmatch_iterator_mt)
     end
-
-    local re_gmatch_iterator = new_tab(0, 6)
-    re_gmatch_iterator._compiled = compiled
-    re_gmatch_iterator._compile_once = compile_once
-    re_gmatch_iterator._subj = subj
-    re_gmatch_iterator._subj_len = #subj
-    re_gmatch_iterator._flags = flags
-    re_gmatch_iterator._pos = 0
-
-    return setmetatable(re_gmatch_iterator, { __call = iterate_re_gmatch })
 end
 
 
