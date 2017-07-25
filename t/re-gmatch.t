@@ -9,7 +9,7 @@ use Cwd qw(cwd);
 
 repeat_each(2);
 
-plan tests => repeat_each() * (blocks() * 4 - 2);
+plan tests => repeat_each() * (blocks() * 4 - 3);
 
 my $pwd = cwd();
 
@@ -447,5 +447,37 @@ GET /re
 matched: hello
 matched: nil
 matched: nil
+--- no_error_log
+[error]
+
+
+
+=== TEST 13: each gmatch iterator is separate
+--- http_config eval: $::HttpConfig
+--- config
+    location = /re {
+        content_by_lua_block {
+            local gmatch = ngx.re.gmatch
+            local iter1 = gmatch("98", [[\d]])
+            local iter2 = gmatch("12", [[\d]])
+
+            local m1 = iter1()
+            local m2 = iter2()
+            ngx.say("matched iter1 (1/2): ", m1[0])
+            ngx.say("matched iter2 (1/2): ", m2[0])
+
+            m1 = iter1()
+            m2 = iter2()
+            ngx.say("matched iter1 (2/2): ", m1[0])
+            ngx.say("matched iter2 (2/2): ", m2[0])
+        }
+    }
+--- request
+GET /re
+--- response_body
+matched iter1 (1/2): 9
+matched iter2 (1/2): 1
+matched iter1 (2/2): 8
+matched iter2 (2/2): 2
 --- no_error_log
 [error]
