@@ -23,6 +23,8 @@ Table of Contents
     * [parse_pem_priv_key](#parse_pem_priv_key)
     * [set_cert](#set_cert)
     * [set_priv_key](#set_priv_key)
+    * [set_psk_key](#set_psk_key)
+    * [get_psk_identity](#get_psk_identity)
 * [Community](#community)
     * [English Mailing List](#english-mailing-list)
     * [Chinese Mailing List](#chinese-mailing-list)
@@ -393,6 +395,33 @@ Note that this `set_priv_key` function will run slightly faster, in terms of CPU
 which do not require any additional conversion needed to be performed by the SSL library during the SSL handshake.
 
 This function was first added in version `0.1.7`.
+
+[Back to TOC](#table-of-contents)
+
+set_psk_key
+------------
+**syntax:** *ok, err = ssl.set_psk_key(psk_key)*
+
+**context:** *ssl_psk_by_lua&#42;*
+
+Sets the TLS-PSK key for the current SSL connection.
+
+Returns `true` on success, or a `nil` value and a string describing the error otherwise.
+
+This function was first added in version `xxx`.
+
+[Back to TOC](#table-of-contents)
+
+get_psk_identity
+------------
+**syntax:** *identity, err = ssl.get_psk_identity()*
+
+**context:** *ssl_psk_by_lua&#42;*
+
+Returns a TLS-PSK identity a client sent for the current SSL connection. Returns `nil` and
+a string describing the error otherwise.
+
+This function was first added in version `xxx`.
 
 [Back to TOC](#table-of-contents)
 

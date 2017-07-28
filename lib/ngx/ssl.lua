@@ -58,6 +58,15 @@ int ngx_http_lua_ffi_set_priv_key(void *r, void *cdata, char **err);
 void ngx_http_lua_ffi_free_cert(void *cdata);
 
 void ngx_http_lua_ffi_free_priv_key(void *cdata);
+
+int ngx_http_lua_ffi_ssl_set_psk_key(ngx_http_request_t *r,
+    const char *key, size_t len, char **err);
+
+int ngx_http_lua_ffi_ssl_get_psk_identity(ngx_http_request_t *r,
+    char *buf, char **err);
+
+int ngx_http_lua_ffi_ssl_get_psk_identity_size(ngx_http_request_t *r,
+    char **err);
 ]]
 
 
@@ -258,6 +267,50 @@ function _M.set_priv_key(priv_key)
     end
 
     return nil, ffi_str(errmsg[0])
+end
+
+
+function _M.set_psk_key(psk_key)
+    local r = getfenv(0).__ngx_req
+    if not r then
+        return error("no request found")
+    end
+
+    local rc = C.ngx_http_lua_ffi_ssl_set_psk_key(r, psk_key, #psk_key, errmsg)
+    if rc == FFI_OK then
+        return true
+    end
+
+    return nil, ffi_str(errmsg[0])
+end
+
+
+-- return psk_identity, err
+function _M.get_psk_identity()
+    local r = getfenv(0).__ngx_req
+    if not r then
+        return error("no request found")
+    end
+
+    local len = C.ngx_http_lua_ffi_ssl_get_psk_identity_size(r, errmsg)
+
+    if len < 0 then
+        return nil, ffi_str(errmsg[0])
+    end
+
+    if len > 4096 then
+         return nil, "psk identity too long"
+    end
+
+    local buf = get_string_buf(len)
+
+    local rc = C.ngx_http_lua_ffi_ssl_get_psk_identity(r, buf, errmsg)
+
+    if rc == FFI_ERROR then
+         return nil, ffi_str(errmsg[0])
+    end
+
+    return ffi_str(buf, len)
 end
 
 
