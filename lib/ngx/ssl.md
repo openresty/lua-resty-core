@@ -369,6 +369,10 @@ Sets the SSL certificate chain opaque pointer returned by the
 
 Returns `true` on success, or a `nil` value and a string describing the error otherwise.
 
+Note that this `set_cert` function will run slightly faster, in terms of CPU cycles wasted, than the
+[set_der_cert](#set_der_cert) variant, since the first function uses opaque cdata pointers
+which do not require any additional conversion needed to be performed by the SSL library during the SSL handshake.
+
 This function was first added in version `0.1.7`.
 
 [Back to TOC](#table-of-contents)
@@ -383,6 +387,10 @@ Sets the SSL private key opaque pointer returned by the
 [parse_pem_priv_key](#parse_pem_priv_key) function for the current SSL connection.
 
 Returns `true` on success, or a `nil` value and a string describing the error otherwise.
+
+Note that this `set_priv_key` function will run slightly faster, in terms of CPU cycles wasted, than the
+[set_der_priv_key](#set_der_priv_key) variant, since the first function uses opaque cdata pointers
+which do not require any additional conversion needed to be performed by the SSL library during the SSL handshake.
 
 This function was first added in version `0.1.7`.
 
