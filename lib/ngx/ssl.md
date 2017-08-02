@@ -369,7 +369,7 @@ Sets the SSL certificate chain opaque pointer returned by the
 
 Returns `true` on success, or a `nil` value and a string describing the error otherwise.
 
-Note that the `set_cert` function will perform slightly better, in terms of CPU cycles wasted, than then
+Note that the `set_cert` function will perform slightly better, in terms of CPU cycles wasted, than the
 [set_der_cert](#set_der_cert) variant, since the first function uses opaque cdata pointers
 which do not require any additional conversion needed to be performed by the NGINX core during the SSL session
 negotiation.
@@ -389,7 +389,7 @@ Sets the SSL private key opaque pointer returned by the
 
 Returns `true` on success, or a `nil` value and a string describing the error otherwise.
 
-Note that the `set_priv_key` function will perform slightly better, in terms of CPU cycles wasted, than then
+Note that the `set_priv_key` function will perform slightly better, in terms of CPU cycles wasted, than the
 [set_der_priv_key](#set_der_priv_key) variant, since the first function uses opaque cdata pointers
 which do not require any additional conversion needed to be performed by the NGINX core during the SSL session
 negotiation.
