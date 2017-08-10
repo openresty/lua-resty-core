@@ -138,7 +138,7 @@ get_last_failure
 **context:** *balancer_by_lua&#42;*
 
 Retrieves the failure details about the previous failed attempt (if any) when the `next_upstream` retrying
-mechanism is in action. When there was indeed a failed previous attempt, it returned a string descrbing
+mechanism is in action. When there was indeed a failed previous attempt, it returned a string describing
 that attempt's state name, as well as an integer describing the status code of that attempt.
 
 Possible state names are as follows:
