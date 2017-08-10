@@ -16,7 +16,7 @@ my $pwd = cwd();
 our $HttpConfig = <<_EOC_;
     lua_shared_dict dogs 1m;
     lua_package_path "$pwd/lib/?.lua;../lua-resty-lrucache/lib/?.lua;;";
-    init_by_lua '
+    init_by_lua_block {
         local verbose = false
         if verbose then
             local dump = require "jit.dump"
@@ -28,7 +28,7 @@ our $HttpConfig = <<_EOC_;
 
         require "resty.core"
         -- jit.off()
-    ';
+    }
 _EOC_
 
 #no_diff();
@@ -42,7 +42,7 @@ __DATA__
 --- http_config eval: $::HttpConfig
 --- config
     location = /t {
-        content_by_lua '
+        content_by_lua_block {
             local ffi = require "ffi"
             local val, flags
             local dogs = ngx.shared.dogs
@@ -58,7 +58,7 @@ __DATA__
             ngx.say("value type: ", type(val))
             ngx.say("value: ", val)
             ngx.say("flags: ", flags)
-        ';
+        }
     }
 --- request
 GET /t
@@ -78,7 +78,7 @@ qr/\[TRACE   \d+ content_by_lua\(nginx\.conf:\d+\):11 loop\]/
 --- http_config eval: $::HttpConfig
 --- config
     location = /t {
-        content_by_lua '
+        content_by_lua_block {
             local ffi = require "ffi"
             local val, flags
             local dogs = ngx.shared.dogs
@@ -90,7 +90,7 @@ qr/\[TRACE   \d+ content_by_lua\(nginx\.conf:\d+\):11 loop\]/
             ngx.say("value type: ", type(val))
             ngx.say("value: ", val)
             ngx.say("flags: ", flags)
-        ';
+        }
     }
 --- request
 GET /t
@@ -110,7 +110,7 @@ qr/\[TRACE   \d+ content_by_lua\(nginx\.conf:\d+\):7 loop\]/
 --- http_config eval: $::HttpConfig
 --- config
     location = /t {
-        content_by_lua '
+        content_by_lua_block {
             local ffi = require "ffi"
             local val, flags
             local dogs = ngx.shared.dogs
@@ -122,7 +122,7 @@ qr/\[TRACE   \d+ content_by_lua\(nginx\.conf:\d+\):7 loop\]/
             ngx.say("value type: ", type(val))
             ngx.say("value: ", val)
             ngx.say("flags: ", flags)
-        ';
+        }
     }
 --- request
 GET /t
@@ -142,7 +142,7 @@ qr/\[TRACE   \d+ content_by_lua\(nginx\.conf:\d+\):7 loop\]/
 --- http_config eval: $::HttpConfig
 --- config
     location = /t {
-        content_by_lua '
+        content_by_lua_block {
             local ffi = require "ffi"
             local val, flags
             local dogs = ngx.shared.dogs
@@ -154,7 +154,7 @@ qr/\[TRACE   \d+ content_by_lua\(nginx\.conf:\d+\):7 loop\]/
             ngx.say("value type: ", type(val))
             ngx.say("value: ", val)
             ngx.say("flags: ", flags)
-        ';
+        }
     }
 --- request
 GET /t
@@ -174,7 +174,7 @@ qr/\[TRACE   \d+ content_by_lua\(nginx\.conf:\d+\):7 loop\]/
 --- http_config eval: $::HttpConfig
 --- config
     location = /t {
-        content_by_lua '
+        content_by_lua_block {
             local ffi = require "ffi"
             local val, flags
             local dogs = ngx.shared.dogs
@@ -186,7 +186,7 @@ qr/\[TRACE   \d+ content_by_lua\(nginx\.conf:\d+\):7 loop\]/
             ngx.say("value type: ", type(val))
             ngx.say("value: ", val)
             ngx.say("flags: ", flags)
-        ';
+        }
     }
 --- request
 GET /t
@@ -206,7 +206,7 @@ qr/\[TRACE   \d+ content_by_lua\(nginx\.conf:\d+\):7 loop\]/
 --- http_config eval: $::HttpConfig
 --- config
     location = /t {
-        content_by_lua '
+        content_by_lua_block {
             local ffi = require "ffi"
             local val, flags
             local dogs = ngx.shared.dogs
@@ -218,7 +218,7 @@ qr/\[TRACE   \d+ content_by_lua\(nginx\.conf:\d+\):7 loop\]/
             ngx.say("value type: ", type(val))
             ngx.say("value: ", val)
             ngx.say("flags: ", flags)
-        ';
+        }
     }
 --- request
 GET /t
@@ -238,7 +238,7 @@ qr/\[TRACE   \d+ content_by_lua\(nginx\.conf:\d+\):7 loop\]/
 --- http_config eval: $::HttpConfig
 --- config
     location = /t {
-        content_by_lua '
+        content_by_lua_block {
             local ffi = require "ffi"
             local val, flags
             local dogs = ngx.shared.dogs
@@ -250,7 +250,7 @@ qr/\[TRACE   \d+ content_by_lua\(nginx\.conf:\d+\):7 loop\]/
             ngx.say("value type: ", type(val))
             ngx.say("value: ", val)
             ngx.say("flags: ", flags)
-        ';
+        }
     }
 --- request
 GET /t
@@ -271,7 +271,7 @@ qr/\[TRACE   \d+ content_by_lua\(nginx\.conf:\d+\):7 loop\]/
 --- http_config eval: $::HttpConfig
 --- config
     location = /t {
-        content_by_lua '
+        content_by_lua_block {
             local ffi = require "ffi"
             local val, flags, stale
             local dogs = ngx.shared.dogs
@@ -284,7 +284,7 @@ qr/\[TRACE   \d+ content_by_lua\(nginx\.conf:\d+\):7 loop\]/
             ngx.say("value: ", val)
             ngx.say("flags: ", flags)
             ngx.say("stale: ", stale)
-        ';
+        }
     }
 --- request
 GET /t
@@ -305,7 +305,7 @@ qr/\[TRACE   \d+ content_by_lua\(nginx\.conf:\d+\):7 loop\]/
 --- http_config eval: $::HttpConfig
 --- config
     location = /t {
-        content_by_lua '
+        content_by_lua_block {
             local ffi = require "ffi"
             local val, flags, stale
             local dogs = ngx.shared.dogs
@@ -323,7 +323,7 @@ qr/\[TRACE   \d+ content_by_lua\(nginx\.conf:\d+\):7 loop\]/
             ngx.say("value: ", val)
             ngx.say("flags: ", flags)
             ngx.say("stale: ", stale)
-        ';
+        }
     }
 --- request
 GET /t
@@ -344,7 +344,7 @@ qr/\[TRACE   \d+ content_by_lua\(nginx\.conf:\d+\):12 loop\]/
 --- http_config eval: $::HttpConfig
 --- config
     location = /t {
-        content_by_lua '
+        content_by_lua_block {
             local ffi = require "ffi"
             local val
             local dogs = ngx.shared.dogs
@@ -359,7 +359,7 @@ qr/\[TRACE   \d+ content_by_lua\(nginx\.conf:\d+\):12 loop\]/
             end
             ngx.say("value: ", val)
             ngx.say("err: ", err)
-        ';
+        }
     }
 --- request
 GET /t
@@ -378,23 +378,23 @@ qr/\[TRACE   \d+ content_by_lua\(nginx\.conf:\d+\):11 loop\]/
 --- http_config eval: $::HttpConfig
 --- config
     location = /t {
-        content_by_lua '
+        content_by_lua_block {
             local ffi = require "ffi"
             local val
             local dogs = ngx.shared.dogs
             -- local cd = ffi.cast("void *", dogs)
             dogs:set("foo", 56)
-            for i = 1, 100 do
+            for i = 1, 150 do
                 val, err = dogs:incr("foo", 2.1)
             end
             ngx.say("value: ", val)
             ngx.say("err: ", err)
-        ';
+        }
     }
 --- request
 GET /t
 --- response_body
-value: 266
+value: 371
 err: nil
 --- error_log eval
 qr/\[TRACE   \d+ content_by_lua\(nginx\.conf:\d+\):7 loop\]/
@@ -408,7 +408,7 @@ qr/\[TRACE   \d+ content_by_lua\(nginx\.conf:\d+\):7 loop\]/
 --- http_config eval: $::HttpConfig
 --- config
     location = /t {
-        content_by_lua '
+        content_by_lua_block {
             local ffi = require "ffi"
             local val, flags
             local dogs = ngx.shared.dogs
@@ -425,7 +425,7 @@ qr/\[TRACE   \d+ content_by_lua\(nginx\.conf:\d+\):7 loop\]/
             ngx.say("value type: ", type(val))
             ngx.say("value: ", val)
             ngx.say("flags: ", flags)
-        ';
+        }
     }
 --- request
 GET /t
@@ -445,7 +445,7 @@ qr/\[TRACE   \d+ content_by_lua\(nginx\.conf:\d+\):7 loop\]/
 --- http_config eval: $::HttpConfig
 --- config
     location = /t {
-        content_by_lua '
+        content_by_lua_block {
             local ffi = require "ffi"
             local val, flags
             local dogs = ngx.shared.dogs
@@ -462,7 +462,7 @@ qr/\[TRACE   \d+ content_by_lua\(nginx\.conf:\d+\):7 loop\]/
             ngx.say("value type: ", type(val))
             ngx.say("value: ", val)
             ngx.say("flags: ", flags)
-        ';
+        }
     }
 --- request
 GET /t
@@ -482,7 +482,7 @@ qr/\[TRACE   \d+ content_by_lua\(nginx\.conf:\d+\):7 loop\]/
 --- http_config eval: $::HttpConfig
 --- config
     location = /t {
-        content_by_lua '
+        content_by_lua_block {
             local ffi = require "ffi"
             local val, flags
             local dogs = ngx.shared.dogs
@@ -494,7 +494,7 @@ qr/\[TRACE   \d+ content_by_lua\(nginx\.conf:\d+\):7 loop\]/
             ngx.say("value type: ", type(val))
             ngx.say("value: ", val)
             ngx.say("flags: ", flags)
-        ';
+        }
     }
 --- request
 GET /t
@@ -514,7 +514,7 @@ qr/\[TRACE   \d+ content_by_lua\(nginx\.conf:\d+\):6 loop\]/
 --- http_config eval: $::HttpConfig
 --- config
     location = /t {
-        content_by_lua '
+        content_by_lua_block {
             local ffi = require "ffi"
             local val, flags
             local dogs = ngx.shared.dogs
@@ -526,7 +526,7 @@ qr/\[TRACE   \d+ content_by_lua\(nginx\.conf:\d+\):6 loop\]/
             ngx.say("value type: ", type(val))
             ngx.say("value: ", val)
             ngx.say("flags: ", flags)
-        ';
+        }
     }
 --- request
 GET /t
@@ -546,7 +546,7 @@ qr/\[TRACE   \d+ content_by_lua\(nginx\.conf:\d+\):6 loop\]/
 --- http_config eval: $::HttpConfig
 --- config
     location = /t {
-        content_by_lua '
+        content_by_lua_block {
             local ffi = require "ffi"
             local val, flags
             local dogs = ngx.shared.dogs
@@ -558,7 +558,7 @@ qr/\[TRACE   \d+ content_by_lua\(nginx\.conf:\d+\):6 loop\]/
             ngx.say("value type: ", type(val))
             ngx.say("value: ", val)
             ngx.say("flags: ", flags)
-        ';
+        }
     }
 --- request
 GET /t
@@ -578,7 +578,7 @@ qr/\[TRACE   \d+ content_by_lua\(nginx\.conf:\d+\):6 loop\]/
 --- http_config eval: $::HttpConfig
 --- config
     location = /t {
-        content_by_lua '
+        content_by_lua_block {
             local ffi = require "ffi"
             local val, flags
             local dogs = ngx.shared.dogs
@@ -591,7 +591,7 @@ qr/\[TRACE   \d+ content_by_lua\(nginx\.conf:\d+\):6 loop\]/
             ngx.say("value type: ", type(val))
             ngx.say("value: ", val)
             ngx.say("flags: ", flags)
-        ';
+        }
     }
 --- request
 GET /t
@@ -611,7 +611,7 @@ qr/\[TRACE   \d+ content_by_lua\(nginx\.conf:\d+\):6 loop\]/
 --- http_config eval: $::HttpConfig
 --- config
     location = /t {
-        content_by_lua '
+        content_by_lua_block {
             local ffi = require "ffi"
             local val, flags
             local dogs = ngx.shared.dogs
@@ -623,7 +623,7 @@ qr/\[TRACE   \d+ content_by_lua\(nginx\.conf:\d+\):6 loop\]/
             ngx.say("value type: ", type(val))
             ngx.say("value: ", val)
             ngx.say("flags: ", flags)
-        ';
+        }
     }
 --- request
 GET /t
@@ -643,7 +643,7 @@ qr/\[TRACE   \d+ content_by_lua\(nginx\.conf:\d+\):6 loop\]/
 --- http_config eval: $::HttpConfig
 --- config
     location = /t {
-        content_by_lua '
+        content_by_lua_block {
             local ffi = require "ffi"
             local val, flags
             local dogs = ngx.shared.dogs
@@ -661,7 +661,7 @@ qr/\[TRACE   \d+ content_by_lua\(nginx\.conf:\d+\):6 loop\]/
             ngx.say("value type: ", type(val))
             ngx.say("value: ", val)
             ngx.say("flags: ", flags)
-        ';
+        }
     }
 --- request
 GET /t
@@ -681,7 +681,7 @@ qr/\[TRACE   \d+ content_by_lua\(nginx\.conf:\d+\):8 loop\]/
 --- http_config eval: $::HttpConfig
 --- config
     location = /t {
-        content_by_lua '
+        content_by_lua_block {
             local ffi = require "ffi"
             local val, flags
             local dogs = ngx.shared.dogs
@@ -699,7 +699,7 @@ qr/\[TRACE   \d+ content_by_lua\(nginx\.conf:\d+\):8 loop\]/
             ngx.say("value type: ", type(val))
             ngx.say("value: ", val)
             ngx.say("flags: ", flags)
-        ';
+        }
     }
 --- request
 GET /t
@@ -719,7 +719,7 @@ qr/\[TRACE   \d+ content_by_lua\(nginx\.conf:\d+\):8 loop\]/
 --- http_config eval: $::HttpConfig
 --- config
     location = /t {
-        content_by_lua '
+        content_by_lua_block {
             local ffi = require "ffi"
             local val, flags
             local dogs = ngx.shared.dogs
@@ -737,7 +737,7 @@ qr/\[TRACE   \d+ content_by_lua\(nginx\.conf:\d+\):8 loop\]/
             ngx.say("value type: ", type(val))
             ngx.say("value: ", val)
             ngx.say("flags: ", flags)
-        ';
+        }
     }
 --- request
 GET /t
@@ -757,7 +757,7 @@ qr/\[TRACE   \d+ content_by_lua\(nginx\.conf:\d+\):8 loop\]/
 --- http_config eval: $::HttpConfig
 --- config
     location = /t {
-        content_by_lua '
+        content_by_lua_block {
             local ffi = require "ffi"
             local val, flags
             local dogs = ngx.shared.dogs
@@ -770,7 +770,7 @@ qr/\[TRACE   \d+ content_by_lua\(nginx\.conf:\d+\):8 loop\]/
             ngx.say("value type: ", type(val))
             ngx.say("value: ", val)
             ngx.say("flags: ", flags)
-        ';
+        }
     }
 --- request
 GET /t
@@ -791,14 +791,14 @@ stitch
 --- http_config eval: $::HttpConfig
 --- config
     location = /t {
-        content_by_lua '
+        content_by_lua_block {
             local val, flags
             local dogs = ngx.shared.dogs
             local ok, err = dogs:set(nil, "bar")
             if not ok then
                 ngx.say("failed to set: ", err)
             end
-        ';
+        }
     }
 --- request
 GET /t
@@ -815,14 +815,14 @@ failed to set: nil key
 --- http_config eval: $::HttpConfig
 --- config
     location = /t {
-        content_by_lua '
+        content_by_lua_block {
             local val, flags
             local dogs = ngx.shared.dogs
             local value, err = dogs:get(nil, "bar")
             if not ok then
                 ngx.say("failed to get: ", err)
             end
-        ';
+        }
     }
 --- request
 GET /t
@@ -839,14 +839,14 @@ failed to get: nil key
 --- http_config eval: $::HttpConfig
 --- config
     location = /t {
-        content_by_lua '
+        content_by_lua_block {
             local val, flags
             local dogs = ngx.shared.dogs
             local value, err = dogs:get_stale(nil, "bar")
             if not ok then
                 ngx.say("failed to get stale: ", err)
             end
-        ';
+        }
     }
 --- request
 GET /t
@@ -863,14 +863,14 @@ failed to get stale: nil key
 --- http_config eval: $::HttpConfig
 --- config
     location = /t {
-        content_by_lua '
+        content_by_lua_block {
             local val, flags
             local dogs = ngx.shared.dogs
             local value, err = dogs:incr(nil, 32)
             if not value then
                 ngx.say("failed to incr: ", err)
             end
-        ';
+        }
     }
 --- request
 GET /t
@@ -887,7 +887,7 @@ failed to incr: nil key
 --- http_config eval: $::HttpConfig
 --- config
     location = /t {
-        content_by_lua '
+        content_by_lua_block {
             local ffi = require "ffi"
             local val, flags
             local dogs = ngx.shared.dogs
@@ -900,7 +900,7 @@ failed to incr: nil key
             ngx.say("value type: ", type(val))
             ngx.say("value: ", val)
             ngx.say("flags: ", flags)
-        ';
+        }
     }
 --- request
 GET /t

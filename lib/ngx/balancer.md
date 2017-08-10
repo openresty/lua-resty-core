@@ -80,8 +80,8 @@ Description
 ===========
 
 This Lua module provides API functions to allow defining highly dynamic NGINX load balancers for
-any existing nginx upstream modules like [http://nginx.org/en/docs/http/ngx_http_proxy_module.html ngx_proxy] and
-[http://nginx.org/en/docs/http/ngx_http_fastcgi_module.html ngx_fastcgi].
+any existing nginx upstream modules like [ngx_proxy](http://nginx.org/en/docs/http/ngx_http_proxy_module.html) and
+[ngx_fastcgi](http://nginx.org/en/docs/http/ngx_http_fastcgi_module.html).
 
 It allows you to dynamically select a backend peer to connect to (or retry) on a per-request
 basis from a list of backend peers which may also be dynamic.
@@ -173,7 +173,7 @@ Zero and negative timeout values are not allowed.
 
 You can specify millisecond precision in the timeout values by using floating point numbers like 0.001 (which means 1ms).
 
-Returns `true` when the operation is successul; returns `nil` and a string describing the error
+Returns `true` when the operation is successful; returns `nil` and a string describing the error
 otherwise.
 
 This only affects the current downstream request. It is not a global change.
@@ -216,7 +216,7 @@ Please report bugs or submit patches by
 Author
 ======
 
-Yichun Zhang &lt;agentzh@gmail.com&gt; (agentzh), CloudFlare Inc.
+Yichun Zhang &lt;agentzh@gmail.com&gt; (agentzh), OpenResty Inc.
 
 [Back to TOC](#table-of-contents)
 
@@ -225,7 +225,7 @@ Copyright and License
 
 This module is licensed under the BSD license.
 
-Copyright (C) 2015, by Yichun "agentzh" Zhang, CloudFlare Inc.
+Copyright (C) 2015-2017, by Yichun "agentzh" Zhang, OpenResty Inc.
 
 All rights reserved.
 

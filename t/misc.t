@@ -16,7 +16,7 @@ my $pwd = cwd();
 
 our $HttpConfig = <<_EOC_;
     lua_package_path "$pwd/lib/?.lua;\$prefix/html/?.lua;../lua-resty-lrucache/lib/?.lua;;";
-    init_by_lua '
+    init_by_lua_block {
         local verbose = false
         if verbose then
             local dump = require "jit.dump"
@@ -28,7 +28,7 @@ our $HttpConfig = <<_EOC_;
 
         require "resty.core"
         -- jit.off()
-    ';
+    }
 _EOC_
 
 #no_diff();
@@ -43,13 +43,13 @@ __DATA__
 --- config
     location = /t {
         return 201;
-        header_filter_by_lua '
+        header_filter_by_lua_block {
             local rc
             for i = 1, 100 do
                 rc = ngx.is_subrequest
             end
             ngx.log(ngx.WARN, "is subrequest: ", rc)
-        ';
+        }
     }
 --- request
 GET /t
@@ -70,13 +70,13 @@ qr/\[TRACE\s+\d+\s+header_filter_by_lua:3 loop\]/
 --- http_config eval: $::HttpConfig
 --- config
     location = /t {
-        content_by_lua '
+        content_by_lua_block {
             local rc
             for i = 1, 100 do
                 rc = ngx.headers_sent
             end
             ngx.say("headers sent: ", rc)
-        ';
+        }
     }
 --- request
 GET /t
@@ -95,14 +95,14 @@ qr/\[TRACE\s+\d+\s+content_by_lua\(nginx\.conf:\d+\):3 loop\]/
 --- http_config eval: $::HttpConfig
 --- config
     location = /t {
-        content_by_lua '
+        content_by_lua_block {
             ngx.send_headers()
             local rc
             for i = 1, 100 do
                 rc = ngx.headers_sent
             end
             ngx.say("headers sent: ", rc)
-        ';
+        }
     }
 --- request
 GET /t
@@ -114,4 +114,3 @@ headers sent: true
  bad argument
 --- error_log eval
 qr/\[TRACE\s+\d+\s+content_by_lua\(nginx\.conf:\d+\):4 loop\]/
-

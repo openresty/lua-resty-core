@@ -1,4 +1,4 @@
-# vim:set ft=ts=4 sw=4 et fdm=marker:
+# vim:set ft= ts=4 sw=4 et fdm=marker:
 
 use Test::Nginx::Socket::Lua;
 use Cwd qw(cwd);
@@ -83,7 +83,7 @@ __DATA__
                 while true do
                     local line, err = sock:receive()
                     if not line then
-                        -- ngx.say("failed to recieve response status line: ", err)
+                        -- ngx.say("failed to receive response status line: ", err)
                         break
                     end
 
@@ -194,7 +194,7 @@ sslv3 alert handshake failure
                 while true do
                     local line, err = sock:receive()
                     if not line then
-                        -- ngx.say("failed to recieve response status line: ", err)
+                        -- ngx.say("failed to receive response status line: ", err)
                         break
                     end
 
@@ -293,7 +293,7 @@ lua ssl server name: "test.com"
                 while true do
                     local line, err = sock:receive()
                     if not line then
-                        -- ngx.say("failed to recieve response status line: ", err)
+                        -- ngx.say("failed to receive response status line: ", err)
                         break
                     end
 
@@ -393,7 +393,7 @@ read SNI name from Lua: test.com
                 while true do
                     local line, err = sock:receive()
                     if not line then
-                        -- ngx.say("failed to recieve response status line: ", err)
+                        -- ngx.say("failed to receive response status line: ", err)
                         break
                     end
 
@@ -509,7 +509,7 @@ read SNI name from Lua: nil, type: nil
                 while true do
                     local line, err = sock:receive()
                     if not line then
-                        -- ngx.say("failed to recieve response status line: ", err)
+                        -- ngx.say("failed to receive response status line: ", err)
                         break
                     end
 
@@ -547,6 +547,7 @@ qr/Using unix socket file .*?nginx\.sock/
 --- no_error_log
 [error]
 [alert]
+--- no_check_leak
 
 
 
@@ -629,7 +630,7 @@ qr/Using unix socket file .*?nginx\.sock/
                 while true do
                     local line, err = sock:receive()
                     if not line then
-                        -- ngx.say("failed to recieve response status line: ", err)
+                        -- ngx.say("failed to receive response status line: ", err)
                         break
                     end
 
@@ -665,6 +666,7 @@ Using IPv4 address: 127.0.0.1
 --- no_error_log
 [error]
 [alert]
+--- no_check_leak
 
 
 
@@ -747,7 +749,7 @@ Using IPv4 address: 127.0.0.1
                 while true do
                     local line, err = sock:receive()
                     if not line then
-                        -- ngx.say("failed to recieve response status line: ", err)
+                        -- ngx.say("failed to receive response status line: ", err)
                         break
                     end
 
@@ -784,6 +786,7 @@ Using IPv6 address: 0.0.0.1
 [error]
 [alert]
 --- skip_eval: 6: system("ping6 -c 1 ::1 >/dev/null 2>&1") ne 0
+--- no_check_leak
 
 
 
@@ -869,7 +872,7 @@ Using IPv6 address: 0.0.0.1
                 while true do
                     local line, err = sock:receive()
                     if not line then
-                        -- ngx.say("failed to recieve response status line: ", err)
+                        -- ngx.say("failed to receive response status line: ", err)
                         break
                     end
 
@@ -996,7 +999,7 @@ lua ssl server name: "test.com"
                 while true do
                     local line, err = sock:receive()
                     if not line then
-                        -- ngx.say("failed to recieve response status line: ", err)
+                        -- ngx.say("failed to receive response status line: ", err)
                         break
                     end
 
@@ -1521,7 +1524,7 @@ ssl cert by lua done
                 while true do
                     local line, err = sock:receive()
                     if not line then
-                        -- ngx.say("failed to recieve response status line: ", err)
+                        -- ngx.say("failed to receive response status line: ", err)
                         break
                     end
 
@@ -1654,7 +1657,7 @@ lua ssl server name: "test.com"
                 while true do
                     local line, err = sock:receive()
                     if not line then
-                        -- ngx.say("failed to recieve response status line: ", err)
+                        -- ngx.say("failed to receive response status line: ", err)
                         break
                     end
 
@@ -1787,7 +1790,7 @@ lua ssl server name: "test.com"
                 while true do
                     local line, err = sock:receive()
                     if not line then
-                        -- ngx.say("failed to recieve response status line: ", err)
+                        -- ngx.say("failed to receive response status line: ", err)
                         break
                     end
 
@@ -1911,7 +1914,7 @@ qr/\[error\] .*? failed to parse pem cert: PEM_read_bio_X509_AUX\(\) failed/
                 while true do
                     local line, err = sock:receive()
                     if not line then
-                        -- ngx.say("failed to recieve response status line: ", err)
+                        -- ngx.say("failed to receive response status line: ", err)
                         break
                     end
 
@@ -2035,7 +2038,7 @@ qr/\[error\] .*? failed to parse pem cert: PEM_read_bio_X509\(\) failed/
                 while true do
                     local line, err = sock:receive()
                     if not line then
-                        -- ngx.say("failed to recieve response status line: ", err)
+                        -- ngx.say("failed to receive response status line: ", err)
                         break
                     end
 

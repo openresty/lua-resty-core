@@ -1304,7 +1304,7 @@ count in A: 0
 
 
 
-=== TEST 26: kill a light thread that is waiting on a semaphore(no resource)
+=== TEST 26: kill a light thread that is waiting on a semaphore (no resource)
 --- http_config eval: $::HttpConfig
 --- config
     location /test {
@@ -1337,7 +1337,7 @@ ok
 
 
 
-=== TEST 27: kill a light thread that is waiting on a semaphore(after post)
+=== TEST 27: kill a light thread that is waiting on a semaphore (after post)
 --- http_config eval: $::HttpConfig
 --- config
     location /test {
@@ -1774,7 +1774,7 @@ GET /test
 
 
 
-=== TEST 39: basic semaphore count(negative number)
+=== TEST 39: basic semaphore count (negative number)
 --- http_config eval: $::HttpConfig
 --- config
     location /test {

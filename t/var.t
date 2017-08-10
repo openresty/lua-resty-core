@@ -16,7 +16,7 @@ my $pwd = cwd();
 our $HttpConfig = <<_EOC_;
     lua_shared_dict dogs 1m;
     lua_package_path "$pwd/lib/?.lua;../lua-resty-lrucache/lib/?.lua;;";
-    init_by_lua '
+    init_by_lua_block {
         local verbose = false
         if verbose then
             local dump = require "jit.dump"
@@ -28,7 +28,7 @@ our $HttpConfig = <<_EOC_;
 
         require "resty.core"
         -- jit.off()
-    ';
+    }
 _EOC_
 
 #no_diff();
@@ -43,14 +43,14 @@ __DATA__
 --- config
     location = /t {
         set $foo hello;
-        content_by_lua '
+        content_by_lua_block {
             local ffi = require "ffi"
             local val
             for i = 1, 100 do
                 val = ngx.var.foo
             end
             ngx.say("value: ", val)
-        ';
+        }
     }
 --- request
 GET /t
@@ -69,14 +69,14 @@ qr/\[TRACE   \d+ content_by_lua\(nginx\.conf:\d+\):4 loop\]/
 --- config
     location = /t {
         set $foo hello;
-        content_by_lua '
+        content_by_lua_block {
             local ffi = require "ffi"
             local val
             for i = 1, 100 do
                 val = ngx.var.FOO
             end
             ngx.say("value: ", val)
-        ';
+        }
     }
 --- request
 GET /t
@@ -95,14 +95,14 @@ qr/\[TRACE   \d+ content_by_lua\(nginx\.conf:\d+\):4 loop\]/
 --- config
     location = /t {
         set $foo hello;
-        content_by_lua '
+        content_by_lua_block {
             local ffi = require "ffi"
             local val
             for i = 1, 100 do
                 val = ngx.var[0]
             end
             ngx.say("value: ", val)
-        ';
+        }
     }
 --- request
 GET /t
@@ -121,14 +121,14 @@ qr/\[TRACE   \d+ content_by_lua\(nginx\.conf:\d+\):4 loop\]/
 --- config
     location ~ '^(/t)' {
         set $foo hello;
-        content_by_lua '
+        content_by_lua_block {
             local ffi = require "ffi"
             local val
             for i = 1, 100 do
                 val = ngx.var[1]
             end
             ngx.say("value: ", val)
-        ';
+        }
     }
 --- request
 GET /t
@@ -147,14 +147,14 @@ qr/\[TRACE   \d+ content_by_lua\(nginx\.conf:\d+\):4 loop\]/
 --- config
     location = /t {
         set $foo hello;
-        content_by_lua '
+        content_by_lua_block {
             local ffi = require "ffi"
             local val = "hello"
             for i = 1, 100 do
                 ngx.var.foo = val
             end
             ngx.say("value: ", val)
-        ';
+        }
     }
 --- request
 GET /t
@@ -173,13 +173,13 @@ qr/\[TRACE   \d+ content_by_lua\(nginx\.conf:\d+\):4 loop\]/
 --- config
     location = /t {
         set $foo hello;
-        content_by_lua '
+        content_by_lua_block {
             local ffi = require "ffi"
             for i = 1, 100 do
                 ngx.var.foo = nil
             end
             ngx.say("value: ", ngx.var.foo)
-        ';
+        }
     }
 --- request
 GET /t
@@ -198,13 +198,13 @@ qr/\[TRACE   \d+ content_by_lua\(nginx\.conf:\d+\):3 loop\]/
 --- config
     location = /t {
         set $foo hello;
-        content_by_lua '
+        content_by_lua_block {
             local ffi = require "ffi"
             for i = 1, 100 do
                 ngx.var.foo = i
             end
             ngx.say("value: ", ngx.var.foo)
-        ';
+        }
     }
 --- request
 GET /t
@@ -215,4 +215,3 @@ qr/\[TRACE   \d+ content_by_lua\(nginx\.conf:\d+\):3 loop\]/
 --- no_error_log
 [error]
  -- NYI:
-

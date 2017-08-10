@@ -84,7 +84,14 @@ server {
 
         -- assuming the user already defines the my_load_private_key()
         -- function herself.
-        local der_pkey = assert(my_load_private_key())
+        local pem_pkey = assert(my_load_private_key())
+
+        local der_pkey, err = ssl.priv_key_pem_to_der(pem_pkey)
+        if not der_pkey then
+            ngx.log(ngx.ERR, "failed to convert private key ",
+                    "from PEM to DER: ", err)
+            return ngx.exit(ngx.ERROR)
+        end
 
         local ok, err = ssl.set_der_priv_key(der_pkey)
         if not ok then
@@ -199,7 +206,7 @@ This function can be called in whatever contexts.
 
 set_der_priv_key
 ----------------
-**syntax:** *ok, err = ssl.set_der_priv_key(der_cert_chain)*
+**syntax:** *ok, err = ssl.set_der_priv_key(der_priv_key)*
 
 **context:** *ssl_certificate_by_lua&#42;*
 
@@ -362,6 +369,10 @@ Sets the SSL certificate chain opaque pointer returned by the
 
 Returns `true` on success, or a `nil` value and a string describing the error otherwise.
 
+Note that this `set_cert` function will run slightly faster, in terms of CPU cycles wasted, than the
+[set_der_cert](#set_der_cert) variant, since the first function uses opaque cdata pointers
+which do not require any additional conversion needed to be performed by the SSL library during the SSL handshake.
+
 This function was first added in version `0.1.7`.
 
 [Back to TOC](#table-of-contents)
@@ -376,6 +387,10 @@ Sets the SSL private key opaque pointer returned by the
 [parse_pem_priv_key](#parse_pem_priv_key) function for the current SSL connection.
 
 Returns `true` on success, or a `nil` value and a string describing the error otherwise.
+
+Note that this `set_priv_key` function will run slightly faster, in terms of CPU cycles wasted, than the
+[set_der_priv_key](#set_der_priv_key) variant, since the first function uses opaque cdata pointers
+which do not require any additional conversion needed to be performed by the SSL library during the SSL handshake.
 
 This function was first added in version `0.1.7`.
 
@@ -413,7 +428,7 @@ Please report bugs or submit patches by
 Author
 ======
 
-Yichun Zhang &lt;agentzh@gmail.com&gt; (agentzh), CloudFlare Inc.
+Yichun Zhang &lt;agentzh@gmail.com&gt; (agentzh), OpenResty Inc.
 
 [Back to TOC](#table-of-contents)
 
@@ -422,7 +437,7 @@ Copyright and License
 
 This module is licensed under the BSD license.
 
-Copyright (C) 2015, by Yichun "agentzh" Zhang, CloudFlare Inc.
+Copyright (C) 2015-2017, by Yichun "agentzh" Zhang, OpenResty Inc.
 
 All rights reserved.
 

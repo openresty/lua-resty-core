@@ -15,7 +15,7 @@ my $pwd = cwd();
 
 our $HttpConfig = <<_EOC_;
     lua_package_path "$pwd/lib/?.lua;../lua-resty-lrucache/lib/?.lua;;";
-    init_by_lua '
+    init_by_lua_block {
         -- local verbose = true
         local verbose = false
         local outfile = "$Test::Nginx::Util::ErrLogFile"
@@ -32,7 +32,7 @@ our $HttpConfig = <<_EOC_;
         -- jit.opt.start("hotloop=1")
         -- jit.opt.start("loopunroll=1000000")
         -- jit.off()
-    ';
+    }
 _EOC_
 
 #no_diff();
@@ -47,7 +47,7 @@ __DATA__
 --- config
     location = /re {
         access_log off;
-        content_by_lua '
+        content_by_lua_block {
             local m, err
             local match = ngx.re.match
             for i = 1, 400 do
@@ -66,7 +66,7 @@ __DATA__
             -- ngx.say("$2: ", m[2])
             -- ngx.say("$3: ", m[3])
             -- collectgarbage()
-        ';
+        }
     }
 --- request
 GET /re
@@ -86,7 +86,7 @@ bad argument type
 --- config
     location = /re {
         access_log off;
-        content_by_lua '
+        content_by_lua_block {
             local m, err
             local match = ngx.re.match
             for i = 1, 400 do
@@ -103,7 +103,7 @@ bad argument type
             ngx.say("matched: ", m[0])
             ngx.say("$1: ", m[1])
             -- collectgarbage()
-        ';
+        }
     }
 --- request
 GET /re
@@ -123,7 +123,7 @@ NYI
 --- config
     location = /re {
         access_log off;
-        content_by_lua '
+        content_by_lua_block {
             local m, err
             local match = ngx.re.match
             for i = 1, 200 do
@@ -140,7 +140,7 @@ NYI
             ngx.say("matched: ", m[0])
             ngx.say("$1: ", m[1])
             -- collectgarbage()
-        ';
+        }
     }
 --- request
 GET /re
@@ -158,7 +158,7 @@ qr/\[TRACE   \d+ content_by_lua\(nginx\.conf:\d+\):4 loop\]/
 --- config
     location = /re {
         access_log off;
-        content_by_lua '
+        content_by_lua_block {
             local m, err
             local match = ngx.re.match
             for i = 1, 100 do
@@ -175,7 +175,7 @@ qr/\[TRACE   \d+ content_by_lua\(nginx\.conf:\d+\):4 loop\]/
             ngx.say("matched: ", m[0])
             ngx.say("$1: ", m[1])
             -- collectgarbage()
-        ';
+        }
     }
 --- request
 GET /re
@@ -194,11 +194,11 @@ bad argument type
 --- config
     location = /re {
         access_log off;
-        content_by_lua '
+        content_by_lua_block {
             local m, err
             local match = ngx.re.match
             for i = 1, 100 do
-                m, err = match("hello, 1234", [[(\\d)(\\d+)]])
+                m, err = match("hello, 1234", [[(\d)(\d+)]])
             end
             if err then
                 ngx.log(ngx.ERR, "failed: ", err)
@@ -213,7 +213,7 @@ bad argument type
             ngx.say("$2: ", m[2])
             ngx.say("$3: ", m[3])
             -- collectgarbage()
-        ';
+        }
     }
 --- request
 GET /re
@@ -234,11 +234,11 @@ NYI
 --- config
     location = /re {
         access_log off;
-        content_by_lua '
+        content_by_lua_block {
             local m, err
             local match = ngx.re.match
             for i = 1, 100 do
-                m, err = match("hello, 1234", [[(\\d)(\\d+)]], "jo")
+                m, err = match("hello, 1234", [[(\d)(\d+)]], "jo")
             end
             if err then
                 ngx.log(ngx.ERR, "failed: ", err)
@@ -254,7 +254,7 @@ NYI
             ngx.say("$3: ", m[3])
             -- ngx.say(table.maxn(m))
             -- collectgarbage()
-        ';
+        }
     }
 --- request
 GET /re
@@ -276,7 +276,7 @@ NYI
 --- http_config eval: $::HttpConfig
 --- config
     location /re {
-        content_by_lua '
+        content_by_lua_block {
             local m, err
             local match = ngx.re.match
             for i = 1, 100 do
@@ -294,7 +294,7 @@ NYI
                 end
                 ngx.say("not matched!")
             end
-        ';
+        }
     }
 --- request
     GET /re
@@ -317,7 +317,7 @@ NYI
 --- http_config eval: $::HttpConfig
 --- config
     location /re {
-        content_by_lua '
+        content_by_lua_block {
             local m, err
             local match = ngx.re.match
             for i = 1, 200 do
@@ -335,7 +335,7 @@ NYI
                 end
                 ngx.say("not matched!")
             end
-        ';
+        }
     }
 --- request
     GET /re
@@ -355,7 +355,7 @@ NYI
 --- http_config eval: $::HttpConfig
 --- config
     location /re {
-        content_by_lua '
+        content_by_lua_block {
             local m, err
             local match = ngx.re.match
             for i = 1, 100 do
@@ -378,7 +378,7 @@ NYI
                 end
                 ngx.say("not matched!")
             end
-        ';
+        }
     }
 --- request
     GET /re
@@ -402,7 +402,7 @@ NYI
 --- http_config eval: $::HttpConfig
 --- config
     location /re {
-        content_by_lua '
+        content_by_lua_block {
             local new_tab = require "table.new"
             local clear_tab = require "table.clear"
             local m
@@ -422,7 +422,7 @@ NYI
             else
                 ngx.say("not matched!")
             end
-        ';
+        }
     }
 --- request
     GET /re
@@ -445,7 +445,7 @@ qr/\[TRACE\s+\d+\s+/
 --- http_config eval: $::HttpConfig
 --- config
     location /re {
-        content_by_lua '
+        content_by_lua_block {
             local m = ngx.re.match("hello!", "(hello)(, .+)?(!)", "jo")
 
             if m then
@@ -456,7 +456,7 @@ qr/\[TRACE\s+\d+\s+/
             else
                 ngx.say("not matched!")
             end
-        ';
+        }
     }
 --- request
     GET /re
@@ -477,7 +477,7 @@ qr/\[TRACE\s+\d+\s+/
 --- http_config eval: $::HttpConfig
 --- config
     location /re {
-        content_by_lua '
+        content_by_lua_block {
             local m = ngx.re.match("hello", "(hello)(, .+)?(!)?", "jo")
 
             if m then
@@ -488,7 +488,7 @@ qr/\[TRACE\s+\d+\s+/
             else
                 ngx.say("not matched!")
             end
-        ';
+        }
     }
 --- request
     GET /re
@@ -509,7 +509,7 @@ qr/\[TRACE\s+\d+\s+/
 --- http_config eval: $::HttpConfig
 --- config
     location /re {
-        content_by_lua '
+        content_by_lua_block {
             local m = ngx.re.match("hello!", "(?<first>hello)(?<second>, .+)?(?<third>!)", "jo")
 
             if m then
@@ -523,7 +523,7 @@ qr/\[TRACE\s+\d+\s+/
             else
                 ngx.say("not matched!")
             end
-        ';
+        }
     }
 --- request
     GET /re
@@ -547,8 +547,8 @@ qr/\[TRACE\s+\d+\s+/
 --- http_config eval: $::HttpConfig
 --- config
     location /re {
-        content_by_lua '
-            local m = ngx.re.match(12345, [=[(\\d+)]=], "jo")
+        content_by_lua_block {
+            local m = ngx.re.match(12345, [=[(\d+)]=], "jo")
 
             if m then
                 ngx.say(m[0])
@@ -556,7 +556,7 @@ qr/\[TRACE\s+\d+\s+/
             else
                 ngx.say("not matched")
             end
-        ';
+        }
     }
 --- request
     GET /re
@@ -573,7 +573,7 @@ attempt to get length of local 'subj' (a number value)
 --- http_config eval: $::HttpConfig
 --- config
     location /re {
-        content_by_lua '
+        content_by_lua_block {
             local m = ngx.re.match(12345, "123", "jo")
 
             if m then
@@ -581,7 +581,7 @@ attempt to get length of local 'subj' (a number value)
             else
                 ngx.say("not matched")
             end
-        ';
+        }
     }
 --- request
     GET /re
@@ -590,4 +590,3 @@ attempt to get length of local 'subj' (a number value)
 --- no_error_log
 [error]
 attempt to get length of local 'regex' (a number value)
-

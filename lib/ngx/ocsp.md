@@ -72,7 +72,7 @@ server {
         -- use cosocket-based HTTP client libraries like lua-resty-http-simple
         -- to send the request (url + ocsp_req as POST params or URL args) to
         -- CA's OCSP server. assuming the server returns the OCSP response
-        -- in the Lua varaible, resp.
+        -- in the Lua variable, resp.
 
         local schema, host, port, ocsp_uri, err = parse_url(ocsp_url)
 
@@ -115,7 +115,7 @@ server {
             end
 
             -- set the OCSP stapling
-            ok, err = ocsp.set_ocsp_status_resp(resp)
+            ok, err = ocsp.set_ocsp_status_resp(ocsp_resp)
             if not ok then
                 ngx.log(ngx.ERR, "failed to set ocsp status resp: ", err)
                 return ngx.exit(ngx.ERROR)
@@ -264,7 +264,7 @@ Please report bugs or submit patches by
 Author
 ======
 
-Yichun Zhang &lt;agentzh@gmail.com&gt; (agentzh), CloudFlare Inc.
+Yichun Zhang &lt;agentzh@gmail.com&gt; (agentzh), OpenResty Inc.
 
 [Back to TOC](#table-of-contents)
 
@@ -273,7 +273,7 @@ Copyright and License
 
 This module is licensed under the BSD license.
 
-Copyright (C) 2015, by Yichun "agentzh" Zhang, CloudFlare Inc.
+Copyright (C) 2015-2017, by Yichun "agentzh" Zhang, OpenResty Inc.
 
 All rights reserved.
 

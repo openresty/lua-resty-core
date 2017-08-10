@@ -140,6 +140,7 @@ local _M = {
 
 local buf_grow_ratio = 2
 
+
 function _M.set_buf_grow_ratio(ratio)
     buf_grow_ratio = ratio
 end
@@ -151,6 +152,20 @@ local function get_max_regex_cache_size()
     end
     max_regex_cache_size = C.ngx_http_lua_ffi_max_regex_cache_size()
     return max_regex_cache_size
+end
+
+
+local regex_cache_is_empty = true
+
+
+function _M.is_regex_cache_empty()
+    return regex_cache_is_empty
+end
+
+
+local function lrucache_set_wrapper(...)
+    regex_cache_is_empty = false
+    lrucache_set(...)
 end
 
 
@@ -281,9 +296,15 @@ local function collect_captures(compiled, rc, subj, flags, res)
 end
 
 
+_M.collect_captures = collect_captures
+
+
 local function destroy_compiled_regex(compiled)
     C.ngx_http_lua_ffi_destroy_regex(ffi_gc(compiled, nil))
 end
+
+
+_M.destroy_compiled_regex = destroy_compiled_regex
 
 
 local function re_match_compile(regex, opts)
@@ -335,12 +356,15 @@ local function re_match_compile(regex, opts)
 
         if compile_once then
             -- print("inserting compiled regex into cache")
-            lrucache_set(regex_match_cache, key, compiled)
+            lrucache_set_wrapper(regex_match_cache, key, compiled)
         end
     end
 
     return compiled, compile_once, flags
 end
+
+
+_M.re_match_compile = re_match_compile
 
 
 local function re_match_helper(subj, regex, opts, ctx, want_caps, res, nth)
@@ -485,6 +509,9 @@ local function check_buf_size(buf, buf_size, pos, len, new_len, must_alloc)
 end
 
 
+_M.check_buf_size = check_buf_size
+
+
 local function re_sub_compile(regex, opts, replace, func)
     local flags = 0
     local pcre_opts = 0
@@ -587,6 +614,9 @@ local function re_sub_compile(regex, opts, replace, func)
 end
 
 
+_M.re_sub_compile = re_sub_compile
+
+
 local function re_sub_func_helper(subj, regex, replace, opts, global)
     local compiled, compile_once, flags =
                                     re_sub_compile(regex, opts, nil, replace)
@@ -641,10 +671,10 @@ local function re_sub_func_helper(subj, regex, replace, opts, global)
 
         local res = collect_captures(compiled, rc, subj, flags)
 
-        local bit = tostring(replace(res))
-        local bit_len = #bit
+        local piece = tostring(replace(res))
+        local piece_len = #piece
 
-        local new_dst_len = dst_len + prefix_len + bit_len
+        local new_dst_len = dst_len + prefix_len + piece_len
         dst_buf, dst_buf_size, dst_pos, dst_len =
             check_buf_size(dst_buf, dst_buf_size, dst_pos, dst_len,
                            new_dst_len, true)
@@ -655,9 +685,9 @@ local function re_sub_func_helper(subj, regex, replace, opts, global)
             dst_pos = dst_pos + prefix_len
         end
 
-        if bit_len > 0 then
-            ffi_copy(dst_pos, bit, bit_len)
-            dst_pos = dst_pos + bit_len
+        if piece_len > 0 then
+            ffi_copy(dst_pos, piece, piece_len)
+            dst_pos = dst_pos + piece_len
         end
 
         cp_pos = compiled.captures[1]
@@ -683,7 +713,8 @@ local function re_sub_func_helper(subj, regex, replace, opts, global)
             local suffix_len = subj_len - cp_pos
 
             local new_dst_len = dst_len + suffix_len
-            dst_buf, dst_buf_size, dst_pos, dst_len =
+            local _
+            dst_buf, _, dst_pos, dst_len =
                 check_buf_size(dst_buf, dst_buf_size, dst_pos, dst_len,
                                new_dst_len, true)
 
@@ -812,7 +843,8 @@ local function re_sub_str_helper(subj, regex, replace, opts, global)
             local suffix_len = subj_len - cp_pos
 
             local new_dst_len = dst_len + suffix_len
-            dst_buf, dst_buf_size, dst_pos, dst_len =
+            local _
+            dst_buf, _, dst_pos, dst_len =
                 check_buf_size(dst_buf, dst_buf_size, dst_pos, dst_len,
                                new_dst_len)
 

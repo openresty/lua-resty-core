@@ -19,9 +19,6 @@ local ngx_shared = ngx.shared
 local getmetatable = getmetatable
 
 
-local MAX_ERR_MSG_LEN = 128
-
-
 ffi.cdef[[
     int ngx_http_lua_ffi_shdict_get(void *zone, const unsigned char *key,
         size_t key_len, int *value_type, unsigned char **str_value_buf,
@@ -101,9 +98,9 @@ local function shdict_store(zone, op, key, value, exptime, flags)
         return nil, "key too long"
     end
 
-    local str_value_buf
-    local str_value_len = 0
-    local num_value = 0
+    local str_val_buf
+    local str_val_len = 0
+    local num_val = 0
     local valtyp = type(value)
 
     -- print("value type: ", valtyp)
@@ -111,27 +108,27 @@ local function shdict_store(zone, op, key, value, exptime, flags)
 
     if valtyp == "string" then
         valtyp = 4  -- LUA_TSTRING
-        str_value_buf = value
-        str_value_len = #value
+        str_val_buf = value
+        str_val_len = #value
 
     elseif valtyp == "number" then
         valtyp = 3  -- LUA_TNUMBER
-        num_value = value
+        num_val = value
 
     elseif value == nil then
         valtyp = 0  -- LUA_TNIL
 
     elseif valtyp == "boolean" then
         valtyp = 1  -- LUA_TBOOLEAN
-        num_value = value and 1 or 0
+        num_val = value and 1 or 0
 
     else
         return nil, "bad value type"
     end
 
     local rc = C.ngx_http_lua_ffi_shdict_store(zone, op, key, key_len,
-                                               valtyp, str_value_buf,
-                                               str_value_len, num_value,
+                                               valtyp, str_val_buf,
+                                               str_val_len, num_val,
                                                exptime * 1000, flags, errmsg,
                                                forcible)
 
@@ -394,7 +391,7 @@ end
 
 
 if ngx_shared then
-    local name, dict = next(ngx_shared, nil)
+    local _, dict = next(ngx_shared, nil)
     if dict then
         local mt = getmetatable(dict)
         if mt then

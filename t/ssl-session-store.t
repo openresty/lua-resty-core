@@ -31,15 +31,15 @@ __DATA__
 === TEST 1: get new session serialized
 --- http_config
     lua_package_path "$TEST_NGINX_LUA_PACKAGE_PATH/?.lua;;";
+    ssl_session_store_by_lua_block {
+        local ssl = require "ngx.ssl.session"
+        local sess = ssl.get_serialized_session()
+        print("session size: ", #sess)
+    }
 
     server {
         listen unix:$TEST_NGINX_HTML_DIR/nginx.sock ssl;
         server_name test.com;
-        ssl_session_store_by_lua_block {
-            local ssl = require "ngx.ssl.session"
-            local sess = ssl.get_serialized_session()
-            print("session size: ", #sess)
-        }
         ssl_protocols SSLv3;
         ssl_certificate $TEST_NGINX_CERT_DIR/cert/test.crt;
         ssl_certificate_key $TEST_NGINX_CERT_DIR/cert/test.key;
@@ -103,15 +103,15 @@ qr/ssl_session_store_by_lua_block:4: session size: \d+/s
 === TEST 2: get new session id serialized
 --- http_config
     lua_package_path "$TEST_NGINX_LUA_PACKAGE_PATH/?.lua;;";
+    ssl_session_store_by_lua_block {
+        local ssl = require "ngx.ssl.session"
+        local sid = ssl.get_session_id()
+        print("session id: ", sid)
+    }
 
     server {
         listen unix:$TEST_NGINX_HTML_DIR/nginx.sock ssl;
         server_name test.com;
-        ssl_session_store_by_lua_block {
-            local ssl = require "ngx.ssl.session"
-            local sid = ssl.get_session_id()
-            print("session id: ", sid)
-        }
         ssl_protocols SSLv3;
         ssl_certificate $TEST_NGINX_CERT_DIR/cert/test.crt;
         ssl_certificate_key $TEST_NGINX_CERT_DIR/cert/test.key;
@@ -175,51 +175,51 @@ qr/ssl_session_store_by_lua_block:4: session id: [a-fA-f\d]+/s
 === TEST 3: store the session via timer to memcached
 --- http_config
     lua_package_path "$TEST_NGINX_LUA_PACKAGE_PATH/?.lua;;";
+    ssl_session_store_by_lua_block {
+        local ssl = require "ngx.ssl.session"
+        local function f(premature, key, value)
+           local sock = ngx.socket.tcp()
+
+           sock:settimeout(5000)
+
+           local ok, err = sock:connect("127.0.0.1", $TEST_NGINX_MEMCACHED_PORT)
+           if not ok then
+               ngx.log(ngx.ERR, "failed to connect to memc: ", err)
+               return
+           end
+
+           local bytes, err = sock:send("set " .. key .. " 0 0 "
+                                         .. tostring(#value) .. " \r\n"
+                                         .. value .. "\r\n")
+           if not bytes then
+               ngx.log(ngx.ERR, "failed to send set command: ", err)
+               return
+           end
+
+           local res, err = sock:receive()
+           if not res then
+               ngx.log(ngx.ERR, "failed to receive memc reply: ", err)
+               return
+           end
+
+           print("received memc reply: ", res)
+        end
+
+        local sid = ssl.get_session_id()
+        print("session id: ", sid)
+        local sess = ssl.get_serialized_session()
+        print("session size: ", #sess)
+
+        local ok, err = ngx.timer.at(0, f, sid, sess)
+        if not ok then
+            ngx.log(ngx.ERR, "failed to create timer: ", err)
+            return
+        end
+    }
 
     server {
         listen unix:$TEST_NGINX_HTML_DIR/nginx.sock ssl;
         server_name test.com;
-        ssl_session_store_by_lua_block {
-            local ssl = require "ngx.ssl.session"
-            local function f(premature, key, value)
-               local sock = ngx.socket.tcp()
-
-               sock:settimeout(5000)
-
-               local ok, err = sock:connect("127.0.0.1", $TEST_NGINX_MEMCACHED_PORT)
-               if not ok then
-                   ngx.log(ngx.ERR, "failed to connect to memc: ", err)
-                   return
-               end
-
-               local bytes, err = sock:send("set " .. key .. " 0 0 "
-                                             .. tostring(#value) .. " \r\n"
-                                             .. value .. "\r\n")
-               if not bytes then
-                   ngx.log(ngx.ERR, "failed to send set command: ", err)
-                   return
-               end
-
-               local res, err = sock:receive()
-               if not res then
-                   ngx.log(ngx.ERR, "failed to receive memc reply: ", err)
-                   return
-               end
-
-               print("received memc reply: ", res)
-            end
-
-            local sid = ssl.get_session_id()
-            print("session id: ", sid)
-            local sess = ssl.get_serialized_session()
-            print("session size: ", #sess)
-
-            local ok, err = ngx.timer.at(0, f, sid, sess)
-            if not ok then
-                ngx.log(ngx.ERR, "failed to create timer: ", err)
-                return
-            end
-        }
         ssl_protocols SSLv3;
         ssl_certificate $TEST_NGINX_CERT_DIR/cert/test.crt;
         ssl_certificate_key $TEST_NGINX_CERT_DIR/cert/test.key;

@@ -15,7 +15,7 @@ my $pwd = cwd();
 
 our $HttpConfig = <<_EOC_;
     lua_package_path "$pwd/lib/?.lua;../lua-resty-lrucache/lib/?.lua;;";
-    init_by_lua '
+    init_by_lua_block {
         local verbose = false
         if verbose then
             local dump = require "jit.dump"
@@ -27,7 +27,7 @@ our $HttpConfig = <<_EOC_;
 
         require "resty.core"
         -- jit.off()
-    ';
+    }
 _EOC_
 
 #no_diff();
@@ -41,13 +41,13 @@ __DATA__
 --- http_config eval: $::HttpConfig
 --- config
     location = /base64 {
-        content_by_lua '
+        content_by_lua_block {
             local s
             for i = 1, 100 do
                 s = ngx.decode_base64("aGVsbG8=")
             end
             ngx.say(s)
-        ';
+        }
     }
 --- request
 GET /base64
@@ -65,13 +65,13 @@ qr/\[TRACE   \d+ content_by_lua\(nginx\.conf:\d+\):3 loop\]/
 --- http_config eval: $::HttpConfig
 --- config
     location = /base64 {
-        content_by_lua '
+        content_by_lua_block {
             local s
             for i = 1, 100 do
                 s = ngx.decode_base64("")
             end
             ngx.say(s)
-        ';
+        }
     }
 --- request
 GET /base64
@@ -88,13 +88,13 @@ qr/\[TRACE   \d+ content_by_lua\(nginx\.conf:\d+\):3 loop\]/
 --- http_config eval: $::HttpConfig
 --- config
     location = /base64 {
-        content_by_lua '
+        content_by_lua_block {
             local s
             for i = 1, 100 do
                 s = ngx.decode_base64("My4xNA==")
             end
             ngx.say(s)
-        ';
+        }
     }
 --- request
 GET /base64
@@ -112,13 +112,13 @@ qr/\[TRACE   \d+ content_by_lua\(nginx\.conf:\d+\):3 loop\]/
 --- http_config eval: $::HttpConfig
 --- config
     location = /base64 {
-        content_by_lua '
+        content_by_lua_block {
             local s
             for i = 1, 100 do
                 s = ngx.decode_base64("dHJ1ZQ==")
             end
             ngx.say(s)
-        ';
+        }
     }
 --- request
 GET /base64
@@ -136,7 +136,7 @@ qr/\[TRACE   \d+ content_by_lua\(nginx\.conf:\d+\):3 loop\]/
 --- http_config eval: $::HttpConfig
 --- config
     location = /base64 {
-        content_by_lua '
+        content_by_lua_block {
             local s
             for i = 1, 100 do
                 s = ngx.decode_base64(string.rep("a", 5460))
@@ -146,7 +146,7 @@ qr/\[TRACE   \d+ content_by_lua\(nginx\.conf:\d+\):3 loop\]/
             else
                 ngx.say(string.len(s))
             end
-        ';
+        }
     }
 --- request
 GET /base64
@@ -164,7 +164,7 @@ qr/\[TRACE   \d+ content_by_lua\(nginx\.conf:\d+\):3 loop\]/
 --- http_config eval: $::HttpConfig
 --- config
     location = /base64 {
-        content_by_lua '
+        content_by_lua_block {
             local s
             for i = 1, 100 do
                 s = ngx.decode_base64(string.rep("a", 5462))
@@ -174,7 +174,7 @@ qr/\[TRACE   \d+ content_by_lua\(nginx\.conf:\d+\):3 loop\]/
             else
                 ngx.say(string.len(s))
             end
-        ';
+        }
     }
 --- request
 GET /base64
@@ -185,4 +185,3 @@ qr/\[TRACE   \d+ content_by_lua\(nginx\.conf:\d+\):3 loop\]/
 --- no_error_log
 [error]
  -- NYI:
-

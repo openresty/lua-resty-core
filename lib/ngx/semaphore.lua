@@ -114,7 +114,8 @@ function _M.wait(self, seconds)
     -- might need the current function call's activation
     -- record to hold the reference to our semaphore object
     -- to prevent it from getting GC'd prematurely.
-    local ok, err = co_yield()
+    local ok
+    ok, err = co_yield()
     return ok, err
 end
 

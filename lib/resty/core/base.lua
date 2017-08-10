@@ -15,15 +15,15 @@ local FREE_LIST_REF = 0
 
 if not ngx.config
    or not ngx.config.ngx_lua_version
-   or ngx.config.ngx_lua_version < 10006
+   or ngx.config.ngx_lua_version < 10009
 then
-    error("ngx_lua 0.10.6+ required")
+    error("ngx_lua 0.10.9+ required")
 end
 
 
 if string.find(jit.version, " 2.0") then
-    ngx.log(ngx.WARN, "use of lua-resty-core with LuaJIT 2.0 is "
-            .. "not recommended; use LuaJIT 2.1+ instead")
+    ngx.log(ngx.ALERT, "use of lua-resty-core with LuaJIT 2.0 is ",
+            "not recommended; use LuaJIT 2.1+ instead")
 end
 
 
@@ -33,7 +33,8 @@ if not ok then
 end
 
 
-local ok, clear_tab = pcall(require, "table.clear")
+local clear_tab
+ok, clear_tab = pcall(require, "table.clear")
 if not ok then
     clear_tab = function (tab)
                     for k, _ in pairs(tab) do
@@ -95,7 +96,7 @@ local c_buf_type = ffi.typeof("char[?]")
 local _M = new_tab(0, 16)
 
 
-_M.version = "0.1.8"
+_M.version = "0.1.12"
 _M.new_tab = new_tab
 _M.clear_tab = clear_tab
 

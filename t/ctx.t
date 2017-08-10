@@ -16,7 +16,7 @@ my $pwd = cwd();
 
 our $HttpConfig = <<_EOC_;
     lua_package_path "$pwd/lib/?.lua;\$prefix/html/?.lua;../lua-resty-lrucache/lib/?.lua;;";
-    init_by_lua '
+    init_by_lua_block {
         local verbose = false
         if verbose then
             local dump = require "jit.dump"
@@ -28,7 +28,7 @@ our $HttpConfig = <<_EOC_;
 
         require "resty.core"
         -- jit.off()
-    ';
+    }
 _EOC_
 
 #no_diff();
@@ -42,12 +42,12 @@ __DATA__
 --- http_config eval: $::HttpConfig
 --- config
     location = /t {
-        content_by_lua '
+        content_by_lua_block {
             for i = 1, 100 do
                 ngx.ctx.foo = i
             end
             ngx.say("ctx.foo = ", ngx.ctx.foo)
-        ';
+        }
     }
 --- request
 GET /t
@@ -66,12 +66,12 @@ qr/\[TRACE\s+\d+\s+content_by_lua\(nginx\.conf:\d+\):2 loop\]/
 --- http_config eval: $::HttpConfig
 --- config
     location = /t {
-        content_by_lua '
+        content_by_lua_block {
             for i = 1, 100 do
                 ngx.ctx = {foo = i}
             end
             ngx.say("ctx.foo = ", ngx.ctx.foo)
-        ';
+        }
     }
 --- request
 GET /t
@@ -83,4 +83,3 @@ ctx.foo = 100
  bad argument
 --- error_log eval
 qr/\[TRACE\s+\d+\s+content_by_lua\(nginx\.conf:\d+\):2 loop\]/
-

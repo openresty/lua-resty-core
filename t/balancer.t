@@ -707,7 +707,7 @@ qr/\[error] .*? upstream prematurely closed connection while reading response he
 
 
 === TEST 16: https (keepalive)
---- skip_nginx: 4: < 1.7.5
+--- skip_nginx: 5: < 1.7.5
 --- http_config
     lua_package_path "$TEST_NGINX_CWD/lib/?.lua;;";
 
@@ -748,6 +748,7 @@ ok
 --- grep_error_log eval: qr{hello from balancer by lua!}
 --- grep_error_log_out
 hello from balancer by lua!
+--- no_check_leak
 
 
 

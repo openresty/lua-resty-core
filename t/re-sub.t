@@ -15,7 +15,7 @@ my $pwd = cwd();
 
 our $HttpConfig = <<_EOC_;
     lua_package_path "$pwd/lib/?.lua;../lua-resty-lrucache/lib/?.lua;;";
-    init_by_lua '
+    init_by_lua_block {
         -- local verbose = true
         local verbose = false
         local outfile = "$Test::Nginx::Util::ErrLogFile"
@@ -32,7 +32,7 @@ our $HttpConfig = <<_EOC_;
         -- jit.opt.start("hotloop=1")
         -- jit.opt.start("loopunroll=1000000")
         -- jit.off()
-    ';
+    }
 _EOC_
 
 #no_diff();
@@ -47,7 +47,7 @@ __DATA__
 --- config
     location = /re {
         access_log off;
-        content_by_lua '
+        content_by_lua_block {
             local m, err
             local sub = ngx.re.sub
             for i = 1, 350 do
@@ -59,7 +59,7 @@ __DATA__
             end
             ngx.say("s: ", s)
             ngx.say("n: ", n)
-        ';
+        }
     }
 --- request
 GET /re
@@ -80,7 +80,7 @@ NYI
 --- config
     location = /re {
         access_log off;
-        content_by_lua '
+        content_by_lua_block {
             local m, err
             local sub = ngx.re.sub
             for i = 1, 400 do
@@ -92,7 +92,7 @@ NYI
             end
             ngx.say("s: ", s)
             ngx.say("n: ", n)
-        ';
+        }
     }
 --- request
 GET /re
@@ -112,7 +112,7 @@ bad argument type
 --- config
     location = /re {
         access_log off;
-        content_by_lua '
+        content_by_lua_block {
             local m, err
             local function f(m)
                 return "[" .. m[0] .. "(" .. m[1] .. ")]"
@@ -127,7 +127,7 @@ bad argument type
             end
             ngx.say("s: ", s)
             ngx.say("n: ", n)
-        ';
+        }
     }
 --- request
 GET /re
@@ -148,7 +148,7 @@ qr/NYI (?!bytecode 51 at)/,
 --- config
     location = /re {
         access_log off;
-        content_by_lua '
+        content_by_lua_block {
             local m, err
             local sub = ngx.re.sub
             for i = 1, 350 do
@@ -160,7 +160,7 @@ qr/NYI (?!bytecode 51 at)/,
             end
             ngx.say("s: ", s)
             ngx.say("n: ", n)
-        ';
+        }
     }
 --- request
 GET /re
@@ -182,7 +182,7 @@ NYI
 --- config
     location = /re {
         access_log off;
-        content_by_lua '
+        content_by_lua_block {
             local m, err
             local gsub = ngx.re.gsub
             local subj = string.rep("bcbd", 2048)
@@ -195,7 +195,7 @@ NYI
             end
             ngx.say("s: ", s)
             ngx.say("n: ", n)
-        ';
+        }
     }
 --- request
 GET /re
@@ -214,7 +214,7 @@ bad argument type
 --- config
 
 location = /t {
-    content_by_lua '
+    content_by_lua_block {
         local data = [[
             INNER
             INNER
@@ -229,7 +229,7 @@ location = /t {
         end, "s")
 
         ngx.print(res)
-    ';
+    }
 }
 
 --- request
@@ -250,7 +250,7 @@ NYI
 --- config
 
 location = /t {
-    content_by_lua '
+    content_by_lua_block {
         local data = [[
             INNER
             INNER
@@ -265,7 +265,7 @@ location = /t {
         end, "s")
 
         ngx.print(res)
-    ';
+    }
 }
 
 --- request
@@ -286,7 +286,7 @@ NYI
 --- config
 
 location = /t {
-    content_by_lua '
+    content_by_lua_block {
         function test()
             local data = [[
                 OUTER {FIRST}
@@ -314,7 +314,7 @@ location = /t {
         end
 
         test()
-    ';
+    }
 }
 --- request
 GET /t
@@ -332,11 +332,11 @@ NYI
 --- http_config eval: $::HttpConfig
 --- config
     location /re {
-        content_by_lua '
+        content_by_lua_block {
 			local newstr, n, err = ngx.re.sub(1234, "([0-9])[0-9]", 5, "jo")
 
 			ngx.say(newstr)
-        ';
+        }
     }
 --- request
     GET /re
@@ -352,7 +352,7 @@ attempt to get length of local 'subj' (a number value)
 --- http_config eval: $::HttpConfig
 --- config
     location /re {
-        content_by_lua '
+        content_by_lua_block {
 			local lookup = function(m)
 				-- note we are returning a number type here
 				return 5
@@ -360,7 +360,7 @@ attempt to get length of local 'subj' (a number value)
 
 			local newstr, n, err = ngx.re.sub("hello, 1234", "([0-9])[0-9]", lookup, "jo")
 			ngx.say(newstr)
-        ';
+        }
     }
 --- request
     GET /re
@@ -376,7 +376,7 @@ attempt to get length of local 'bit' (a number value)
 --- http_config eval: $::HttpConfig
 --- config
     location /re {
-        content_by_lua '
+        content_by_lua_block {
 			local lookup = function(m)
 				-- note we are returning a number type here
 				return 5
@@ -384,7 +384,7 @@ attempt to get length of local 'bit' (a number value)
 
 			local newstr, n, err = ngx.re.gsub("hello, 1234", "([0-9])[0-9]", lookup, "jo")
 			ngx.say(newstr)
-        ';
+        }
     }
 --- request
     GET /re

@@ -332,7 +332,7 @@ Copyright and License
 
 This module is licensed under the BSD license.
 
-Copyright (C) 2015, by Yichun "agentzh" Zhang, CloudFlare Inc.
+Copyright (C) 2015-2017, by Yichun "agentzh" Zhang, OpenResty Inc.
 
 All rights reserved.
 

@@ -29,6 +29,9 @@ Table of Contents
     * [ngx.balancer](#ngxbalancer)
     * [ngx.ssl](#ngxssl)
     * [ngx.ssl.session](#ngxsslsession)
+    * [ngx.re](#ngxre)
+    * [ngx.process](#ngxprocess)
+    * [ngx.errlog](#ngxerrlog)
 * [Caveat](#caveat)
 * [TODO](#todo)
 * [Author](#author)
@@ -83,8 +86,12 @@ and requirements.
 Prerequisites
 =============
 
+**WARNING** This library is included with every OpenResty release. You should use the bundled version
+of this library in the particular OpenResty release you are using. Otherwise you may run
+into serious comaptibility issues.
+
 * LuaJIT 2.1 (for now, it is the v2.1 git branch in the official luajit-2.0 git repository: http://luajit.org/download.html )
-* [ngx_lua](https://github.com/openresty/lua-nginx-module) v0.10.6 or later.
+* [ngx_lua](https://github.com/openresty/lua-nginx-module) v0.10.9 or later.
 * [lua-resty-lrucache](https://github.com/openresty/lua-resty-lrucache)
 
 [Back to TOC](#table-of-contents)
@@ -235,6 +242,35 @@ See the [documentation](./lib/ngx/ssl/session.md) for this Lua module for more d
 
 [Back to TOC](#table-of-contents)
 
+## ngx.re
+
+This Lua module provides a Lua API which implements convenience utilities for
+the `ngx.re` API.
+
+See the [documentation](./lib/ngx/re.md) for this Lua module for more details.
+
+[Back to TOC](#table-of-contents)
+
+## ngx.process
+
+This Lua module is used to manage the nginx process in Lua.
+
+See the [documentation](./lib/ngx/process.md) for this Lua module for more details.
+
+This module was first introduced in lua-resty-core v0.1.12.
+
+[Back to TOC](#table-of-contents)
+
+## ngx.errlog
+
+This Lua module provides Lua API to capture and manage nginx error log messages.
+
+See the [documentation](./lib/ngx/errlog.md) for this Lua module for more details.
+
+This module was first introduced in lua-resty-core v0.1.12.
+
+[Back to TOC](#table-of-contents)
+
 Caveat
 ======
 
@@ -256,7 +292,7 @@ TODO
 Author
 ======
 
-Yichun "agentzh" Zhang (章亦春) <agentzh@gmail.com>, CloudFlare Inc.
+Yichun "agentzh" Zhang (章亦春) <agentzh@gmail.com>, OpenResty Inc.
 
 [Back to TOC](#table-of-contents)
 
@@ -265,7 +301,7 @@ Copyright and License
 
 This module is licensed under the BSD license.
 
-Copyright (C) 2013-2016, by Yichun "agentzh" Zhang, CloudFlare Inc.
+Copyright (C) 2013-2017, by Yichun "agentzh" Zhang, OpenResty Inc.
 
 All rights reserved.
 

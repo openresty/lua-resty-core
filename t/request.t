@@ -16,7 +16,7 @@ my $pwd = cwd();
 our $HttpConfig = <<_EOC_;
     lua_shared_dict dogs 1m;
     lua_package_path "$pwd/lib/?.lua;../lua-resty-lrucache/lib/?.lua;;";
-    init_by_lua '
+    init_by_lua_block {
         local verbose = false
         if verbose then
             local dump = require "jit.dump"
@@ -28,7 +28,7 @@ our $HttpConfig = <<_EOC_;
 
         require "resty.core"
         -- jit.off()
-    ';
+    }
 _EOC_
 
 #no_diff();
@@ -43,7 +43,7 @@ __DATA__
 --- config
     location = /t {
         set $foo hello;
-        content_by_lua '
+        content_by_lua_block {
             local ffi = require "ffi"
             local headers
             for i = 1, 200 do
@@ -57,7 +57,7 @@ __DATA__
             for _, k in ipairs(keys) do
                 ngx.say(k, ": ", headers[k])
             end
-        ';
+        }
     }
 --- request
 GET /t
@@ -86,7 +86,7 @@ qr/ -- NYI: (?!return to lower frame)/,
 --- config
     location = /t {
         set $foo hello;
-        content_by_lua '
+        content_by_lua_block {
             local ffi = require "ffi"
             local headers
             for i = 1, 200 do
@@ -100,7 +100,7 @@ qr/ -- NYI: (?!return to lower frame)/,
             for _, k in ipairs(keys) do
                 ngx.say(k, ": ", headers[k])
             end
-        ';
+        }
     }
 --- request
 GET /t
@@ -127,7 +127,7 @@ qr/\[TRACE   \d+ .*? -> 1\]/
 --- config
     location = /t {
         set $foo hello;
-        content_by_lua '
+        content_by_lua_block {
             local ffi = require "ffi"
             local headers
             for i = 1, 200 do
@@ -141,7 +141,7 @@ qr/\[TRACE   \d+ .*? -> 1\]/
             for _, k in ipairs(keys) do
                 ngx.say(k, ": ", headers[k])
             end
-        ';
+        }
     }
 --- request
 GET /t
@@ -165,7 +165,7 @@ qr/\[TRACE   \d+ content_by_lua\(nginx\.conf:\d+\):4 loop\]/
 --- config
     location = /t {
         set $foo hello;
-        content_by_lua '
+        content_by_lua_block {
             local ffi = require "ffi"
             local headers, header
             for i = 1, 100 do
@@ -181,7 +181,7 @@ qr/\[TRACE   \d+ content_by_lua\(nginx\.conf:\d+\):4 loop\]/
             for _, k in ipairs(keys) do
                 ngx.say(k, ": ", headers[k])
             end
-        ';
+        }
     }
 --- request
 GET /t
@@ -208,7 +208,7 @@ qr/ -- NYI: (?!return to lower frame at)(?!C function 0x[0-9a-f]+ at content_by_
 --- config
     location = /t {
         set $foo hello;
-        content_by_lua '
+        content_by_lua_block {
             local ffi = require "ffi"
             local args
             for i = 1, 200 do
@@ -231,7 +231,7 @@ qr/ -- NYI: (?!return to lower frame at)(?!C function 0x[0-9a-f]+ at content_by_
                     ngx.say(k, ": ", v)
                 end
             end
-        ';
+        }
     }
 --- request
 GET /t?a=3%200&foo%20bar=&a=hello&blah
@@ -253,7 +253,7 @@ qr/\[TRACE   \d+ .*? -> \d+\]/
 --- config
     location = /t {
         set $foo hello;
-        content_by_lua '
+        content_by_lua_block {
             local ffi = require "ffi"
             local args
             for i = 1, 200 do
@@ -276,7 +276,7 @@ qr/\[TRACE   \d+ .*? -> \d+\]/
                     ngx.say(k, ": ", v)
                 end
             end
-        ';
+        }
     }
 --- request
 GET /t?
@@ -294,7 +294,7 @@ qr/\[TRACE   \d+ content_by_lua\(nginx\.conf:\d+\):4 loop\]/
 --- config
     location = /t {
         access_log off;
-        content_by_lua '
+        content_by_lua_block {
             local t
             for i = 1, 500 do
                 t = ngx.req.start_time()
@@ -305,7 +305,7 @@ qr/\[TRACE   \d+ content_by_lua\(nginx\.conf:\d+\):4 loop\]/
             ngx.say(">= 0.099: ", elapsed >= 0.099)
             ngx.say("< 0.11: ", elapsed < 0.11)
             -- ngx.say(t, " ", elapsed)
-        ';
+        }
     }
 --- request
 GET /t
@@ -328,13 +328,13 @@ stitch
 --- config
     location = /t {
         access_log off;
-        content_by_lua '
+        content_by_lua_block {
             local t
             for i = 1, 500 do
                 t = ngx.req.get_method()
             end
             ngx.say("method: ", t)
-        ';
+        }
     }
 --- request
 GET /t
@@ -355,13 +355,13 @@ stitch
 --- config
     location = /t {
         access_log off;
-        content_by_lua '
+        content_by_lua_block {
             local t
             for i = 1, 500 do
                 t = ngx.req.get_method()
             end
             ngx.say("method: ", t)
-        ';
+        }
     }
 --- request
 OPTIONS /t
@@ -382,14 +382,14 @@ stitch
 --- config
     location = /t {
         access_log off;
-        content_by_lua '
+        content_by_lua_block {
             local t
             for i = 1, 500 do
                 t = ngx.req.get_method()
             end
             ngx.say("method: ", t)
             ngx.req.discard_body()
-        ';
+        }
     }
 --- request
 POST /t
@@ -411,14 +411,14 @@ stitch
 --- config
     location = /t {
         access_log off;
-        content_by_lua '
+        content_by_lua_block {
             local t
             for i = 1, 500 do
                 t = ngx.req.get_method()
             end
             ngx.say("method: ", t)
             ngx.req.discard_body()
-        ';
+        }
     }
 --- request
 BLAH /t
@@ -440,14 +440,14 @@ stitch
 --- config
     location = /t {
         access_log off;
-        content_by_lua '
+        content_by_lua_block {
             local t
             for i = 1, 500 do
                 t = ngx.req.get_method()
             end
             ngx.say("method: ", t)
             ngx.req.discard_body()
-        ';
+        }
     }
 --- request
 CONNECT /t
@@ -469,13 +469,13 @@ stitch
 --- config
     location = /t {
         access_log off;
-        content_by_lua '
+        content_by_lua_block {
             local t
             for i = 1, 500 do
                 ngx.req.set_method(ngx.HTTP_PUT)
             end
             ngx.say("method: ", ngx.req.get_method())
-        ';
+        }
     }
 --- request
 GET /t
@@ -496,13 +496,13 @@ stitch
 --- config
     location = /t {
         access_log off;
-        content_by_lua '
+        content_by_lua_block {
             local t
             for i = 1, 500 do
                 ngx.req.set_header("foo", i)
             end
             ngx.say("header foo: ", ngx.var.http_foo)
-        ';
+        }
     }
 --- request
 GET /t
@@ -523,13 +523,13 @@ stitch
 --- config
     location = /t {
         access_log off;
-        content_by_lua '
+        content_by_lua_block {
             local t
             for i = 1, 500 do
                 ngx.req.set_header("foo", nil)
             end
             ngx.say("header foo: ", type(ngx.var.http_foo))
-        ';
+        }
     }
 --- request
 GET /t
@@ -550,14 +550,14 @@ stitch
 --- config
     location = /t {
         access_log off;
-        content_by_lua '
+        content_by_lua_block {
             ngx.req.set_header("foo", "hello")
             local t
             for i = 1, 500 do
                 t = ngx.req.clear_header("foo")
             end
             ngx.say("header foo: ", type(ngx.var.http_foo))
-        ';
+        }
     }
 --- request
 GET /t
@@ -570,4 +570,3 @@ qr/\[TRACE   \d+ content_by_lua\(nginx\.conf:\d+\):4 loop\]/
 [error]
 bad argument type
 stitch
-

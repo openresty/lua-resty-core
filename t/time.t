@@ -15,7 +15,7 @@ my $pwd = cwd();
 
 our $HttpConfig = <<_EOC_;
     lua_package_path "$pwd/lib/?.lua;../lua-resty-lrucache/lib/?.lua;;";
-    init_by_lua '
+    init_by_lua_block {
         -- local verbose = true
         local verbose = false
         local outfile = "$Test::Nginx::Util::ErrLogFile"
@@ -32,7 +32,7 @@ our $HttpConfig = <<_EOC_;
         -- jit.opt.start("hotloop=1")
         -- jit.opt.start("loopunroll=1000000")
         -- jit.off()
-    ';
+    }
 _EOC_
 
 #no_diff();
@@ -47,7 +47,7 @@ __DATA__
 --- config
     location = /t {
         access_log off;
-        content_by_lua '
+        content_by_lua_block {
             local t
             for i = 1, 500 do
                 t = ngx.now()
@@ -58,7 +58,7 @@ __DATA__
             ngx.say(">= 0.099: ", elapsed >= 0.099)
             ngx.say("< 0.11: ", elapsed < 0.11)
             -- ngx.say(t, " ", elapsed)
-        ';
+        }
     }
 --- request
 GET /t
@@ -81,7 +81,7 @@ stitch
 --- config
     location = /t {
         access_log off;
-        content_by_lua '
+        content_by_lua_block {
             local t
             for i = 1, 500 do
                 t = ngx.time()
@@ -89,7 +89,7 @@ stitch
             ngx.say(t > 1400960598)
             local diff = os.time() - t
             ngx.say(diff <= 1)
-        ';
+        }
     }
 --- request
 GET /t
@@ -103,4 +103,3 @@ qr/\[TRACE   \d+ content_by_lua\(nginx\.conf:\d+\):3 loop\]/
 [error]
 bad argument type
 stitch
-

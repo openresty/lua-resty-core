@@ -58,3 +58,8 @@
    fun:epoll_ctl
    fun:ngx_epoll_test_rdhup
 }
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Cond
+   obj:*
+}

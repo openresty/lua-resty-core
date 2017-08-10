@@ -15,7 +15,7 @@ my $pwd = cwd();
 
 our $HttpConfig = <<_EOC_;
     lua_package_path "$pwd/lib/?.lua;../lua-resty-lrucache/lib/?.lua;;";
-    init_by_lua '
+    init_by_lua_block {
         -- local verbose = true
         local verbose = false
         local outfile = "$Test::Nginx::Util::ErrLogFile"
@@ -32,7 +32,7 @@ our $HttpConfig = <<_EOC_;
         -- jit.opt.start("hotloop=1")
         -- jit.opt.start("loopunroll=1000000")
         -- jit.off()
-    ';
+    }
 _EOC_
 
 #no_diff();
@@ -46,14 +46,14 @@ __DATA__
 --- config
     location = /re {
         access_log off;
-        content_by_lua '
+        content_by_lua_block {
             local base = require "resty.core.base"
             local n = 0
             for _, _ in pairs(base) do
                 n = n + 1
             end
             ngx.say("base size: ", n)
-        ';
+        }
     }
 --- request
 GET /re
@@ -69,4 +69,3 @@ probe process("$LIBLUA_PATH").function("rehashtab") {
 base size: 16
 --- no_error_log
 [error]
-
