@@ -18,6 +18,7 @@ Table of Contents
     * [set_der_priv_key](#set_der_priv_key)
     * [server_name](#server_name)
     * [raw_server_addr](#raw_server_addr)
+    * [client_addr](#client_addr)
     * [get_tls1_version](#get_tls1_version)
     * [parse_pem_cert](#parse_pem_cert)
     * [parse_pem_priv_key](#parse_pem_priv_key)
@@ -292,6 +293,43 @@ elseif addrtyp == "unix" then  -- UNIX
 
 else  -- IPv6
     -- leave as an exercise for the readers
+end
+```
+
+This function can be called in whatever contexts where downstream https is used.
+
+[Back to TOC](#table-of-contents)
+
+client_addr
+---------------
+**syntax:** *addr, err = ssl.client_addr()*
+
+**context:** *any*
+
+Returns the client ip address in the current SSL connection.
+
+The following code snippet shows how to delaying TLS handshake to mitigate a kind of TSL handshake attack(eg: close connection immediately after handshake complete):
+
+```lua
+local ssl = require "ngx.ssl"
+local blacklist = ngx.shared.ip_blacklist
+
+local addr, err = ssl.client_addr()
+
+-- in blacklist , depay for 30s
+local value, flags = blacklist:get(addr)
+if value then
+    ngx.log(ngx.WARN, "delaying handshake for ip: ", addr .. " ")
+    ngx.sleep(30)
+    return ngx.exit(ngx.ERROR)
+end
+
+-- add to blacklist at first time, remove it at `access` phase
+ngx.log(ngx.INFO, "adding to backlist, ip: ", addr .. "")
+local succ, err, forcible = blacklist:set(addr, '1')
+if not succ then
+    ngx.log(ngx.ERR, "failed to add backlist, ip: ", addr, err)
+    return
 end
 ```
 
