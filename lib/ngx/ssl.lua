@@ -160,10 +160,6 @@ function _M.server_name()
         return ffi_str(charpp[0], sizep[0])
     end
 
-    if rc == FFI_DECLINED then
-        return nil
-    end
-
     return nil, ffi_str(errmsg[0])
 end
 
