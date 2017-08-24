@@ -79,6 +79,7 @@ script:
   - make -j$JOBS > build.log 2>&1 || (cat build.log && exit 1)
   - sudo make PATH=$PATH install_sw > build.log 2>&1 || (cat build.log && exit 1)
   - cd ../mockeagain/ && make CC=$CC -j$JOBS && cd ..
+  - cd ../lua-nginx-module && curl https://patch-diff.githubusercontent.com/raw/openresty/lua-nginx-module/pull/1145.patch | git apply && cd ..
   - tar zxf download-cache/pcre-$PCRE_VER.tar.gz
   - export PATH=$PWD/work/nginx/sbin:$PWD/openresty-devel-utils:$PATH
   - export LD_PRELOAD=$PWD/mockeagain/mockeagain.so
