@@ -306,9 +306,11 @@ client_addr
 
 **context:** *any*
 
-Returns the client ip address in the current SSL connection.
+Returns the client ip address in textual representation of the current SSL connection,
+only IPv4 is supported currently.
 
-The following code snippet shows how to delaying TLS handshake to mitigate a kind of TSL handshake attack(eg: close connection immediately after handshake complete):
+The following code snippet shows how to delay TLS handshake to mitigate a kind of TLS
+handshake attack(eg: close connection immediately after handshake completed):
 
 ```lua
 local ssl = require "ngx.ssl"
@@ -316,19 +318,24 @@ local blacklist = ngx.shared.ip_blacklist
 
 local addr, err = ssl.client_addr()
 
--- in blacklist , depay for 30s
+if err then
+    ngx.log(ngx.WARN, "error reading client ip: ", err)
+    return ngx.exit(ngx.ERROR)
+end
+
+-- in blacklist , delay for 30s
 local value, flags = blacklist:get(addr)
 if value then
-    ngx.log(ngx.WARN, "delaying handshake for ip: ", addr .. " ")
+    ngx.log(ngx.WARN, "delaying handshake for ip: ", addr)
     ngx.sleep(30)
     return ngx.exit(ngx.ERROR)
 end
 
 -- add to blacklist at first time, remove it at `access` phase
 ngx.log(ngx.INFO, "adding to backlist, ip: ", addr .. "")
-local succ, err, forcible = blacklist:set(addr, '1')
+local succ, err = blacklist:set(addr, '1')
 if not succ then
-    ngx.log(ngx.ERR, "failed to add backlist, ip: ", addr, err)
+    ngx.log(ngx.ERR, "failed to add backlist, ip: ", addr, ", err: ", err)
     return
 end
 ```
