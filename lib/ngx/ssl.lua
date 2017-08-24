@@ -160,6 +160,10 @@ function _M.server_name()
         return ffi_str(charpp[0], sizep[0])
     end
 
+    if rc == FFI_DECLINED then
+        return nil
+    end
+
     return nil, ffi_str(errmsg[0])
 end
 
@@ -174,10 +178,6 @@ function _M.client_addr()
     local rc = C.ngx_http_lua_ffi_ssl_client_addr(r, charpp, sizep, errmsg)
     if rc == FFI_OK then
         return ffi_str(charpp[0], sizep[0])
-    end
-
-    if rc == FFI_DECLINED then
-        return nil
     end
 
     return nil, ffi_str(errmsg[0])
