@@ -306,8 +306,8 @@ client_addr
 
 **context:** *any*
 
-Returns the client ip address in textual representation of the current SSL connection,
-only IPv4 is supported currently, returns empty string if using UNIX domain socket.
+Returns the client address of the current SSL connection, the address data is a textual
+ip address when using IPv4, and an empty string if using UNIX domain socket.
 
 The following code snippet shows how to delay TLS handshake to mitigate a kind of TLS
 handshake attack(eg: close connection immediately after handshake completed):
