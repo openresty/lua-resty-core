@@ -2077,7 +2077,7 @@ qr/\[error\] .*? failed to parse pem key: PEM_read_bio_PrivateKey\(\) failed/
         server_name   test.com;
         ssl_certificate_by_lua_block {
             local ssl = require "ngx.ssl"
-            local addr = ssl.client_addr(),
+            local addr = ssl.client_addr()
             print("read client addr: ", addr)
         }
         ssl_certificate ../../cert/test.crt;
