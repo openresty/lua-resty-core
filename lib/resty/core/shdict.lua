@@ -17,6 +17,8 @@ local type = type
 local error = error
 local ngx_shared = ngx.shared
 local getmetatable = getmetatable
+local FFI_ERROR = base.FFI_ERROR
+local FFI_DECLINED = base.FFI_DECLINED
 
 
 ffi.cdef[[
@@ -36,6 +38,12 @@ ffi.cdef[[
         int *forcible);
 
     int ngx_http_lua_ffi_shdict_flush_all(void *zone);
+
+    int ngx_http_lua_ffi_shdict_get_ttl(void *zone,
+        const unsigned char *key, size_t key_len);
+
+    int ngx_http_lua_ffi_shdict_set_expire(void *zone,
+        const unsigned char *key, size_t key_len, int exptime);
 ]]
 
 
@@ -387,6 +395,81 @@ local function shdict_flush_all(zone)
 end
 
 
+local function shdict_ttl(zone, key)
+    zone = check_zone(zone)
+
+    if key == nil then
+        return nil, "nil key"
+    end
+
+    if type(key) ~= "string" then
+        key = tostring(key)
+    end
+
+    local key_len = #key
+    if key_len == 0 then
+        return nil, "empty key"
+    end
+
+    if key_len > 65535 then
+        return nil, "key too long"
+    end
+
+    local rc = C.ngx_http_lua_ffi_shdict_get_ttl(zone, key, key_len)
+
+    if rc == FFI_ERROR then
+        return nil, "bad zone"
+    end
+
+    if rc == FFI_DECLINED then
+        return nil, "not found"
+    end
+
+    return tonumber(rc) / 1000
+end
+
+
+local function shdict_expire(zone, key, exptime)
+    zone = check_zone(zone)
+
+    if not exptime then
+        error('bad "exptime" argument', 2)
+    end
+
+    if key == nil then
+        return nil, "nil key"
+    end
+
+    if type(key) ~= "string" then
+        key = tostring(key)
+    end
+
+    local key_len = #key
+    if key_len == 0 then
+        return nil, "empty key"
+    end
+
+    if key_len > 65535 then
+        return nil, "key too long"
+    end
+
+    local rc = C.ngx_http_lua_ffi_shdict_set_expire(zone, key, key_len,
+                                                    exptime * 1000)
+
+    if rc == FFI_ERROR then
+        return nil, "bad zone"
+    end
+
+    if rc == FFI_DECLINED then
+        return nil, "not found"
+    end
+
+    -- NGINX_OK/FFI_OK
+
+    return true
+end
+
+
 if ngx_shared then
     local _, dict = next(ngx_shared, nil)
     if dict then
@@ -404,6 +487,8 @@ if ngx_shared then
                 mt.replace = shdict_replace
                 mt.delete = shdict_delete
                 mt.flush_all = shdict_flush_all
+                mt.ttl = shdict_ttl
+                mt.expire = shdict_expire
             end
         end
     end
