@@ -999,3 +999,26 @@ number expected, got string
 --- no_error_log
 [alert]
 [crit]
+
+
+
+=== TEST 31: get stats
+--- http_config eval: $::HttpConfig
+--- config
+    location = /t {
+        content_by_lua_block {
+            local dogs = ngx.shared.dogs
+            local total_used, total_size = dogs:stats()
+            ngx.say("total_used type: ", type(total_used))
+            ngx.say("total_size type: ", type(total_size))
+        }
+    }
+--- request
+GET /t
+--- response_body
+total_used type: number
+total_size type: number
+--- no_error_log
+[error]
+[alert]
+[crit]

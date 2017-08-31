@@ -44,8 +44,10 @@ ffi.cdef[[
 
     int ngx_http_lua_ffi_shdict_set_expire(void *zone,
         const unsigned char *key, size_t key_len, int exptime);
-]]
 
+    void ngx_http_lua_ffi_shdict_get_stats(void *zone,
+        size_t *total_used, size_t *total_size);
+]]
 
 if not pcall(function () return C.free end) then
     ffi.cdef[[
@@ -60,6 +62,8 @@ local num_value = ffi_new("double[1]")
 local is_stale = ffi_new("int[1]")
 local forcible = ffi_new("int[1]")
 local str_value_buf = ffi_new("unsigned char *[1]")
+local total_used_buf = ffi_new("size_t[1]")
+local total_size_buf = ffi_new("size_t[1]")
 local errmsg = base.get_errmsg_ptr()
 
 
@@ -469,6 +473,13 @@ local function shdict_expire(zone, key, exptime)
     return true
 end
 
+local function shdict_stats(zone)
+    zone = check_zone(zone)
+
+    C.ngx_http_lua_ffi_shdict_get_stats(zone, total_used_buf, total_size_buf)
+    return tonumber(total_used_buf[0]), tonumber(total_size_buf[0])
+end
+
 
 if ngx_shared then
     local _, dict = next(ngx_shared, nil)
@@ -489,6 +500,7 @@ if ngx_shared then
                 mt.flush_all = shdict_flush_all
                 mt.ttl = shdict_ttl
                 mt.expire = shdict_expire
+                mt.stats = shdict_stats
             end
         end
     end
