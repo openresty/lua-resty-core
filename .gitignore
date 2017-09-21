@@ -3,8 +3,10 @@
 *~
 go
 t/servroot/
+t.stream/servroot/
 reindex
 nginx
 ctags
 tags
 a.lua
+mockeagain.so
