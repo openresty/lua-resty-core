@@ -4,7 +4,9 @@
 local ffi = require 'ffi'
 local ffi_new = ffi.new
 local error = error
+local select = select
 local ceil = math.ceil
+local subsystem = ngx.config.subsystem
 
 
 local str_buf_size = 4096
@@ -13,10 +15,23 @@ local size_ptr
 local FREE_LIST_REF = 0
 
 
-if not ngx.config
-   or not ngx.config.ngx_lua_version
-   or ngx.config.ngx_lua_version < 10011
-then
+if subsystem == 'http' then
+    if not ngx.config
+       or not ngx.config.ngx_lua_version
+       or ngx.config.ngx_lua_version < 10011
+    then
+        error("ngx_lua 0.10.11+ required")
+    end
+
+elseif subsystem == 'stream' then
+    if not ngx.config
+       or not ngx.config.ngx_lua_version
+       or ngx.config.ngx_lua_version < 10009
+    then
+        error("stream_ngx_lua 0.10.09+ required")
+    end
+
+else
     error("ngx_lua 0.10.11+ required")
 end
 
@@ -72,28 +87,49 @@ if not pcall(ffi.typeof, "ngx_str_t") then
 end
 
 
-if not pcall(ffi.typeof, "ngx_http_request_t") then
-    ffi.cdef[[
-        struct ngx_http_request_s;
-        typedef struct ngx_http_request_s  ngx_http_request_t;
-    ]]
-end
+if subsystem == 'http' then
+    if not pcall(ffi.typeof, "ngx_http_request_t") then
+        ffi.cdef[[
+            struct ngx_http_request_s;
+            typedef struct ngx_http_request_s  ngx_http_request_t;
+        ]]
+    end
 
+    if not pcall(ffi.typeof, "ngx_http_lua_ffi_str_t") then
+        ffi.cdef[[
+            typedef struct {
+                int                       len;
+                const unsigned char      *data;
+            } ngx_http_lua_ffi_str_t;
+        ]]
+    end
 
-if not pcall(ffi.typeof, "ngx_http_lua_ffi_str_t") then
-    ffi.cdef[[
-        typedef struct {
-            int                       len;
-            const unsigned char      *data;
-        } ngx_http_lua_ffi_str_t;
-    ]]
+elseif subsystem == 'stream' then
+    if not pcall(ffi.typeof, "ngx_stream_lua_request_t") then
+        ffi.cdef[[
+            struct ngx_stream_lua_request_s;
+            typedef struct ngx_stream_lua_request_s  ngx_stream_lua_request_t;
+        ]]
+    end
+
+    if not pcall(ffi.typeof, "ngx_stream_lua_ffi_str_t") then
+        ffi.cdef[[
+            typedef struct {
+                int                       len;
+                const unsigned char      *data;
+            } ngx_stream_lua_ffi_str_t;
+        ]]
+    end
+
+else
+    error("unknown subsystem: " .. subsystem)
 end
 
 
 local c_buf_type = ffi.typeof("char[?]")
 
 
-local _M = new_tab(0, 16)
+local _M = new_tab(0, 17)
 
 
 _M.version = "0.1.13"
@@ -171,6 +207,19 @@ function _M.ref_in_table(tb, key)
 
     -- print("ref key_id returned ", ref)
     return ref
+end
+
+
+function _M.allows_subsystem(...)
+    local total = select("#", ...)
+
+    for i = 1, total do
+        if select(i, ...) == subsystem then
+            return
+        end
+    end
+
+    error("unsupported subsystem: " .. subsystem)
 end
 
 

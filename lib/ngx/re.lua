@@ -2,9 +2,12 @@
 -- to be licensed under the same terms as the rest of the code.
 
 
+local base = require "resty.core.base"
+base.allows_subsystem('http')
+
+
 local ffi = require 'ffi'
 local bit = require "bit"
-local base = require "resty.core.base"
 local core_regex = require "resty.core.regex"
 
 
