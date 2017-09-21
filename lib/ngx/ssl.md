@@ -397,7 +397,7 @@ set_http_version
 
 **context:** *ssl_certificate_by_lua&#42;*
 
-Modify the http version.
+Sets the ALPN(NPN) http version.
 
 http_version:
 
