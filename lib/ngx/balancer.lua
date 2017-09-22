@@ -48,14 +48,15 @@ if subsystem == 'http' then
 
 elseif subsystem == 'stream' then
     ffi.cdef[[
-    int ngx_stream_lua_ffi_balancer_set_current_peer(ngx_stream_lua_request_t *r,
+    int ngx_stream_lua_ffi_balancer_set_current_peer(
+        ngx_stream_lua_request_t *r,
         const unsigned char *addr, size_t addr_len, int port, char **err);
 
     int ngx_stream_lua_ffi_balancer_set_more_tries(ngx_stream_lua_request_t *r,
         int count, char **err);
 
-    int ngx_stream_lua_ffi_balancer_get_last_failure(ngx_stream_lua_request_t *r,
-        int *status, char **err);
+    int ngx_stream_lua_ffi_balancer_get_last_failure(
+        ngx_stream_lua_request_t *r, int *status, char **err);
 
     int ngx_stream_lua_ffi_balancer_set_timeouts(ngx_stream_lua_request_t *r,
         long connect_timeout, long timeout, char **err);
