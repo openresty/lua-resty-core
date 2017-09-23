@@ -149,6 +149,8 @@ API Implemented
 * [ngx.shared.DICT.safe_add](https://github.com/openresty/lua-nginx-module#ngxshareddictsafe_add)
 * [ngx.shared.DICT.replace](https://github.com/openresty/lua-nginx-module#ngxshareddictreplace)
 * [ngx.shared.DICT.delete](https://github.com/openresty/lua-nginx-module#ngxshareddictdelete)
+* [ngx.shared.DICT.ttl](https://github.com/openresty/lua-nginx-module#ngxshareddictttl)
+* [ngx.shared.DICT.expire](https://github.com/openresty/lua-nginx-module#ngxshareddictexpire)
 * [ngx.shared.DICT.flush_all](https://github.com/openresty/lua-nginx-module#ngxshareddictflush_all)
 
 [Back to TOC](#table-of-contents)
