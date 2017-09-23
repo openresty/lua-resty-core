@@ -58,6 +58,8 @@ int ngx_http_lua_ffi_set_priv_key(void *r, void *cdata, char **err);
 void ngx_http_lua_ffi_free_cert(void *cdata);
 
 void ngx_http_lua_ffi_free_priv_key(void *cdata);
+
+int ngx_http_lua_ffi_set_httpv(ngx_http_request_t *r, int hv, char **err);
 ]]
 
 
@@ -283,5 +285,24 @@ do
     end
 end
 
+
+function _M.set_http_version(hv)
+    local r = getfenv(0).__ngx_req
+    if not r then
+        return error("no request found")
+    end
+
+    local v = tonumber(hv)
+    if v < 0 then
+        return error("no negative number")
+    end
+
+    local rc = C.ngx_http_lua_ffi_set_httpv(r, v, errmsg)
+    if rc == FFI_OK then
+        return true
+    end
+
+    return nil, ffi_str(errmsg[0])
+end
 
 return _M

@@ -23,6 +23,7 @@ Table of Contents
     * [parse_pem_priv_key](#parse_pem_priv_key)
     * [set_cert](#set_cert)
     * [set_priv_key](#set_priv_key)
+    * [set_http_version](#set_http_version)
 * [Community](#community)
     * [English Mailing List](#english-mailing-list)
     * [Chinese Mailing List](#chinese-mailing-list)
@@ -45,8 +46,8 @@ Synopsis
 lua_package_path "/path/to/lua-resty-core/lib/?.lua;;";
 
 server {
-    listen 443 ssl;
-    server_name   test.com;
+    listen 443 ssl http2;
+    server_name   test.com hello.com;
 
     # useless placeholders: just to shut up NGINX configuration
     # loader errors:
@@ -97,6 +98,15 @@ server {
         if not ok then
             ngx.log(ngx.ERR, "failed to set DER private key: ", err)
             return ngx.exit(ngx.ERROR)
+        end
+
+        local sn, err = ssl.server_name()
+        if not sn then
+            ngx.log(ngx.ERR, "failed to get server name: ", err)
+            return ngx.exit(ngx.ERROR)
+        end
+        if sn == "test.com" then
+            ssl.set_http_version(1)
         end
     }
 
@@ -393,6 +403,23 @@ Note that this `set_priv_key` function will run slightly faster, in terms of CPU
 which do not require any additional conversion needed to be performed by the SSL library during the SSL handshake.
 
 This function was first added in version `0.1.7`.
+
+[Back to TOC](#table-of-contents)
+
+set_http_version
+------------
+**syntax:** *ok, err = ssl.set_http_version(http_version)*
+
+**context:** *ssl_certificate_by_lua&#42;*
+
+Sets the ALPN(NPN) http version.
+
+http_version:
+
+* 1 - http1.1
+* 2 - http2
+
+Returns `true` on success, or a `nil` value and a string describing the error otherwise.
 
 [Back to TOC](#table-of-contents)
 
