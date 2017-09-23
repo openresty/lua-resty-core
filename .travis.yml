@@ -39,15 +39,15 @@ env:
     - TEST_NGINX_RANDOMIZE=1
     - LUACHECK_VER=0.21.1
   matrix:
-    - NGINX_VERSION=1.9.15
     - NGINX_VERSION=1.11.2
+    - NGINX_VERSION=1.13.5
 
 before_install:
   - sudo luarocks install luacheck $LUACHECK_VER
   - luacheck -q .
   - '! grep -n -P ''(?<=.{80}).+'' --color `find . -name ''*.lua''` || (echo "ERROR: Found Lua source lines exceeding 80 columns." > /dev/stderr; exit 1)'
   - '! grep -n -P ''\t+'' --color `find . -name ''*.lua''` || (echo "ERROR: Cannot use tabs." > /dev/stderr; exit 1)'
-  - sudo cpanm --notest Test::Nginx > build.log 2>&1 || (cat build.log && exit 1)
+  - sudo cpanm --notest Test::Nginx IPC::Run > build.log 2>&1 || (cat build.log && exit 1)
 
 install:
   - if [ ! -d download-cache ]; then mkdir download-cache; fi
