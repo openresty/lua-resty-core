@@ -482,7 +482,8 @@ if not pcall(function () return C.ngx_http_lua_ffi_shdict_get_stats end) then
     shdict_stats = function(zone)
         zone = check_zone(zone)
 
-        C.ngx_http_lua_ffi_shdict_get_stats(zone, stats_used_buf, stats_total_buf)
+        C.ngx_http_lua_ffi_shdict_get_stats(zone, stats_used_buf,
+            stats_total_buf)
         return tonumber(stats_used_buf[0]), tonumber(stats_total_buf[0])
     end
 else
