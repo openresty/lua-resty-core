@@ -46,8 +46,7 @@ ffi.cdef[[
         const unsigned char *key, size_t key_len, int exptime);
 ]]
 
-local get_stats_defined = not pcall(function () return C.ngx_http_lua_ffi_shdict_get_stats end)
-if get_stats_defined then
+if not pcall(function () return C.ngx_http_lua_ffi_shdict_get_stats end) then
     ffi.cdef[[
         void ngx_http_lua_ffi_shdict_get_stats(void *zone,
             size_t *total_used, size_t *total_size);
@@ -478,12 +477,17 @@ local function shdict_expire(zone, key, exptime)
     return true
 end
 
-if get_stats_defined then
+if not pcall(function () return C.ngx_http_lua_ffi_shdict_get_stats end) then
     local function shdict_stats(zone)
         zone = check_zone(zone)
 
         C.ngx_http_lua_ffi_shdict_get_stats(zone, stats_used_buf, stats_total_buf)
         return tonumber(stats_used_buf[0]), tonumber(stats_total_buf[0])
+    end
+else
+    local function shdict_stats(zone)
+        -- dummy implementation
+        return 0, 0
     end
 end
 
@@ -507,9 +511,7 @@ if ngx_shared then
                 mt.flush_all = shdict_flush_all
                 mt.ttl = shdict_ttl
                 mt.expire = shdict_expire
-                if get_stats_defined then
-                    mt.stats = shdict_stats
-                end
+                mt.stats = shdict_stats
             end
         end
     end
