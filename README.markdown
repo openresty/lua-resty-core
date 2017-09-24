@@ -155,29 +155,11 @@ API Implemented
 * [ngx.shared.DICT.stats](#ngxshareddictstats)
 
 ### ngx.shared.DICT.stats
-**syntax:** *total_used, total_size = ngx.shared.DICT:stats()
+**syntax:** *used, total = ngx.shared.DICT:stats()
 
 **context:** *set_by_lua&#42;, rewrite_by_lua&#42;, access_by_lua&#42;, content_by_lua&#42;, header_filter_by_lua&#42;, body_filter_by_lua&#42;, log_by_lua&#42;, ngx.timer.&#42;, balancer_by_lua&#42;, ssl_certificate_by_lua&#42;, ssl_session_fetch_by_lua&#42;, ssl_session_store_by_lua&#42;*
 
 Retrieving the total used counts and total size in bytes for the dictionary [ngx.shared.DICT](#ngxshareddict).
-
-The first argument to this method must be the dictionary object itself, for example,
-
-```lua
-
- local cats = ngx.shared.cats
- local total_used, total_size = cats.stats(cats)
-```
-
-or use Lua's syntactic sugar for method calls:
-
-```lua
-
- local cats = ngx.shared.cats
- local total_used, total_size = cats:stats()
-```
-
-These two forms are fundamentally equivalent.
 
 [Back to TOC](#table-of-contents)
 
