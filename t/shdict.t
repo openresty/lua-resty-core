@@ -1003,7 +1003,7 @@ number expected, got string
 
 
 === TEST 31: get stats
---- skip_nginx: 1: < 1.11.7
+--- skip_nginx: 5: < 1.11.7
 --- http_config eval: $::HttpConfig
 --- config
     location = /t {
