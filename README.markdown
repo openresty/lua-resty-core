@@ -152,16 +152,7 @@ API Implemented
 * [ngx.shared.DICT.ttl](https://github.com/openresty/lua-nginx-module#ngxshareddictttl)
 * [ngx.shared.DICT.expire](https://github.com/openresty/lua-nginx-module#ngxshareddictexpire)
 * [ngx.shared.DICT.flush_all](https://github.com/openresty/lua-nginx-module#ngxshareddictflush_all)
-* [ngx.shared.DICT.stats](#ngxshareddictstats)
-
-### ngx.shared.DICT.stats
-**syntax:** *used, total = ngx.shared.DICT:stats()
-
-**context:** *set_by_lua&#42;, rewrite_by_lua&#42;, access_by_lua&#42;, content_by_lua&#42;, header_filter_by_lua&#42;, body_filter_by_lua&#42;, log_by_lua&#42;, ngx.timer.&#42;, balancer_by_lua&#42;, ssl_certificate_by_lua&#42;, ssl_session_fetch_by_lua&#42;, ssl_session_store_by_lua&#42;*
-
-Retrieving the total used counts and total size in bytes for the dictionary [ngx.shared.DICT](#ngxshareddict).
-
-[Back to TOC](#table-of-contents)
+* [ngx.shared.DICT.stats](https://github.com/openresty/lua-nginx-module#ngxshareddictstats)
 
 ## resty.core.var
 
