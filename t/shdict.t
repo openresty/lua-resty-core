@@ -15,6 +15,7 @@ my $pwd = cwd();
 
 our $HttpConfig = <<_EOC_;
     lua_shared_dict dogs 1m;
+    lua_shared_dict cats 12k;
     lua_package_path "$pwd/lib/?.lua;../lua-resty-lrucache/lib/?.lua;;";
     init_by_lua_block {
         local verbose = false
@@ -1002,16 +1003,18 @@ number expected, got string
 
 
 
-=== TEST 31: get stats
+=== TEST 31: stats, empty
 --- skip_nginx: 5: < 1.11.7
 --- http_config eval: $::HttpConfig
 --- config
     location = /t {
         content_by_lua_block {
-            local dogs = ngx.shared.dogs
-            local used, total = dogs:stats()
+            local cats = ngx.shared.cats
+            local used, total = cats:stats()
             ngx.say("used type: ", type(used))
             ngx.say("total type: ", type(total))
+            ngx.say("used: ", used)
+            ngx.say("total: ", total)
         }
     }
 --- request
@@ -1019,6 +1022,72 @@ GET /t
 --- response_body
 used type: number
 total type: number
+used: 0
+total: 0
+--- no_error_log
+[error]
+[alert]
+[crit]
+
+
+
+=== TEST 32: stats, half full
+--- skip_nginx: 5: < 1.11.7
+--- http_config eval: $::HttpConfig
+--- config
+    location = /t {
+        content_by_lua_block {
+            local cats = ngx.shared.cats
+            cats:flush_all()
+            cats:flush_expired()
+
+            for i = 1, 384 do
+                local key = string.format("key%05d", i)
+                local val = string.format("val%05d", i)
+                cats:set(key, val)
+            end
+            used, total = cats:stats()
+            ngx.say("used: ", used)
+            ngx.say("total: ", total)
+        }
+    }
+--- request
+GET /t
+--- response_body
+used: 384
+total: 6144
+--- no_error_log
+[error]
+[alert]
+[crit]
+
+
+
+=== TEST 33: stats, full
+--- skip_nginx: 5: < 1.11.7
+--- http_config eval: $::HttpConfig
+--- config
+    location = /t {
+        content_by_lua_block {
+            local cats = ngx.shared.cats
+            cats:flush_all()
+            cats:flush_expired()
+
+            for i = 1, 768 do
+                local key = string.format("key%05d", i)
+                local val = string.format("val%05d", i)
+                cats:set(key, val)
+            end
+            used, total = cats:stats()
+            ngx.say("used: ", used)
+            ngx.say("total: ", total)
+        }
+    }
+--- request
+GET /t
+--- response_body
+used: 768
+total: 12288
 --- no_error_log
 [error]
 [alert]
