@@ -46,7 +46,7 @@ ffi.cdef[[
         const unsigned char *key, size_t key_len, int exptime);
 ]]
 
-if pcall(function () return C.ngx_http_lua_ffi_shdict_get_stats end) then
+if not pcall(function () return C.ngx_http_lua_ffi_shdict_get_stats end) then
     ffi.cdef[[
         void ngx_http_lua_ffi_shdict_get_stats(void *zone,
             size_t *total_used, size_t *total_size);
@@ -477,19 +477,12 @@ local function shdict_expire(zone, key, exptime)
     return true
 end
 
-local shdict_stats
-if pcall(function () return C.ngx_http_lua_ffi_shdict_get_stats end) then
-    shdict_stats = function(zone)
-        zone = check_zone(zone)
+local function shdict_stats(zone)
+    zone = check_zone(zone)
 
-        C.ngx_http_lua_ffi_shdict_get_stats(zone, stats_used_buf,
-            stats_total_buf)
-        return tonumber(stats_used_buf[0]), tonumber(stats_total_buf[0])
-    end
-else
-    shdict_stats = function(zone)
-        return error("ngx.shared.DICT.stats unsupported for old nginx version")
-    end
+    C.ngx_http_lua_ffi_shdict_get_stats(zone, stats_used_buf,
+        stats_total_buf)
+    return tonumber(stats_used_buf[0]), tonumber(stats_total_buf[0])
 end
 
 
