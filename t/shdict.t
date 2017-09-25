@@ -15,7 +15,9 @@ my $pwd = cwd();
 
 our $HttpConfig = <<_EOC_;
     lua_shared_dict dogs 1m;
-    lua_shared_dict cats 12k;
+    lua_shared_dict empty_cats 12k;
+    lua_shared_dict half_full_cats 12k;
+    lua_shared_dict full_cats 12k;
     lua_package_path "$pwd/lib/?.lua;../lua-resty-lrucache/lib/?.lua;;";
     init_by_lua_block {
         local verbose = false
@@ -1009,7 +1011,7 @@ number expected, got string
 --- config
     location = /t {
         content_by_lua_block {
-            local cats = ngx.shared.cats
+            local cats = ngx.shared.empty_cats
             local used, total = cats:stats()
             ngx.say("used type: ", type(used))
             ngx.say("total type: ", type(total))
@@ -1037,16 +1039,14 @@ total: 0
 --- config
     location = /t {
         content_by_lua_block {
-            local cats = ngx.shared.cats
-            cats:flush_all()
-            cats:flush_expired()
+            local cats = ngx.shared.half_full_cats
 
             for i = 1, 384 do
                 local key = string.format("key%05d", i)
                 local val = string.format("val%05d", i)
                 cats:set(key, val)
             end
-            used, total = cats:stats()
+            local used, total = cats:stats()
             ngx.say("used: ", used)
             ngx.say("total: ", total)
         }
@@ -1069,16 +1069,14 @@ total: 6144
 --- config
     location = /t {
         content_by_lua_block {
-            local cats = ngx.shared.cats
-            cats:flush_all()
-            cats:flush_expired()
+            local cats = ngx.shared.full_cats
 
             for i = 1, 768 do
                 local key = string.format("key%05d", i)
                 local val = string.format("val%05d", i)
                 cats:set(key, val)
             end
-            used, total = cats:stats()
+            local used, total = cats:stats()
             ngx.say("used: ", used)
             ngx.say("total: ", total)
         }
