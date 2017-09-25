@@ -488,8 +488,7 @@ if not pcall(function () return C.ngx_http_lua_ffi_shdict_get_stats end) then
     end
 else
     shdict_stats = function(zone)
-        -- dummy implementation
-        return 0, 0
+        return error("ngx.shared.DICT.stats unsupported for old nginx version")
     end
 end
 
