@@ -1001,6 +1001,7 @@ number expected, got string
 [crit]
 
 
+
 === TEST 31: get stats
 --- http_config eval: $::HttpConfig
 --- config
