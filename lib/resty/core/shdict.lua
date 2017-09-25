@@ -46,7 +46,7 @@ ffi.cdef[[
         const unsigned char *key, size_t key_len, int exptime);
 ]]
 
-if not pcall(function () return C.ngx_http_lua_ffi_shdict_get_stats end) then
+if pcall(function () return C.ngx_http_lua_ffi_shdict_get_stats end) then
     ffi.cdef[[
         void ngx_http_lua_ffi_shdict_get_stats(void *zone,
             size_t *total_used, size_t *total_size);
@@ -478,7 +478,7 @@ local function shdict_expire(zone, key, exptime)
 end
 
 local shdict_stats
-if not pcall(function () return C.ngx_http_lua_ffi_shdict_get_stats end) then
+if pcall(function () return C.ngx_http_lua_ffi_shdict_get_stats end) then
     shdict_stats = function(zone)
         zone = check_zone(zone)
 
