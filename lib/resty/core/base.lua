@@ -29,6 +29,8 @@ elseif subsystem == 'stream' then
     then
         error("stream_ngx_lua 0.10.09+ required")
     end
+else
+    error("ngx_lua 0.10.11+ required")
 end
 
 
