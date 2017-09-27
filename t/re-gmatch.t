@@ -9,7 +9,7 @@ use Cwd qw(cwd);
 
 repeat_each(2);
 
-plan tests => repeat_each() * (blocks() * 4 - 3);
+plan tests => repeat_each() * (blocks() * 4 - 5);
 
 my $pwd = cwd();
 
@@ -481,3 +481,29 @@ matched iter1 (2/2): 8
 matched iter2 (2/2): 2
 --- no_error_log
 [error]
+
+
+
+=== TEST 14: gmatch (empty matched string)
+--- http_config eval: $::HttpConfig
+--- config
+    location /re {
+        content_by_lua_block {
+            for m in ngx.re.gmatch("hello", "a|") do
+                if m then
+                    ngx.say("matched: [", m[0], "]")
+                else
+                    ngx.say("not matched: ", m)
+                end
+            end
+        }
+    }
+--- request
+    GET /re
+--- response_body
+matched: []
+matched: []
+matched: []
+matched: []
+matched: []
+matched: []

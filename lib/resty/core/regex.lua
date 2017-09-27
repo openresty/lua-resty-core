@@ -479,6 +479,12 @@ function ngx.re.find(subj, regex, opts, ctx, nth)
     return re_match_helper(subj, regex, opts, ctx, false, nil, nth)
 end
 
+local function destroy_re_gmatch_iterator(iterator)
+    if not iterator._compile_once then
+        destroy_compiled_regex(iterator._compiled)
+    end
+    iterator._pos = nil
+end
 
 local function iterate_re_gmatch(self)
     local compiled = self._compiled
@@ -496,18 +502,12 @@ local function iterate_re_gmatch(self)
                                              subj_len, pos)
 
     if rc == PCRE_ERROR_NOMATCH then
-        if not self._compile_once then
-            destroy_compiled_regex(compiled)
-        end
-        self._pos = nil
+        destroy_re_gmatch_iterator(self)
         return nil
     end
 
     if rc < 0 then
-        if not self._compile_once then
-            destroy_compiled_regex(compiled)
-        end
-        self._pos = nil
+        destroy_re_gmatch_iterator(self)
         return nil, "pcre_exec() failed: " .. rc
     end
 
@@ -520,7 +520,15 @@ local function iterate_re_gmatch(self)
         rc = 1
     end
 
-    self._pos = compiled.captures[1]
+    local cp_pos = compiled.captures[1]
+    if cp_pos == compiled.captures[0] then
+        cp_pos = cp_pos + 1
+        if cp_pos > subj_len then
+            destroy_re_gmatch_iterator(self)
+            return collect_captures(compiled, rc, subj, flags)
+        end
+    end
+    self._pos = cp_pos
     return collect_captures(compiled, rc, subj, flags)
 end
 
