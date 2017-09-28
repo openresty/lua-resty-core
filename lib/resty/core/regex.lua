@@ -483,7 +483,9 @@ local function destroy_re_gmatch_iterator(iterator)
     if not iterator._compile_once then
         destroy_compiled_regex(iterator._compiled)
     end
+    iterator._compiled = nil
     iterator._pos = nil
+    iterator._subj = nil
 end
 
 local function iterate_re_gmatch(self)
@@ -513,19 +515,20 @@ local function iterate_re_gmatch(self)
 
     if rc == 0 then
         if band(flags, FLAG_DFA) == 0 then
-            self._pos = nil
+            destroy_re_gmatch_iterator(self)
             return nil, "capture size too small"
         end
 
         rc = 1
     end
 
-    local cp_pos = compiled.captures[1]
+    local cp_pos = tonumber(compiled.captures[1])
     if cp_pos == compiled.captures[0] then
         cp_pos = cp_pos + 1
         if cp_pos > subj_len then
+            local res = collect_captures(compiled, rc, subj, flags)
             destroy_re_gmatch_iterator(self)
-            return collect_captures(compiled, rc, subj, flags)
+            return res
         end
     end
     self._pos = cp_pos
@@ -545,14 +548,14 @@ do
             return nil, compile_once
         end
 
-        local re_gmatch_iterator = new_tab(0, 6)
-        re_gmatch_iterator._compiled = compiled
-        re_gmatch_iterator._compile_once = compile_once
-        re_gmatch_iterator._subj = subj
-        re_gmatch_iterator._subj_len = #subj
-        re_gmatch_iterator._flags = flags
-        re_gmatch_iterator._pos = 0
-
+        local re_gmatch_iterator = {
+            _compiled = compiled,
+            _compile_once = compile_once,
+            _subj = subj,
+            _subj_len = #subj,
+            _flags = flags,
+            _pos = 0,
+        }
         return setmetatable(re_gmatch_iterator, re_gmatch_iterator_mt)
     end
 end
