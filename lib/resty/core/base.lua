@@ -29,6 +29,7 @@ elseif subsystem == 'stream' then
     then
         error("stream_ngx_lua 0.10.09+ required")
     end
+
 else
     error("ngx_lua 0.10.11+ required")
 end
@@ -109,7 +110,6 @@ elseif subsystem == 'stream' then
             typedef struct ngx_stream_lua_request_s  ngx_stream_lua_request_t;
         ]]
     end
-
 
     if not pcall(ffi.typeof, "ngx_stream_lua_ffi_str_t") then
         ffi.cdef[[
