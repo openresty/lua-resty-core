@@ -45,14 +45,12 @@ ffi.cdef[[
     int ngx_http_lua_ffi_shdict_set_expire(void *zone,
         const unsigned char *key, size_t key_len, int exptime);
 
-    void ngx_http_lua_ffi_shdict_capacity(void *zone,
-        size_t *capacity);
+    size_t ngx_http_lua_ffi_shdict_capacity(void *zone);
 ]]
 
 if not pcall(function () return C.ngx_http_lua_ffi_shdict_free_space end) then
     ffi.cdef[[
-        void ngx_http_lua_ffi_shdict_free_space(void *zone,
-            size_t *free_page_bytes);
+        size_t ngx_http_lua_ffi_shdict_free_space(void *zone);
     ]]
 end
 
@@ -69,8 +67,6 @@ local num_value = ffi_new("double[1]")
 local is_stale = ffi_new("int[1]")
 local forcible = ffi_new("int[1]")
 local str_value_buf = ffi_new("unsigned char *[1]")
-local free_space_buf = ffi_new("size_t[1]")
-local capacity_buf = ffi_new("size_t[1]")
 local errmsg = base.get_errmsg_ptr()
 
 
@@ -483,15 +479,13 @@ end
 local function shdict_capacity(zone)
     zone = check_zone(zone)
 
-    C.ngx_http_lua_ffi_shdict_capacity(zone, capacity_buf)
-    return tonumber(capacity_buf[0])
+    return tonumber(C.ngx_http_lua_ffi_shdict_capacity(zone))
 end
 
 local function shdict_free_space(zone)
     zone = check_zone(zone)
 
-    C.ngx_http_lua_ffi_shdict_free_space(zone, free_space_buf)
-    return tonumber(free_space_buf[0])
+    return tonumber(C.ngx_http_lua_ffi_shdict_free_space(zone))
 end
 
 
