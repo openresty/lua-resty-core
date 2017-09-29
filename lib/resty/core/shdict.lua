@@ -49,7 +49,7 @@ ffi.cdef[[
 if not pcall(function () return C.ngx_http_lua_ffi_shdict_get_stats end) then
     ffi.cdef[[
         void ngx_http_lua_ffi_shdict_get_stats(void *zone,
-            size_t *total_used, size_t *total_size);
+            size_t *free_page_bytes);
     ]]
 end
 
@@ -66,8 +66,7 @@ local num_value = ffi_new("double[1]")
 local is_stale = ffi_new("int[1]")
 local forcible = ffi_new("int[1]")
 local str_value_buf = ffi_new("unsigned char *[1]")
-local stats_used_buf = ffi_new("size_t[1]")
-local stats_total_buf = ffi_new("size_t[1]")
+local stats_free_page_bytes_buf = ffi_new("size_t[1]")
 local errmsg = base.get_errmsg_ptr()
 
 
@@ -480,9 +479,8 @@ end
 local function shdict_stats(zone)
     zone = check_zone(zone)
 
-    C.ngx_http_lua_ffi_shdict_get_stats(zone, stats_used_buf,
-        stats_total_buf)
-    return tonumber(stats_used_buf[0]), tonumber(stats_total_buf[0])
+    C.ngx_http_lua_ffi_shdict_get_stats(zone, stats_free_page_bytes_buf)
+    return tonumber(stats_free_page_bytes_buf[0])
 end
 
 
