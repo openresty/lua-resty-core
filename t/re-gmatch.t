@@ -49,7 +49,7 @@ __DATA__
         content_by_lua_block {
             local m1, m2
             local gmatch = ngx.re.gmatch
-            for _ = 1, 100 do
+            for _ = 1, 200 do
                 local iter = gmatch("hello, world", [[\w+]])
                 m1 = iter()
                 m2 = iter()
@@ -77,7 +77,7 @@ qr/\[TRACE   \d+ content_by_lua\(nginx\.conf:\d+\):4 loop\]/
         content_by_lua_block {
             local m1, m2
             local gmatch = ngx.re.gmatch
-            for _ = 1, 100 do
+            for _ = 1, 200 do
                 local iter = gmatch("hello, world", [[\w+]], "jo")
                 m1 = iter()
                 m2 = iter()
@@ -105,7 +105,7 @@ qr/\[TRACE   \d+ content_by_lua\(nginx\.conf:\d+\):4 loop\]/
         content_by_lua_block {
             local m, err
             local gmatch = ngx.re.gmatch
-            for _ = 1, 100 do
+            for _ = 1, 200 do
                 local iter = gmatch("hello, world", "[abc]+", "jo")
                 m, err = iter()
                 if err then
@@ -137,7 +137,7 @@ qr/\[TRACE   \d+ content_by_lua\(nginx\.conf:\d+\):4 loop\]/
         content_by_lua_block {
             local m, err
             local gmatch = ngx.re.gmatch
-            for _ = 1, 100 do
+            for _ = 1, 200 do
                 local iter = gmatch("hello, world", "[abc]+")
                 m, err = iter()
                 if err then
@@ -169,7 +169,7 @@ qr/\[TRACE   \d+ content_by_lua\(nginx\.conf:\d+\):4 loop\]/
         content_by_lua_block {
             local m1, m2
             local gmatch = ngx.re.gmatch
-            for _ = 1, 100 do
+            for _ = 1, 200 do
                 local iter = gmatch("hello, world", [[(\w)(\w+)]])
                 m1 = iter()
                 m2 = iter()
@@ -207,7 +207,7 @@ $3: nil
         content_by_lua_block {
             local m1, m2
             local gmatch = ngx.re.gmatch
-            for _ = 1, 100 do
+            for _ = 1, 200 do
                 local iter = gmatch("hello, world", [[(\w)(\w+)]], "jo")
                 m1 = iter()
                 m2 = iter()
@@ -247,7 +247,7 @@ qr/\[TRACE\s+\d+\s+/
         content_by_lua_block {
             local m1, m2
             local gmatch = ngx.re.gmatch
-            for _ = 1, 100 do
+            for _ = 1, 200 do
                 local iter = gmatch("hello,world", [[(?<first>\w)(\w+)]], "jo")
                 m1 = iter()
                 m2 = iter()
