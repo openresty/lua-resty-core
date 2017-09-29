@@ -15,9 +15,7 @@ my $pwd = cwd();
 
 our $HttpConfig = <<_EOC_;
     lua_shared_dict dogs 1m;
-    lua_shared_dict empty_cats 12k;
-    lua_shared_dict half_full_cats 12k;
-    lua_shared_dict full_cats 12k;
+    lua_shared_dict cats 16k;
     lua_package_path "$pwd/lib/?.lua;../lua-resty-lrucache/lib/?.lua;;";
     init_by_lua_block {
         local verbose = false
@@ -1000,5 +998,215 @@ GET /t
 --- error_log
 number expected, got string
 --- no_error_log
+[alert]
+[crit]
+
+
+
+=== TEST 31: capacity
+--- http_config eval: $::HttpConfig
+--- config
+    location = /t {
+        content_by_lua_block {
+            local cats = ngx.shared.cats
+            local capacity = cats:capacity()
+            ngx.say("capacity type: ", type(capacity))
+            ngx.say("capacity: ", capacity)
+        }
+    }
+--- request
+GET /t
+--- response_body
+capacity type: number
+capacity: 16384
+--- no_error_log
+[error]
+[alert]
+[crit]
+
+
+
+=== TEST 32: free_space, empty
+--- skip_nginx: 5: < 1.11.7
+--- http_config eval: $::HttpConfig
+--- config
+    location = /t {
+        content_by_lua_block {
+            local cats = ngx.shared.cats
+            cats:flush_all()
+            cats:flush_expired()
+            local free_page_bytes = cats:free_space()
+            ngx.say("free_page_bytes type: ", type(free_page_bytes))
+            ngx.say("free_page_bytes: ", free_page_bytes)
+        }
+    }
+--- request
+GET /t
+--- response_body
+free_page_bytes type: number
+free_page_bytes: 4096
+--- no_error_log
+[error]
+[alert]
+[crit]
+
+
+
+=== TEST 33: free_space, about half full, one page left
+--- skip_nginx: 5: < 1.11.7
+--- http_config eval: $::HttpConfig
+--- config
+    location = /t {
+        content_by_lua_block {
+            local cats = ngx.shared.cats
+            cats:flush_all()
+            cats:flush_expired()
+            for i = 1, 31 do
+                local key = string.format("key%05d", i)
+                local val = string.format("val%05d", i)
+                local success, err, forcible = cats:set(key, val)
+                if err ~= nil then
+                    ngx.say(string.format("got error, i=%d, err=%s", i, err))
+                end
+                if forcible then
+                    ngx.say(string.format("got forcible, i=%d", i))
+                end
+                if not success then
+                    ngx.say(string.format("got not success, i=%d", i))
+                end
+            end
+            local free_page_bytes = cats:free_space()
+            ngx.say("free_page_bytes type: ", type(free_page_bytes))
+            ngx.say("free_page_bytes: ", free_page_bytes)
+        }
+    }
+--- request
+GET /t
+--- response_body
+free_page_bytes type: number
+free_page_bytes: 4096
+--- no_error_log
+[error]
+[alert]
+[crit]
+
+
+
+=== TEST 34: free_space, about half full, no page left
+--- skip_nginx: 5: < 1.11.7
+--- http_config eval: $::HttpConfig
+--- config
+    location = /t {
+        content_by_lua_block {
+            local cats = ngx.shared.cats
+            cats:flush_all()
+            cats:flush_expired()
+            for i = 1, 32 do
+                local key = string.format("key%05d", i)
+                local val = string.format("val%05d", i)
+                local success, err, forcible = cats:set(key, val)
+                if err ~= nil then
+                    ngx.say(string.format("got error, i=%d, err=%s", i, err))
+                end
+                if forcible then
+                    ngx.say(string.format("got forcible, i=%d", i))
+                end
+                if not success then
+                    ngx.say(string.format("got not success, i=%d", i))
+                end
+            end
+            local free_page_bytes = cats:free_space()
+            ngx.say("free_page_bytes type: ", type(free_page_bytes))
+            ngx.say("free_page_bytes: ", free_page_bytes)
+        }
+    }
+--- request
+GET /t
+--- response_body
+free_page_bytes type: number
+free_page_bytes: 0
+--- no_error_log
+[error]
+[alert]
+[crit]
+
+
+
+=== TEST 35: free_space, full
+--- skip_nginx: 5: < 1.11.7
+--- http_config eval: $::HttpConfig
+--- config
+    location = /t {
+        content_by_lua_block {
+            local cats = ngx.shared.cats
+            cats:flush_all()
+            cats:flush_expired()
+            for i = 1, 63 do
+                local key = string.format("key%05d", i)
+                local val = string.format("val%05d", i)
+                local success, err, forcible = cats:set(key, val)
+                if err ~= nil then
+                    ngx.say(string.format("got error, i=%d, err=%s", i, err))
+                end
+                if forcible then
+                    ngx.say(string.format("got forcible, i=%d", i))
+                end
+                if not success then
+                    ngx.say(string.format("got not success, i=%d", i))
+                end
+            end
+            local free_page_bytes = cats:free_space()
+            ngx.say("free_page_bytes type: ", type(free_page_bytes))
+            ngx.say("free_page_bytes: ", free_page_bytes)
+        }
+    }
+--- request
+GET /t
+--- response_body
+free_page_bytes type: number
+free_page_bytes: 0
+--- no_error_log
+[error]
+[alert]
+[crit]
+
+
+
+=== TEST 36: free_space, got forcible
+--- skip_nginx: 5: < 1.11.7
+--- http_config eval: $::HttpConfig
+--- config
+    location = /t {
+        content_by_lua_block {
+            local cats = ngx.shared.cats
+            cats:flush_all()
+            cats:flush_expired()
+            for i = 1, 64 do
+                local key = string.format("key%05d", i)
+                local val = string.format("val%05d", i)
+                local success, err, forcible = cats:set(key, val)
+                if err ~= nil then
+                    ngx.say(string.format("got error, i=%d, err=%s", i, err))
+                end
+                if forcible then
+                    ngx.say(string.format("got forcible, i=%d", i))
+                end
+                if not success then
+                    ngx.say(string.format("got not success, i=%d", i))
+                end
+            end
+            local free_page_bytes = cats:free_space()
+            ngx.say("free_page_bytes type: ", type(free_page_bytes))
+            ngx.say("free_page_bytes: ", free_page_bytes)
+        }
+    }
+--- request
+GET /t
+--- response_body
+got forcible, i=64
+free_page_bytes type: number
+free_page_bytes: 0
+--- no_error_log
+[error]
 [alert]
 [crit]
