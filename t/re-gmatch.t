@@ -78,7 +78,7 @@ qr/\[TRACE   \d+ content_by_lua\(nginx\.conf:\d+\):4 loop\]/
             local m1, m2
             local gmatch = ngx.re.gmatch
             for _ = 1, 100 do
-                local iter = gmatch("hello, world", [[\w+]])
+                local iter = gmatch("hello, world", [[\w+]], "jo")
                 m1 = iter()
                 m2 = iter()
             end
@@ -357,7 +357,7 @@ qr/\[TRACE\s+\d+\s+/
 
 
 
-=== TEST 10: unmatched name captures are false
+=== TEST 10: unmatched named captures are false
 --- http_config eval: $::HttpConfig
 --- config
     location = /re {
@@ -452,7 +452,47 @@ matched: nil
 
 
 
-=== TEST 13: each gmatch iterator is separate
+=== TEST 13: an error-ed out gmatch iterator should return nil
+--- http_config eval: $::HttpConfig
+--- config
+    location = /re {
+        content_by_lua_block {
+            local target = "你好"
+            local regex = "你好"
+
+            -- trigger a BADUTF8 error
+            local iter = ngx.re.gmatch(string.sub(target, 1, 4), regex, "u")
+            local m, err = iter()
+
+            if err then
+                ngx.say("error: ", err)
+                local m = iter()
+                if m then
+                    ngx.say("matched: ", m[0])
+                else
+                    ngx.say("not matched")
+                end
+                return
+            end
+
+            if m then
+                ngx.say("matched: ", m[0])
+            else
+                ngx.say("not matched")
+            end
+        }
+    }
+--- request
+GET /re
+--- response_body
+error: pcre_exec() failed: -10
+not matched
+--- no_error_log
+[error]
+
+
+
+=== TEST 14: each gmatch iterator is separate
 --- http_config eval: $::HttpConfig
 --- config
     location = /re {
@@ -484,7 +524,7 @@ matched iter2 (2/2): 2
 
 
 
-=== TEST 14: gmatch (empty matched string)
+=== TEST 15: gmatch (empty matched string)
 --- http_config eval: $::HttpConfig
 --- config
     location /re {

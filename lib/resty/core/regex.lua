@@ -25,6 +25,7 @@ local type = type
 local tostring = tostring
 local error = error
 local setmetatable = setmetatable
+local tonumber = tonumber
 local get_string_buf = base.get_string_buf
 local get_string_buf_size = base.get_string_buf_size
 local new_tab = base.new_tab
@@ -479,64 +480,66 @@ function ngx.re.find(subj, regex, opts, ctx, nth)
     return re_match_helper(subj, regex, opts, ctx, false, nil, nth)
 end
 
-local function destroy_re_gmatch_iterator(iterator)
-    if not iterator._compile_once then
-        destroy_compiled_regex(iterator._compiled)
-    end
-    iterator._compiled = nil
-    iterator._pos = nil
-    iterator._subj = nil
-end
-
-local function iterate_re_gmatch(self)
-    local compiled = self._compiled
-    local subj = self._subj
-    local subj_len = self._subj_len
-    local flags = self._flags
-    local pos = self._pos
-
-    if not pos then
-        -- The iterator is exhausted.
-        return nil
-    end
-
-    local rc = C.ngx_http_lua_ffi_exec_regex(compiled, flags, subj,
-                                             subj_len, pos)
-
-    if rc == PCRE_ERROR_NOMATCH then
-        destroy_re_gmatch_iterator(self)
-        return nil
-    end
-
-    if rc < 0 then
-        destroy_re_gmatch_iterator(self)
-        return nil, "pcre_exec() failed: " .. rc
-    end
-
-    if rc == 0 then
-        if band(flags, FLAG_DFA) == 0 then
-            destroy_re_gmatch_iterator(self)
-            return nil, "capture size too small"
-        end
-
-        rc = 1
-    end
-
-    local cp_pos = tonumber(compiled.captures[1])
-    if cp_pos == compiled.captures[0] then
-        cp_pos = cp_pos + 1
-        if cp_pos > subj_len then
-            local res = collect_captures(compiled, rc, subj, flags)
-            destroy_re_gmatch_iterator(self)
-            return res
-        end
-    end
-    self._pos = cp_pos
-    return collect_captures(compiled, rc, subj, flags)
-end
-
 
 do
+    local function destroy_re_gmatch_iterator(iterator)
+        if not iterator._compile_once then
+            destroy_compiled_regex(iterator._compiled)
+        end
+        iterator._compiled = nil
+        iterator._pos = nil
+        iterator._subj = nil
+    end
+
+
+    local function iterate_re_gmatch(self)
+        local compiled = self._compiled
+        local subj = self._subj
+        local subj_len = self._subj_len
+        local flags = self._flags
+        local pos = self._pos
+
+        if not pos then
+            -- The iterator is exhausted.
+            return nil
+        end
+
+        local rc = C.ngx_http_lua_ffi_exec_regex(compiled, flags, subj,
+                                                subj_len, pos)
+
+        if rc == PCRE_ERROR_NOMATCH then
+            destroy_re_gmatch_iterator(self)
+            return nil
+        end
+
+        if rc < 0 then
+            destroy_re_gmatch_iterator(self)
+            return nil, "pcre_exec() failed: " .. rc
+        end
+
+        if rc == 0 then
+            if band(flags, FLAG_DFA) == 0 then
+                destroy_re_gmatch_iterator(self)
+                return nil, "capture size too small"
+            end
+
+            rc = 1
+        end
+
+        local cp_pos = tonumber(compiled.captures[1])
+        if cp_pos == compiled.captures[0] then
+            cp_pos = cp_pos + 1
+            if cp_pos > subj_len then
+                local res = collect_captures(compiled, rc, subj, flags)
+                destroy_re_gmatch_iterator(self)
+                return res
+            end
+        end
+        self._pos = cp_pos
+        return collect_captures(compiled, rc, subj, flags)
+    end
+
+
     local re_gmatch_iterator_mt = { __call = iterate_re_gmatch }
 
     function ngx.re.gmatch(subj, regex, opts)
@@ -556,9 +559,10 @@ do
             _flags = flags,
             _pos = 0,
         }
+
         return setmetatable(re_gmatch_iterator, re_gmatch_iterator_mt)
     end
-end
+end  -- do
 
 
 local function new_script_engine(subj, compiled, count)
