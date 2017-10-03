@@ -215,3 +215,28 @@ qr/\[TRACE   \d+ content_by_lua\(nginx\.conf:\d+\):3 loop\]/
 --- no_error_log
 [error]
  -- NYI:
+
+
+
+=== TEST 8: error buffer overread
+--- http_config eval: $::HttpConfig
+--- config
+    location = /test {
+        content_by_lua_block {
+            local ok1, err1 = pcall(function () ngx.var.foo = 32; end)
+            local ok2, err2 = pcall(function () ngx.var.server_port = 32; end)
+            assert(not ok1)
+            ngx.say(err1)
+            assert(not ok2)
+            ngx.say(err2)
+        }
+    }
+--- request
+GET /test
+--- response_body
+content_by_lua(nginx.conf:62):2: variable "foo" not found for writing; maybe it is a built-in variable that is not changeable or you forgot to use "set $foo '';" in the config file to define it first
+content_by_lua(nginx.conf:62):3: variable "server_port" not changeable
+--- no_error_log
+[error]
+[alert]
+ -- NYI:

@@ -16,6 +16,8 @@ local tostring = tostring
 local ngx_var = ngx.var
 local getmetatable = getmetatable
 
+local ERR_BUF_SIZE = 256
+
 
 ffi.cdef[[
     int ngx_http_lua_ffi_var_get(ngx_http_request_t *r,
@@ -25,7 +27,7 @@ ffi.cdef[[
     int ngx_http_lua_ffi_var_set(ngx_http_request_t *r,
         const unsigned char *name_data, size_t name_len,
         unsigned char *lowcase_buf, const unsigned char *value,
-        size_t value_len, unsigned char *errbuf, size_t errlen);
+        size_t value_len, unsigned char *errbuf, size_t *errlen);
 ]]
 
 
@@ -84,8 +86,9 @@ local function var_set(self, name, value)
     end
     local name_len = #name
 
-    local errlen = 256
-    local lowcase_buf = get_string_buf(name_len + errlen)
+    local errlen = get_size_ptr()
+    errlen[0] = ERR_BUF_SIZE
+    local lowcase_buf = get_string_buf(name_len + ERR_BUF_SIZE)
 
     local value_len
     if value == nil then
@@ -108,7 +111,7 @@ local function var_set(self, name, value)
     end
 
     if rc == -1 then  -- NGX_ERROR
-        return error(ffi_str(errbuf, errlen))
+        return error(ffi_str(errbuf, errlen[0]))
     end
 end
 
