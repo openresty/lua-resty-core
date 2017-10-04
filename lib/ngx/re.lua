@@ -129,7 +129,7 @@ function _M.split(subj, regex, opts, ctx, max, res)
         res = new_tab(narr, 0)
 
     elseif type(res) ~= "table" then
-        return error("res is not a table", 2)
+        error("res is not a table", 2)
     end
 
     local len = #subj
