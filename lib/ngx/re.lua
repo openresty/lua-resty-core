@@ -53,9 +53,6 @@ local function re_split_helper(subj, compiled, compile_once, flags, ctx)
     end
 
     if rc == PCRE_ERROR_NOMATCH then
-        if not compile_once then
-            destroy_compiled_regex(compiled)
-        end
         return nil, nil, nil
     end
 
@@ -68,6 +65,9 @@ local function re_split_helper(subj, compiled, compile_once, flags, ctx)
 
     if rc == 0 then
         if band(flags, FLAG_DFA) == 0 then
+            if not compile_once then
+                destroy_compiled_regex(compiled)
+            end
             return nil, nil, nil, "capture size too small"
         end
 
@@ -192,12 +192,6 @@ function _M.split(subj, regex, opts, ctx, max, res)
             end
         end
 
-        if count == max then
-            if not compile_once then
-                destroy_compiled_regex(compiled)
-            end
-        end
-
     else
         while true do
             local from, to, capture, err = re_split_helper(subj, compiled,
@@ -235,6 +229,10 @@ function _M.split(subj, regex, opts, ctx, max, res)
             end
         end
 
+    end
+
+    if not compile_once then
+        destroy_compiled_regex(compiled)
     end
 
     -- trailing nil for non-cleared res tables
