@@ -8,10 +8,6 @@ use lib 'lib';
 use Test::Nginx::Socket::Lua;
 use Cwd qw(cwd);
 
-#worker_connections(1014);
-master_process_enabled(1);
-#log_level('error');
-
 repeat_each(2);
 
 plan tests => repeat_each() * (blocks() * 5);
@@ -46,9 +42,13 @@ our $HttpConfig = <<_EOC_;
     }
 _EOC_
 
+#worker_connections(1014);
+master_on();
+#log_level('error');
+
 #no_diff();
 #no_long_string();
-check_accum_error_log();
+#check_accum_error_log();
 run_tests();
 
 __DATA__
