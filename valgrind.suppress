@@ -80,7 +80,4 @@
    fun:ngx_alloc
    fun:ngx_set_environment
    fun:ngx_worker_process_init
-   fun:ngx_worker_process_cycle
-   fun:ngx_spawn_process
-   fun:ngx_start_worker_processes
 }
