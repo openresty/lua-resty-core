@@ -33,6 +33,9 @@ __DATA__
         listen unix:$TEST_NGINX_HTML_DIR/nginx.sock ssl;
         server_name   test.com;
 
+        ssl_protocols TLSv1;
+        ssl_ciphers PSK;
+
         ssl_psk_by_lua_block {
             local ssl = require "ngx.ssl"
 
@@ -69,7 +72,7 @@ __DATA__
     server_tokens off;
 
     location /t {
-        lua_ssl_ciphers PSK-AES256-CBC-SHA;
+        lua_ssl_ciphers PSK;
         lua_ssl_psk_identity psk_test_identity;
         lua_ssl_psk_key psk_test_key;
 
@@ -153,6 +156,9 @@ client psk identity: psk_test_identity
         listen unix:$TEST_NGINX_HTML_DIR/nginx.sock ssl;
         server_name   test.com;
 
+        ssl_protocols TLSv1;
+        ssl_ciphers PSK;
+
         ssl_psk_by_lua_block {
             local ssl = require "ngx.ssl"
 
@@ -189,7 +195,7 @@ client psk identity: psk_test_identity
     server_tokens off;
 
     location /t {
-        lua_ssl_ciphers PSK-AES256-CBC-SHA;
+        lua_ssl_ciphers PSK;
         lua_ssl_psk_identity psk_test_identity;
         lua_ssl_psk_key psk_test_key;
 
