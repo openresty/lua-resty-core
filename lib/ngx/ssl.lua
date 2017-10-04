@@ -16,6 +16,7 @@ local get_string_buf = base.get_string_buf
 local get_size_ptr = base.get_size_ptr
 local FFI_DECLINED = base.FFI_DECLINED
 local FFI_OK = base.FFI_OK
+local FFI_ERROR = base.FFI_ERROR
 
 
 ffi.cdef[[
