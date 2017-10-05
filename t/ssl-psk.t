@@ -47,7 +47,7 @@ __DATA__
 
             print("client psk identity: ", psk_identity)
 
-            local ok, err = ssl.set_psk_key(key)
+            local ok, err = ssl.set_psk_key(psk_key)
             if not ok then
                 ngx.log(ngx.ERR, "failed to set psk key: ", err)
                 return ngx.ERROR
@@ -150,6 +150,7 @@ client psk identity: psk_test_identity
 
 === TEST 2: TLS-PSK mismatching key
 --- http_config
+    lua_package_path "$TEST_NGINX_LUA_PACKAGE_PATH/?.lua;;";
     server {
         listen unix:$TEST_NGINX_HTML_DIR/nginx.sock ssl;
         server_name   test.com;
@@ -170,7 +171,7 @@ client psk identity: psk_test_identity
 
             print("client psk identity: ", psk_identity)
 
-            local ok, err = ssl.set_psk_key(key)
+            local ok, err = ssl.set_psk_key(psk_key)
             if not ok then
                 ngx.log(ngx.ERR, "failed to set psk key: ", err)
                 return ngx.ERROR
@@ -251,11 +252,13 @@ GET /t
 connected: 1
 failed to do SSL handshake: handshake failed
 
---- error_log
-lua ssl server name: "test.com"
-client psk identity: psk_test_identity
+--- error_log eval
+[
+qr/lua ssl server name: "test.com"/s,
+qr/client psk identity: psk_test_identity/s,
+qr/\[error\] .*? SSL_do_handshake\(\) failed .*? alert bad record mac/s,
+]
 
 --- no_error_log
 [alert]
 [emerg]
-[error]
