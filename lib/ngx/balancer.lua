@@ -41,8 +41,10 @@ if subsystem == 'http' then
 
     ngx_subsystem_lua_ffi_balancer_set_current_peer =
         C.ngx_http_lua_ffi_balancer_set_current_peer
+
     ngx_subsystem_lua_ffi_balancer_set_more_tries =
         C.ngx_http_lua_ffi_balancer_set_more_tries
+
     ngx_subsystem_lua_ffi_balancer_get_last_failure =
         C.ngx_http_lua_ffi_balancer_get_last_failure
 
@@ -64,8 +66,10 @@ elseif subsystem == 'stream' then
 
     ngx_subsystem_lua_ffi_balancer_set_current_peer =
         C.ngx_stream_lua_ffi_balancer_set_current_peer
+
     ngx_subsystem_lua_ffi_balancer_set_more_tries =
         C.ngx_stream_lua_ffi_balancer_set_more_tries
+
     ngx_subsystem_lua_ffi_balancer_get_last_failure =
         C.ngx_stream_lua_ffi_balancer_get_last_failure
 

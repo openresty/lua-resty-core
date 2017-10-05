@@ -4,6 +4,7 @@
 local ffi = require 'ffi'
 local ffi_new = ffi.new
 local error = error
+local select = select
 local ceil = math.ceil
 local subsystem = ngx.config.subsystem
 
@@ -210,11 +211,10 @@ end
 
 
 function _M.check_subsystem(...)
-    local subsystems = {...}
     local total = select("#", ...)
 
     for i = 1, total do
-        if subsystems[i] == subsystem then
+        if select(i, ...) == subsystem then
             return
         end
     end
