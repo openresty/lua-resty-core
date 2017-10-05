@@ -20,15 +20,13 @@ no_long_string();
 $ENV{TEST_NGINX_LUA_PACKAGE_PATH} = "$::CWD/lib/?.lua;;";
 $ENV{TEST_NGINX_HTML_DIR} ||= html_dir();
 
-$ENV{TEST_NGINX_RESOLVER} ||= '8.8.8.8';
-$ENV{TEST_NGINX_CERT_DIR} ||= dirname(realpath(abs_path(__FILE__)));
-
 run_tests();
 
 __DATA__
 
 === TEST 1: TLS-PSK
 --- http_config
+    lua_package_path "$TEST_NGINX_LUA_PACKAGE_PATH/?.lua;;";
     server {
         listen unix:$TEST_NGINX_HTML_DIR/nginx.sock ssl;
         server_name   test.com;
