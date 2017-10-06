@@ -37,8 +37,8 @@ int ngx_http_lua_ffi_ssl_raw_server_addr(ngx_http_request_t *r, char **addr,
 int ngx_http_lua_ffi_ssl_server_name(ngx_http_request_t *r, char **name,
     size_t *namelen, char **err);
 
-int ngx_http_lua_ffi_ssl_client_addr(ngx_http_request_t *r, char **addr,
-    size_t *addrlen, char **err);
+int ngx_http_lua_ffi_ssl_raw_client_addr(ngx_http_request_t *r, char **addr,
+    size_t *addrlen, int *addrtype, char **err);
 
 int ngx_http_lua_ffi_cert_pem_to_der(const unsigned char *pem, size_t pem_len,
     unsigned char *der, char **err);
@@ -167,7 +167,7 @@ function _M.server_name()
     return nil, ffi_str(errmsg[0])
 end
 
-function _M.client_addr()
+function _M.raw_client_addr()
     local r = getfenv(0).__ngx_req
     if not r then
         return error("no request found")
@@ -175,12 +175,17 @@ function _M.client_addr()
 
     local sizep = get_size_ptr()
 
-    local rc = C.ngx_http_lua_ffi_ssl_client_addr(r, charpp, sizep, errmsg)
+    local rc = C.ngx_http_lua_ffi_ssl_raw_client_addr(r, charpp, sizep,
+                                                      intp, errmsg)
     if rc == FFI_OK then
-        return ffi_str(charpp[0], sizep[0])
+        local typ = addr_types[intp[0]]
+        if not typ then
+            return nil, nil, "unknown address type: " .. intp[0]
+        end
+        return ffi_str(charpp[0], sizep[0]), typ
     end
 
-    return nil, ffi_str(errmsg[0])
+    return nil, nil, ffi_str(errmsg[0])
 end
 
 function _M.cert_pem_to_der(pem)

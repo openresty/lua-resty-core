@@ -300,43 +300,49 @@ This function can be called in whatever contexts where downstream https is used.
 
 [Back to TOC](#table-of-contents)
 
-client_addr
+raw_client_addr
 ---------------
-**syntax:** *addr, err = ssl.client_addr()*
+**syntax:** *addr, err = ssl.raw_client_addr()*
 
 **context:** *any*
 
-Returns the client address of the current SSL connection, the address data is a textual
-ip address when using IPv4, and an empty string if using UNIX domain socket.
+Returns the raw client address of the current SSL connection.
 
-The following code snippet shows how to delay TLS handshake to mitigate a kind of TLS
-handshake attack(eg: close connection immediately after handshake completed):
+The first two return values are strings representing the address data and the address type, respectively.
+The address values are interpreted differently according to the address type values:
+
+* `unix`
+: The address data is a file path for the UNIX domain socket.
+* `inet`
+: The address data is a binary IPv4 address of 4 bytes long.
+* `inet6`
+: The address data is a binary IPv6 address of 16 bytes long.
+
+Returns two `nil` values and a Lua string describing the error.
+
+The following code snippet shows how to print out the UNIX domain socket address and
+the IPv4 address as human-readable strings:
 
 ```lua
 local ssl = require "ngx.ssl"
-local blacklist = ngx.shared.ip_blacklist
+local byte = string.byte
 
-local addr, err = ssl.client_addr()
-
+local addr, addrtyp, err = ssl.raw_client_addr()
 if not addr then
-    ngx.log(ngx.WARN, "error reading client ip: ", err)
-    return ngx.exit(ngx.ERROR)
-end
-
--- in blacklist , delay for 30s
-local value = blacklist:get(addr)
-if value then
-    ngx.log(ngx.WARN, "delaying handshake for ip: ", addr)
-    ngx.sleep(30)
-    return ngx.exit(ngx.ERROR)
-end
-
--- add to blacklist at first time, remove it at `access` phase
-ngx.log(ngx.INFO, "adding to backlist, ip: ", addr)
-local succ, err = blacklist:set(addr, '1')
-if not succ then
-    ngx.log(ngx.ERR, "failed to add backlist, ip: ", addr, ", err: ", err)
+    ngx.log(ngx.ERR, "failed to fetch raw client addr: ", err)
     return
+end
+
+if addrtyp == "inet" then  -- IPv4
+    ip = string.format("%d.%d.%d.%d", byte(addr, 1), byte(addr, 2),
+                       byte(addr, 3), byte(addr, 4))
+    print("Using IPv4 address: ", ip)
+
+elseif addrtyp == "unix" then  -- UNIX
+    print("Using unix socket file ", addr)
+
+else  -- IPv6
+    -- leave as an exercise for the readers
 end
 ```
 
