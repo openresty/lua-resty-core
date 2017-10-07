@@ -3,11 +3,13 @@
 
 local ffi = require "ffi"
 local base = require "resty.core.base"
+local bit = require "bit"
 
 
 local C = ffi.C
 local ffi_str = ffi.string
 local ffi_gc = ffi.gc
+local ffi_copy = ffi.copy
 local getfenv = getfenv
 local error = error
 local tonumber = tonumber
@@ -16,6 +18,8 @@ local get_string_buf = base.get_string_buf
 local get_size_ptr = base.get_size_ptr
 local FFI_DECLINED = base.FFI_DECLINED
 local FFI_OK = base.FFI_OK
+local bor = bit.bor
+local ERR_BUF_SIZE = 256
 
 
 ffi.cdef[[
@@ -58,6 +62,39 @@ int ngx_http_lua_ffi_set_priv_key(void *r, void *cdata, char **err);
 void ngx_http_lua_ffi_free_cert(void *cdata);
 
 void ngx_http_lua_ffi_free_priv_key(void *cdata);
+
+void *ngx_http_lua_ffi_ssl_ctx_init(unsigned int protocols, char **err);
+
+void ngx_http_lua_ffi_ssl_ctx_free(void *cdata);
+
+int ngx_http_lua_ffi_ssl_ctx_add_ca_cert(void *cdata_ctx,
+    const unsigned char *cert, size_t size,
+    unsigned char *err, size_t *err_len);
+
+int ngx_http_lua_ffi_ssl_ctx_set_priv_key(void *cdata_ctx, void *cdata_key,
+    unsigned char *err, size_t *err_len);
+
+int ngx_http_lua_ffi_ssl_ctx_set_cert(void *cdata_ctx, void *cdata_cert,
+    unsigned char *err, size_t *err_len);
+
+int ngx_http_lua_ffi_ssl_ctx_set_ciphers(void *cdata_ctx, const char *cipher,
+    unsigned char *err, size_t *err_len);
+
+int ngx_http_lua_ffi_ssl_ctx_set_crl(void *cdata_ctx, const unsigned char *crl,
+    size_t size, unsigned char *err, size_t *err_len);
+
+int ngx_http_lua_ffi_ssl_ctx_set_cert_store(void *cdata_ctx, void *cdata_store,
+    int up_ref, unsigned char *err, size_t *err_len);
+
+void *ngx_http_lua_ffi_ssl_x509_store_init(unsigned char *err,
+    size_t *err_len);
+
+void ngx_http_lua_ffi_ssl_x509_store_free(void *cdata_store);
+
+int ngx_http_lua_ffi_ssl_x509_store_add_cert(void *cdata_store,
+    const unsigned char *cert, size_t size, unsigned char *err,
+    size_t *err_len);
+
 ]]
 
 
@@ -258,6 +295,120 @@ function _M.set_priv_key(priv_key)
     end
 
     return nil, ffi_str(errmsg[0])
+end
+
+
+function _M.create_x509_store(...)
+    local err_buf = get_string_buf(ERR_BUF_SIZE)
+    local err_buf_len = get_size_ptr()
+    err_buf_len[0] = ERR_BUF_SIZE
+
+    local store = C.ngx_http_lua_ffi_ssl_x509_store_init(err_buf, err_buf_len)
+    if store == nil then
+        return nil, ffi_str(err_buf, err_buf_len[0])
+    end
+
+    ffi_gc(store, C.ngx_http_lua_ffi_ssl_x509_store_free)
+
+    for i = 1, select('#', ...) do
+        local cert = select(i, ...)
+        local rc = C.ngx_http_lua_ffi_ssl_x509_store_add_cert(store, cert,
+                                                              #cert, err_buf,
+                                                              err_buf_len)
+        if rc ~= FFI_OK then
+            return nil, ffi_str(err_buf, err_buf_len[0])
+        end
+    end
+
+    return store
+end
+
+
+_M.SSLv2 = 0x0002
+_M.SSLv3 = 0x0004
+_M.TLSv1 = 0x0008
+_M.TLSv1_1 = 0x0010
+_M.TLSv1_2 = 0x0020
+local default_protocols = bor(_M.SSLv3, _M.TLSv1, _M.TLSv1_1, _M.TLSv1_2)
+
+
+function _M.create_ctx(options)
+    if type(options) ~= 'table' then
+        return nil, "no options found"
+    end
+
+    local protocols = options.protocols or default_protocols
+    local ca = options.ca
+    local cert_store = options.cert_store
+    local cert = options.cert
+    local priv_key = options.priv_key
+    local ciphers = options.ciphers
+    local crl = options.crl
+
+    local ctx = C.ngx_http_lua_ffi_ssl_ctx_init(protocols, errmsg)
+    if ctx == nil then
+        return nil, ffi_str(errmsg[0])
+    end
+
+    ffi_gc(ctx, C.ngx_http_lua_ffi_ssl_ctx_free)
+
+    local err_buf = get_string_buf(ERR_BUF_SIZE)
+    local err_buf_len = get_size_ptr()
+    err_buf_len[0] = ERR_BUF_SIZE
+
+    if cert_store ~= nil then
+        local rc = C.ngx_http_lua_ffi_ssl_ctx_set_cert_store(ctx, cert_store, 1,
+                                                             err_buf,
+                                                             err_buf_len)
+        if rc ~= FFI_OK then
+            return nil, ffi_str(err_buf, err_buf_len[0])
+        end
+    end
+
+    if ca ~= nil then
+        local rc = C.ngx_http_lua_ffi_ssl_ctx_add_ca_cert(ctx, ca, #ca, err_buf,
+                                                          err_buf_len)
+        if rc ~= FFI_OK then
+            return nil, ffi_str(err_buf, err_buf_len[0])
+        end
+    end
+
+    if cert ~= nil then
+        local rc = C.ngx_http_lua_ffi_ssl_ctx_set_cert(ctx, cert,
+                                                       err_buf, err_buf_len)
+        if rc ~= FFI_OK then
+            return nil, ffi_str(err_buf, err_buf_len[0])
+        end
+    end
+
+    if priv_key ~= nil then
+        local rc = C.ngx_http_lua_ffi_ssl_ctx_set_priv_key(ctx, priv_key,
+                                                           err_buf, err_buf_len)
+        if rc ~= FFI_OK then
+            return nil, ffi_str(err_buf, err_buf_len[0])
+        end
+    end
+
+    if ciphers ~= nil then
+        local ciphers_buf = get_string_buf(#ciphers + 1)
+        ffi_copy(ciphers_buf, ciphers)
+
+        local rc = C.ngx_http_lua_ffi_ssl_ctx_set_ciphers(ctx, ciphers_buf,
+                                                          err_buf, err_buf_len)
+        if rc ~= FFI_OK then
+            return nil, ffi_str(err_buf, err_buf_len[0])
+        end
+    end
+
+    if crl ~= nil then
+        local rc = C.ngx_http_lua_ffi_ssl_ctx_set_crl(ctx, crl, #crl, err_buf,
+                                                      err_buf_len)
+        if rc ~= FFI_OK then
+            return nil, ffi_str(err_buf, err_buf_len[0])
+        end
+    end
+
+    return ctx
 end
 
 

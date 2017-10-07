@@ -14,6 +14,7 @@ require "resty.core.request"
 require "resty.core.response"
 require "resty.core.time"
 require "resty.core.worker"
+require "resty.core.socket.tcp"
 
 
 local base = require "resty.core.base"
