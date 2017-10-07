@@ -167,6 +167,7 @@ function _M.server_name()
     return nil, ffi_str(errmsg[0])
 end
 
+
 function _M.raw_client_addr()
     local r = getfenv(0).__ngx_req
     if not r then
@@ -187,6 +188,7 @@ function _M.raw_client_addr()
 
     return nil, nil, ffi_str(errmsg[0])
 end
+
 
 function _M.cert_pem_to_der(pem)
     local outbuf = get_string_buf(#pem)
