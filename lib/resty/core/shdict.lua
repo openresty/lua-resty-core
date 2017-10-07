@@ -44,8 +44,15 @@ ffi.cdef[[
 
     int ngx_http_lua_ffi_shdict_set_expire(void *zone,
         const unsigned char *key, size_t key_len, int exptime);
+
+    size_t ngx_http_lua_ffi_shdict_capacity(void *zone);
 ]]
 
+if not pcall(function () return C.ngx_http_lua_ffi_shdict_free_space end) then
+    ffi.cdef[[
+        size_t ngx_http_lua_ffi_shdict_free_space(void *zone);
+    ]]
+end
 
 if not pcall(function () return C.free end) then
     ffi.cdef[[
@@ -469,6 +476,18 @@ local function shdict_expire(zone, key, exptime)
     return true
 end
 
+local function shdict_capacity(zone)
+    zone = check_zone(zone)
+
+    return tonumber(C.ngx_http_lua_ffi_shdict_capacity(zone))
+end
+
+local function shdict_free_space(zone)
+    zone = check_zone(zone)
+
+    return tonumber(C.ngx_http_lua_ffi_shdict_free_space(zone))
+end
+
 
 if ngx_shared then
     local _, dict = next(ngx_shared, nil)
@@ -489,6 +508,8 @@ if ngx_shared then
                 mt.flush_all = shdict_flush_all
                 mt.ttl = shdict_ttl
                 mt.expire = shdict_expire
+                mt.capacity = shdict_capacity
+                mt.free_space = shdict_free_space
             end
         end
     end
