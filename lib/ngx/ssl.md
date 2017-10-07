@@ -18,7 +18,7 @@ Table of Contents
     * [set_der_priv_key](#set_der_priv_key)
     * [server_name](#server_name)
     * [raw_server_addr](#raw_server_addr)
-    * [client_addr](#client_addr)
+    * [raw_client_addr](#raw_client_addr)
     * [get_tls1_version](#get_tls1_version)
     * [parse_pem_cert](#parse_pem_cert)
     * [parse_pem_priv_key](#parse_pem_priv_key)
