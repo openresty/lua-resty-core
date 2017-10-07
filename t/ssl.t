@@ -2068,7 +2068,7 @@ qr/\[error\] .*? failed to parse pem key: PEM_read_bio_PrivateKey\(\) failed/
 
 
 
-=== TEST 20: read client addr via ssl.client_addr()
+=== TEST 20: read client addr via ssl.raw_client_addr()
 --- http_config
     lua_package_path "$TEST_NGINX_LUA_PACKAGE_PATH/?.lua;;";
 
@@ -2077,8 +2077,11 @@ qr/\[error\] .*? failed to parse pem key: PEM_read_bio_PrivateKey\(\) failed/
         server_name   test.com;
         ssl_certificate_by_lua_block {
             local ssl = require "ngx.ssl"
-            local addr = ssl.client_addr()
-            print("read client addr: ", addr)
+            local byte = string.byte
+            local addr, addrtype, err = ssl.raw_client_addr()
+            local ip = string.format("%d.%d.%d.%d", byte(addr, 1), byte(addr, 2),
+                       byte(addr, 3), byte(addr, 4)
+            print("client ip: " .. ip))
         }
         ssl_certificate ../../cert/test.crt;
         ssl_certificate_key ../../cert/test.key;
@@ -2159,7 +2162,7 @@ received: foo
 close: 1 nil
 
 --- error_log
-read client addr: 127.0.0.1
+client ip: 127.0.0.1
 
 --- no_error_log
 [error]
