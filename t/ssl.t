@@ -2080,8 +2080,8 @@ qr/\[error\] .*? failed to parse pem key: PEM_read_bio_PrivateKey\(\) failed/
             local byte = string.byte
             local addr, addrtype, err = ssl.raw_client_addr()
             local ip = string.format("%d.%d.%d.%d", byte(addr, 1), byte(addr, 2),
-                       byte(addr, 3), byte(addr, 4)
-            print("client ip: " .. ip))
+                       byte(addr, 3), byte(addr, 4))
+            print("client ip: ", ip)
         }
         ssl_certificate ../../cert/test.crt;
         ssl_certificate_key ../../cert/test.key;
