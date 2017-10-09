@@ -34,15 +34,19 @@ __DATA__
         ssl_protocols TLSv1;
         ssl_ciphers PSK;
 
-        ssl_psk_by_lua_block {
+        ssl_certificate_by_lua_block {
             local ssl = require "ngx.ssl"
 
             local psk_key = "psk_test_key"
 
             local psk_identity, err = ssl.get_psk_identity()
             if not psk_identity then
+                if err == "not in psk context" then
+                    -- handler was not called by TLS-PSK callback
+                    return
+                end
                 ngx.log(ngx.ERR, "failed to get psk identity: ", err)
-                return ngx.ERROR
+                return ngx.exit(ngx.ERROR)
             end
 
             print("client psk identity: ", psk_identity)
@@ -50,7 +54,7 @@ __DATA__
             local ok, err = ssl.set_psk_key(psk_key)
             if not ok then
                 ngx.log(ngx.ERR, "failed to set psk key: ", err)
-                return ngx.ERROR
+                return ngx.exit(ngx.ERROR)
             end
         }
 
@@ -158,15 +162,19 @@ client psk identity: psk_test_identity
         ssl_protocols TLSv1;
         ssl_ciphers PSK;
 
-        ssl_psk_by_lua_block {
+        ssl_certificate_by_lua_block {
             local ssl = require "ngx.ssl"
 
             local psk_key = "psk_test_key2"
 
             local psk_identity, err = ssl.get_psk_identity()
             if not psk_identity then
+                if err == "not in psk context" then
+                    -- handler was not called by TLS-PSK callback
+                    return
+                end
                 ngx.log(ngx.ERR, "failed to get psk identity: ", err)
-                return ngx.ERROR
+                return ngx.exit(ngx.ERROR)
             end
 
             print("client psk identity: ", psk_identity)
@@ -174,7 +182,7 @@ client psk identity: psk_test_identity
             local ok, err = ssl.set_psk_key(psk_key)
             if not ok then
                 ngx.log(ngx.ERR, "failed to set psk key: ", err)
-                return ngx.ERROR
+                return ngx.exit(ngx.ERROR)
             end
         }
 

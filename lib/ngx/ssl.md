@@ -402,7 +402,7 @@ set_psk_key
 ------------
 **syntax:** *ok, err = ssl.set_psk_key(psk_key)*
 
-**context:** *ssl_psk_by_lua&#42;*
+**context:** *ssl_certificate_by_lua&#42;*
 
 Sets the TLS-PSK key for the current SSL connection.
 
@@ -416,7 +416,7 @@ get_psk_identity
 ------------
 **syntax:** *identity, err = ssl.get_psk_identity()*
 
-**context:** *ssl_psk_by_lua&#42;*
+**context:** *ssl_certificate_by_lua&#42;*
 
 Returns a TLS-PSK identity a client sent for the current SSL connection. Returns `nil` and
 a string describing the error otherwise.
