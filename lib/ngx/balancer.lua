@@ -2,7 +2,7 @@
 
 
 local base = require "resty.core.base"
-base.check_subsystem('http', 'stream')
+base.allows_subsystem('http', 'stream')
 
 
 local ffi = require "ffi"
@@ -18,9 +18,9 @@ local type = type
 local tonumber = tonumber
 local max = math.max
 local subsystem = ngx.config.subsystem
-local ngx_subsystem_lua_ffi_balancer_set_current_peer
-local ngx_subsystem_lua_ffi_balancer_set_more_tries
-local ngx_subsystem_lua_ffi_balancer_get_last_failure
+local ngx_lua_ffi_balancer_set_current_peer
+local ngx_lua_ffi_balancer_set_more_tries
+local ngx_lua_ffi_balancer_get_last_failure
 
 
 if subsystem == 'http' then
@@ -39,13 +39,13 @@ if subsystem == 'http' then
         long read_timeout, char **err);
     ]]
 
-    ngx_subsystem_lua_ffi_balancer_set_current_peer =
+    ngx_lua_ffi_balancer_set_current_peer =
         C.ngx_http_lua_ffi_balancer_set_current_peer
 
-    ngx_subsystem_lua_ffi_balancer_set_more_tries =
+    ngx_lua_ffi_balancer_set_more_tries =
         C.ngx_http_lua_ffi_balancer_set_more_tries
 
-    ngx_subsystem_lua_ffi_balancer_get_last_failure =
+    ngx_lua_ffi_balancer_get_last_failure =
         C.ngx_http_lua_ffi_balancer_get_last_failure
 
 elseif subsystem == 'stream' then
@@ -64,13 +64,13 @@ elseif subsystem == 'stream' then
         long connect_timeout, long timeout, char **err);
     ]]
 
-    ngx_subsystem_lua_ffi_balancer_set_current_peer =
+    ngx_lua_ffi_balancer_set_current_peer =
         C.ngx_stream_lua_ffi_balancer_set_current_peer
 
-    ngx_subsystem_lua_ffi_balancer_set_more_tries =
+    ngx_lua_ffi_balancer_set_more_tries =
         C.ngx_stream_lua_ffi_balancer_set_more_tries
 
-    ngx_subsystem_lua_ffi_balancer_get_last_failure =
+    ngx_lua_ffi_balancer_get_last_failure =
         C.ngx_stream_lua_ffi_balancer_get_last_failure
 
 else
@@ -100,8 +100,8 @@ function _M.set_current_peer(addr, port)
         port = tonumber(port)
     end
 
-    local rc = ngx_subsystem_lua_ffi_balancer_set_current_peer(r, addr, #addr,
-                                                               port, errmsg)
+    local rc = ngx_lua_ffi_balancer_set_current_peer(r, addr, #addr,
+                                                     port, errmsg)
     if rc == FFI_OK then
         return true
     end
@@ -116,7 +116,7 @@ function _M.set_more_tries(count)
         return error("no request found")
     end
 
-    local rc = ngx_subsystem_lua_ffi_balancer_set_more_tries(r, count, errmsg)
+    local rc = ngx_lua_ffi_balancer_set_more_tries(r, count, errmsg)
     if rc == FFI_OK then
         if errmsg[0] == nil then
             return true
@@ -134,9 +134,7 @@ function _M.get_last_failure()
         return error("no request found")
     end
 
-    local state = ngx_subsystem_lua_ffi_balancer_get_last_failure(r,
-                                                                  int_out,
-                                                                  errmsg)
+    local state = ngx_lua_ffi_balancer_get_last_failure(r, int_out, errmsg)
 
     if state == 0 then
         return nil

@@ -3,7 +3,6 @@
 *~
 go
 t/servroot/
-t.stream/servroot/
 reindex
 nginx
 ctags

@@ -123,8 +123,8 @@ qr/\[TRACE\s+\d+\s+content_by_lua\(nginx\.conf:\d+\):4 loop\]/
     location = /t {
         content_by_lua_block {
             local base = require "resty.core.base"
-            base.check_subsystem('http', 'stream')
-            base.check_subsystem('http')
+            base.allows_subsystem('http', 'stream')
+            base.allows_subsystem('http')
 
             ngx.say("ok")
         }
@@ -146,7 +146,7 @@ ok
     location = /t {
         content_by_lua_block {
             local base = require "resty.core.base"
-            base.check_subsystem('stream')
+            base.allows_subsystem('stream')
 
             ngx.say("ok")
         }

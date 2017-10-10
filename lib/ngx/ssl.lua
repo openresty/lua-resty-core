@@ -2,7 +2,7 @@
 
 
 local base = require "resty.core.base"
-base.check_subsystem('http')
+base.allows_subsystem('http')
 
 
 local ffi = require "ffi"

@@ -210,7 +210,7 @@ function _M.ref_in_table(tb, key)
 end
 
 
-function _M.check_subsystem(...)
+function _M.allows_subsystem(...)
     local total = select("#", ...)
 
     for i = 1, total do

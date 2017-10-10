@@ -3,8 +3,9 @@
 -- I hereby assign copyright in this code to the lua-resty-core project,
 -- to be licensed under the same terms as the rest of the code.
 
+
 local base = require "resty.core.base"
-base.check_subsystem('http')
+base.allows_subsystem('http')
 
 
 local ffi = require 'ffi'
