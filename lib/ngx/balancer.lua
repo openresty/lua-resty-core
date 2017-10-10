@@ -21,6 +21,7 @@ local subsystem = ngx.config.subsystem
 local ngx_lua_ffi_balancer_set_current_peer
 local ngx_lua_ffi_balancer_set_more_tries
 local ngx_lua_ffi_balancer_get_last_failure
+local ngx_lua_ffi_balancer_set_timeouts -- used by both stream and http
 
 
 if subsystem == 'http' then
@@ -48,6 +49,9 @@ if subsystem == 'http' then
     ngx_lua_ffi_balancer_get_last_failure =
         C.ngx_http_lua_ffi_balancer_get_last_failure
 
+    ngx_lua_ffi_balancer_set_timeouts =
+        C.ngx_http_lua_ffi_balancer_set_timeouts
+
 elseif subsystem == 'stream' then
     ffi.cdef[[
     int ngx_stream_lua_ffi_balancer_set_current_peer(
@@ -72,6 +76,17 @@ elseif subsystem == 'stream' then
 
     ngx_lua_ffi_balancer_get_last_failure =
         C.ngx_stream_lua_ffi_balancer_get_last_failure
+
+    local ngx_stream_lua_ffi_balancer_set_timeouts =
+        C.ngx_stream_lua_ffi_balancer_set_timeouts
+
+    ngx_lua_ffi_balancer_set_timeouts =
+        function(r, connect_timeout, send_timeout, read_timeout, err)
+            local timeout = max(send_timeout, read_timeout)
+
+            return ngx_stream_lua_ffi_balancer_set_timeouts(r, connect_timeout,
+                                                            timeout, err)
+        end
 
 else
     error("unknown subsystem: " .. subsystem)
@@ -180,21 +195,9 @@ function _M.set_timeouts(connect_timeout, send_timeout, read_timeout)
 
     local rc
 
-    if subsystem == 'http' then
-        rc = C.ngx_http_lua_ffi_balancer_set_timeouts(r, connect_timeout,
-                                                      send_timeout,
-                                                      read_timeout,
-                                                      errmsg)
-
-    elseif subsystem == 'stream' then
-        local timeout = max(send_timeout, read_timeout)
-
-        rc = C.ngx_stream_lua_ffi_balancer_set_timeouts(r, connect_timeout,
-                                                        timeout, errmsg)
-
-    else
-        error("unknown subsystem: " .. subsystem)
-    end
+    rc = ngx_lua_ffi_balancer_set_timeouts(r, connect_timeout,
+                                           send_timeout, read_timeout,
+                                           errmsg)
 
     if rc == FFI_OK then
         return true
