@@ -1,10 +1,11 @@
 -- Copyright (C) Yichun Zhang (agentzh)
 
 
-local ffi = require "ffi"
 local base = require "resty.core.base"
+base.allows_subsystem('http', 'stream')
 
 
+local ffi = require "ffi"
 local C = ffi.C
 local ffi_str = ffi.string
 local errmsg = base.get_errmsg_ptr()
@@ -15,22 +16,81 @@ local getfenv = getfenv
 local error = error
 local type = type
 local tonumber = tonumber
+local max = math.max
+local subsystem = ngx.config.subsystem
+local ngx_lua_ffi_balancer_set_current_peer
+local ngx_lua_ffi_balancer_set_more_tries
+local ngx_lua_ffi_balancer_get_last_failure
+local ngx_lua_ffi_balancer_set_timeouts -- used by both stream and http
 
 
-ffi.cdef[[
-int ngx_http_lua_ffi_balancer_set_current_peer(ngx_http_request_t *r,
-    const unsigned char *addr, size_t addr_len, int port, char **err);
+if subsystem == 'http' then
+    ffi.cdef[[
+    int ngx_http_lua_ffi_balancer_set_current_peer(ngx_http_request_t *r,
+        const unsigned char *addr, size_t addr_len, int port, char **err);
 
-int ngx_http_lua_ffi_balancer_set_more_tries(ngx_http_request_t *r,
-    int count, char **err);
+    int ngx_http_lua_ffi_balancer_set_more_tries(ngx_http_request_t *r,
+        int count, char **err);
 
-int ngx_http_lua_ffi_balancer_get_last_failure(ngx_http_request_t *r,
-    int *status, char **err);
+    int ngx_http_lua_ffi_balancer_get_last_failure(ngx_http_request_t *r,
+        int *status, char **err);
 
-int ngx_http_lua_ffi_balancer_set_timeouts(ngx_http_request_t *r,
-    long connect_timeout, long send_timeout,
-    long read_timeout, char **err);
-]]
+    int ngx_http_lua_ffi_balancer_set_timeouts(ngx_http_request_t *r,
+        long connect_timeout, long send_timeout,
+        long read_timeout, char **err);
+    ]]
+
+    ngx_lua_ffi_balancer_set_current_peer =
+        C.ngx_http_lua_ffi_balancer_set_current_peer
+
+    ngx_lua_ffi_balancer_set_more_tries =
+        C.ngx_http_lua_ffi_balancer_set_more_tries
+
+    ngx_lua_ffi_balancer_get_last_failure =
+        C.ngx_http_lua_ffi_balancer_get_last_failure
+
+    ngx_lua_ffi_balancer_set_timeouts =
+        C.ngx_http_lua_ffi_balancer_set_timeouts
+
+elseif subsystem == 'stream' then
+    ffi.cdef[[
+    int ngx_stream_lua_ffi_balancer_set_current_peer(
+        ngx_stream_lua_request_t *r,
+        const unsigned char *addr, size_t addr_len, int port, char **err);
+
+    int ngx_stream_lua_ffi_balancer_set_more_tries(ngx_stream_lua_request_t *r,
+        int count, char **err);
+
+    int ngx_stream_lua_ffi_balancer_get_last_failure(
+        ngx_stream_lua_request_t *r, int *status, char **err);
+
+    int ngx_stream_lua_ffi_balancer_set_timeouts(ngx_stream_lua_request_t *r,
+        long connect_timeout, long timeout, char **err);
+    ]]
+
+    ngx_lua_ffi_balancer_set_current_peer =
+        C.ngx_stream_lua_ffi_balancer_set_current_peer
+
+    ngx_lua_ffi_balancer_set_more_tries =
+        C.ngx_stream_lua_ffi_balancer_set_more_tries
+
+    ngx_lua_ffi_balancer_get_last_failure =
+        C.ngx_stream_lua_ffi_balancer_get_last_failure
+
+    local ngx_stream_lua_ffi_balancer_set_timeouts =
+        C.ngx_stream_lua_ffi_balancer_set_timeouts
+
+    ngx_lua_ffi_balancer_set_timeouts =
+        function(r, connect_timeout, send_timeout, read_timeout, err)
+            local timeout = max(send_timeout, read_timeout)
+
+            return ngx_stream_lua_ffi_balancer_set_timeouts(r, connect_timeout,
+                                                            timeout, err)
+        end
+
+else
+    error("unknown subsystem: " .. subsystem)
+end
 
 
 local peer_state_names = {
@@ -55,8 +115,8 @@ function _M.set_current_peer(addr, port)
         port = tonumber(port)
     end
 
-    local rc = C.ngx_http_lua_ffi_balancer_set_current_peer(r, addr, #addr,
-                                                            port, errmsg)
+    local rc = ngx_lua_ffi_balancer_set_current_peer(r, addr, #addr,
+                                                     port, errmsg)
     if rc == FFI_OK then
         return true
     end
@@ -71,7 +131,7 @@ function _M.set_more_tries(count)
         return error("no request found")
     end
 
-    local rc = C.ngx_http_lua_ffi_balancer_set_more_tries(r, count, errmsg)
+    local rc = ngx_lua_ffi_balancer_set_more_tries(r, count, errmsg)
     if rc == FFI_OK then
         if errmsg[0] == nil then
             return true
@@ -89,9 +149,7 @@ function _M.get_last_failure()
         return error("no request found")
     end
 
-    local state = C.ngx_http_lua_ffi_balancer_get_last_failure(r,
-                                                               int_out,
-                                                               errmsg)
+    local state = ngx_lua_ffi_balancer_get_last_failure(r, int_out, errmsg)
 
     if state == 0 then
         return nil
@@ -135,10 +193,11 @@ function _M.set_timeouts(connect_timeout, send_timeout, read_timeout)
         read_timeout = read_timeout * 1000
     end
 
-    local rc =
-        C.ngx_http_lua_ffi_balancer_set_timeouts(r, connect_timeout,
-                                                 send_timeout, read_timeout,
-                                                 errmsg)
+    local rc
+
+    rc = ngx_lua_ffi_balancer_set_timeouts(r, connect_timeout,
+                                           send_timeout, read_timeout,
+                                           errmsg)
 
     if rc == FFI_OK then
         return true

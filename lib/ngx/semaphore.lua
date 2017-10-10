@@ -4,10 +4,11 @@
 -- to be licensed under the same terms as the rest of the code.
 
 
-local ffi = require 'ffi'
 local base = require "resty.core.base"
+base.allows_subsystem('http')
 
 
+local ffi = require 'ffi'
 local FFI_OK = base.FFI_OK
 local FFI_ERROR = base.FFI_ERROR
 local FFI_DECLINED = base.FFI_DECLINED

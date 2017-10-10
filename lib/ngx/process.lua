@@ -1,8 +1,11 @@
 -- Copyright (C) Yichun Zhang (agentzh)
 
 
-local ffi = require 'ffi'
 local base = require "resty.core.base"
+base.allows_subsystem('http')
+
+
+local ffi = require 'ffi'
 local errmsg = base.get_errmsg_ptr()
 local FFI_ERROR = base.FFI_ERROR
 local ffi_str = ffi.string
