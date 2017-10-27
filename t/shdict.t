@@ -1069,9 +1069,10 @@ free_page_bytes: 4096
     }
 --- request
 GET /t
---- response_body
-free_page_bytes type: number
-free_page_bytes: 90112
+--- response_body_like chomp
+\Afree_page_bytes type: number
+free_page_bytes: (?:90112|94208)
+\z
 --- no_error_log
 [error]
 [alert]
@@ -1149,9 +1150,10 @@ free_page_bytes: 4096
     }
 --- request
 GET /t
---- response_body
-free_page_bytes type: number
-free_page_bytes: 0
+--- response_body_like chomp
+\Afree_page_bytes type: number
+free_page_bytes: (?:0|4096)
+\z
 --- no_error_log
 [error]
 [alert]
@@ -1229,10 +1231,11 @@ free_page_bytes: 0
     }
 --- request
 GET /t
---- response_body
-got forcible, i=64
-free_page_bytes type: number
+--- response_body_like chomp
+\A(?:got forcible, i=64
+)?free_page_bytes type: number
 free_page_bytes: 0
+\z
 --- no_error_log
 [error]
 [alert]
@@ -1272,10 +1275,11 @@ free_page_bytes: 0
     }
 --- request
 GET /t
---- response_body
-got forcible, i=736
-free_page_bytes type: number
-free_page_bytes: 0
+--- response_body_like chomp
+\A(?:got forcible, i=736
+)?free_page_bytes type: number
+free_page_bytes: (?:0|32768)
+\z
 --- no_error_log
 [error]
 [alert]
