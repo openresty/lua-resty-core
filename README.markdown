@@ -1,7 +1,7 @@
 Name
 ====
 
-lua-resty-core - New FFI-based Lua API for the ngx_lua module
+lua-resty-core - New FFI-based Lua API for ngx_http_lua_module and/or ngx_stream_lua_module
 
 Table of Contents
 =================
@@ -78,6 +78,8 @@ as proper Lua modules, like [ngx.semaphore](#ngxsemaphore) and [ngx.balancer](#n
 The FFI-based Lua API can work with LuaJIT's JIT compiler. ngx_lua's default API is based on the standard
 Lua C API, which will never be JIT compiled and the user Lua code is always interpreted (slowly).
 
+Suppor for the new [ngx_stream_lua_module](https://github.com/openresty/stream-lua-nginx-module) has also begun.
+
 This library is shipped with the OpenResty bundle by default. So you do not really need to worry about the dependencies
 and requirements.
 
@@ -91,7 +93,8 @@ of this library in the particular OpenResty release you are using. Otherwise you
 into serious comaptibility issues.
 
 * LuaJIT 2.1 (for now, it is the v2.1 git branch in the official luajit-2.0 git repository: http://luajit.org/download.html )
-* [ngx_lua](https://github.com/openresty/lua-nginx-module) v0.10.11 or later.
+* [ngx_http_lua_module](https://github.com/openresty/lua-nginx-module) v0.10.11 or later.
+* [ngx_stream_lua_module](https://github.com/openresty/lua-nginx-module) v0.0.4 or later.
 * [lua-resty-lrucache](https://github.com/openresty/lua-resty-lrucache)
 
 [Back to TOC](#table-of-contents)
