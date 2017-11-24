@@ -336,10 +336,10 @@ end
 if addrtyp == "inet" then  -- IPv4
     ip = string.format("%d.%d.%d.%d", byte(addr, 1), byte(addr, 2),
                        byte(addr, 3), byte(addr, 4))
-    print("Using IPv4 address: ", ip)
+    print("Client IPv4 address: ", ip)
 
 elseif addrtyp == "unix" then  -- UNIX
-    print("Using unix socket file ", addr)
+    print("Client unix socket file ", addr)
 
 else  -- IPv6
     -- leave as an exercise for the readers
