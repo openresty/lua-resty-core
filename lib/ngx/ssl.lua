@@ -59,6 +59,9 @@ int ngx_http_lua_ffi_set_priv_key(void *r, void *cdata, char **err);
 void ngx_http_lua_ffi_free_cert(void *cdata);
 
 void ngx_http_lua_ffi_free_priv_key(void *cdata);
+
+int ngx_http_lua_ffi_ssl_set_ciphers(ngx_http_request_t *r,
+    const char *ciphers, char **err);
 ]]
 
 
@@ -254,6 +257,21 @@ function _M.set_priv_key(priv_key)
     end
 
     local rc = C.ngx_http_lua_ffi_set_priv_key(r, priv_key, errmsg)
+    if rc == FFI_OK then
+        return true
+    end
+
+    return nil, ffi_str(errmsg[0])
+end
+
+
+function _M.set_ciphers(ciphers)
+    local r = getfenv(0).__ngx_req
+    if not r then
+        return error("no request found")
+    end
+
+    local rc = C.ngx_http_lua_ffi_ssl_set_ciphers(r, ciphers, errmsg)
     if rc == FFI_OK then
         return true
     end
