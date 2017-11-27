@@ -332,10 +332,11 @@ last peer failure: failed 500
 --- response_body_like: 503 Service Temporarily Unavailable
 --- error_code: 503
 --- grep_error_log eval: qr{last peer failure: \S+ \S+}
---- grep_error_log_out
-last peer failure: nil nil
-last peer failure: failed 502
-last peer failure: failed 502
+--- grep_error_log_out eval
+qr{\Alast peer failure: nil nil
+last peer failure: failed 50[23]
+last peer failure: failed 50[23]
+\z}
 
 --- no_error_log
 [warn]
