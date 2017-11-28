@@ -333,9 +333,9 @@ last peer failure: failed 500
 --- error_code: 503
 --- grep_error_log eval: qr{last peer failure: \S+ \S+}
 --- grep_error_log_out
-last peer failure: nil nil
-last peer failure: failed 503
-last peer failure: failed 503
+qr{last peer failure: nil nil
+last peer failure: failed 50[23]
+last peer failure: failed 50[23]}
 
 --- no_error_log
 [warn]
