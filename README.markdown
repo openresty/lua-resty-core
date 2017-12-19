@@ -32,6 +32,7 @@ Table of Contents
     * [ngx.re](#ngxre)
     * [ngx.process](#ngxprocess)
     * [ngx.errlog](#ngxerrlog)
+    * [ngx.base64](#ngxbase64)
 * [Caveat](#caveat)
 * [TODO](#todo)
 * [Author](#author)
@@ -274,6 +275,16 @@ This Lua module provides Lua API to capture and manage nginx error log messages.
 See the [documentation](./lib/ngx/errlog.md) for this Lua module for more details.
 
 This module was first introduced in lua-resty-core v0.1.12.
+
+[Back to TOC](#table-of-contents)
+
+## ngx.base64
+
+This Lua module provides Lua API to capture and manage nginx error log messages.
+
+See the [documentation](./lib/ngx/base64.md) for this Lua module for more details.
+
+This module was first introduced in lua-resty-core v0.1.14.
 
 [Back to TOC](#table-of-contents)
 
