@@ -194,7 +194,8 @@ qr/\[TRACE   \d+ content_by_lua\(nginx\.conf:\d+\):3 loop\]/
     location = /t {
         content_by_lua_block {
             local enc = require("ngx.encoding")
-            local to_hex = require("resty.string").to_hex
+            local to_hex = ndk.set_var.set_encode_hex
+
             -- RFC 4648 test vectors
             ngx.say("decode_base64url(\"\") = \"", enc.decode_base64url(""), "\"")
             ngx.say("decode_base64url(\"Zg\") = \"", enc.decode_base64url("Zg"), "\"")
@@ -229,7 +230,6 @@ decode_base64url("_w") = "\xff"
     location = /t {
         content_by_lua_block {
             local enc = require("ngx.encoding")
-            local to_hex = require("resty.string").to_hex
 
             local res, err = enc.decode_base64url("     ")
 

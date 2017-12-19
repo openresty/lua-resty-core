@@ -234,6 +234,7 @@ qr/\[TRACE   \d+ content_by_lua\(nginx\.conf:\d+\):3 loop\]/
     location = /t {
         content_by_lua_block {
             local enc = require("ngx.encoding")
+
             -- RFC 4648 test vectors
             ngx.say("encode_base64url(\"\") = \"", enc.encode_base64url(""), "\"")
             ngx.say("encode_base64url(\"f\") = \"", enc.encode_base64url("f"), "\"")
