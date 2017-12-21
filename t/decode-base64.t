@@ -194,7 +194,12 @@ qr/\[TRACE   \d+ content_by_lua\(nginx\.conf:\d+\):3 loop\]/
     location = /t {
         content_by_lua_block {
             local enc = require("ngx.encoding")
-            local to_hex = ndk.set_var.set_encode_hex
+
+            local function to_hex(str)
+                return (str:gsub('.', function(c)
+                    return string.format('%02x', string.byte(c))
+                end))
+            end
 
             -- RFC 4648 test vectors
             ngx.say("decode_base64url(\"\") = \"", enc.decode_base64url(""), "\"")
@@ -205,6 +210,8 @@ qr/\[TRACE   \d+ content_by_lua\(nginx\.conf:\d+\):3 loop\]/
             ngx.say("decode_base64url(\"Zm9vYmE\") = \"", enc.decode_base64url("Zm9vYmE"), "\"")
             ngx.say("decode_base64url(\"Zm9vYmFy\") = \"", enc.decode_base64url("Zm9vYmFy"), "\"")
             ngx.say("decode_base64url(\"_w\") = \"\\x", to_hex(enc.decode_base64url("_w")), "\"")
+
+            ngx.say("decode_base64url(\"YQBi\") = \"\\x", to_hex(enc.decode_base64url("YQBi")), "\"")
         }
     }
 --- request
@@ -218,6 +225,7 @@ decode_base64url("Zm9vYg") = "foob"
 decode_base64url("Zm9vYmE") = "fooba"
 decode_base64url("Zm9vYmFy") = "foobar"
 decode_base64url("_w") = "\xff"
+decode_base64url("YQBi") = "\x610062"
 --- no_error_log
 [error]
  -- NYI:

@@ -244,6 +244,8 @@ qr/\[TRACE   \d+ content_by_lua\(nginx\.conf:\d+\):3 loop\]/
             ngx.say("encode_base64url(\"fooba\") = \"", enc.encode_base64url("fooba"), "\"")
             ngx.say("encode_base64url(\"foobar\") = \"", enc.encode_base64url("foobar"), "\"")
             ngx.say("encode_base64url(\"\\xff\") = \"", enc.encode_base64url("\xff"), "\"")
+
+            ngx.say("encode_base64url(\"a\\0b\") = \"", enc.encode_base64url("a\0b"), "\"")
         }
     }
 --- request
@@ -257,6 +259,7 @@ encode_base64url("foob") = "Zm9vYg"
 encode_base64url("fooba") = "Zm9vYmE"
 encode_base64url("foobar") = "Zm9vYmFy"
 encode_base64url("\xff") = "_w"
+encode_base64url("a\0b") = "YQBi"
 --- no_error_log
 [error]
  -- NYI:
