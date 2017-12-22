@@ -9,7 +9,7 @@ use Cwd qw(cwd);
 
 repeat_each(2);
 
-plan tests => repeat_each() * ((blocks() * 5) - 2);
+plan tests => repeat_each() * (blocks() * 5 - 2);
 
 my $pwd = cwd();
 
@@ -193,7 +193,7 @@ qr/\[TRACE   \d+ content_by_lua\(nginx\.conf:\d+\):3 loop\]/
 --- config
     location = /t {
         content_by_lua_block {
-            local enc = require("ngx.encoding")
+            local enc = require("ngx.base64")
 
             local function to_hex(str)
                 return (str:gsub('.', function(c)
@@ -237,7 +237,7 @@ decode_base64url("YQBi") = "\x610062"
 --- config
     location = /t {
         content_by_lua_block {
-            local enc = require("ngx.encoding")
+            local enc = require("ngx.base64")
 
             local res, err = enc.decode_base64url("     ")
 

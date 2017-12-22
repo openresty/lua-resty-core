@@ -9,7 +9,7 @@ use Cwd qw(cwd);
 
 repeat_each(2);
 
-plan tests => repeat_each() * ((blocks() * 5) - 1);
+plan tests => repeat_each() * (blocks() * 5 - 1);
 
 my $pwd = cwd();
 
@@ -233,7 +233,7 @@ qr/\[TRACE   \d+ content_by_lua\(nginx\.conf:\d+\):3 loop\]/
 --- config
     location = /t {
         content_by_lua_block {
-            local enc = require("ngx.encoding")
+            local enc = require("ngx.base64")
 
             -- RFC 4648 test vectors
             ngx.say("encode_base64url(\"\") = \"", enc.encode_base64url(""), "\"")
