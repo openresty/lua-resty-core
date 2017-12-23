@@ -1,9 +1,6 @@
 -- Copyright (C) by Yichun Zhang (agentzh)
 -- Copyright (C) by OpenResty Inc.
 
--- I hereby assign copyright in this code to the lua-resty-core project,
--- to be licensed under the same terms as the rest of the code.
---
 local ffi = require("ffi")
 local base = require("resty.core.base")
 
