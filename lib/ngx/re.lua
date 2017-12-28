@@ -50,7 +50,7 @@ local _M = { version = base.version }
 local function re_split_helper(subj, compiled, compile_once, flags, ctx)
     local rc
     do
-        local pos = math_max(ctx.pos - 1, 0)
+        local pos = math_max(ctx.pos, 0)
 
         rc = C.ngx_http_lua_ffi_exec_regex(compiled, flags, subj, #subj, pos)
     end
@@ -87,11 +87,18 @@ local function re_split_helper(subj, compiled, compile_once, flags, ctx)
         return nil, nil, nil
     end
 
+    if from == to then
+        -- empty match, skip to next char
+        ctx.pos = to + 1
+
+    else
+        ctx.pos = to
+    end
+
     -- convert to Lua string indexes
 
     from = from + 1
     to = to + 1
-    ctx.pos = to + 1
 
     -- retrieve the first sub-match capture if any
 
@@ -152,6 +159,9 @@ function _M.split(subj, regex, opts, ctx, max, res)
     local sub_idx = ctx.pos
     local res_idx = 0
     local last_empty_match
+
+    -- update to split_helper PCRE indexes
+    ctx.pos = sub_idx - 1
 
     -- splitting: with and without a max limiter
 
