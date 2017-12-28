@@ -1181,3 +1181,67 @@ len: 5
 qr/\[TRACE   \d+/
 --- no_error_log
 [error]
+
+
+
+=== TEST 36: split by unit separator 1/2 (GH issue lua-nginx-module #1217)
+--- http_config eval: $::HttpConfig
+--- config
+    location /re {
+        content_by_lua_block {
+            local ngx_re = require "ngx.re"
+
+            local subjs = {
+                "1\x1fT\x1f\x1f\x1f\x1f\x1f\x1f\x1f\x1f\x1f\x1f\x1f\x1f\x1f15",
+                "1\x1fT\x1fT\x1f\x1f\x1f\x1f\x1f\x1f\x1f\x1f\x1f\x1f\x1f\x1f15",
+                "1\x1fT\x1fT\x1fT\x1f\x1f\x1f\x1f\x1f\x1f\x1f\x1f\x1f\x1f\x1f15",
+            }
+
+            for _, subj in ipairs(subjs) do
+                local col_list = ngx_re.split(subj, "\\x1f")
+                ngx.say(#col_list, " ", table.concat(col_list, "|"))
+            end
+        }
+    }
+--- request
+GET /re
+--- response_body
+15 1|T|||||||||||||15
+15 1|T|T||||||||||||15
+15 1|T|T|T|||||||||||15
+--- error_log eval
+qr/\[TRACE   \d+/
+--- no_error_log
+[error]
+
+
+
+=== TEST 37: split by unit separator 2/2 (with ctx.pos)
+--- http_config eval: $::HttpConfig
+--- config
+    location /re {
+        content_by_lua_block {
+            local ngx_re = require "ngx.re"
+
+            local subjs = {
+                "1\x1fT\x1f\x1f\x1f\x1f\x1f\x1f\x1f\x1f\x1f\x1f\x1f\x1f\x1f15",
+                "1\x1fT\x1fT\x1f\x1f\x1f\x1f\x1f\x1f\x1f\x1f\x1f\x1f\x1f\x1f15",
+                "1\x1fT\x1fT\x1fT\x1f\x1f\x1f\x1f\x1f\x1f\x1f\x1f\x1f\x1f\x1f15",
+            }
+
+            for _, subj in ipairs(subjs) do
+                local col_list = ngx_re.split(subj, "\\x1f", nil, { pos = 6 })
+                ngx.say(#col_list, " ", table.concat(col_list, "|"))
+            end
+        }
+    }
+--- request
+GET /re
+--- response_body
+12 |||||||||||15
+13 ||||||||||||15
+13 |T|||||||||||15
+--- error_log eval
+qr/\[TRACE   \d+/
+--- no_error_log
+[error]
