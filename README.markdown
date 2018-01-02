@@ -287,7 +287,7 @@ This module was first introduced in lua-resty-core v0.1.12.
 
 ## ngx.base64
 
-This Lua module provides Lua API to capture and manage nginx error log messages.
+This Lua module provides Lua API to urlsafe base64 encode/decode.
 
 See the [documentation](./lib/ngx/base64.md) for this Lua module for more details.
 
