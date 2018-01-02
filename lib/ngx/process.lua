@@ -62,7 +62,12 @@ end
 
 
 function _M.master_pid()
-    return C.ngx_http_lua_ffi_master_pid()
+    local pid = C.ngx_http_lua_ffi_master_pid()
+    if pid < 0 then
+        return nil
+    end
+
+    return pid
 end
 
 
