@@ -68,7 +68,7 @@ GET /t
 ^true
 \d+$
 --- error_log eval
-qr/\[TRACE   \d+ content_by_lua\(nginx\.conf:\d+\):4 loop\]/
+qr/\[TRACE   \d+ content_by_lua\(nginx\.conf:\d+\):\d loop\]/
 --- no_error_log
 [error]
  -- NYI:
