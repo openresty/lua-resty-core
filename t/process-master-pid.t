@@ -50,12 +50,22 @@ __DATA__
             for i = 1, 400 do
                 v = pid()
             end
+
+            local f = io.open(ngx.config.prefix().."/logs/nginx.pid", "r")
+            if not f then
+                ngx.say(false)
+            else
+                local str = f:read("*l")
+                ngx.say(v == tonumber(str or "0"))
+                f:close()
+            end
             ngx.say(v)
         }
     }
 --- request
 GET /t
 --- response_body_like chop
+^true
 \d+$
 --- error_log eval
 qr/\[TRACE   \d+ content_by_lua\(nginx\.conf:\d+\):4 loop\]/
