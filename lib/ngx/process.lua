@@ -31,6 +31,7 @@ ffi.cdef[[
 int ngx_http_lua_ffi_enable_privileged_agent(char **err);
 int ngx_http_lua_ffi_get_process_type(void);
 void ngx_http_lua_ffi_process_signal_graceful_exit(void);
+int ngx_http_lua_ffi_master_pid(void);
 ]]
 
 
@@ -57,6 +58,16 @@ end
 
 function _M.signal_graceful_exit()
     C.ngx_http_lua_ffi_process_signal_graceful_exit()
+end
+
+
+function _M.master_pid()
+    local pid = C.ngx_http_lua_ffi_master_pid()
+    if pid < 0 then
+        return nil
+    end
+
+    return pid
 end
 
 
