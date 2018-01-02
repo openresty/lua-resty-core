@@ -17,6 +17,7 @@ if subsystem == 'http' then
     require "resty.core.response"
     require "resty.core.time"
     require "resty.core.worker"
+    require "resty.core.phase"
 end
 
 

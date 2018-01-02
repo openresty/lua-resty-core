@@ -25,6 +25,7 @@ Table of Contents
     * [resty.core.misc](#restycoremisc)
     * [resty.core.time](#restycoretime)
     * [resty.core.worker](#restycoreworker)
+    * [resty.core.phase](#restycorephase)
     * [ngx.semaphore](#ngxsemaphore)
     * [ngx.balancer](#ngxbalancer)
     * [ngx.ssl](#ngxssl)
@@ -32,6 +33,7 @@ Table of Contents
     * [ngx.re](#ngxre)
     * [ngx.process](#ngxprocess)
     * [ngx.errlog](#ngxerrlog)
+    * [ngx.base64](#ngxbase64)
 * [Caveat](#caveat)
 * [TODO](#todo)
 * [Author](#author)
@@ -93,7 +95,7 @@ of this library in the particular OpenResty release you are using. Otherwise you
 into serious comaptibility issues.
 
 * LuaJIT 2.1 (for now, it is the v2.1 git branch in the official luajit-2.0 git repository: http://luajit.org/download.html )
-* [ngx_http_lua_module](https://github.com/openresty/lua-nginx-module) v0.10.11 or later.
+* [ngx_http_lua_module](https://github.com/openresty/lua-nginx-module) v0.10.12 or later.
 * [ngx_stream_lua_module](https://github.com/openresty/lua-nginx-module) v0.0.4 or later.
 * [lua-resty-lrucache](https://github.com/openresty/lua-resty-lrucache)
 
@@ -213,6 +215,12 @@ API Implemented
 
 [Back to TOC](#table-of-contents)
 
+## resty.core.phase
+
+* [ngx.get_phase](https://github.com/openresty/lua-nginx-module#ngxget_phase)
+
+[Back to TOC](#table-of-contents)
+
 ## ngx.semaphore
 
 This Lua module implements a semaphore API for efficient "light thread" synchronization,
@@ -277,6 +285,16 @@ This module was first introduced in lua-resty-core v0.1.12.
 
 [Back to TOC](#table-of-contents)
 
+## ngx.base64
+
+This Lua module provides Lua API to capture and manage nginx error log messages.
+
+See the [documentation](./lib/ngx/base64.md) for this Lua module for more details.
+
+This module was first introduced in lua-resty-core v0.1.14.
+
+[Back to TOC](#table-of-contents)
+
 Caveat
 ======
 
@@ -290,7 +308,6 @@ TODO
 ====
 
 * Re-implement `ngx_lua`'s cosocket API with FFI.
-* Re-implement `ngx_lua`'s `ngx.get_phase` API function with FFI.
 * Re-implement `ngx_lua`'s `ngx.eof` and `ngx.flush` API functions with FFI.
 
 [Back to TOC](#table-of-contents)
