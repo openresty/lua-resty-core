@@ -33,7 +33,7 @@ Synopsis
 ========
 
 Enables privileged agent process and get process type
------------------------------------------
+-----------------------------------------------------
 
 ```nginx
 # http config
