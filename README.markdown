@@ -161,6 +161,8 @@ API Implemented
 * [ngx.shared.DICT.free_space](https://github.com/openresty/lua-nginx-module#ngxshareddictfree_space)
 * [ngx.shared.DICT.capacity](https://github.com/openresty/lua-nginx-module#ngxshareddictcapacity)
 
+[Back to TOC](#table-of-contents)
+
 ## resty.core.var
 
 * [ngx.var.VARIABLE](https://github.com/openresty/lua-nginx-module#ngxvarvariable)
