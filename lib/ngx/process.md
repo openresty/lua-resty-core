@@ -32,7 +32,7 @@ The API is still in flux and may change in the future without notice.
 Synopsis
 ========
 
-Enables privileged agent process, get process type and get master process pid
+Enables privileged agent process, get process type and get master process pid.
 
 ```nginx
 # http config
