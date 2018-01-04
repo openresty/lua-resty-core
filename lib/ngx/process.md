@@ -32,7 +32,7 @@ The API is still in flux and may change in the future without notice.
 Synopsis
 ========
 
-Enables privileged agent process and get process type
+Enables privileged agent process, get process type and get master process pid
 -----------------------------------------------------
 
 ```nginx
@@ -61,6 +61,7 @@ server {
         content_by_lua_block {
             local process = require "ngx.process"
             ngx.say("process type: ", process.type())
+            ngx.say("master process pid: ", process.get_master_pid() or "-")
         }
     }
 }
