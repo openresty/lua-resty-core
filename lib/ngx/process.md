@@ -33,7 +33,6 @@ Synopsis
 ========
 
 Enables privileged agent process, get process type and get master process pid
------------------------------------------------------
 
 ```nginx
 # http config
@@ -81,7 +80,7 @@ The example location above produces the following response body:
 
 ```
 process type: worker
-master process pid: xxx
+master process pid: 8261
 ```
 
 [Back to TOC](#table-of-contents)
