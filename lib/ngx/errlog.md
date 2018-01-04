@@ -14,6 +14,7 @@ Table of Contents
     * [set_filter_level](#set_filter_level)
     * [get_logs](#get_logs)
     * [get_sys_filter_level](#get_sys_filter_level)
+    * [raw_log](#raw_log)
 * [Community](#community)
     * [English Mailing List](#english-mailing-list)
     * [Chinese Mailing List](#chinese-mailing-list)
@@ -250,6 +251,116 @@ if not status then
     return
 end
 ```
+
+[Back to TOC](#table-of-contents)
+
+raw_log
+-------
+**syntax:** *log_module.raw_log(log_level, msg)*
+
+**context:** *any*
+
+Log `msg` to the error logs with the given logging level.
+
+Just like the [ngx.log](https://github.com/openresty/lua-nginx-module#ngxlog)
+API, the `log_level` argument can take constants like `ngx.ERR` and `ngx.WARN`.
+Check out [Nginx log level constants for
+details.](https://github.com/openresty/lua-nginx-module#nginx-log-level-constants)
+
+However, unlike the `ngx.log` API which accepts variadic arguments, this
+function only accepts a single string as its second argument `msg`.
+
+This function differs from `ngx.log` in the way that it will not prefix the
+written logs with any sort of debug information (such as the caller's file
+and line number).
+
+For example, while `ngx.log` would produce
+
+```
+2017/07/09 19:36:25 [notice] 25932#0: *1 [lua] content_by_lua(nginx.conf:51):5: hello world, client: 127.0.0.1, server: localhost, request: "GET /log HTTP/1.1", host: "localhost"
+```
+
+from
+
+```lua
+ngx.log(ngx.NOTICE, "hello world")
+```
+
+the `errlog.raw_log()` call produces
+
+```
+2017/07/09 19:36:25 [notice] 25932#0: *1 hello world, client: 127.0.0.1, server: localhost, request: "GET /log HTTP/1.1", host: "localhost"
+```
+
+from
+
+```lua
+local errlog = require "ngx.errlog"
+errlog.raw_log(ngx.NOTICE, "hello world")
+```
+
+This function is best suited when the format and/or stack level of the debug
+information proposed by `ngx.log` is not desired. A good example of this would
+be a custom logging function which prefixes each log with a namespace in
+an application:
+
+```
+1.  local function my_log(lvl, ...)
+2.      ngx.log(lvl, "[prefix] ", ...)
+3.  end
+4.
+5.  my_log(ngx.ERR, "error")
+```
+
+Here, the produced log would indicate that this error was logged at line `2.`,
+when in reality, we wish the investigator of that log to realize it was logged
+at line `5.` right away.
+
+For such use cases (or other formatting reasons), one may use `raw_log` to
+create a logging utility that supports such requirements. Here is a suggested
+implementation:
+
+```lua
+local errlog = require "ngx.errlog"
+
+local function my_log(lvl, ...)
+  -- log to error logs with our custom prefix, stack level
+  -- and separator
+  local n = select("#", ...)
+  local t = { ... }
+  local info = debug.getinfo(2, "Sl")
+
+  local prefix = string.format("(%s):%d:", info.short_src, info.currentline)
+  local buf = { prefix }
+
+  for i = 1, n do
+    buf[i + 1] = tostring(t[i])
+  end
+
+  local msg = table.concat(buf, " ")
+
+  errlog.raw_log(lvl, msg) -- line 19.
+end
+
+local function my_function()
+  -- do something and log
+
+  my_log(ngx.ERR, "hello from", "raw_log:", true) -- line 25.
+end
+
+my_function()
+```
+
+This utility function will produce the following log, explicitly stating that
+the error was logged on line `25.`:
+
+```
+2017/07/09 20:03:07 [error] 26795#0: *2 (/path/to/file.lua):25: hello from raw_log: true, context: ngx.timer
+```
+
+As a reminder to the reader, one must be wary of the cost of string
+concatenation on the Lua land, and should prefer the combined use of a buffer
+table and `table.concat` to avoid unnecessary GC pressure.
 
 [Back to TOC](#table-of-contents)
 

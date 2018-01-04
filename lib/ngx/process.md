@@ -14,6 +14,7 @@ Table of Contents
     * [type](#type)
     * [enable_privileged_agent](#enable_privileged_agent)
     * [signal_graceful_exit](#signal_graceful_exit)
+    * [get_master_pid](#get_master_pid)
 * [Community](#community)
     * [English Mailing List](#english-mailing-list)
     * [Chinese Mailing List](#chinese-mailing-list)
@@ -32,7 +33,7 @@ Synopsis
 ========
 
 Enables privileged agent process and get process type
------------------------------------------
+-----------------------------------------------------
 
 ```nginx
 # http config
@@ -147,6 +148,20 @@ WARNING: the official NGINX core does not perform the graceful exiting procedure
 directive is turned `off`. The OpenResty's NGINX core has a
 [custom patch](https://github.com/openresty/openresty/blob/master/patches/nginx-1.11.2-single_process_graceful_exit.patch)
 applied, which fixes this issue.
+
+[Back to TOC](#table-of-contents)
+
+get_master_pid
+--------------
+**syntax:** *pid = process_module.get_master_pid()*
+
+**context:** *any*
+
+Returns a number value for the nginx master process's process ID (or PID).
+
+This function requires NGINX 1.13.8+ cores to work properly. Otherwise it returns `nil`.
+
+This feature first appeared in lua-resty-core v0.1.14.
 
 [Back to TOC](#table-of-contents)
 
