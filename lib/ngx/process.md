@@ -81,6 +81,7 @@ The example location above produces the following response body:
 
 ```
 process type: worker
+master process pid: xxx
 ```
 
 [Back to TOC](#table-of-contents)
