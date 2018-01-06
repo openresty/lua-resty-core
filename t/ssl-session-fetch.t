@@ -40,7 +40,7 @@ __DATA__
     server {
         listen unix:$TEST_NGINX_HTML_DIR/nginx.sock ssl;
         server_name test.com;
-        ssl_protocols SSLv3;
+        ssl_session_tickets off;
         ssl_certificate $TEST_NGINX_CERT_DIR/cert/test.crt;
         ssl_certificate_key $TEST_NGINX_CERT_DIR/cert/test.key;
 
@@ -127,7 +127,7 @@ qr/ssl_session_fetch_by_lua_block:4: session id: [a-fA-f\d]+/s,
     server {
         listen unix:$TEST_NGINX_HTML_DIR/nginx.sock ssl;
         server_name test.com;
-        ssl_protocols SSLv3;
+        ssl_session_tickets off;
         ssl_certificate $TEST_NGINX_CERT_DIR/cert/test.crt;
         ssl_certificate_key $TEST_NGINX_CERT_DIR/cert/test.key;
 
@@ -230,7 +230,7 @@ In practice, never store session in plaintext on persistent storage.
         listen unix:$TEST_NGINX_HTML_DIR/nginx.sock ssl;
         server_name test.com;
 
-        ssl_protocols SSLv3;
+        ssl_session_tickets off;
         ssl_certificate $TEST_NGINX_CERT_DIR/cert/test.crt;
         ssl_certificate_key $TEST_NGINX_CERT_DIR/cert/test.key;
 
@@ -326,7 +326,7 @@ able to carry on and negotiate a new session.
         listen unix:$TEST_NGINX_HTML_DIR/nginx.sock ssl;
         server_name test.com;
 
-        ssl_protocols SSLv3;
+        ssl_session_tickets off;
         ssl_certificate $TEST_NGINX_CERT_DIR/cert/test.crt;
         ssl_certificate_key $TEST_NGINX_CERT_DIR/cert/test.key;
 
