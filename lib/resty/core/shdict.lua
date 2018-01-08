@@ -29,7 +29,7 @@ ffi.cdef[[
 
     int ngx_http_lua_ffi_shdict_incr(void *zone, const unsigned char *key,
         size_t key_len, double *value, char **err, int has_init, double init,
-        int *forcible);
+        long init_ttl, int *forcible);
 
     int ngx_http_lua_ffi_shdict_store(void *zone, int op,
         const unsigned char *key, size_t key_len, int value_type,
@@ -337,7 +337,7 @@ local function shdict_get_stale(zone, key)
 end
 
 
-local function shdict_incr(zone, key, value, init)
+local function shdict_incr(zone, key, value, init, init_ttl)
     zone = check_zone(zone)
 
     if key == nil then
@@ -361,8 +361,6 @@ local function shdict_incr(zone, key, value, init)
     end
     num_value[0] = value
 
-    local has_init
-
     if init then
         local typ = type(init)
         if typ ~= "number" then
@@ -372,22 +370,39 @@ local function shdict_incr(zone, key, value, init)
                 return error("bad init arg: number expected, got " .. typ)
             end
         end
+    end
 
-        has_init = 1
+    if init_ttl ~= nil then
+        local typ = type(init_ttl)
+        if typ ~= "number" then
+            init_ttl = tonumber(init_ttl)
+
+            if not init_ttl then
+                error("bad init_ttl arg: number expected, got " .. typ, 2)
+            end
+        end
+
+        if init_ttl < 0 then
+            error('bad "init_ttl" argument', 2)
+        end
+
+        if not init then
+            error('must provide "init" when providing "init_ttl"', 2)
+        end
 
     else
-        has_init = 0
-        init = 0
+        init_ttl = 0
     end
 
     local rc = C.ngx_http_lua_ffi_shdict_incr(zone, key, key_len, num_value,
-                                              errmsg, has_init, init,
+                                              errmsg, init and 1 or 0,
+                                              init or 0, init_ttl * 1000,
                                               forcible)
     if rc ~= 0 then  -- ~= NGX_OK
         return nil, ffi_str(errmsg[0])
     end
 
-    if has_init == 0 then
+    if not init then
         return tonumber(num_value[0])
     end
 
