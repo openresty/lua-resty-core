@@ -103,3 +103,179 @@ qr/\[TRACE   \d+ content_by_lua\(nginx\.conf:\d+\):3 loop\]/
 [error]
 bad argument type
 stitch
+
+
+
+=== TEST 3: ngx.update_time()
+--- http_config eval: $::HttpConfig
+--- config
+    location = /t {
+        content_by_lua_block {
+            local start = ngx.now()
+            for _ = 1, 1e5 do
+                ngx.update_time()
+            end
+            ngx.say(ngx.now() - start > 0)
+        }
+    }
+--- request
+GET /t
+--- response_body
+true
+--- error_log eval
+qr/\[TRACE   \d+ content_by_lua\(nginx\.conf:\d+\):3 loop\]/
+--- no_error_log
+[error]
+bad argument type
+stitch
+
+
+
+=== TEST 4: ngx.today()
+--- http_config eval: $::HttpConfig
+--- config
+    location = /t {
+        content_by_lua_block {
+            local t
+            for i = 1, 500 do
+                t = ngx.today()
+            end
+            ngx.say(t)
+        }
+    }
+--- request
+GET /t
+--- response_body_like: ^\d{4}-\d{2}-\d{2}
+--- error_log eval
+qr/\[TRACE   \d+ content_by_lua\(nginx\.conf:\d+\):3 loop\]/
+--- no_error_log
+[error]
+bad argument type
+stitch
+
+
+
+=== TEST 5: ngx.localtime()
+--- http_config eval: $::HttpConfig
+--- config
+    location = /t {
+        content_by_lua_block {
+            local t
+            for i = 1, 500 do
+                t = ngx.localtime()
+            end
+            ngx.say(t)
+        }
+    }
+--- request
+GET /t
+--- response_body_like: ^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$
+--- error_log eval
+qr/\[TRACE   \d+ content_by_lua\(nginx\.conf:\d+\):3 loop\]/
+--- no_error_log
+[error]
+bad argument type
+stitch
+
+
+
+=== TEST 6: ngx.utctime()
+--- http_config eval: $::HttpConfig
+--- config
+    location = /t {
+        content_by_lua_block {
+            local t
+            for i = 1, 500 do
+                t = ngx.utctime()
+            end
+            ngx.say(t)
+        }
+    }
+--- request
+GET /t
+--- response_body_like: ^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$
+--- error_log eval
+qr/\[TRACE   \d+ content_by_lua\(nginx\.conf:\d+\):3 loop\]/
+--- no_error_log
+[error]
+bad argument type
+stitch
+
+
+
+=== TEST 7: ngx.cookie_time()
+--- http_config eval: $::HttpConfig
+--- config
+    location /t {
+        content_by_lua_block {
+            local t
+            for i = 1, 500 do
+                t = ngx.cookie_time(1290079655)
+            end
+            ngx.say(t)
+            ngx.say(ngx.cookie_time(2200000000))
+        }
+    }
+--- request
+GET /t
+--- response_body
+Thu, 18-Nov-10 11:27:35 GMT
+Sun, 18-Sep-2039 23:06:40 GMT
+--- error_log eval
+qr/\[TRACE   \d+ content_by_lua\(nginx\.conf:\d+\):3 loop\]/
+--- no_error_log
+[error]
+bad argument type
+stitch
+
+
+
+=== TEST 8: ngx.http_time()
+--- http_config eval: $::HttpConfig
+--- config
+    location /t {
+        content_by_lua_block {
+            local t
+            for i = 1, 500 do
+                t = ngx.http_time(1290079655)
+            end
+            ngx.say(t)
+        }
+    }
+--- request
+GET /t
+--- response_body
+Thu, 18 Nov 2010 11:27:35 GMT
+--- error_log eval
+qr/\[TRACE   \d+ content_by_lua\(nginx\.conf:\d+\):3 loop\]/
+--- no_error_log
+[error]
+bad argument type
+stitch
+
+
+
+=== TEST 9: ngx.parse_http_time()
+--- http_config eval: $::HttpConfig
+--- config
+    location /t {
+        content_by_lua_block {
+            local t
+            for i = 1, 500 do
+                t = ngx.parse_http_time("Thu, 18 Nov 2010 11:27:35 GMT")
+            end
+            ngx.say(t)
+            ngx.say(ngx.parse_http_time("Thu, Nov 2010"))
+        }
+    }
+--- request
+GET /t
+--- response_body
+1290079655
+nil
+--- error_log eval
+qr/\[TRACE   \d+ content_by_lua\(nginx\.conf:\d+\):3 loop\]/
+--- no_error_log
+[error]
+bad argument type
+stitch
