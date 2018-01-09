@@ -63,6 +63,8 @@ split
 -----
 **syntax:** *res, err = ngx_re.split(subject, regex, options?, ctx?, max?, res?)*
 
+**context:** *any*
+
 Splits the `subject` string using the Perl compatible regular expression
 `regex` with the optional `options`.
 
@@ -151,6 +153,8 @@ clear the table yourself before feeding it into the `split` function.
 opt
 -----
 **syntax:** *ngx_re.opt(option, value)*
+
+**context:** *any*
 
 Allows changing of regex settings. Currently, it can only change the
 `jit_stack_size` of the PCRE engine, like so:
