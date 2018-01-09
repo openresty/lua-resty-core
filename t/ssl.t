@@ -25,7 +25,7 @@ __DATA__
 
 === TEST 1: clear certs
 --- http_config
-    lua_package_path "$TEST_NGINX_LUA_PACKAGE_PATH/?.lua;;";
+    lua_package_path "$TEST_NGINX_LUA_PACKAGE_PATH";
 
     server {
         listen unix:$TEST_NGINX_HTML_DIR/nginx.sock ssl;
@@ -115,7 +115,7 @@ sslv3 alert handshake failure
 
 === TEST 2: set DER cert and private key
 --- http_config
-    lua_package_path "$TEST_NGINX_LUA_PACKAGE_PATH/?.lua;;";
+    lua_package_path "$TEST_NGINX_LUA_PACKAGE_PATH";
 
     server {
         listen unix:$TEST_NGINX_HTML_DIR/nginx.sock ssl;
@@ -235,7 +235,7 @@ lua ssl server name: "test.com"
 
 === TEST 3: read SNI name via ssl.server_name()
 --- http_config
-    lua_package_path "$TEST_NGINX_LUA_PACKAGE_PATH/?.lua;;";
+    lua_package_path "$TEST_NGINX_LUA_PACKAGE_PATH";
 
     server {
         listen unix:$TEST_NGINX_HTML_DIR/nginx.sock ssl;
@@ -334,7 +334,7 @@ read SNI name from Lua: test.com
 
 === TEST 4: read SNI name via ssl.server_name() when no SNI name specified
 --- http_config
-    lua_package_path "$TEST_NGINX_LUA_PACKAGE_PATH/?.lua;;";
+    lua_package_path "$TEST_NGINX_LUA_PACKAGE_PATH";
 
     server {
         listen unix:$TEST_NGINX_HTML_DIR/nginx.sock ssl;
@@ -434,7 +434,7 @@ read SNI name from Lua: nil, type: nil
 
 === TEST 5: read raw server addr via ssl.raw_server_addr() (unix domain socket)
 --- http_config
-    lua_package_path "$TEST_NGINX_LUA_PACKAGE_PATH/?.lua;;";
+    lua_package_path "$TEST_NGINX_LUA_PACKAGE_PATH";
 
     server {
         listen unix:$TEST_NGINX_HTML_DIR/nginx.sock ssl;
@@ -553,7 +553,7 @@ qr/Using unix socket file .*?nginx\.sock/
 
 === TEST 6: read raw server addr via ssl.raw_server_addr() (IPv4)
 --- http_config
-    lua_package_path "$TEST_NGINX_LUA_PACKAGE_PATH/?.lua;;";
+    lua_package_path "$TEST_NGINX_LUA_PACKAGE_PATH";
 
     server {
         listen 127.0.0.1:12345 ssl;
@@ -672,7 +672,7 @@ Using IPv4 address: 127.0.0.1
 
 === TEST 7: read raw server addr via ssl.raw_server_addr() (IPv6)
 --- http_config
-    lua_package_path "$TEST_NGINX_LUA_PACKAGE_PATH/?.lua;;";
+    lua_package_path "$TEST_NGINX_LUA_PACKAGE_PATH";
 
     server {
         listen [::1]:12345 ssl;
@@ -792,7 +792,7 @@ Using IPv6 address: 0.0.0.1
 
 === TEST 8: set DER cert chain
 --- http_config
-    lua_package_path "$TEST_NGINX_LUA_PACKAGE_PATH/?.lua;;";
+    lua_package_path "$TEST_NGINX_LUA_PACKAGE_PATH";
 
     server {
         listen unix:$TEST_NGINX_HTML_DIR/nginx.sock ssl;
@@ -913,7 +913,7 @@ lua ssl server name: "test.com"
 
 === TEST 9: read PEM cert chain but set DER cert chain
 --- http_config
-    lua_package_path "$TEST_NGINX_LUA_PACKAGE_PATH/?.lua;;";
+    lua_package_path "$TEST_NGINX_LUA_PACKAGE_PATH";
 
     server {
         listen unix:$TEST_NGINX_HTML_DIR/nginx.sock ssl;
@@ -1040,7 +1040,7 @@ lua ssl server name: "test.com"
 
 === TEST 10: tls version - SSLv3
 --- http_config
-    lua_package_path "$TEST_NGINX_LUA_PACKAGE_PATH/?.lua;;";
+    lua_package_path "$TEST_NGINX_LUA_PACKAGE_PATH";
 
     server {
         listen 127.0.0.2:8080 ssl;
@@ -1116,7 +1116,7 @@ got TLS1 version: SSLv3,
 
 === TEST 11: tls version - TLSv1
 --- http_config
-    lua_package_path "$TEST_NGINX_LUA_PACKAGE_PATH/?.lua;;";
+    lua_package_path "$TEST_NGINX_LUA_PACKAGE_PATH";
 
     server {
         listen 127.0.0.2:8080 ssl;
@@ -1192,7 +1192,7 @@ got TLS1 version: TLSv1,
 
 === TEST 12: tls version - TLSv1.1
 --- http_config
-    lua_package_path "$TEST_NGINX_LUA_PACKAGE_PATH/?.lua;;";
+    lua_package_path "$TEST_NGINX_LUA_PACKAGE_PATH";
 
     server {
         listen 127.0.0.2:8080 ssl;
@@ -1268,7 +1268,7 @@ got TLS1 version: TLSv1.1,
 
 === TEST 13: tls version - TLSv1.2
 --- http_config
-    lua_package_path "$TEST_NGINX_LUA_PACKAGE_PATH/?.lua;;";
+    lua_package_path "$TEST_NGINX_LUA_PACKAGE_PATH";
 
     server {
         listen 127.0.0.2:8080 ssl;
@@ -1344,7 +1344,7 @@ got TLS1 version: TLSv1.2,
 
 === TEST 14: ngx.semaphore in ssl_certificate_by_lua*
 --- http_config
-    lua_package_path "$TEST_NGINX_LUA_PACKAGE_PATH/?.lua;;";
+    lua_package_path "$TEST_NGINX_LUA_PACKAGE_PATH";
 
     server {
         listen 127.0.0.2:8080 ssl;
@@ -1433,7 +1433,7 @@ ssl cert by lua done
 
 === TEST 15: read PEM key chain but set DER key chain
 --- http_config
-    lua_package_path "$TEST_NGINX_LUA_PACKAGE_PATH/?.lua;;";
+    lua_package_path "$TEST_NGINX_LUA_PACKAGE_PATH";
 
     server {
         listen unix:$TEST_NGINX_HTML_DIR/nginx.sock ssl;
@@ -1565,7 +1565,7 @@ lua ssl server name: "test.com"
 
 === TEST 16: parse PEM cert and key to cdata
 --- http_config
-    lua_package_path "$TEST_NGINX_LUA_PACKAGE_PATH/?.lua;;";
+    lua_package_path "$TEST_NGINX_LUA_PACKAGE_PATH";
 
     server {
         listen unix:$TEST_NGINX_HTML_DIR/nginx.sock ssl;
@@ -1698,7 +1698,7 @@ lua ssl server name: "test.com"
 
 === TEST 17: parse PEM cert and key to cdata (bad cert 0 in the chain)
 --- http_config
-    lua_package_path "$TEST_NGINX_LUA_PACKAGE_PATH/?.lua;;";
+    lua_package_path "$TEST_NGINX_LUA_PACKAGE_PATH";
 
     server {
         listen unix:$TEST_NGINX_HTML_DIR/nginx.sock ssl;
@@ -1822,7 +1822,7 @@ qr/\[error\] .*? failed to parse pem cert: PEM_read_bio_X509_AUX\(\) failed/
 
 === TEST 18: parse PEM cert and key to cdata (bad cert 2 in the chain)
 --- http_config
-    lua_package_path "$TEST_NGINX_LUA_PACKAGE_PATH/?.lua;;";
+    lua_package_path "$TEST_NGINX_LUA_PACKAGE_PATH";
 
     server {
         listen unix:$TEST_NGINX_HTML_DIR/nginx.sock ssl;
@@ -1946,7 +1946,7 @@ qr/\[error\] .*? failed to parse pem cert: PEM_read_bio_X509\(\) failed/
 
 === TEST 19: parse PEM cert and key to cdata (bad priv key)
 --- http_config
-    lua_package_path "$TEST_NGINX_LUA_PACKAGE_PATH/?.lua;;";
+    lua_package_path "$TEST_NGINX_LUA_PACKAGE_PATH";
 
     server {
         listen unix:$TEST_NGINX_HTML_DIR/nginx.sock ssl;
@@ -2070,7 +2070,7 @@ qr/\[error\] .*? failed to parse pem key: PEM_read_bio_PrivateKey\(\) failed/
 
 === TEST 20: read client addr via ssl.raw_client_addr()
 --- http_config
-    lua_package_path "$TEST_NGINX_LUA_PACKAGE_PATH/?.lua;;";
+    lua_package_path "$TEST_NGINX_LUA_PACKAGE_PATH";
 
     server {
         listen 127.0.0.1:12345 ssl;

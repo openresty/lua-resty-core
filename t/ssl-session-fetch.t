@@ -30,7 +30,7 @@ __DATA__
 
 === TEST 1: get resume session id serialized
 --- http_config
-    lua_package_path "$TEST_NGINX_LUA_PACKAGE_PATH/?.lua;;";
+    lua_package_path "$TEST_NGINX_LUA_PACKAGE_PATH";
     ssl_session_fetch_by_lua_block {
         local ssl = require "ngx.ssl.session"
         local sid = ssl.get_session_id()
@@ -111,7 +111,7 @@ qr/ssl_session_fetch_by_lua_block:4: session id: [a-fA-f\d]+/s,
 
 === TEST 2: attempt to fetch new session in lua_ctx during resumption.
 --- http_config
-    lua_package_path "$TEST_NGINX_LUA_PACKAGE_PATH/?.lua;;";
+    lua_package_path "$TEST_NGINX_LUA_PACKAGE_PATH";
     ssl_session_fetch_by_lua_block {
         local ssl = require "ngx.ssl.session"
         local sess, err = ssl.get_serialized_session()
@@ -202,7 +202,7 @@ qr/ssl_session_fetch_by_lua:\d: session size: [a-fA-f\d]+|get session error: bad
 Use a tmp file to store and resume session. This is for testing only.
 In practice, never store session in plaintext on persistent storage.
 --- http_config
-    lua_package_path "$TEST_NGINX_LUA_PACKAGE_PATH/?.lua;;";
+    lua_package_path "$TEST_NGINX_LUA_PACKAGE_PATH";
     ssl_session_store_by_lua_block {
         local ssl = require "ngx.ssl.session"
 
@@ -303,7 +303,7 @@ qr/ssl_session_fetch_by_lua_block:4: session id: [a-fA-F\d]+/s,
 Session resumption should fail, but the handshake should be
 able to carry on and negotiate a new session.
 --- http_config
-    lua_package_path "$TEST_NGINX_LUA_PACKAGE_PATH/?.lua;;";
+    lua_package_path "$TEST_NGINX_LUA_PACKAGE_PATH";
     ssl_session_store_by_lua_block {
         local ssl = require "ngx.ssl.session"
 
