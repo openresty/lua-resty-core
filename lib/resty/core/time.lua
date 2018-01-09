@@ -9,8 +9,9 @@ local error = error
 local tonumber = tonumber
 local type = type
 local C = ffi.C
+local ffi_new = ffi.new
 local ffi_str = ffi.string
-local get_size_ptr = base.get_size_ptr
+local time_val = ffi_new("long[1]")
 local get_string_buf = base.get_string_buf
 local ngx = ngx
 local FFI_ERROR = ngx.ERROR
@@ -26,7 +27,7 @@ void ngx_http_lua_ffi_update_time(void);
 int ngx_http_lua_ffi_cookie_time(unsigned char *buf, long t);
 void ngx_http_lua_ffi_http_time(unsigned char *buf, long t);
 void ngx_http_lua_ffi_parse_http_time(const unsigned char *str, size_t len,
-    size_t *t);
+    long *time);
 ]]
 
 
@@ -104,10 +105,9 @@ function ngx.parse_http_time(time_str)
         return error("string argument only")
     end
 
-    local out_val = get_size_ptr()
-    C.ngx_http_lua_ffi_parse_http_time(time_str, #time_str, out_val)
+    C.ngx_http_lua_ffi_parse_http_time(time_str, #time_str, time_val)
 
-    local res = out_val[0]
+    local res = time_val[0]
     if res == FFI_ERROR then
         return nil
     end
