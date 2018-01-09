@@ -16,8 +16,10 @@ our $CWD = cwd();
 no_long_string();
 #no_diff();
 
+env_to_nginx("PATH=" . $ENV{'PATH'});
 $ENV{TEST_NGINX_LUA_PACKAGE_PATH} = "$::CWD/lib/?.lua;;";
 $ENV{TEST_NGINX_HTML_DIR} ||= html_dir();
+$ENV{TEST_NGINX_SERVER_SSL_PORT} ||= 4443;
 
 run_tests();
 
@@ -2168,3 +2170,98 @@ client ip: 127.0.0.1
 [error]
 [alert]
 [emerg]
+
+
+
+=== TEST 21: yield during doing handshake with client which uses low version OpenSSL
+--- no_check_leak
+--- http_config
+    lua_shared_dict done 16k;
+    lua_package_path "$TEST_NGINX_LUA_PACKAGE_PATH/?.lua;;";
+    server {
+        listen $TEST_NGINX_SERVER_SSL_PORT ssl;
+        server_name test.com;
+        ssl_session_tickets off;
+        ssl_certificate ../../cert/test2.crt;
+        ssl_certificate_key ../../cert/test2.key;
+
+        ssl_certificate_by_lua_block {
+            local ssl = require "ngx.ssl"
+
+            ssl.clear_certs()
+
+            local f = assert(io.open("t/cert/test.crt.der"))
+            local cert_data = f:read("*a")
+            f:close()
+
+            ngx.sleep(0.01) -- yield
+
+            local ok, err = ssl.set_der_cert(cert_data)
+            if not ok then
+                ngx.log(ngx.ERR, "failed to set DER cert: ", err)
+                return
+            end
+
+            local f = assert(io.open("t/cert/test.key.der"))
+            local pkey_data = f:read("*a")
+            f:close()
+
+            local ok, err = ssl.set_der_priv_key(pkey_data)
+            if not ok then
+                ngx.log(ngx.ERR, "failed to set DER cert: ", err)
+                return
+            end
+
+            ngx.shared.done:set("handshake", true)
+        }
+
+        location /foo {
+            content_by_lua_block {
+                ngx.exit(201)
+            }
+        }
+    }
+--- config
+    lua_ssl_trusted_certificate ../../cert/test.crt;
+
+    location /t {
+        content_by_lua_block {
+            ngx.shared.done:delete("handshake")
+            local addr = ngx.var.addr;
+            local f, err = io.popen("echo 'Q' | timeout 3s openssl s_client -connect 127.0.0.1:$TEST_NGINX_SERVER_SSL_PORT")
+            if not f then
+                ngx.say(err)
+                return
+            end
+
+            local step = 0.001
+            while step < 1 do
+                ngx.sleep(step)
+                step = step * 2
+
+                if ngx.shared.done:get("handshake") then
+                    local out = f:read('*a')
+                    ngx.log(ngx.INFO, out)
+                    ngx.say("ok")
+                    f:close()
+                    return
+                end
+            end
+
+            ngx.log(ngx.ERR, "openssl client handshake timeout")
+        }
+    }
+
+--- request
+GET /t
+--- response_body
+ok
+--- error_log eval
+[
+qr/content_by_lua\(nginx\.conf:\d+\):\d+: CONNECTED/,
+'subject=/C=US/ST=California/L=San Francisco/O=OpenResty/OU=OpenResty/CN=test.com/emailAddress=agentzh@gmail.com',
+]
+
+--- no_error_log
+[error]
+[alert]
