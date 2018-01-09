@@ -13,7 +13,6 @@ local ffi_str = ffi.string
 local get_size_ptr = base.get_size_ptr
 local get_string_buf = base.get_string_buf
 local ngx = ngx
-local subsystem = ngx.config.subsystem
 local FFI_ERROR = ngx.ERROR
 
 
@@ -73,50 +72,48 @@ function ngx.utctime()
 end
 
 
-if subsystem == 'http' then
-    function ngx.cookie_time(sec)
-        if type(sec) ~= "number" then
-            return error("number argument only")
-        end
-
-        -- the format of cookie time is Mon, 28-Sep-2038 06:00:00 GMT
-        -- or Mon, 28-Sep-18 06:00:00 GMT
-        local cookie_time_buf_size = 29
-        local buf = get_string_buf(cookie_time_buf_size)
-        local used_size = C.ngx_http_lua_ffi_cookie_time(buf, sec)
-        return ffi_str(buf, used_size)
+function ngx.cookie_time(sec)
+    if type(sec) ~= "number" then
+        return error("number argument only")
     end
 
+    -- the format of cookie time is Mon, 28-Sep-2038 06:00:00 GMT
+    -- or Mon, 28-Sep-18 06:00:00 GMT
+    local cookie_time_buf_size = 29
+    local buf = get_string_buf(cookie_time_buf_size)
+    local used_size = C.ngx_http_lua_ffi_cookie_time(buf, sec)
+    return ffi_str(buf, used_size)
+end
 
-    function ngx.http_time(sec)
-        if type(sec) ~= "number" then
-            return error("number argument only")
-        end
 
-        -- the format of http time is Mon, 28 Sep 1970 06:00:00 GMT
-        local http_time_buf_size = 29
-        local buf = get_string_buf(http_time_buf_size)
-        C.ngx_http_lua_ffi_http_time(buf, sec)
-        return ffi_str(buf, http_time_buf_size)
+function ngx.http_time(sec)
+    if type(sec) ~= "number" then
+        return error("number argument only")
     end
 
+    -- the format of http time is Mon, 28 Sep 1970 06:00:00 GMT
+    local http_time_buf_size = 29
+    local buf = get_string_buf(http_time_buf_size)
+    C.ngx_http_lua_ffi_http_time(buf, sec)
+    return ffi_str(buf, http_time_buf_size)
+end
 
-    function ngx.parse_http_time(time_str)
-        if type(time_str) ~= "string" then
-            return error("string argument only")
-        end
 
-        local out_val = get_size_ptr()
-        C.ngx_http_lua_ffi_parse_http_time(time_str, #time_str, out_val)
-
-        local res = out_val[0]
-        if res == FFI_ERROR then
-            return nil
-        end
-
-        return tonumber(res)
+function ngx.parse_http_time(time_str)
+    if type(time_str) ~= "string" then
+        return error("string argument only")
     end
-end  -- if subsystem == 'http' then
+
+    local out_val = get_size_ptr()
+    C.ngx_http_lua_ffi_parse_http_time(time_str, #time_str, out_val)
+
+    local res = out_val[0]
+    if res == FFI_ERROR then
+        return nil
+    end
+
+    return tonumber(res)
+end
 
 
 return {
