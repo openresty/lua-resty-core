@@ -14,7 +14,7 @@ local ffi_str = ffi.string
 local time_val = ffi_new("long[1]")
 local get_string_buf = base.get_string_buf
 local ngx = ngx
-local FFI_ERROR = ngx.ERROR
+local FFI_ERROR = base.FFI_ERROR
 
 
 ffi.cdef[[
