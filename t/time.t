@@ -230,7 +230,33 @@ stitch
 
 
 
-=== TEST 8: ngx.http_time()
+=== TEST 8: ngx.cookie_time() bad argument
+--- http_config eval: $::HttpConfig
+--- config
+    location /t {
+        content_by_lua_block {
+            local pok, err = pcall(ngx.cookie_time, "foo")
+            if not pok then
+                ngx.say("not ok: ", err)
+                return
+            end
+
+            ngx.say("ok")
+        }
+    }
+--- request
+GET /t
+--- response_body
+not ok: number argument only
+--- no_error_log
+[error]
+[alert]
+bad argument type
+stitch
+
+
+
+=== TEST 9: ngx.http_time()
 --- http_config eval: $::HttpConfig
 --- config
     location /t {
@@ -255,7 +281,35 @@ stitch
 
 
 
-=== TEST 9: ngx.parse_http_time()
+=== TEST 10: ngx.http_time() bad argument
+--- http_config eval: $::HttpConfig
+--- config
+    location /t {
+        content_by_lua_block {
+            t = ngx.http_time(1290079655)
+            local pok, err = pcall(ngx.http_time, "foo")
+            if not pok then
+                ngx.say("not ok: ", err)
+                return
+            end
+
+            ngx.say("ok")
+
+        }
+    }
+--- request
+GET /t
+--- response_body
+not ok: number argument only
+--- no_error_log
+[error]
+[alert]
+bad argument type
+stitch
+
+
+
+=== TEST 11: ngx.parse_http_time()
 --- http_config eval: $::HttpConfig
 --- config
     location /t {
@@ -277,5 +331,33 @@ nil
 qr/\[TRACE   \d+ content_by_lua\(nginx\.conf:\d+\):3 loop\]/
 --- no_error_log
 [error]
+bad argument type
+stitch
+
+
+
+=== TEST 12: ngx.parse_http_time() bad argument
+--- http_config eval: $::HttpConfig
+--- config
+    location /t {
+        content_by_lua_block {
+            t = ngx.http_time(1290079655)
+            local pok, err = pcall(ngx.parse_http_time, 123)
+            if not pok then
+                ngx.say("not ok: ", err)
+                return
+            end
+
+            ngx.say("ok")
+
+        }
+    }
+--- request
+GET /t
+--- response_body
+not ok: string argument only
+--- no_error_log
+[error]
+[alert]
 bad argument type
 stitch
