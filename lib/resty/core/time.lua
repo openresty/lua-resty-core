@@ -75,7 +75,7 @@ end
 
 function ngx.cookie_time(sec)
     if type(sec) ~= "number" then
-        return error("number argument only")
+        error("number argument only", 2)
     end
 
     -- the format of cookie time is Mon, 28-Sep-2038 06:00:00 GMT
@@ -89,7 +89,7 @@ end
 
 function ngx.http_time(sec)
     if type(sec) ~= "number" then
-        return error("number argument only")
+        error("number argument only", 2)
     end
 
     -- the format of http time is Mon, 28 Sep 1970 06:00:00 GMT
@@ -102,7 +102,7 @@ end
 
 function ngx.parse_http_time(time_str)
     if type(time_str) ~= "string" then
-        return error("string argument only")
+        error("string argument only", 2)
     end
 
     C.ngx_http_lua_ffi_parse_http_time(time_str, #time_str, time_val)
