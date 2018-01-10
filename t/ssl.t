@@ -1043,7 +1043,7 @@ lua ssl server name: "test.com"
     lua_package_path "$TEST_NGINX_LUA_PACKAGE_PATH/?.lua;;";
 
     server {
-        listen 127.0.0.2:8080 ssl;
+        listen 127.0.0.2:12345 ssl;
         server_name test.com;
         ssl_certificate_by_lua_block {
             local ssl = require "ngx.ssl"
@@ -1079,7 +1079,7 @@ lua ssl server name: "test.com"
 
                 sock:settimeout(3000)
 
-                local ok, err = sock:connect("127.0.0.2", 8080)
+                local ok, err = sock:connect("127.0.0.2", 12345)
                 if not ok then
                     ngx.say("failed to connect: ", err)
                     return
@@ -1119,7 +1119,7 @@ got TLS1 version: SSLv3,
     lua_package_path "$TEST_NGINX_LUA_PACKAGE_PATH/?.lua;;";
 
     server {
-        listen 127.0.0.2:8080 ssl;
+        listen 127.0.0.2:12345 ssl;
         server_name test.com;
         ssl_certificate_by_lua_block {
             local ssl = require "ngx.ssl"
@@ -1155,7 +1155,7 @@ got TLS1 version: SSLv3,
 
                 sock:settimeout(3000)
 
-                local ok, err = sock:connect("127.0.0.2", 8080)
+                local ok, err = sock:connect("127.0.0.2", 12345)
                 if not ok then
                     ngx.say("failed to connect: ", err)
                     return
@@ -1195,7 +1195,7 @@ got TLS1 version: TLSv1,
     lua_package_path "$TEST_NGINX_LUA_PACKAGE_PATH/?.lua;;";
 
     server {
-        listen 127.0.0.2:8080 ssl;
+        listen 127.0.0.2:12345 ssl;
         server_name test.com;
         ssl_certificate_by_lua_block {
             local ssl = require "ngx.ssl"
@@ -1231,7 +1231,7 @@ got TLS1 version: TLSv1,
 
                 sock:settimeout(3000)
 
-                local ok, err = sock:connect("127.0.0.2", 8080)
+                local ok, err = sock:connect("127.0.0.2", 12345)
                 if not ok then
                     ngx.say("failed to connect: ", err)
                     return
@@ -1271,7 +1271,7 @@ got TLS1 version: TLSv1.1,
     lua_package_path "$TEST_NGINX_LUA_PACKAGE_PATH/?.lua;;";
 
     server {
-        listen 127.0.0.2:8080 ssl;
+        listen 127.0.0.2:12345 ssl;
         server_name test.com;
         ssl_certificate_by_lua_block {
             local ssl = require "ngx.ssl"
@@ -1307,7 +1307,7 @@ got TLS1 version: TLSv1.1,
 
                 sock:settimeout(3000)
 
-                local ok, err = sock:connect("127.0.0.2", 8080)
+                local ok, err = sock:connect("127.0.0.2", 12345)
                 if not ok then
                     ngx.say("failed to connect: ", err)
                     return
@@ -1347,7 +1347,7 @@ got TLS1 version: TLSv1.2,
     lua_package_path "$TEST_NGINX_LUA_PACKAGE_PATH/?.lua;;";
 
     server {
-        listen 127.0.0.2:8080 ssl;
+        listen 127.0.0.2:12345 ssl;
         server_name test.com;
         ssl_certificate_by_lua_block {
             local semaphore = require "ngx.semaphore"
@@ -1390,7 +1390,7 @@ got TLS1 version: TLSv1.2,
 
                 sock:settimeout(3000)
 
-                local ok, err = sock:connect("127.0.0.2", 8080)
+                local ok, err = sock:connect("127.0.0.2", 12345)
                 if not ok then
                     ngx.say("failed to connect: ", err)
                     return
