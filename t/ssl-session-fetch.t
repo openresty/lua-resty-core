@@ -404,19 +404,23 @@ $/s,
 
 
 === TEST 5: yield during doing handshake with client which uses low version OpenSSL
+--- no_check_leak
 --- http_config
+    lua_shared_dict done 16k;
     lua_package_path "$TEST_NGINX_LUA_PACKAGE_PATH/?.lua;;";
     ssl_session_store_by_lua_block {
         local ssl = require "ngx.ssl.session"
 
         local sid = ssl.get_session_id()
         print("session id: ", sid)
+
+        ngx.shared.done:set("handshake", true)
     }
 
     ssl_session_fetch_by_lua_block {
         local ssl = require "ngx.ssl.session"
 
-        ngx.sleep(0.1) -- yield
+        ngx.sleep(0.01) -- yield
 
         local sid = ssl.get_session_id()
         print("session id: ", sid)
@@ -425,6 +429,8 @@ $/s,
         if not ok or err then
            print("failed to resume session: ", err)
         end
+
+        ngx.shared.done:set("handshake", true)
     }
 
     server {
@@ -441,28 +447,37 @@ $/s,
         set $sess_file $TEST_NGINX_HTML_DIR/sess;
         set $addr 127.0.0.1:$TEST_NGINX_SERVER_SSL_PORT;
         content_by_lua_block {
-            do
-                local addr = ngx.var.addr;
-                local sess = ngx.var.sess_file
-                local f, err
-                if not package.loaded.session then
-                    f, err = io.popen("echo 'Q' | openssl s_client -connect " .. addr .. " -sess_out " .. sess)
-                    package.loaded.session = true
-                else
-                    f, err = io.popen("echo 'Q' | openssl s_client -connect " .. addr .. " -sess_in " .. sess)
-                end
+            ngx.shared.done:delete("handshake")
+            local addr = ngx.var.addr;
+            local sess = ngx.var.sess_file
+            local f, err
+            if not package.loaded.session then
+                f, err = io.popen("echo 'Q' | timeout 3s openssl s_client -connect " .. addr .. " -sess_out " .. sess)
+                package.loaded.session = true
+            else
+                f, err = io.popen("echo 'Q' | timeout 3s openssl s_client -connect " .. addr .. " -sess_in " .. sess)
+            end
 
-                if not f then
-                    ngx.say(err)
+            if not f then
+                ngx.say(err)
+                return
+            end
+
+            local step = 0.1
+            while step < 1 do
+                ngx.sleep(step)
+                step = step * 2
+
+                if ngx.shared.done:get("handshake") then
+                    local out = f:read('*a')
+                    ngx.log(ngx.INFO, out)
+                    ngx.say("ok")
+                    f:close()
                     return
                 end
+            end
 
-                ngx.sleep(0.2)
-                local out = f:read('*a')
-                ngx.log(ngx.INFO, out)
-                f:close()
-                ngx.say("ok")
-            end  -- do
+            ngx.log(ngx.ERR, "openssl client handshake timeout")
         }
     }
 

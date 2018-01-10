@@ -2174,7 +2174,9 @@ client ip: 127.0.0.1
 
 
 === TEST 21: yield during doing handshake with client which uses low version OpenSSL
+--- no_check_leak
 --- http_config
+    lua_shared_dict done 16k;
     lua_package_path "$TEST_NGINX_LUA_PACKAGE_PATH/?.lua;;";
     server {
         listen $TEST_NGINX_SERVER_SSL_PORT ssl;
@@ -2192,8 +2194,8 @@ client ip: 127.0.0.1
             local cert_data = f:read("*a")
             f:close()
 
-            ngx.sleep(0.1) -- yield
-            
+            ngx.sleep(0.01) -- yield
+
             local ok, err = ssl.set_der_cert(cert_data)
             if not ok then
                 ngx.log(ngx.ERR, "failed to set DER cert: ", err)
@@ -2209,6 +2211,8 @@ client ip: 127.0.0.1
                 ngx.log(ngx.ERR, "failed to set DER cert: ", err)
                 return
             end
+
+            ngx.shared.done:set("handshake", true)
         }
 
         location /foo {
@@ -2222,19 +2226,29 @@ client ip: 127.0.0.1
 
     location /t {
         content_by_lua_block {
-            do
-                local addr = ngx.var.addr;
-                local f, err = io.popen("echo 'Q' | openssl s_client -connect 127.0.0.1:$TEST_NGINX_SERVER_SSL_PORT")
-                if not f then
-                    ngx.say(err)
+            ngx.shared.done:delete("handshake")
+            local addr = ngx.var.addr;
+            local f, err = io.popen("echo 'Q' | timeout 3s openssl s_client -connect 127.0.0.1:$TEST_NGINX_SERVER_SSL_PORT")
+            if not f then
+                ngx.say(err)
+                return
+            end
+
+            local step = 0.1
+            while step < 1 do
+                ngx.sleep(step)
+                step = step * 2
+
+                if ngx.shared.done:get("handshake") then
+                    local out = f:read('*a')
+                    ngx.log(ngx.INFO, out)
+                    ngx.say("ok")
+                    f:close()
                     return
                 end
-                ngx.sleep(0.2)
-                local out = f:read('*a')
-                ngx.log(ngx.INFO, out)
-                f:close()
-                ngx.say("ok")
-            end  -- do
+            end
+
+            ngx.log(ngx.ERR, "openssl client handshake timeout")
         }
     }
 
