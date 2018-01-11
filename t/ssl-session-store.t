@@ -30,7 +30,7 @@ __DATA__
 
 === TEST 1: get new session serialized
 --- http_config
-    lua_package_path "$TEST_NGINX_LUA_PACKAGE_PATH/?.lua;;";
+    lua_package_path "$TEST_NGINX_LUA_PACKAGE_PATH";
     ssl_session_store_by_lua_block {
         local ssl = require "ngx.ssl.session"
         local sess = ssl.get_serialized_session()
@@ -102,7 +102,7 @@ qr/ssl_session_store_by_lua_block:4: session size: \d+/s
 
 === TEST 2: get new session id serialized
 --- http_config
-    lua_package_path "$TEST_NGINX_LUA_PACKAGE_PATH/?.lua;;";
+    lua_package_path "$TEST_NGINX_LUA_PACKAGE_PATH";
     ssl_session_store_by_lua_block {
         local ssl = require "ngx.ssl.session"
         local sid = ssl.get_session_id()
@@ -174,7 +174,7 @@ qr/ssl_session_store_by_lua_block:4: session id: [a-fA-f\d]+/s
 
 === TEST 3: store the session via timer to memcached
 --- http_config
-    lua_package_path "$TEST_NGINX_LUA_PACKAGE_PATH/?.lua;;";
+    lua_package_path "$TEST_NGINX_LUA_PACKAGE_PATH";
     ssl_session_store_by_lua_block {
         local ssl = require "ngx.ssl.session"
         local function f(premature, key, value)
