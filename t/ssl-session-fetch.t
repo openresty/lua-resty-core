@@ -414,8 +414,6 @@ $/s,
 
         local sid = ssl.get_session_id()
         print("session id: ", sid)
-
-        ngx.shared.done:set("handshake", true)
     }
 
     ssl_session_fetch_by_lua_block {
@@ -430,8 +428,6 @@ $/s,
         if not ok or err then
            print("failed to resume session: ", err)
         end
-
-        -- ngx.shared.done:set("handshake", true)
     }
 
     server {
@@ -440,6 +436,12 @@ $/s,
         ssl_session_tickets off;
         ssl_certificate $TEST_NGINX_CERT_DIR/cert/test.crt;
         ssl_certificate_key $TEST_NGINX_CERT_DIR/cert/test.key;
+
+        location / {
+            content_by_lua_block {
+                ngx.shared.done:set("handshake", true)
+            }
+        }
     }
 --- config
     lua_ssl_trusted_certificate $TEST_NGINX_CERT_DIR/cert/test.crt;
@@ -451,12 +453,13 @@ $/s,
             ngx.shared.done:delete("handshake")
             local addr = ngx.var.addr;
             local sess = ngx.var.sess_file
+            local req = "'GET / HTTP/1.0\r\nHost: test.com\r\nConnection: close\r\n\r\n'"
             local f, err
             if not package.loaded.session then
-                f, err = io.popen("echo 'Q' | timeout 3s openssl s_client -connect " .. addr .. " -sess_out " .. sess)
+                f, err = io.popen("echo -n " .. req .. " | timeout 3s openssl s_client -connect " .. addr .. " -sess_out " .. sess)
                 package.loaded.session = true
             else
-                f, err = io.popen("echo 'Q' | timeout 3s openssl s_client -connect " .. addr .. " -sess_in " .. sess)
+                f, err = io.popen("echo -n " .. req .. " | timeout 3s openssl s_client -connect " .. addr .. " -sess_in " .. sess)
             end
 
             if not f then
@@ -465,7 +468,7 @@ $/s,
             end
 
             local step = 0.001
-            while step < 1 do
+            while step < 2 do
                 ngx.sleep(step)
                 step = step * 2
 
