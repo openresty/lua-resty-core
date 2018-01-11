@@ -1528,3 +1528,111 @@ foo after init_ttl = nil
 [error]
 [alert]
 [crit]
+
+
+
+=== TEST 47: exptime uses long type to avoid overflow in set() + ttl()
+--- http_config eval: $::HttpConfig
+--- config
+    location = /t {
+        content_by_lua_block {
+            local dogs = ngx.shared.dogs
+            dogs:flush_all()
+
+            local ok, err = dogs:set("huge_ttl", true, 2 ^ 31)
+            if not ok then
+                ngx.say("err setting: ", err)
+                return
+            end
+
+            local ttl, err = dogs:ttl("huge_ttl")
+            if not ttl then
+                ngx.say("err retrieving ttl: ", err)
+                return
+            end
+
+            ngx.say("ttl: ", ttl)
+        }
+    }
+--- request
+GET /t
+--- response_body
+ttl: 2147483648
+--- no_error_log
+[error]
+[alert]
+[crit]
+
+
+
+=== TEST 48: exptime uses long type to avoid overflow in expire() + ttl()
+--- http_config eval: $::HttpConfig
+--- config
+    location = /t {
+        content_by_lua_block {
+            local dogs = ngx.shared.dogs
+            dogs:flush_all()
+
+            local ok, err = dogs:set("updated_huge_ttl", true)
+            if not ok then
+                ngx.say("err setting: ", err)
+                return
+            end
+
+            local ok, err = dogs:expire("updated_huge_ttl", 2 ^ 31)
+            if not ok then
+                ngx.say("err expire: ", err)
+                return
+            end
+
+            local ttl, err = dogs:ttl("updated_huge_ttl")
+            if not ttl then
+                ngx.say("err retrieving ttl: ", err)
+                return
+            end
+
+            ngx.say("ttl: ", ttl)
+        }
+    }
+--- request
+GET /t
+--- response_body
+ttl: 2147483648
+--- no_error_log
+[error]
+[alert]
+[crit]
+
+
+
+=== TEST 49: init_ttl uses long type to avoid overflow in incr() + ttl()
+--- http_config eval: $::HttpConfig
+--- config
+    location = /t {
+        content_by_lua_block {
+            local dogs = ngx.shared.dogs
+            dogs:flush_all()
+
+            local ok, err = dogs:incr("incr_huge_ttl", 1, 0, 2 ^ 31)
+            if not ok then
+                ngx.say("err incr: ", err)
+                return
+            end
+
+            local ttl, err = dogs:ttl("incr_huge_ttl")
+            if not ttl then
+                ngx.say("err retrieving ttl: ", err)
+                return
+            end
+
+            ngx.say("ttl: ", ttl)
+        }
+    }
+--- request
+GET /t
+--- response_body
+ttl: 2147483648
+--- no_error_log
+[error]
+[alert]
+[crit]

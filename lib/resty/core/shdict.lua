@@ -34,16 +34,16 @@ ffi.cdef[[
     int ngx_http_lua_ffi_shdict_store(void *zone, int op,
         const unsigned char *key, size_t key_len, int value_type,
         const unsigned char *str_value_buf, size_t str_value_len,
-        double num_value, int exptime, int user_flags, char **errmsg,
+        double num_value, long exptime, int user_flags, char **errmsg,
         int *forcible);
 
     int ngx_http_lua_ffi_shdict_flush_all(void *zone);
 
-    int ngx_http_lua_ffi_shdict_get_ttl(void *zone,
-        const unsigned char *key, size_t key_len);
+    long ngx_http_lua_ffi_shdict_get_ttl(void *zone,
+         const unsigned char *key, size_t key_len);
 
     int ngx_http_lua_ffi_shdict_set_expire(void *zone,
-        const unsigned char *key, size_t key_len, int exptime);
+        const unsigned char *key, size_t key_len, long exptime);
 
     size_t ngx_http_lua_ffi_shdict_capacity(void *zone);
 ]]
