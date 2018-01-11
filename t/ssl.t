@@ -2211,13 +2211,11 @@ client ip: 127.0.0.1
                 ngx.log(ngx.ERR, "failed to set DER cert: ", err)
                 return
             end
-
-            ngx.shared.done:set("handshake", true)
         }
 
-        location /foo {
+        location / {
             content_by_lua_block {
-                ngx.exit(201)
+                ngx.shared.done:set("handshake", true)
             }
         }
     }
@@ -2228,14 +2226,15 @@ client ip: 127.0.0.1
         content_by_lua_block {
             ngx.shared.done:delete("handshake")
             local addr = ngx.var.addr;
-            local f, err = io.popen("echo 'Q' | timeout 3s openssl s_client -connect 127.0.0.1:$TEST_NGINX_SERVER_SSL_PORT")
+            local req = "'GET / HTTP/1.0\r\nHost: test.com\r\nConnection: close\r\n\r\n'"
+            local f, err = io.popen("echo -n " .. req .. " | timeout 3s openssl s_client -connect 127.0.0.1:$TEST_NGINX_SERVER_SSL_PORT")
             if not f then
                 ngx.say(err)
                 return
             end
 
             local step = 0.001
-            while step < 1 do
+            while step < 2 do
                 ngx.sleep(step)
                 step = step * 2
 
