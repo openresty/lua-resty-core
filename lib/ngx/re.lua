@@ -199,7 +199,9 @@ function _M.split(subj, regex, opts, ctx, max, res)
 
                 sub_idx = to
 
-                if sub_idx >= len then
+                if sub_idx > len then
+                    break
+                elseif sub_idx == len and last_empty_match then
                     break
                 end
             end
@@ -236,7 +238,9 @@ function _M.split(subj, regex, opts, ctx, max, res)
 
                 sub_idx = to
 
-                if sub_idx >= len then
+                if sub_idx > len then
+                    break
+                elseif sub_idx == len and last_empty_match then
                     break
                 end
             end

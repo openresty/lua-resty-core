@@ -1245,3 +1245,35 @@ GET /re
 qr/\[TRACE   \d+/
 --- no_error_log
 [error]
+
+
+
+=== TEST 38: remaining characters are matched by regex
+--- http_config eval: $::HttpConfig
+--- config
+    location /re {
+        content_by_lua_block {
+            local ngx_re = require "ngx.re"
+
+            local subj = "a,b,cd,,,"
+
+            for _, max in ipairs({0, 6}) do
+                local res, err = ngx_re.split(subj, ",", nil, nil, max)
+                if err then
+                    ngx.log(ngx.ERR, "failed: ", err)
+                    return
+                end
+
+                ngx.say(#res, " ", table.concat(res, "|"))
+            end
+        }
+    }
+--- request
+GET /re
+--- response_body
+6 a|b|cd|||
+6 a|b|cd|||
+--- error_log eval
+qr/\[TRACE   \d+/
+--- no_error_log
+[error]
