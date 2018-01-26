@@ -605,7 +605,6 @@ a
 b
 c
 d
-_blank_
 --- error_log eval
 qr/\[TRACE   \d+/
 --- no_error_log
@@ -1248,7 +1247,7 @@ qr/\[TRACE   \d+/
 
 
 
-=== TEST 38: remaining characters are matched by regex
+=== TEST 38: remaining characters are matched by regex (without max)
 --- http_config eval: $::HttpConfig
 --- config
     location /re {
@@ -1257,7 +1256,36 @@ qr/\[TRACE   \d+/
 
             local subj = "a,b,cd,,,"
 
-            for _, max in ipairs({0, 6}) do
+            local res, err = ngx_re.split(subj, ",")
+            if err then
+                ngx.log(ngx.ERR, "failed: ", err)
+                return
+            end
+
+            ngx.say(#res, " ", table.concat(res, "|"))
+        }
+    }
+--- request
+GET /re
+--- response_body
+3 a|b|cd
+--- error_log eval
+qr/\[TRACE   \d+/
+--- no_error_log
+[error]
+
+
+
+=== TEST 39: remaining characters are matched by regex (with max)
+--- http_config eval: $::HttpConfig
+--- config
+    location /re {
+        content_by_lua_block {
+            local ngx_re = require "ngx.re"
+
+            local subj = "a,b,cd,,,"
+
+            for max = 1, 7 do
                 local res, err = ngx_re.split(subj, ",", nil, nil, max)
                 if err then
                     ngx.log(ngx.ERR, "failed: ", err)
@@ -1271,6 +1299,11 @@ qr/\[TRACE   \d+/
 --- request
 GET /re
 --- response_body
+1 a,b,cd,,,
+2 a|b,cd,,,
+3 a|b|cd,,,
+4 a|b|cd|,,
+5 a|b|cd||,
 6 a|b|cd|||
 6 a|b|cd|||
 --- error_log eval
