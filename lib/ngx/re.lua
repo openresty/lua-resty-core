@@ -201,8 +201,6 @@ function _M.split(subj, regex, opts, ctx, max, res)
 
                 if sub_idx > len then
                     break
-                elseif sub_idx == len and last_empty_match then
-                    break
                 end
             end
         end
@@ -240,8 +238,6 @@ function _M.split(subj, regex, opts, ctx, max, res)
 
                 if sub_idx > len then
                     break
-                elseif sub_idx == len and last_empty_match then
-                    break
                 end
             end
         end
@@ -263,14 +259,15 @@ function _M.split(subj, regex, opts, ctx, max, res)
                 res[ety_idx] = nil
             else
                 res_idx = ety_idx
-                res[res_idx + 1] = nil
                 break
             end
         end
     else
-        res[res_idx + 1] = remaining_str
-        res[res_idx + 2] = nil
+        res_idx = res_idx + 1
+        res[res_idx] = remaining_str
     end
+
+    res[res_idx + 1] = nil
 
     return res
 end
