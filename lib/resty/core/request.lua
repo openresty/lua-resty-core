@@ -11,6 +11,7 @@ local FFI_OK = base.FFI_OK
 local new_tab = base.new_tab
 local C = ffi.C
 local ffi_cast = ffi.cast
+local ffi_new = ffi.new
 local ffi_str = ffi.string
 local get_string_buf = base.get_string_buf
 local get_size_ptr = base.get_size_ptr
@@ -51,7 +52,7 @@ ffi.cdef[[
     int ngx_http_lua_ffi_req_get_method(ngx_http_request_t *r);
 
     int ngx_http_lua_ffi_req_get_method_name(ngx_http_request_t *r,
-        char *name, size_t *len);
+        unsigned char **name, size_t *len);
 
     int ngx_http_lua_ffi_req_set_method(ngx_http_request_t *r, int method);
 
@@ -218,6 +219,8 @@ do
         [0x8000] = "TRACE",
     }
 
+    local namep = ffi_new("unsigned char *[1]")
+
     function ngx.req.get_method()
         local r = getfenv(0).__ngx_req
         if not r then
@@ -236,16 +239,13 @@ do
             end
         end
 
-        local buf = get_string_buf(32)
         local sizep = get_size_ptr()
-        sizep[0] = 32
-
-        local rc = C.ngx_http_lua_ffi_req_get_method_name(r, buf, sizep)
+        local rc = C.ngx_http_lua_ffi_req_get_method_name(r, namep, sizep)
         if rc ~= 0 then
             return nil
         end
 
-        return ffi_str(buf, sizep[0])
+        return ffi_str(namep[0], sizep[0])
     end
 end  -- do
 
