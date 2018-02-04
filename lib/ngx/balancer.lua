@@ -106,7 +106,7 @@ local _M = { version = base.version }
 function _M.set_current_peer(addr, port)
     local r = getfenv(0).__ngx_req
     if not r then
-        return error("no request found")
+        error("no request found")
     end
 
     if not port then
@@ -128,7 +128,7 @@ end
 function _M.set_more_tries(count)
     local r = getfenv(0).__ngx_req
     if not r then
-        return error("no request found")
+        error("no request found")
     end
 
     local rc = ngx_lua_ffi_balancer_set_more_tries(r, count, errmsg)
@@ -146,7 +146,7 @@ end
 function _M.get_last_failure()
     local r = getfenv(0).__ngx_req
     if not r then
-        return error("no request found")
+        error("no request found")
     end
 
     local state = ngx_lua_ffi_balancer_get_last_failure(r, int_out, errmsg)
@@ -166,13 +166,13 @@ end
 function _M.set_timeouts(connect_timeout, send_timeout, read_timeout)
     local r = getfenv(0).__ngx_req
     if not r then
-        return error("no request found")
+        error("no request found")
     end
 
     if not connect_timeout then
         connect_timeout = 0
     elseif type(connect_timeout) ~= "number" or connect_timeout <= 0 then
-        return error("bad connect timeout")
+        error("bad connect timeout", 2)
     else
         connect_timeout = connect_timeout * 1000
     end
@@ -180,7 +180,7 @@ function _M.set_timeouts(connect_timeout, send_timeout, read_timeout)
     if not send_timeout then
         send_timeout = 0
     elseif type(send_timeout) ~= "number" or send_timeout <= 0 then
-        return error("bad send timeout")
+        error("bad send timeout", 2)
     else
         send_timeout = send_timeout * 1000
     end
@@ -188,7 +188,7 @@ function _M.set_timeouts(connect_timeout, send_timeout, read_timeout)
     if not read_timeout then
         read_timeout = 0
     elseif type(read_timeout) ~= "number" or read_timeout <= 0 then
-        return error("bad read timeout")
+        error("bad read timeout", 2)
     else
         read_timeout = read_timeout * 1000
     end

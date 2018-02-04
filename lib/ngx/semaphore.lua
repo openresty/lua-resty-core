@@ -59,7 +59,7 @@ local mt = { __index = _M }
 function _M.new(n)
     n = tonumber(n) or 0
     if n < 0 then
-        return error("no negative number")
+        error("no negative number", 2)
     end
 
     local ret = C.ngx_http_lua_ffi_sema_new(psem, n, errmsg)
@@ -77,17 +77,17 @@ end
 
 function _M.wait(self, seconds)
     if type(self) ~= "table" or type(self.sem) ~= "cdata" then
-        return error("not a semaphore instance")
+        error("not a semaphore instance", 2)
     end
 
     local r = getfenv(0).__ngx_req
     if not r then
-        return error("no request found")
+        error("no request found")
     end
 
     local milliseconds = tonumber(seconds) * 1000
     if milliseconds < 0 then
-        return error("no negative number")
+        error("no negative number", 2)
     end
 
     local cdata_sem = self.sem
@@ -123,14 +123,14 @@ end
 
 function _M.post(self, n)
     if type(self) ~= "table" or type(self.sem) ~= "cdata" then
-        return error("not a semaphore instance")
+        error("not a semaphore instance", 2)
     end
 
     local cdata_sem = self.sem
 
     local num = n and tonumber(n) or 1
     if num < 1 then
-        return error("no negative number")
+        error("positive number required", 2)
     end
 
     -- always return NGX_OK
@@ -142,7 +142,7 @@ end
 
 function _M.count(self)
     if type(self) ~= "table" or type(self.sem) ~= "cdata" then
-        return error("not a semaphore instance")
+        error("not a semaphore instance", 2)
     end
 
     return C.ngx_http_lua_ffi_sema_count(self.sem)

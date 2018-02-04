@@ -43,7 +43,7 @@ ffi.cdef[[
 local function set_resp_header(tb, key, value)
     local r = getfenv(0).__ngx_req
     if not r then
-        return error("no request found")
+        error("no request found")
     end
 
     if type(key) ~= "string" then
@@ -95,22 +95,22 @@ local function set_resp_header(tb, key, value)
     end
 
     if rc == FFI_NO_REQ_CTX then
-        return error("no request ctx found")
+        error("no request ctx found")
     end
 
     if rc == FFI_BAD_CONTEXT then
-        return error("API disabled in the current context")
+        error("API disabled in the current context")
     end
 
     -- rc == FFI_ERROR
-    return error(ffi_str(errmsg[0]))
+    error(ffi_str(errmsg[0]))
 end
 
 
 local function get_resp_header(tb, key)
     local r = getfenv(0).__ngx_req
     if not r then
-        return error("no request found")
+        error("no request found")
     end
 
     if type(key) ~= "string" then
@@ -127,7 +127,7 @@ local function get_resp_header(tb, key)
     -- print("retval: ", n)
 
     if n == FFI_BAD_CONTEXT then
-        return error("API disabled in the current context")
+        error("API disabled in the current context")
     end
 
     if n == 0 then
@@ -149,7 +149,7 @@ local function get_resp_header(tb, key)
     end
 
     -- n == FFI_ERROR
-    return error("no memory")
+    error("no memory")
 end
 
 

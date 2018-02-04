@@ -72,12 +72,12 @@ local errmsg = base.get_errmsg_ptr()
 
 local function check_zone(zone)
     if not zone or type(zone) ~= "table" then
-        return error("bad \"zone\" argument")
+        error("bad \"zone\" argument", 2)
     end
 
     zone = zone[1]
     if type(zone) ~= "userdata" then
-        return error("bad \"zone\" argument")
+        error("bad \"zone\" argument", 2)
     end
 
     return zone
@@ -90,7 +90,7 @@ local function shdict_store(zone, op, key, value, exptime, flags)
     if not exptime then
         exptime = 0
     elseif exptime < 0 then
-        return error('bad "exptime" argument')
+        error('bad "exptime" argument', 2)
     end
 
     if not flags then
@@ -222,7 +222,7 @@ local function shdict_get(zone, key)
             return nil, ffi_str(errmsg[0])
         end
 
-        return error("failed to get the key")
+        error("failed to get the key")
     end
 
     local typ = value_type[0]
@@ -252,7 +252,7 @@ local function shdict_get(zone, key)
         val = (tonumber(buf[0]) ~= 0)
 
     else
-        return error("unknown value type: " .. typ)
+        error("unknown value type: " .. typ)
     end
 
     if flags ~= 0 then
@@ -297,7 +297,7 @@ local function shdict_get_stale(zone, key)
             return nil, ffi_str(errmsg[0])
         end
 
-        return error("failed to get the key")
+        error("failed to get the key")
     end
 
     local typ = value_type[0]
@@ -326,7 +326,7 @@ local function shdict_get_stale(zone, key)
         val = (tonumber(buf[0]) ~= 0)
 
     else
-        return error("unknown value type: " .. typ)
+        error("unknown value type: " .. typ)
     end
 
     if flags ~= 0 then
@@ -367,7 +367,7 @@ local function shdict_incr(zone, key, value, init, init_ttl)
             init = tonumber(init)
 
             if not init then
-                return error("bad init arg: number expected, got " .. typ)
+                error("bad init arg: number expected, got " .. typ, 2)
             end
         end
     end
