@@ -222,8 +222,7 @@ local function parse_regex_opts(opts)
             pcre_opts = bor(pcre_opts, PCRE_JAVASCRIPT_COMPAT)
 
         else
-            return error(fmt('unknown flag "%s" (flags "%s")',
-                             sub(opts, i, i), opts))
+            error(fmt('unknown flag "%s" (flags "%s")', sub(opts, i, i), opts))
         end
     end
 

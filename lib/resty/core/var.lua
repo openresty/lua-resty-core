@@ -38,7 +38,7 @@ local errmsg = base.get_errmsg_ptr()
 local function var_get(self, name)
     local r = getfenv(0).__ngx_req
     if not r then
-        return error("no request found")
+        error("no request found")
     end
 
     local value_len = get_size_ptr()
@@ -49,7 +49,7 @@ local function var_get(self, name)
 
     else
         if type(name) ~= "string" then
-            return error("bad variable name")
+            error("bad variable name")
         end
 
         local name_len = #name
@@ -70,7 +70,7 @@ local function var_get(self, name)
     end
 
     if rc == -1 then  -- NGX_ERROR
-        return error(ffi_str(errmsg[0]))
+        error(ffi_str(errmsg[0]))
     end
 end
 
@@ -78,11 +78,11 @@ end
 local function var_set(self, name, value)
     local r = getfenv(0).__ngx_req
     if not r then
-        return error("no request found")
+        error("no request found")
     end
 
     if type(name) ~= "string" then
-        return error("bad variable name")
+        error("bad variable name")
     end
     local name_len = #name
 
@@ -111,7 +111,7 @@ local function var_set(self, name, value)
     end
 
     if rc == -1 then  -- NGX_ERROR
-        return error(ffi_str(errbuf, errlen[0]))
+        error(ffi_str(errbuf, errlen[0]))
     end
 end
 
