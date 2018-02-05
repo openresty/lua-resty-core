@@ -257,7 +257,7 @@ function ngx.req.set_method(method)
     end
 
     if type(method) ~= "number" then
-        error("bad method number")
+        error("bad method number", 2)
     end
 
     local rc = C.ngx_http_lua_ffi_req_set_method(r, method)

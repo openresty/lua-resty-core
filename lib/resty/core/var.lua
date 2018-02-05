@@ -49,7 +49,7 @@ local function var_get(self, name)
 
     else
         if type(name) ~= "string" then
-            error("bad variable name")
+            error("bad variable name", 2)
         end
 
         local name_len = #name
@@ -82,7 +82,7 @@ local function var_set(self, name, value)
     end
 
     if type(name) ~= "string" then
-        error("bad variable name")
+        error("bad variable name", 2)
     end
     local name_len = #name
 

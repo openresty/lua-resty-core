@@ -47,7 +47,8 @@ ngx.encode_base64 = function (s, no_padding)
 
     if no_padding then
         if no_padding ~= true then
-            error("boolean argument only")
+            local typ = type(no_padding)
+            error("bad no_padding: boolean expected, got " .. typ, 2)
         end
 
         no_padding_bool = true
@@ -70,7 +71,7 @@ end
 
 ngx.decode_base64 = function (s)
     if type(s) ~= 'string' then
-        error("string argument only")
+        error("string argument only", 2)
     end
     local slen = #s
     local dlen = base64_decoded_length(slen)

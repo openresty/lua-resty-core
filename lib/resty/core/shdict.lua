@@ -72,12 +72,12 @@ local errmsg = base.get_errmsg_ptr()
 
 local function check_zone(zone)
     if not zone or type(zone) ~= "table" then
-        error("bad \"zone\" argument")
+        error("bad \"zone\" argument", 2)
     end
 
     zone = zone[1]
     if type(zone) ~= "userdata" then
-        error("bad \"zone\" argument")
+        error("bad \"zone\" argument", 2)
     end
 
     return zone
@@ -90,7 +90,7 @@ local function shdict_store(zone, op, key, value, exptime, flags)
     if not exptime then
         exptime = 0
     elseif exptime < 0 then
-        error('bad "exptime" argument')
+        error('bad "exptime" argument', 2)
     end
 
     if not flags then
@@ -367,7 +367,7 @@ local function shdict_incr(zone, key, value, init, init_ttl)
             init = tonumber(init)
 
             if not init then
-                error("bad init arg: number expected, got " .. typ)
+                error("bad init arg: number expected, got " .. typ, 2)
             end
         end
     end
