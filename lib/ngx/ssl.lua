@@ -75,7 +75,7 @@ local intp = ffi.new("int[1]")
 function _M.clear_certs()
     local r = getfenv(0).__ngx_req
     if not r then
-        return error("no request found")
+        error("no request found")
     end
 
     local rc = C.ngx_http_lua_ffi_ssl_clear_certs(r, errmsg)
@@ -90,7 +90,7 @@ end
 function _M.set_der_cert(data)
     local r = getfenv(0).__ngx_req
     if not r then
-        return error("no request found")
+        error("no request found")
     end
 
     local rc = C.ngx_http_lua_ffi_ssl_set_der_certificate(r, data, #data,
@@ -106,7 +106,7 @@ end
 function _M.set_der_priv_key(data)
     local r = getfenv(0).__ngx_req
     if not r then
-        return error("no request found")
+        error("no request found")
     end
 
     local rc = C.ngx_http_lua_ffi_ssl_set_der_private_key(r, data, #data,
@@ -129,7 +129,7 @@ local addr_types = {
 function _M.raw_server_addr()
     local r = getfenv(0).__ngx_req
     if not r then
-        return error("no request found")
+        error("no request found")
     end
 
     local sizep = get_size_ptr()
@@ -151,7 +151,7 @@ end
 function _M.server_name()
     local r = getfenv(0).__ngx_req
     if not r then
-        return error("no request found")
+        error("no request found")
     end
 
     local sizep = get_size_ptr()
@@ -172,7 +172,7 @@ end
 function _M.raw_client_addr()
     local r = getfenv(0).__ngx_req
     if not r then
-        return error("no request found")
+        error("no request found")
     end
 
     local sizep = get_size_ptr()
@@ -219,7 +219,7 @@ local function get_tls1_version()
 
     local r = getfenv(0).__ngx_req
     if not r then
-        return error("no request found")
+        error("no request found")
     end
 
     local ver = C.ngx_http_lua_ffi_ssl_get_tls1_version(r, errmsg)
@@ -260,7 +260,7 @@ end
 function _M.set_cert(cert)
     local r = getfenv(0).__ngx_req
     if not r then
-        return error("no request found")
+        error("no request found")
     end
 
     local rc = C.ngx_http_lua_ffi_set_cert(r, cert, errmsg)
@@ -275,7 +275,7 @@ end
 function _M.set_priv_key(priv_key)
     local r = getfenv(0).__ngx_req
     if not r then
-        return error("no request found")
+        error("no request found")
     end
 
     local rc = C.ngx_http_lua_ffi_set_priv_key(r, priv_key, errmsg)

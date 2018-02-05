@@ -40,7 +40,7 @@ local _M = { version = base.version }
 function _M.get_serialized_session()
     local r = getfenv(0).__ngx_req
     if not r then
-        return error("no request found")
+        error("no request found")
     end
 
     local len = C.ngx_http_lua_ffi_ssl_get_serialized_session_size(r, errmsg)
@@ -68,7 +68,7 @@ end
 function _M.get_session_id()
     local r = getfenv(0).__ngx_req
     if not r then
-        return error("no request found")
+        error("no request found")
     end
 
     local len = C.ngx_http_lua_ffi_ssl_get_session_id_size(r, errmsg)
@@ -93,7 +93,7 @@ end
 function _M.set_serialized_session(sess)
     local r = getfenv(0).__ngx_req
     if not r then
-        return error("no request found")
+        error("no request found")
     end
 
     local rc = C.ngx_http_lua_ffi_ssl_set_serialized_session(r, sess, #sess,
