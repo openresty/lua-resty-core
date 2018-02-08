@@ -1,5 +1,6 @@
 local ffi = require 'ffi'
 local base = require "resty.core.base"
+local ngx_configure = require "ngx.configure"
 
 local C = ffi.C
 local FFI_ERROR = base.FFI_ERROR
@@ -33,8 +34,13 @@ local context_names = {
 function ngx.get_phase()
     local r = getfenv(0).__ngx_req
 
-    -- if we have no request object, assume we are called from the "init" phase
+    -- if we have no request object, assume we are called from the "init"
+    -- or "configure" phase
     if not r then
+        if ngx_configure.is_configure_phase() then
+            return "configure"
+        end
+
         return "init"
     end
 
