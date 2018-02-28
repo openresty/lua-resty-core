@@ -11,7 +11,7 @@ use File::Basename;
 
 repeat_each(2);
 
-plan tests => repeat_each() * (blocks() * 6 + 1);
+plan tests => repeat_each() * (blocks() * 6);
 
 our $CWD = cwd();
 
@@ -506,6 +506,83 @@ ssl_session_store_by_lua_block:\d+: session id: [a-fA-F\d]+
 $/s,
 ]
 
+--- no_error_log
+[alert]
+[emerg]
+[error]
+
+
+
+=== TEST 6: store new session, and resume it, avoid memory leak when calling repeatly
+--- http_config
+    lua_package_path "$TEST_NGINX_LUA_PACKAGE_PATH";
+    ssl_session_store_by_lua_block {
+        local ssl = require "ngx.ssl.session"
+        local sess = ssl.get_serialized_session()
+        local f = assert(io.open("$TEST_NGINX_SERVER_ROOT/html/session.tmp", "w"))
+        f:write(sess)
+        f:close()
+    }
+
+    ssl_session_fetch_by_lua_block {
+        local ssl = require "ngx.ssl.session"
+        local f = assert(io.open("$TEST_NGINX_SERVER_ROOT/html/session.tmp"))
+        local sess = f:read("*a")
+        f:close()
+        ssl.set_serialized_session(sess)
+        ssl.set_serialized_session(sess)
+    }
+
+    server {
+        listen unix:$TEST_NGINX_HTML_DIR/nginx.sock ssl;
+        server_name test.com;
+
+        ssl_session_tickets off;
+        ssl_certificate $TEST_NGINX_CERT_DIR/cert/test.crt;
+        ssl_certificate_key $TEST_NGINX_CERT_DIR/cert/test.key;
+
+        server_tokens off;
+    }
+--- config
+    lua_ssl_trusted_certificate $TEST_NGINX_CERT_DIR/cert/test.crt;
+    lua_ssl_verify_depth 3;
+
+    location /t {
+        set $port $TEST_NGINX_MEMCACHED_PORT;
+
+        content_by_lua_block {
+            do
+                local sock = ngx.socket.tcp()
+                sock:settimeout(5000)
+
+                local ok, err = sock:connect("unix:$TEST_NGINX_HTML_DIR/nginx.sock")
+                if not ok then
+                    ngx.say("failed to connect: ", err)
+                    return
+                end
+
+                ngx.say("connected: ", ok)
+
+                local sess, err = sock:sslhandshake(package.loaded.session, "test.com", true)
+                if not sess then
+                    ngx.say("failed to do SSL handshake: ", err)
+                    return
+                end
+
+                ngx.say("ssl handshake: ", type(sess))
+                package.loaded.session = sess
+                local ok, err = sock:close()
+                ngx.say("close: ", ok, " ", err)
+            end  -- do
+        }
+    }
+
+--- request
+GET /t
+--- response_body
+connected: 1
+ssl handshake: userdata
+close: 1 nil
 --- no_error_log
 [alert]
 [emerg]
