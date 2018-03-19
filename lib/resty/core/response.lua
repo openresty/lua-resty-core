@@ -31,7 +31,7 @@ ffi.cdef[[
     int ngx_http_lua_ffi_set_resp_header(ngx_http_request_t *r,
         const char *key_data, size_t key_len, int is_nil,
         const char *sval, size_t sval_len, ngx_http_lua_ffi_str_t *mvals,
-        size_t mvals_len, char **errmsg);
+        size_t mvals_len, unsigned override, char **errmsg);
 
     int ngx_http_lua_ffi_get_resp_header(ngx_http_request_t *r,
         const unsigned char *key, size_t key_len,
@@ -40,7 +40,7 @@ ffi.cdef[[
 ]]
 
 
-local function set_resp_header(tb, key, value)
+local function set_resp_header(tb, key, value, no_override)
     local r = getfenv(0).__ngx_req
     if not r then
         error("no request found")
@@ -52,8 +52,13 @@ local function set_resp_header(tb, key, value)
 
     local rc
     if value == nil then
-        rc = C.ngx_http_lua_ffi_set_resp_header(r, key, #key, true, nil, 0,
-                                                nil, 0, errmsg)
+        if no_override then
+            error("invalid header value", 3)
+        else
+            rc = C.ngx_http_lua_ffi_set_resp_header(r, key, #key, true, nil, 0,
+                                                    nil, 0, 1, errmsg)
+        end
+
     else
         local sval, sval_len, mvals, mvals_len, buf
 
@@ -85,9 +90,10 @@ local function set_resp_header(tb, key, value)
             mvals_len = 0
         end
 
+        local override_int = no_override and 0 or 1
         rc = C.ngx_http_lua_ffi_set_resp_header(r, key, #key, false, sval,
                                                 sval_len, mvals, mvals_len,
-                                                errmsg)
+                                                override_int, errmsg)
     end
 
     if rc == 0 or rc == FFI_DECLINED then
@@ -157,6 +163,11 @@ do
     local mt = getmetatable(ngx.header)
     mt.__newindex = set_resp_header
     mt.__index = get_resp_header
+end
+
+
+function ngx.resp.add_header(key, value)
+    set_resp_header(nil, key, value, true)
 end
 
 

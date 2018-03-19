@@ -9,7 +9,7 @@ use Cwd qw(cwd);
 
 repeat_each(2);
 
-plan tests => repeat_each() * (blocks() * 5 + 5);
+plan tests => repeat_each() * (blocks() * 4 + 7);
 
 my $pwd = cwd();
 
@@ -231,3 +231,105 @@ qr/\[TRACE   \d+ content_by_lua\(nginx\.conf:\d+\):5 (?:loop|-> \d+)\]/
 [error]
  -- NYI:
 stitch
+
+
+
+=== TEST 8: ngx.resp.add_header (single value)
+--- http_config eval: $::HttpConfig
+--- config
+    location = /t {
+        set $foo hello;
+        content_by_lua_block {
+            ngx.resp.add_header("Foo", "bar")
+            ngx.resp.add_header("Foo", 2)
+            ngx.say("Foo: ", table.concat(ngx.header["Foo"], ", "))
+        }
+    }
+--- request
+GET /t
+--- response_body
+Foo: bar, 2
+--- no_error_log
+[error]
+
+
+
+=== TEST 9: ngx.resp.add_header (nil)
+--- http_config eval: $::HttpConfig
+--- config
+    location = /t {
+        content_by_lua_block {
+            local ok, err = pcall(ngx.resp.add_header, "Foo")
+            if not ok then
+                ngx.say(err)
+            else
+                ngx.say('ok')
+            end
+        }
+    }
+--- request
+GET /t
+--- response_body
+invalid header value
+--- no_error_log
+[error]
+
+
+
+=== TEST 10: ngx.resp.add_header (multi-value)
+--- http_config eval: $::HttpConfig
+--- config
+    location = /t {
+        set $foo hello;
+        content_by_lua_block {
+            ngx.resp.add_header('Foo', {'bar', 'baz'})
+            local v = ngx.header["Foo"]
+            ngx.say("Foo: ", table.concat(ngx.header["Foo"], ", "))
+        }
+    }
+--- request
+GET /t
+--- response_body
+Foo: bar, baz
+--- no_error_log
+[error]
+
+
+
+=== TEST 11: ngx.resp.add_header (append header)
+--- http_config eval: $::HttpConfig
+--- config
+    location = /t {
+        set $foo hello;
+        content_by_lua_block {
+            ngx.header["fruit"] = "apple"
+            ngx.resp.add_header("fruit", "banana")
+            ngx.resp.add_header("fruit", "cherry")
+            ngx.say("fruit: ", table.concat(ngx.header["fruit"], ", "))
+        }
+    }
+--- request
+GET /t
+--- response_body
+fruit: apple, banana, cherry
+--- no_error_log
+[error]
+
+
+
+=== TEST 12: ngx.resp.add_header (override builtin header)
+--- http_config eval: $::HttpConfig
+--- config
+    location = /t {
+        set $foo hello;
+        content_by_lua_block {
+            ngx.resp.add_header("Date", "now")
+            ngx.say("Date: ", ngx.header["Date"])
+        }
+    }
+--- request
+GET /t
+--- response_body
+Date: now
+--- no_error_log
+[error]
