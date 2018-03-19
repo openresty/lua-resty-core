@@ -31,6 +31,7 @@ Table of Contents
     * [ngx.ssl](#ngxssl)
     * [ngx.ssl.session](#ngxsslsession)
     * [ngx.re](#ngxre)
+    * [ngx.resp](#ngxresp)
     * [ngx.process](#ngxprocess)
     * [ngx.errlog](#ngxerrlog)
     * [ngx.base64](#ngxbase64)
@@ -270,6 +271,14 @@ This Lua module provides a Lua API which implements convenience utilities for
 the `ngx.re` API.
 
 See the [documentation](./lib/ngx/re.md) for this Lua module for more details.
+
+[Back to TOC](#table-of-contents)
+
+## ngx.resp
+
+This Lua module provides Lua API which could be used to handle HTTP response.
+
+See the [documentation](./lib/ngx/resp.md) for this Lua module for more details.
 
 [Back to TOC](#table-of-contents)
 
