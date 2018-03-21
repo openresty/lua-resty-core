@@ -207,6 +207,18 @@ method always returns a single `nil` value.
 
 [Back to TOC](#table-of-contents)
 
+set_ssl_ctx
+----------------
+**syntax:** *ok, err = balancer.set_ssl_ctx(ssl_ctx)*
+
+**context:** *balancer_by_lua&#42;*
+
+Set the OpenSSL `SSL_CTX*` used to negotiate with the upstream. `ssl_ctx` should be an FFI pointer to a valid `SSL_CTX`. The reference count of the `SSL_CTX*` is incremented, so it is safe to free your reference to the object.
+
+This function does not exist in the stream module.
+
+[Back to TOC](#table-of-contents)
+
 set_timeouts
 ------------
 **syntax:** `ok, err = balancer.set_timeouts(connect_timeout, send_timeout, read_timeout)`
