@@ -177,6 +177,10 @@ if subsystem == 'http' then
             error("no request found")
         end
 
+        if type(ssl_ctx) ~= "cdata" then
+            error("ssl context must be an ffi pointer")
+        end
+
         local state = ngx_lua_ffi_balancer_set_ssl_ctx(r, ssl_ctx, errmsg)
 
         if state == FFI_ERROR then
