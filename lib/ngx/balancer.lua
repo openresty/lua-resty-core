@@ -21,6 +21,7 @@ local subsystem = ngx.config.subsystem
 local ngx_lua_ffi_balancer_set_current_peer
 local ngx_lua_ffi_balancer_set_more_tries
 local ngx_lua_ffi_balancer_get_last_failure
+local ngx_lua_ffi_balancer_set_ssl_ctx
 local ngx_lua_ffi_balancer_set_timeouts -- used by both stream and http
 
 
@@ -35,6 +36,9 @@ if subsystem == 'http' then
     int ngx_http_lua_ffi_balancer_get_last_failure(ngx_http_request_t *r,
         int *status, char **err);
 
+    int ngx_http_lua_ffi_balancer_set_ssl_ctx(ngx_http_request_t *r,
+        void* ssl_ctx, char **err);
+
     int ngx_http_lua_ffi_balancer_set_timeouts(ngx_http_request_t *r,
         long connect_timeout, long send_timeout,
         long read_timeout, char **err);
@@ -48,6 +52,9 @@ if subsystem == 'http' then
 
     ngx_lua_ffi_balancer_get_last_failure =
         C.ngx_http_lua_ffi_balancer_get_last_failure
+
+    ngx_lua_ffi_balancer_set_ssl_ctx =
+        C.ngx_http_lua_ffi_balancer_set_ssl_ctx
 
     ngx_lua_ffi_balancer_set_timeouts =
         C.ngx_http_lua_ffi_balancer_set_timeouts
@@ -160,6 +167,23 @@ function _M.get_last_failure()
     end
 
     return peer_state_names[state] or "unknown", int_out[0]
+end
+
+
+if subsystem == 'http' then
+    function _M.set_ssl_ctx(ssl_ctx)
+        local r = getfenv(0).__ngx_req
+        if not r then
+            error("no request found")
+        end
+
+        local state = ngx_lua_ffi_balancer_set_ssl_ctx(r, ssl_ctx, errmsg)
+
+        if state == FFI_ERROR then
+            return false, ffi_str(errmsg[0])
+        end
+        return true
+    end
 end
 
 
