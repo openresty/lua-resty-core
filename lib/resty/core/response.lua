@@ -54,11 +54,10 @@ local function set_resp_header(tb, key, value, no_override)
     if value == nil then
         if no_override then
             error("invalid header value", 3)
-        else
-            rc = C.ngx_http_lua_ffi_set_resp_header(r, key, #key, true, nil, 0,
-                                                    nil, 0, 1, errmsg)
         end
 
+        rc = C.ngx_http_lua_ffi_set_resp_header(r, key, #key, true, nil, 0, nil,
+                                                0, 1, errmsg)
     else
         local sval, sval_len, mvals, mvals_len, buf
 
