@@ -21,6 +21,11 @@ local error = error
 local ngx = ngx
 
 
+local _M = {
+    version = base.version
+}
+
+
 local MAX_HEADER_VALUES = 100
 local errmsg = base.get_errmsg_ptr()
 local ffi_str_type = ffi.typeof("ngx_http_lua_ffi_str_t*")
@@ -31,7 +36,7 @@ ffi.cdef[[
     int ngx_http_lua_ffi_set_resp_header(ngx_http_request_t *r,
         const char *key_data, size_t key_len, int is_nil,
         const char *sval, size_t sval_len, ngx_http_lua_ffi_str_t *mvals,
-        size_t mvals_len, unsigned override, char **errmsg);
+        size_t mvals_len, int override, char **errmsg);
 
     int ngx_http_lua_ffi_get_resp_header(ngx_http_request_t *r,
         const unsigned char *key, size_t key_len,
@@ -112,6 +117,9 @@ local function set_resp_header(tb, key, value, no_override)
 end
 
 
+_M.set_resp_header = set_resp_header
+
+
 local function get_resp_header(tb, key)
     local r = getfenv(0).__ngx_req
     if not r then
@@ -165,11 +173,4 @@ do
 end
 
 
-function ngx.resp.add_header(key, value)
-    set_resp_header(nil, key, value, true)
-end
-
-
-return {
-    version = base.version
-}
+return _M
