@@ -251,20 +251,18 @@ function _M.split(subj, regex, opts, ctx, max, res)
     -- trailing nil for non-cleared res tables
 
     -- delete empty trailing ones (without max)
-    local remaining_str = sub(subj, sub_idx)
-
-    if max <= 0 and remaining_str == "" then
+    if max <= 0 and sub_idx > len then
         for ety_idx = res_idx, 1, -1 do
-            if res[ety_idx] == "" then
-                res[ety_idx] = nil
-            else
+            if res[ety_idx] ~= "" then
                 res_idx = ety_idx
                 break
             end
+
+            res[ety_idx] = nil
         end
     else
         res_idx = res_idx + 1
-        res[res_idx] = remaining_str
+        res[res_idx] = sub(subj, sub_idx)
     end
 
     res[res_idx + 1] = nil
