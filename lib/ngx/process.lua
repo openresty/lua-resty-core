@@ -7,10 +7,16 @@ base.allows_subsystem('http')
 
 local ffi = require 'ffi'
 local errmsg = base.get_errmsg_ptr()
+local get_string_buf = base.get_string_buf
+local get_size_ptr = base.get_size_ptr
 local FFI_ERROR = base.FFI_ERROR
 local ffi_str = ffi.string
 local ngx_phase = ngx.get_phase
 local tonumber = tonumber
+local type = type
+
+
+local ERR_BUF_SIZE = 128
 
 
 local process_type_names = {
@@ -27,11 +33,25 @@ local C = ffi.C
 local _M = { version = base.version }
 
 
+_M.signums = {
+    SIGHUP   = 1,
+    SIGINT   = 2,
+    SIGQUIT  = 3,
+    SIGTRAP  = 5,
+    SIGABRT  = 6,
+    SIGKILL  = 9,
+    SIGALARM = 14,
+    SIGTERM  = 15,
+}
+
+
 ffi.cdef[[
 int ngx_http_lua_ffi_enable_privileged_agent(char **err);
 int ngx_http_lua_ffi_get_process_type(void);
 void ngx_http_lua_ffi_process_signal_graceful_exit(void);
 int ngx_http_lua_ffi_master_pid(void);
+int ngx_http_lua_ffi_set_sa_restart(int signum, int enabled,
+    unsigned char *err, size_t *errlen);
 ]]
 
 
@@ -68,6 +88,25 @@ function _M.get_master_pid()
     end
 
     return tonumber(pid)
+end
+
+
+function _M.sig_restart(signum, enabled)
+    if type(signum) ~= "number" then
+        error("signum must be a number", 2)
+    end
+
+    local err = get_string_buf(ERR_BUF_SIZE)
+    local errlen = get_size_ptr()
+    errlen[0] = ERR_BUF_SIZE
+
+    local rc = C.ngx_http_lua_ffi_set_sa_restart(signum, enabled and 1 or 0,
+                                                 err, errlen)
+    if rc == FFI_ERROR then
+        return nil, ffi_str(err, errlen[0])
+    end
+
+    return true
 end
 
 
