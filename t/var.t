@@ -233,9 +233,9 @@ qr/\[TRACE   \d+ content_by_lua\(nginx\.conf:\d+\):3 loop\]/
     }
 --- request
 GET /test
---- response_body
-content_by_lua(nginx.conf:62):2: variable "foo" not found for writing; maybe it is a built-in variable that is not changeable or you forgot to use "set $foo '';" in the config file to define it first
-content_by_lua(nginx.conf:62):3: variable "server_port" not changeable
+--- response_body_like
+.+/var\.lua:\d+: variable "foo" not found for writing; maybe it is a built-in variable that is not changeable or you forgot to use "set \$foo '';" in the config file to define it first
+.+/var\.lua:\d+: variable "server_port" not changeable
 --- no_error_log
 [error]
 [alert]

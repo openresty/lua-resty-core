@@ -150,7 +150,7 @@ end
 
 
 if not ngx then
-    return error("no existing ngx. table found")
+    error("no existing ngx. table found")
 end
 
 

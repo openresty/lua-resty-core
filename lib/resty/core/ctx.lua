@@ -34,12 +34,12 @@ local function get_ctx_table()
     local r = getfenv(0).__ngx_req
 
     if not r then
-        return error("no request found")
+        error("no request found")
     end
 
     local ctx_ref = C.ngx_http_lua_ffi_get_ctx_ref(r)
     if ctx_ref == FFI_NO_REQ_CTX then
-        return error("no request ctx found")
+        error("no request ctx found")
     end
 
     local ctxs = registry.ngx_lua_ctx_tables
@@ -60,12 +60,12 @@ local function set_ctx_table(ctx)
     local r = getfenv(0).__ngx_req
 
     if not r then
-        return error("no request found")
+        error("no request found")
     end
 
     local ctx_ref = C.ngx_http_lua_ffi_get_ctx_ref(r)
     if ctx_ref == FFI_NO_REQ_CTX then
-        return error("no request ctx found")
+        error("no request ctx found")
     end
 
     local ctxs = registry.ngx_lua_ctx_tables

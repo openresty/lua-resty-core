@@ -80,11 +80,11 @@ type: worker
 qr/\[TRACE   \d+ init_worker_by_lua:\d loop\]|\[TRACE   \d+ content_by_lua\(nginx\.conf:\d+\):\d loop\]|process type: \w+/
 --- grep_error_log_out eval
 [
-qr/\[TRACE   \d init_worker_by_lua:5 loop\]
-\[TRACE   \d content_by_lua\(nginx.conf:78\):5 loop\]
+qr/\[TRACE   \d+ init_worker_by_lua:5 loop\]
+\[TRACE   \d+ content_by_lua\(nginx.conf:78\):5 loop\]
 /,
-qr/\[TRACE   \d init_worker_by_lua:5 loop\]
-\[TRACE   \d content_by_lua\(nginx.conf:78\):5 loop\]
+qr/\[TRACE   \d+ init_worker_by_lua:5 loop\]
+\[TRACE   \d+ content_by_lua\(nginx.conf:78\):5 loop\]
 /
 ]
 --- no_error_log

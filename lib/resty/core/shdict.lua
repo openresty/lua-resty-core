@@ -29,21 +29,21 @@ ffi.cdef[[
 
     int ngx_http_lua_ffi_shdict_incr(void *zone, const unsigned char *key,
         size_t key_len, double *value, char **err, int has_init, double init,
-        int *forcible);
+        long init_ttl, int *forcible);
 
     int ngx_http_lua_ffi_shdict_store(void *zone, int op,
         const unsigned char *key, size_t key_len, int value_type,
         const unsigned char *str_value_buf, size_t str_value_len,
-        double num_value, int exptime, int user_flags, char **errmsg,
+        double num_value, long exptime, int user_flags, char **errmsg,
         int *forcible);
 
     int ngx_http_lua_ffi_shdict_flush_all(void *zone);
 
-    int ngx_http_lua_ffi_shdict_get_ttl(void *zone,
-        const unsigned char *key, size_t key_len);
+    long ngx_http_lua_ffi_shdict_get_ttl(void *zone,
+         const unsigned char *key, size_t key_len);
 
     int ngx_http_lua_ffi_shdict_set_expire(void *zone,
-        const unsigned char *key, size_t key_len, int exptime);
+        const unsigned char *key, size_t key_len, long exptime);
 
     size_t ngx_http_lua_ffi_shdict_capacity(void *zone);
 ]]
@@ -72,12 +72,12 @@ local errmsg = base.get_errmsg_ptr()
 
 local function check_zone(zone)
     if not zone or type(zone) ~= "table" then
-        return error("bad \"zone\" argument")
+        error("bad \"zone\" argument", 2)
     end
 
     zone = zone[1]
     if type(zone) ~= "userdata" then
-        return error("bad \"zone\" argument")
+        error("bad \"zone\" argument", 2)
     end
 
     return zone
@@ -90,7 +90,7 @@ local function shdict_store(zone, op, key, value, exptime, flags)
     if not exptime then
         exptime = 0
     elseif exptime < 0 then
-        return error('bad "exptime" argument')
+        error('bad "exptime" argument', 2)
     end
 
     if not flags then
@@ -222,7 +222,7 @@ local function shdict_get(zone, key)
             return nil, ffi_str(errmsg[0])
         end
 
-        return error("failed to get the key")
+        error("failed to get the key")
     end
 
     local typ = value_type[0]
@@ -252,7 +252,7 @@ local function shdict_get(zone, key)
         val = (tonumber(buf[0]) ~= 0)
 
     else
-        return error("unknown value type: " .. typ)
+        error("unknown value type: " .. typ)
     end
 
     if flags ~= 0 then
@@ -297,7 +297,7 @@ local function shdict_get_stale(zone, key)
             return nil, ffi_str(errmsg[0])
         end
 
-        return error("failed to get the key")
+        error("failed to get the key")
     end
 
     local typ = value_type[0]
@@ -326,7 +326,7 @@ local function shdict_get_stale(zone, key)
         val = (tonumber(buf[0]) ~= 0)
 
     else
-        return error("unknown value type: " .. typ)
+        error("unknown value type: " .. typ)
     end
 
     if flags ~= 0 then
@@ -337,7 +337,7 @@ local function shdict_get_stale(zone, key)
 end
 
 
-local function shdict_incr(zone, key, value, init)
+local function shdict_incr(zone, key, value, init, init_ttl)
     zone = check_zone(zone)
 
     if key == nil then
@@ -361,33 +361,48 @@ local function shdict_incr(zone, key, value, init)
     end
     num_value[0] = value
 
-    local has_init
-
     if init then
         local typ = type(init)
         if typ ~= "number" then
             init = tonumber(init)
 
             if not init then
-                return error("bad init arg: number expected, got " .. typ)
+                error("bad init arg: number expected, got " .. typ, 2)
+            end
+        end
+    end
+
+    if init_ttl ~= nil then
+        local typ = type(init_ttl)
+        if typ ~= "number" then
+            init_ttl = tonumber(init_ttl)
+
+            if not init_ttl then
+                error("bad init_ttl arg: number expected, got " .. typ, 2)
             end
         end
 
-        has_init = 1
+        if init_ttl < 0 then
+            error('bad "init_ttl" argument', 2)
+        end
+
+        if not init then
+            error('must provide "init" when providing "init_ttl"', 2)
+        end
 
     else
-        has_init = 0
-        init = 0
+        init_ttl = 0
     end
 
     local rc = C.ngx_http_lua_ffi_shdict_incr(zone, key, key_len, num_value,
-                                              errmsg, has_init, init,
+                                              errmsg, init and 1 or 0,
+                                              init or 0, init_ttl * 1000,
                                               forcible)
     if rc ~= 0 then  -- ~= NGX_OK
         return nil, ffi_str(errmsg[0])
     end
 
-    if has_init == 0 then
+    if not init then
         return tonumber(num_value[0])
     end
 

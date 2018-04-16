@@ -72,13 +72,13 @@ local function get_status()
     local r = getfenv(0).__ngx_req
 
     if not r then
-        return error("no request found")
+        error("no request found")
     end
 
     local rc = C.ngx_http_lua_ffi_get_resp_status(r)
 
     if rc == FFI_BAD_CONTEXT then
-        return error("API disabled in the current context")
+        error("API disabled in the current context")
     end
 
     return rc
@@ -90,7 +90,7 @@ local function set_status(status)
     local r = getfenv(0).__ngx_req
 
     if not r then
-        return error("no request found")
+        error("no request found")
     end
 
     if type(status) ~= 'number' then
@@ -100,7 +100,7 @@ local function set_status(status)
     local rc = C.ngx_http_lua_ffi_set_resp_status(r, status)
 
     if rc == FFI_BAD_CONTEXT then
-        return error("API disabled in the current context")
+        error("API disabled in the current context")
     end
 
     return
@@ -114,13 +114,13 @@ local function is_subreq()
     local r = getfenv(0).__ngx_req
 
     if not r then
-        return error("no request found")
+        error("no request found")
     end
 
     local rc = C.ngx_http_lua_ffi_is_subrequest(r)
 
     if rc == FFI_BAD_CONTEXT then
-        return error("API disabled in the current context")
+        error("API disabled in the current context")
     end
 
     return rc == 1
@@ -134,17 +134,17 @@ local function headers_sent()
     local r = getfenv(0).__ngx_req
 
     if not r then
-        return error("no request found")
+        error("no request found")
     end
 
     local rc = C.ngx_http_lua_ffi_headers_sent(r)
 
     if rc == FFI_NO_REQ_CTX then
-        return error("no request ctx found")
+        error("no request ctx found")
     end
 
     if rc == FFI_BAD_CONTEXT then
-        return error("API disabled in the current context")
+        error("API disabled in the current context")
     end
 
     return rc == 1
