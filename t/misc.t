@@ -159,3 +159,45 @@ GET /t
  bad argument
 --- error_log
 unsupported subsystem: http
+
+
+
+=== TEST 6: not internal request
+--- config
+    location /test {
+        rewrite ^/test$ /lua last;
+    }
+    location /lua {
+        content_by_lua '
+            if ngx.req.is_internal() then
+                ngx.say("internal")
+            else
+                ngx.say("not internal")
+            end
+        ';
+    }
+--- request
+GET /lua
+--- response_body
+not internal
+
+
+
+=== TEST 7: internal request
+--- config
+    location /test {
+        rewrite ^/test$ /lua last;
+    }
+    location /lua {
+        content_by_lua '
+            if ngx.req.is_internal() then
+                ngx.say("internal")
+            else
+                ngx.say("not internal")
+            end
+        ';
+    }
+--- request
+GET /test
+--- response_body
+internal
