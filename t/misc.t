@@ -10,7 +10,7 @@ log_level('warn');
 #repeat_each(120);
 repeat_each(2);
 
-plan tests => repeat_each() * (blocks() * 5 - 3);
+plan tests => repeat_each() * (blocks() * 5 - 6);
 
 my $pwd = cwd();
 
@@ -221,7 +221,7 @@ internal
 
             local ctx = package.loaded.bad_context
             ngx.say(ctx[1])
-            local i = string.find(ctx[2], "no request found")
+            local i = string.find(ctx[2], "API disabled in the current context")
             ngx.say(i > 1)
         }
     }
@@ -230,4 +230,3 @@ GET /lua
 --- response_body
 false
 true
---- SKIP
