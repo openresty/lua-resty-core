@@ -10,7 +10,7 @@ log_level('warn');
 #repeat_each(120);
 repeat_each(2);
 
-plan tests => repeat_each() * (blocks() * 6 - 2);
+plan tests => repeat_each() * (blocks() * 5 - 3);
 
 my $pwd = cwd();
 
@@ -168,13 +168,13 @@ unsupported subsystem: http
         rewrite ^/test$ /lua last;
     }
     location /lua {
-        content_by_lua '
+        content_by_lua_block {
             if ngx.req.is_internal() then
                 ngx.say("internal")
             else
                 ngx.say("not internal")
             end
-        ';
+        }
     }
 --- request
 GET /lua
@@ -189,13 +189,13 @@ not internal
         rewrite ^/test$ /lua last;
     }
     location /lua {
-        content_by_lua '
+        content_by_lua_block {
             if ngx.req.is_internal() then
                 ngx.say("internal")
             else
                 ngx.say("not internal")
             end
-        ';
+        }
     }
 --- request
 GET /test
