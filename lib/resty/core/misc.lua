@@ -153,7 +153,7 @@ end
 register_getter("headers_sent", headers_sent)
 
 
--- ngx.is_internal
+-- ngx.req.is_internal
 
 function ngx.req.is_internal()
     local r = getfenv(0).__ngx_req
