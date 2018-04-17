@@ -163,6 +163,7 @@ unsupported subsystem: http
 
 
 === TEST 6: not internal request
+--- http_config eval: $::HttpConfig
 --- config
     location /test {
         rewrite ^/test$ /lua last;
@@ -184,6 +185,7 @@ not internal
 
 
 === TEST 7: internal request
+--- http_config eval: $::HttpConfig
 --- config
     location /test {
         rewrite ^/test$ /lua last;
