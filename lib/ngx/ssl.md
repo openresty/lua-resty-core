@@ -302,7 +302,7 @@ This function can be called in whatever contexts where downstream https is used.
 
 raw_client_addr
 ---------------
-**syntax:** *addr, err = ssl.raw_client_addr()*
+**syntax:** *addr_data, addr_type, err = ssl.raw_client_addr()*
 
 **context:** *any*
 
@@ -347,6 +347,8 @@ end
 ```
 
 This function can be called in whatever contexts where downstream https is used.
+
+This function was first introduced in lua-resty-core 0.1.14.
 
 [Back to TOC](#table-of-contents)
 
