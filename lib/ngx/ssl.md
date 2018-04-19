@@ -302,7 +302,7 @@ This function can be called in whatever contexts where downstream https is used.
 
 raw_client_addr
 ---------------
-**syntax:** *addr, err = ssl.raw_client_addr()*
+**syntax:** *addr_data, addr_type, err = ssl.raw_client_addr()*
 
 **context:** *any*
 
