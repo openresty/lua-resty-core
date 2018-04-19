@@ -44,7 +44,7 @@ Table of Contents
 Status
 ======
 
-This library is production ready and under active development.
+This library is production ready.
 
 Synopsis
 ========
