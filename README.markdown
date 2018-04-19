@@ -31,6 +31,7 @@ Table of Contents
     * [ngx.ssl](#ngxssl)
     * [ngx.ssl.session](#ngxsslsession)
     * [ngx.re](#ngxre)
+    * [ngx.resp](#ngxresp)
     * [ngx.process](#ngxprocess)
     * [ngx.errlog](#ngxerrlog)
     * [ngx.base64](#ngxbase64)
@@ -205,6 +206,12 @@ API Implemented
 
 * [ngx.time](https://github.com/openresty/lua-nginx-module#ngxtime)
 * [ngx.now](https://github.com/openresty/lua-nginx-module#ngxnow)
+* [ngx.update_time](https://github.com/openresty/lua-nginx-module#ngxupdate_time)
+* [ngx.localtime](https://github.com/openresty/lua-nginx-module#ngxlocaltime)
+* [ngx.utctime](https://github.com/openresty/lua-nginx-module#ngxutctime)
+* [ngx.cookie_time](https://github.com/openresty/lua-nginx-module#ngxcookie_time)
+* [ngx.http_time](https://github.com/openresty/lua-nginx-module#ngxhttp_time)
+* [ngx.parse_http_time](https://github.com/openresty/lua-nginx-module#ngxparse_http_time)
 
 [Back to TOC](#table-of-contents)
 
@@ -267,6 +274,14 @@ See the [documentation](./lib/ngx/re.md) for this Lua module for more details.
 
 [Back to TOC](#table-of-contents)
 
+## ngx.resp
+
+This Lua module provides Lua API which could be used to handle HTTP response.
+
+See the [documentation](./lib/ngx/resp.md) for this Lua module for more details.
+
+[Back to TOC](#table-of-contents)
+
 ## ngx.process
 
 This Lua module is used to manage the nginx process in Lua.
@@ -326,7 +341,7 @@ Copyright and License
 
 This module is licensed under the BSD license.
 
-Copyright (C) 2013-2017, by Yichun "agentzh" Zhang, OpenResty Inc.
+Copyright (C) 2013-2018, by Yichun "agentzh" Zhang, OpenResty Inc.
 
 All rights reserved.
 

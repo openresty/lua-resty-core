@@ -69,7 +69,7 @@ ngx.sha1_bin = function (s)
     end
     local ok = C.ngx_http_lua_ffi_sha1_bin(s, #s, sha_buf)
     if ok == 0 then
-        return error("SHA-1 support missing in Nginx")
+        error("SHA-1 support missing in Nginx")
     end
     return ffi_string(sha_buf, SHA_DIGEST_LEN)
 end

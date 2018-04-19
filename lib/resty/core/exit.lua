@@ -28,7 +28,7 @@ ngx.exit = function (rc)
     local errlen = get_size_ptr()
     local r = getfenv(0).__ngx_req
     if r == nil then
-        return error("no request found")
+        error("no request found")
     end
     errlen[0] = ERR_BUF_SIZE
     rc = C.ngx_http_lua_ffi_exit(r, rc, err, errlen)
@@ -39,7 +39,7 @@ ngx.exit = function (rc)
     if rc == FFI_DONE then
         return
     end
-    return error(ffi_string(err, errlen[0]))
+    error(ffi_string(err, errlen[0]))
 end
 
 

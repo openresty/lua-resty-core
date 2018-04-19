@@ -25,7 +25,7 @@ __DATA__
 
 === TEST 1: get OCSP responder (good case)
 --- http_config
-    lua_package_path "$TEST_NGINX_LUA_PACKAGE_PATH/?.lua;;";
+    lua_package_path "$TEST_NGINX_LUA_PACKAGE_PATH";
 
     server {
         listen unix:$TEST_NGINX_HTML_DIR/nginx.sock ssl;
@@ -112,7 +112,7 @@ OCSP url found: http://127.0.0.1:8888/ocsp?foo=1,
 
 === TEST 2: get OCSP responder (not found)
 --- http_config
-    lua_package_path "$TEST_NGINX_LUA_PACKAGE_PATH/?.lua;;";
+    lua_package_path "$TEST_NGINX_LUA_PACKAGE_PATH";
 
     server {
         listen unix:$TEST_NGINX_HTML_DIR/nginx.sock ssl;
@@ -203,7 +203,7 @@ OCSP responder not found
 
 === TEST 3: get OCSP responder (no issuer cert at all)
 --- http_config
-    lua_package_path "$TEST_NGINX_LUA_PACKAGE_PATH/?.lua;;";
+    lua_package_path "$TEST_NGINX_LUA_PACKAGE_PATH";
 
     server {
         listen unix:$TEST_NGINX_HTML_DIR/nginx.sock ssl;
@@ -293,7 +293,7 @@ failed to get OCSP responder: no issuer certificate in chain
 
 === TEST 4: get OCSP responder (issuer cert not next to the leaf cert)
 --- http_config
-    lua_package_path "$TEST_NGINX_LUA_PACKAGE_PATH/?.lua;;";
+    lua_package_path "$TEST_NGINX_LUA_PACKAGE_PATH";
 
     server {
         listen unix:$TEST_NGINX_HTML_DIR/nginx.sock ssl;
@@ -383,7 +383,7 @@ failed to get OCSP responder: issuer certificate not next to leaf
 
 === TEST 5: get OCSP responder (truncated)
 --- http_config
-    lua_package_path "$TEST_NGINX_LUA_PACKAGE_PATH/?.lua;;";
+    lua_package_path "$TEST_NGINX_LUA_PACKAGE_PATH";
 
     server {
         listen unix:$TEST_NGINX_HTML_DIR/nginx.sock ssl;
@@ -479,7 +479,7 @@ still get an error: truncated
 
 === TEST 6: create OCSP request (good)
 --- http_config
-    lua_package_path "$TEST_NGINX_LUA_PACKAGE_PATH/?.lua;;";
+    lua_package_path "$TEST_NGINX_LUA_PACKAGE_PATH";
 
     server {
         listen unix:$TEST_NGINX_HTML_DIR/nginx.sock ssl;
@@ -573,7 +573,7 @@ OCSP request created with length 68
 
 === TEST 7: create OCSP request (buffer too small)
 --- http_config
-    lua_package_path "$TEST_NGINX_LUA_PACKAGE_PATH/?.lua;;";
+    lua_package_path "$TEST_NGINX_LUA_PACKAGE_PATH";
 
     server {
         listen unix:$TEST_NGINX_HTML_DIR/nginx.sock ssl;
@@ -664,7 +664,7 @@ failed to create OCSP request: output buffer too small: 68 > 67
 
 === TEST 8: create OCSP request (empty string cert chain)
 --- http_config
-    lua_package_path "$TEST_NGINX_LUA_PACKAGE_PATH/?.lua;;";
+    lua_package_path "$TEST_NGINX_LUA_PACKAGE_PATH";
 
     server {
         listen unix:$TEST_NGINX_HTML_DIR/nginx.sock ssl;
@@ -746,7 +746,7 @@ failed to create OCSP request: d2i_X509_bio() failed
 
 === TEST 9: create OCSP request (no issuer cert in the chain)
 --- http_config
-    lua_package_path "$TEST_NGINX_LUA_PACKAGE_PATH/?.lua;;";
+    lua_package_path "$TEST_NGINX_LUA_PACKAGE_PATH";
 
     server {
         listen unix:$TEST_NGINX_HTML_DIR/nginx.sock ssl;
@@ -837,7 +837,7 @@ failed to create OCSP request: no issuer certificate in chain
 
 === TEST 10: validate good OCSP response
 --- http_config
-    lua_package_path "$TEST_NGINX_LUA_PACKAGE_PATH/?.lua;;";
+    lua_package_path "$TEST_NGINX_LUA_PACKAGE_PATH";
 
     server {
         listen unix:$TEST_NGINX_HTML_DIR/nginx.sock ssl;
@@ -928,7 +928,7 @@ OCSP response validation ok
 
 === TEST 11: fail to validate OCSP response - no issuer cert
 --- http_config
-    lua_package_path "$TEST_NGINX_LUA_PACKAGE_PATH/?.lua;;";
+    lua_package_path "$TEST_NGINX_LUA_PACKAGE_PATH";
 
     server {
         listen unix:$TEST_NGINX_HTML_DIR/nginx.sock ssl;
@@ -1019,7 +1019,7 @@ OCSP response validation ok
 
 === TEST 12: validate good OCSP response - no certs in response
 --- http_config
-    lua_package_path "$TEST_NGINX_LUA_PACKAGE_PATH/?.lua;;";
+    lua_package_path "$TEST_NGINX_LUA_PACKAGE_PATH";
 
     server {
         listen unix:$TEST_NGINX_HTML_DIR/nginx.sock ssl;
@@ -1113,7 +1113,7 @@ OCSP response validation ok
 FIXME: we should complain in this case.
 
 --- http_config
-    lua_package_path "$TEST_NGINX_LUA_PACKAGE_PATH/?.lua;;";
+    lua_package_path "$TEST_NGINX_LUA_PACKAGE_PATH";
 
     server {
         listen unix:$TEST_NGINX_HTML_DIR/nginx.sock ssl;
@@ -1205,7 +1205,7 @@ OCSP response validation ok
 === TEST 14: fail to validate OCSP response - OCSP response signed by an unknown cert and the OCSP response does not contain the unknown cert
 
 --- http_config
-    lua_package_path "$TEST_NGINX_LUA_PACKAGE_PATH/?.lua;;";
+    lua_package_path "$TEST_NGINX_LUA_PACKAGE_PATH";
 
     server {
         listen unix:$TEST_NGINX_HTML_DIR/nginx.sock ssl;
@@ -1296,7 +1296,7 @@ OCSP response validation ok
 
 === TEST 15: fail to validate OCSP response - OCSP response returns revoked status
 --- http_config
-    lua_package_path "$TEST_NGINX_LUA_PACKAGE_PATH/?.lua;;";
+    lua_package_path "$TEST_NGINX_LUA_PACKAGE_PATH";
 
     server {
         listen unix:$TEST_NGINX_HTML_DIR/nginx.sock ssl;
@@ -1388,10 +1388,10 @@ OCSP response validation ok
 === TEST 16: good status req from client
 FIXME: check the OCSP staple actually received by the ssl client
 --- http_config
-    lua_package_path "$TEST_NGINX_LUA_PACKAGE_PATH/?.lua;;";
+    lua_package_path "$TEST_NGINX_LUA_PACKAGE_PATH";
 
     server {
-        listen 127.0.0.2:8080 ssl;
+        listen 127.0.0.2:12345 ssl;
         server_name test.com;
         ssl_certificate_by_lua_block {
             local ssl = require "ngx.ssl"
@@ -1432,7 +1432,7 @@ FIXME: check the OCSP staple actually received by the ssl client
 
                 sock:settimeout(3000)
 
-                local ok, err = sock:connect("127.0.0.2", 8080)
+                local ok, err = sock:connect("127.0.0.2", 12345)
                 if not ok then
                     ngx.say("failed to connect: ", err)
                     return
@@ -1470,10 +1470,10 @@ ocsp status resp set ok: nil,
 
 === TEST 17: no status req from client
 --- http_config
-    lua_package_path "$TEST_NGINX_LUA_PACKAGE_PATH/?.lua;;";
+    lua_package_path "$TEST_NGINX_LUA_PACKAGE_PATH";
 
     server {
-        listen 127.0.0.2:8080 ssl;
+        listen 127.0.0.2:12345 ssl;
         server_name test.com;
         ssl_certificate_by_lua_block {
             local ssl = require "ngx.ssl"
@@ -1514,7 +1514,7 @@ ocsp status resp set ok: nil,
 
                 sock:settimeout(3000)
 
-                local ok, err = sock:connect("127.0.0.2", 8080)
+                local ok, err = sock:connect("127.0.0.2", 12345)
                 if not ok then
                     ngx.say("failed to connect: ", err)
                     return

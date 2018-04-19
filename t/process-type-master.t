@@ -75,12 +75,12 @@ process type: worker
 qr/\[TRACE   \d+ init_worker_by_lua:4 loop\]|\[TRACE   \d+ content_by_lua\(nginx\.conf:\d+\):4 loop\]|init_worker_by_lua:\d: process type: \w+/
 --- grep_error_log_out eval
 [
-qr/\[TRACE   1 init_worker_by_lua:4 loop\]
-\[TRACE   2 content_by_lua\(nginx.conf:73\):4 loop\]
+qr/\[TRACE   \d+ init_worker_by_lua:4 loop\]
+\[TRACE   \d+ content_by_lua\(nginx.conf:73\):4 loop\]
 init_worker_by_lua:8: process type: worker
 /,
-qr/\[TRACE   1 init_worker_by_lua:4 loop\]
-\[TRACE   2 content_by_lua\(nginx.conf:73\):4 loop\]
+qr/\[TRACE   \d+ init_worker_by_lua:4 loop\]
+\[TRACE   \d+ content_by_lua\(nginx.conf:73\):4 loop\]
 init_worker_by_lua:8: process type: worker
 /
 ]

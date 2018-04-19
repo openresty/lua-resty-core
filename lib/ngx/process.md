@@ -9,7 +9,6 @@ Table of Contents
 * [Name](#name)
 * [Status](#status)
 * [Synopsis](#synopsis)
-    * [Enables privileged agent process and get process type](#enables-privileged-agent-process-and-get-process-type)
 * [Functions](#functions)
     * [type](#type)
     * [enable_privileged_agent](#enable_privileged_agent)

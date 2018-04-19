@@ -11,6 +11,7 @@ local FFI_OK = base.FFI_OK
 local new_tab = base.new_tab
 local C = ffi.C
 local ffi_cast = ffi.cast
+local ffi_new = ffi.new
 local ffi_str = ffi.string
 local get_string_buf = base.get_string_buf
 local get_size_ptr = base.get_size_ptr
@@ -51,7 +52,7 @@ ffi.cdef[[
     int ngx_http_lua_ffi_req_get_method(ngx_http_request_t *r);
 
     int ngx_http_lua_ffi_req_get_method_name(ngx_http_request_t *r,
-        char *name, size_t *len);
+        unsigned char **name, size_t *len);
 
     int ngx_http_lua_ffi_req_set_method(ngx_http_request_t *r, int method);
 
@@ -73,7 +74,7 @@ local req_headers_mt = {
 function ngx.req.get_headers(max_headers, raw)
     local r = getfenv(0).__ngx_req
     if not r then
-        return error("no request found")
+        error("no request found")
     end
 
     if not max_headers then
@@ -88,7 +89,7 @@ function ngx.req.get_headers(max_headers, raw)
 
     local n = C.ngx_http_lua_ffi_req_get_headers_count(r, max_headers)
     if n == FFI_BAD_CONTEXT then
-        return error("API disabled in the current context")
+        error("API disabled in the current context")
     end
 
     if n == 0 then
@@ -135,7 +136,7 @@ end
 function ngx.req.get_uri_args(max_args)
     local r = getfenv(0).__ngx_req
     if not r then
-        return error("no request found")
+        error("no request found")
     end
 
     if not max_args then
@@ -144,7 +145,7 @@ function ngx.req.get_uri_args(max_args)
 
     local n = C.ngx_http_lua_ffi_req_get_uri_args_count(r, max_args)
     if n == FFI_BAD_CONTEXT then
-        return error("API disabled in the current context")
+        error("API disabled in the current context")
     end
 
     if n == 0 then
@@ -192,7 +193,7 @@ end
 function ngx.req.start_time()
     local r = getfenv(0).__ngx_req
     if not r then
-        return error("no request found")
+        error("no request found")
     end
 
     return tonumber(C.ngx_http_lua_ffi_req_start_time(r))
@@ -218,16 +219,18 @@ do
         [0x8000] = "TRACE",
     }
 
+    local namep = ffi_new("unsigned char *[1]")
+
     function ngx.req.get_method()
         local r = getfenv(0).__ngx_req
         if not r then
-            return error("no request found")
+            error("no request found")
         end
 
         do
             local id = C.ngx_http_lua_ffi_req_get_method(r)
             if id == FFI_BAD_CONTEXT then
-                return error("API disabled in the current context")
+                error("API disabled in the current context")
             end
 
             local method = methods[id]
@@ -236,16 +239,13 @@ do
             end
         end
 
-        local buf = get_string_buf(32)
         local sizep = get_size_ptr()
-        sizep[0] = 32
-
-        local rc = C.ngx_http_lua_ffi_req_get_method_name(r, buf, sizep)
+        local rc = C.ngx_http_lua_ffi_req_get_method_name(r, namep, sizep)
         if rc ~= 0 then
             return nil
         end
 
-        return ffi_str(buf, sizep[0])
+        return ffi_str(namep[0], sizep[0])
     end
 end  -- do
 
@@ -253,11 +253,11 @@ end  -- do
 function ngx.req.set_method(method)
     local r = getfenv(0).__ngx_req
     if not r then
-        return error("no request found")
+        error("no request found")
     end
 
     if type(method) ~= "number" then
-        return error("bad method number")
+        error("bad method number", 2)
     end
 
     local rc = C.ngx_http_lua_ffi_req_set_method(r, method)
@@ -266,14 +266,14 @@ function ngx.req.set_method(method)
     end
 
     if rc == FFI_BAD_CONTEXT then
-        return error("API disabled in the current context")
+        error("API disabled in the current context")
     end
 
     if rc == FFI_DECLINED then
-        return error("unsupported HTTP method: " .. method)
+        error("unsupported HTTP method: " .. method)
     end
 
-    return error("unknown error: " .. rc)
+    error("unknown error: " .. rc)
 end
 
 
@@ -287,7 +287,7 @@ do
 
         local r = getfenv(0).__ngx_req
         if not r then
-            return error("no request found")
+            error("no request found")
         end
 
         if type(name) ~= "string" then
@@ -313,10 +313,10 @@ do
         end
 
         if rc == FFI_BAD_CONTEXT then
-            return error("API disabled in the current context")
+            error("API disabled in the current context")
         end
 
-        return error("error")
+        error("error")
     end
 end  -- do
 
@@ -324,7 +324,7 @@ end  -- do
 function ngx.req.clear_header(name)
     local r = getfenv(0).__ngx_req
     if not r then
-        return error("no request found")
+        error("no request found")
     end
 
     if type(name) ~= "string" then
@@ -339,10 +339,10 @@ function ngx.req.clear_header(name)
     end
 
     if rc == FFI_BAD_CONTEXT then
-        return error("API disabled in the current context")
+        error("API disabled in the current context")
     end
 
-    return error("error")
+    error("error")
 end
 
 

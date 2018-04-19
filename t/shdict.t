@@ -1284,3 +1284,355 @@ free_page_bytes: (?:0|32768)
 [error]
 [alert]
 [crit]
+
+
+
+=== TEST 39: incr bad init_ttl argument
+--- http_config eval: $::HttpConfig
+--- config
+    location = /t {
+        content_by_lua_block {
+            local dogs = ngx.shared.dogs
+            local pok, err = pcall(dogs.incr, dogs, "foo", 1, 0, -1)
+            if not pok then
+                ngx.say("not ok: ", err)
+                return
+            end
+
+            ngx.say("ok")
+        }
+    }
+--- request
+GET /t
+--- response_body
+not ok: bad "init_ttl" argument
+--- no_error_log
+[error]
+[alert]
+[crit]
+
+
+
+=== TEST 40: incr init_ttl argument is not a number
+--- http_config eval: $::HttpConfig
+--- config
+    location = /t {
+        content_by_lua_block {
+            local dogs = ngx.shared.dogs
+            local pok, err = pcall(dogs.incr, dogs, "foo", 1, 0, "bar")
+            if not pok then
+                ngx.say("not ok: ", err)
+                return
+            end
+
+            ngx.say("ok")
+        }
+    }
+--- request
+GET /t
+--- response_body
+not ok: bad init_ttl arg: number expected, got string
+--- no_error_log
+[error]
+[alert]
+[crit]
+
+
+
+=== TEST 41: incr init_ttl argument without init
+--- http_config eval: $::HttpConfig
+--- config
+    location = /t {
+        content_by_lua_block {
+            local dogs = ngx.shared.dogs
+            local pok, err = pcall(dogs.incr, dogs, "foo", 1, nil, 0.001)
+            if not pok then
+                ngx.say("not ok: ", err)
+                return
+            end
+
+            ngx.say("ok")
+        }
+    }
+--- request
+GET /t
+--- response_body
+not ok: must provide "init" when providing "init_ttl"
+--- no_error_log
+[error]
+[alert]
+[crit]
+
+
+
+=== TEST 42: incr key with init_ttl (key exists)
+--- http_config eval: $::HttpConfig
+--- config
+    location = /t {
+        content_by_lua_block {
+            local dogs = ngx.shared.dogs
+            dogs:set("foo", 32)
+
+            local res, err = dogs:incr("foo", 10502, 0, 0.001)
+            ngx.say("incr: ", res, " ", err)
+            ngx.say("foo = ", dogs:get("foo"))
+
+            ngx.sleep(0.002)
+
+            ngx.say("foo after incr init_ttl = ", dogs:get("foo"))
+        }
+    }
+--- request
+GET /t
+--- response_body
+incr: 10534 nil
+foo = 10534
+foo after incr init_ttl = 10534
+--- no_error_log
+[error]
+[alert]
+[crit]
+
+
+
+=== TEST 43: incr key with init and init_ttl (key not exists)
+--- http_config eval: $::HttpConfig
+--- config
+    location = /t {
+        content_by_lua_block {
+            local dogs = ngx.shared.dogs
+            dogs:flush_all()
+
+            local res, err = dogs:incr("foo", 10502, 1, 0.001)
+            ngx.say("incr: ", res, " ", err)
+            ngx.say("foo = ", dogs:get("foo"))
+
+            ngx.sleep(0.002)
+
+            ngx.say("foo after init_ttl = ", dogs:get("foo"))
+        }
+    }
+--- request
+GET /t
+--- response_body
+incr: 10503 nil
+foo = 10503
+foo after init_ttl = nil
+--- no_error_log
+[error]
+[alert]
+[crit]
+
+
+
+=== TEST 44: incr key with init and init_ttl as string (key not exists)
+--- http_config eval: $::HttpConfig
+--- config
+    location = /t {
+        content_by_lua_block {
+            local dogs = ngx.shared.dogs
+            dogs:flush_all()
+
+            local res, err = dogs:incr("foo", 10502, 1, "0.001")
+            ngx.say("incr: ", res, " ", err)
+            ngx.say("foo = ", dogs:get("foo"))
+
+            ngx.sleep(0.002)
+
+            ngx.say("foo after init_ttl = ", dogs:get("foo"))
+        }
+    }
+--- request
+GET /t
+--- response_body
+incr: 10503 nil
+foo = 10503
+foo after init_ttl = nil
+--- no_error_log
+[error]
+[alert]
+[crit]
+
+
+
+=== TEST 45: incr key with init and init_ttl (key expired and size matched)
+--- http_config eval: $::HttpConfig
+--- config
+    location = /t {
+        content_by_lua_block {
+            local dogs = ngx.shared.dogs
+            for i = 1, 20 do
+                dogs:set("bar" .. i, i, 0.002)
+            end
+            dogs:set("foo", 32, 0.002)
+            ngx.sleep(0.003)
+
+            local res, err = dogs:incr("foo", 10502, 0, 0.001)
+            ngx.say("incr: ", res, " ", err)
+            ngx.say("foo = ", dogs:get("foo"))
+
+            ngx.sleep(0.002)
+
+            ngx.say("foo after init_ttl = ", dogs:get("foo"))
+        }
+    }
+--- request
+GET /t
+--- response_body
+incr: 10502 nil
+foo = 10502
+foo after init_ttl = nil
+--- no_error_log
+[error]
+[alert]
+[crit]
+
+
+
+=== TEST 46: incr key with init and init_ttl (forcibly override other valid entries)
+--- http_config eval: $::HttpConfig
+--- config
+    location = /t {
+        content_by_lua_block {
+            local dogs = ngx.shared.dogs
+            dogs:flush_all()
+
+            local long_prefix = string.rep("1234567890", 100)
+            for i = 1, 1000 do
+                local success, err, forcible = dogs:set(long_prefix .. i, i)
+                if forcible then
+                    dogs:delete(long_prefix .. i)
+                    break
+                end
+            end
+
+            local res, err, forcible = dogs:incr(long_prefix .. "bar", 10502, 0)
+            ngx.say("incr: ", res, " ", err, " ", forcible)
+
+            local res, err, forcible = dogs:incr(long_prefix .. "foo", 10502, 0, 0.001)
+            ngx.say("incr: ", res, " ", err, " ", forcible)
+            ngx.say("foo = ", dogs:get(long_prefix .. "foo"))
+
+            ngx.sleep(0.002)
+            ngx.say("foo after init_ttl = ", dogs:get("foo"))
+        }
+    }
+--- request
+GET /t
+--- response_body
+incr: 10502 nil false
+incr: 10502 nil true
+foo = 10502
+foo after init_ttl = nil
+--- no_error_log
+[error]
+[alert]
+[crit]
+
+
+
+=== TEST 47: exptime uses long type to avoid overflow in set() + ttl()
+--- http_config eval: $::HttpConfig
+--- config
+    location = /t {
+        content_by_lua_block {
+            local dogs = ngx.shared.dogs
+            dogs:flush_all()
+
+            local ok, err = dogs:set("huge_ttl", true, 2 ^ 31)
+            if not ok then
+                ngx.say("err setting: ", err)
+                return
+            end
+
+            local ttl, err = dogs:ttl("huge_ttl")
+            if not ttl then
+                ngx.say("err retrieving ttl: ", err)
+                return
+            end
+
+            ngx.say("ttl: ", ttl)
+        }
+    }
+--- request
+GET /t
+--- response_body
+ttl: 2147483648
+--- no_error_log
+[error]
+[alert]
+[crit]
+
+
+
+=== TEST 48: exptime uses long type to avoid overflow in expire() + ttl()
+--- http_config eval: $::HttpConfig
+--- config
+    location = /t {
+        content_by_lua_block {
+            local dogs = ngx.shared.dogs
+            dogs:flush_all()
+
+            local ok, err = dogs:set("updated_huge_ttl", true)
+            if not ok then
+                ngx.say("err setting: ", err)
+                return
+            end
+
+            local ok, err = dogs:expire("updated_huge_ttl", 2 ^ 31)
+            if not ok then
+                ngx.say("err expire: ", err)
+                return
+            end
+
+            local ttl, err = dogs:ttl("updated_huge_ttl")
+            if not ttl then
+                ngx.say("err retrieving ttl: ", err)
+                return
+            end
+
+            ngx.say("ttl: ", ttl)
+        }
+    }
+--- request
+GET /t
+--- response_body
+ttl: 2147483648
+--- no_error_log
+[error]
+[alert]
+[crit]
+
+
+
+=== TEST 49: init_ttl uses long type to avoid overflow in incr() + ttl()
+--- http_config eval: $::HttpConfig
+--- config
+    location = /t {
+        content_by_lua_block {
+            local dogs = ngx.shared.dogs
+            dogs:flush_all()
+
+            local ok, err = dogs:incr("incr_huge_ttl", 1, 0, 2 ^ 31)
+            if not ok then
+                ngx.say("err incr: ", err)
+                return
+            end
+
+            local ttl, err = dogs:ttl("incr_huge_ttl")
+            if not ttl then
+                ngx.say("err retrieving ttl: ", err)
+                return
+            end
+
+            ngx.say("ttl: ", ttl)
+        }
+    }
+--- request
+GET /t
+--- response_body
+ttl: 2147483648
+--- no_error_log
+[error]
+[alert]
+[crit]

@@ -16,8 +16,10 @@ our $CWD = cwd();
 no_long_string();
 #no_diff();
 
+env_to_nginx("PATH=" . $ENV{'PATH'});
 $ENV{TEST_NGINX_LUA_PACKAGE_PATH} = "$::CWD/lib/?.lua;;";
 $ENV{TEST_NGINX_HTML_DIR} ||= html_dir();
+$ENV{TEST_NGINX_SERVER_SSL_PORT} ||= 4443;
 
 run_tests();
 
@@ -25,7 +27,7 @@ __DATA__
 
 === TEST 1: clear certs
 --- http_config
-    lua_package_path "$TEST_NGINX_LUA_PACKAGE_PATH/?.lua;;";
+    lua_package_path "$TEST_NGINX_LUA_PACKAGE_PATH";
 
     server {
         listen unix:$TEST_NGINX_HTML_DIR/nginx.sock ssl;
@@ -115,7 +117,7 @@ sslv3 alert handshake failure
 
 === TEST 2: set DER cert and private key
 --- http_config
-    lua_package_path "$TEST_NGINX_LUA_PACKAGE_PATH/?.lua;;";
+    lua_package_path "$TEST_NGINX_LUA_PACKAGE_PATH";
 
     server {
         listen unix:$TEST_NGINX_HTML_DIR/nginx.sock ssl;
@@ -235,7 +237,7 @@ lua ssl server name: "test.com"
 
 === TEST 3: read SNI name via ssl.server_name()
 --- http_config
-    lua_package_path "$TEST_NGINX_LUA_PACKAGE_PATH/?.lua;;";
+    lua_package_path "$TEST_NGINX_LUA_PACKAGE_PATH";
 
     server {
         listen unix:$TEST_NGINX_HTML_DIR/nginx.sock ssl;
@@ -334,7 +336,7 @@ read SNI name from Lua: test.com
 
 === TEST 4: read SNI name via ssl.server_name() when no SNI name specified
 --- http_config
-    lua_package_path "$TEST_NGINX_LUA_PACKAGE_PATH/?.lua;;";
+    lua_package_path "$TEST_NGINX_LUA_PACKAGE_PATH";
 
     server {
         listen unix:$TEST_NGINX_HTML_DIR/nginx.sock ssl;
@@ -434,7 +436,7 @@ read SNI name from Lua: nil, type: nil
 
 === TEST 5: read raw server addr via ssl.raw_server_addr() (unix domain socket)
 --- http_config
-    lua_package_path "$TEST_NGINX_LUA_PACKAGE_PATH/?.lua;;";
+    lua_package_path "$TEST_NGINX_LUA_PACKAGE_PATH";
 
     server {
         listen unix:$TEST_NGINX_HTML_DIR/nginx.sock ssl;
@@ -553,7 +555,7 @@ qr/Using unix socket file .*?nginx\.sock/
 
 === TEST 6: read raw server addr via ssl.raw_server_addr() (IPv4)
 --- http_config
-    lua_package_path "$TEST_NGINX_LUA_PACKAGE_PATH/?.lua;;";
+    lua_package_path "$TEST_NGINX_LUA_PACKAGE_PATH";
 
     server {
         listen 127.0.0.1:12345 ssl;
@@ -672,7 +674,7 @@ Using IPv4 address: 127.0.0.1
 
 === TEST 7: read raw server addr via ssl.raw_server_addr() (IPv6)
 --- http_config
-    lua_package_path "$TEST_NGINX_LUA_PACKAGE_PATH/?.lua;;";
+    lua_package_path "$TEST_NGINX_LUA_PACKAGE_PATH";
 
     server {
         listen [::1]:12345 ssl;
@@ -792,7 +794,7 @@ Using IPv6 address: 0.0.0.1
 
 === TEST 8: set DER cert chain
 --- http_config
-    lua_package_path "$TEST_NGINX_LUA_PACKAGE_PATH/?.lua;;";
+    lua_package_path "$TEST_NGINX_LUA_PACKAGE_PATH";
 
     server {
         listen unix:$TEST_NGINX_HTML_DIR/nginx.sock ssl;
@@ -913,7 +915,7 @@ lua ssl server name: "test.com"
 
 === TEST 9: read PEM cert chain but set DER cert chain
 --- http_config
-    lua_package_path "$TEST_NGINX_LUA_PACKAGE_PATH/?.lua;;";
+    lua_package_path "$TEST_NGINX_LUA_PACKAGE_PATH";
 
     server {
         listen unix:$TEST_NGINX_HTML_DIR/nginx.sock ssl;
@@ -1040,10 +1042,10 @@ lua ssl server name: "test.com"
 
 === TEST 10: tls version - SSLv3
 --- http_config
-    lua_package_path "$TEST_NGINX_LUA_PACKAGE_PATH/?.lua;;";
+    lua_package_path "$TEST_NGINX_LUA_PACKAGE_PATH";
 
     server {
-        listen 127.0.0.2:8080 ssl;
+        listen 127.0.0.2:12345 ssl;
         server_name test.com;
         ssl_certificate_by_lua_block {
             local ssl = require "ngx.ssl"
@@ -1079,7 +1081,7 @@ lua ssl server name: "test.com"
 
                 sock:settimeout(3000)
 
-                local ok, err = sock:connect("127.0.0.2", 8080)
+                local ok, err = sock:connect("127.0.0.2", 12345)
                 if not ok then
                     ngx.say("failed to connect: ", err)
                     return
@@ -1116,10 +1118,10 @@ got TLS1 version: SSLv3,
 
 === TEST 11: tls version - TLSv1
 --- http_config
-    lua_package_path "$TEST_NGINX_LUA_PACKAGE_PATH/?.lua;;";
+    lua_package_path "$TEST_NGINX_LUA_PACKAGE_PATH";
 
     server {
-        listen 127.0.0.2:8080 ssl;
+        listen 127.0.0.2:12345 ssl;
         server_name test.com;
         ssl_certificate_by_lua_block {
             local ssl = require "ngx.ssl"
@@ -1155,7 +1157,7 @@ got TLS1 version: SSLv3,
 
                 sock:settimeout(3000)
 
-                local ok, err = sock:connect("127.0.0.2", 8080)
+                local ok, err = sock:connect("127.0.0.2", 12345)
                 if not ok then
                     ngx.say("failed to connect: ", err)
                     return
@@ -1192,10 +1194,10 @@ got TLS1 version: TLSv1,
 
 === TEST 12: tls version - TLSv1.1
 --- http_config
-    lua_package_path "$TEST_NGINX_LUA_PACKAGE_PATH/?.lua;;";
+    lua_package_path "$TEST_NGINX_LUA_PACKAGE_PATH";
 
     server {
-        listen 127.0.0.2:8080 ssl;
+        listen 127.0.0.2:12345 ssl;
         server_name test.com;
         ssl_certificate_by_lua_block {
             local ssl = require "ngx.ssl"
@@ -1231,7 +1233,7 @@ got TLS1 version: TLSv1,
 
                 sock:settimeout(3000)
 
-                local ok, err = sock:connect("127.0.0.2", 8080)
+                local ok, err = sock:connect("127.0.0.2", 12345)
                 if not ok then
                     ngx.say("failed to connect: ", err)
                     return
@@ -1268,10 +1270,10 @@ got TLS1 version: TLSv1.1,
 
 === TEST 13: tls version - TLSv1.2
 --- http_config
-    lua_package_path "$TEST_NGINX_LUA_PACKAGE_PATH/?.lua;;";
+    lua_package_path "$TEST_NGINX_LUA_PACKAGE_PATH";
 
     server {
-        listen 127.0.0.2:8080 ssl;
+        listen 127.0.0.2:12345 ssl;
         server_name test.com;
         ssl_certificate_by_lua_block {
             local ssl = require "ngx.ssl"
@@ -1307,7 +1309,7 @@ got TLS1 version: TLSv1.1,
 
                 sock:settimeout(3000)
 
-                local ok, err = sock:connect("127.0.0.2", 8080)
+                local ok, err = sock:connect("127.0.0.2", 12345)
                 if not ok then
                     ngx.say("failed to connect: ", err)
                     return
@@ -1344,10 +1346,10 @@ got TLS1 version: TLSv1.2,
 
 === TEST 14: ngx.semaphore in ssl_certificate_by_lua*
 --- http_config
-    lua_package_path "$TEST_NGINX_LUA_PACKAGE_PATH/?.lua;;";
+    lua_package_path "$TEST_NGINX_LUA_PACKAGE_PATH";
 
     server {
-        listen 127.0.0.2:8080 ssl;
+        listen 127.0.0.2:12345 ssl;
         server_name test.com;
         ssl_certificate_by_lua_block {
             local semaphore = require "ngx.semaphore"
@@ -1390,7 +1392,7 @@ got TLS1 version: TLSv1.2,
 
                 sock:settimeout(3000)
 
-                local ok, err = sock:connect("127.0.0.2", 8080)
+                local ok, err = sock:connect("127.0.0.2", 12345)
                 if not ok then
                     ngx.say("failed to connect: ", err)
                     return
@@ -1433,7 +1435,7 @@ ssl cert by lua done
 
 === TEST 15: read PEM key chain but set DER key chain
 --- http_config
-    lua_package_path "$TEST_NGINX_LUA_PACKAGE_PATH/?.lua;;";
+    lua_package_path "$TEST_NGINX_LUA_PACKAGE_PATH";
 
     server {
         listen unix:$TEST_NGINX_HTML_DIR/nginx.sock ssl;
@@ -1565,7 +1567,7 @@ lua ssl server name: "test.com"
 
 === TEST 16: parse PEM cert and key to cdata
 --- http_config
-    lua_package_path "$TEST_NGINX_LUA_PACKAGE_PATH/?.lua;;";
+    lua_package_path "$TEST_NGINX_LUA_PACKAGE_PATH";
 
     server {
         listen unix:$TEST_NGINX_HTML_DIR/nginx.sock ssl;
@@ -1698,7 +1700,7 @@ lua ssl server name: "test.com"
 
 === TEST 17: parse PEM cert and key to cdata (bad cert 0 in the chain)
 --- http_config
-    lua_package_path "$TEST_NGINX_LUA_PACKAGE_PATH/?.lua;;";
+    lua_package_path "$TEST_NGINX_LUA_PACKAGE_PATH";
 
     server {
         listen unix:$TEST_NGINX_HTML_DIR/nginx.sock ssl;
@@ -1822,7 +1824,7 @@ qr/\[error\] .*? failed to parse pem cert: PEM_read_bio_X509_AUX\(\) failed/
 
 === TEST 18: parse PEM cert and key to cdata (bad cert 2 in the chain)
 --- http_config
-    lua_package_path "$TEST_NGINX_LUA_PACKAGE_PATH/?.lua;;";
+    lua_package_path "$TEST_NGINX_LUA_PACKAGE_PATH";
 
     server {
         listen unix:$TEST_NGINX_HTML_DIR/nginx.sock ssl;
@@ -1946,7 +1948,7 @@ qr/\[error\] .*? failed to parse pem cert: PEM_read_bio_X509\(\) failed/
 
 === TEST 19: parse PEM cert and key to cdata (bad priv key)
 --- http_config
-    lua_package_path "$TEST_NGINX_LUA_PACKAGE_PATH/?.lua;;";
+    lua_package_path "$TEST_NGINX_LUA_PACKAGE_PATH";
 
     server {
         listen unix:$TEST_NGINX_HTML_DIR/nginx.sock ssl;
@@ -2070,7 +2072,7 @@ qr/\[error\] .*? failed to parse pem key: PEM_read_bio_PrivateKey\(\) failed/
 
 === TEST 20: read client addr via ssl.raw_client_addr()
 --- http_config
-    lua_package_path "$TEST_NGINX_LUA_PACKAGE_PATH/?.lua;;";
+    lua_package_path "$TEST_NGINX_LUA_PACKAGE_PATH";
 
     server {
         listen 127.0.0.1:12345 ssl;
@@ -2168,3 +2170,97 @@ client ip: 127.0.0.1
 [error]
 [alert]
 [emerg]
+
+
+
+=== TEST 21: yield during doing handshake with client which uses low version OpenSSL
+--- no_check_leak
+--- http_config
+    lua_shared_dict done 16k;
+    lua_package_path "$TEST_NGINX_LUA_PACKAGE_PATH/?.lua;;";
+    server {
+        listen $TEST_NGINX_SERVER_SSL_PORT ssl;
+        server_name test.com;
+        ssl_session_tickets off;
+        ssl_certificate ../../cert/test2.crt;
+        ssl_certificate_key ../../cert/test2.key;
+
+        ssl_certificate_by_lua_block {
+            local ssl = require "ngx.ssl"
+
+            ssl.clear_certs()
+
+            local f = assert(io.open("t/cert/test.crt.der"))
+            local cert_data = f:read("*a")
+            f:close()
+
+            ngx.sleep(0.01) -- yield
+
+            local ok, err = ssl.set_der_cert(cert_data)
+            if not ok then
+                ngx.log(ngx.ERR, "failed to set DER cert: ", err)
+                return
+            end
+
+            local f = assert(io.open("t/cert/test.key.der"))
+            local pkey_data = f:read("*a")
+            f:close()
+
+            local ok, err = ssl.set_der_priv_key(pkey_data)
+            if not ok then
+                ngx.log(ngx.ERR, "failed to set DER cert: ", err)
+                return
+            end
+        }
+
+        location / {
+            content_by_lua_block {
+                ngx.shared.done:set("handshake", true)
+            }
+        }
+    }
+--- config
+    lua_ssl_trusted_certificate ../../cert/test.crt;
+
+    location /t {
+        content_by_lua_block {
+            ngx.shared.done:delete("handshake")
+            local addr = ngx.var.addr;
+            local req = "'GET / HTTP/1.0\r\nHost: test.com\r\nConnection: close\r\n\r\n'"
+            local f, err = io.popen("echo -n " .. req .. " | timeout 3s openssl s_client -connect 127.0.0.1:$TEST_NGINX_SERVER_SSL_PORT")
+            if not f then
+                ngx.say(err)
+                return
+            end
+
+            local step = 0.001
+            while step < 2 do
+                ngx.sleep(step)
+                step = step * 2
+
+                if ngx.shared.done:get("handshake") then
+                    local out = f:read('*a')
+                    ngx.log(ngx.INFO, out)
+                    ngx.say("ok")
+                    f:close()
+                    return
+                end
+            end
+
+            ngx.log(ngx.ERR, "openssl client handshake timeout")
+        }
+    }
+
+--- request
+GET /t
+--- response_body
+ok
+--- error_log eval
+[
+qr/content_by_lua\(nginx\.conf:\d+\):\d+: CONNECTED/,
+'subject=/C=US/ST=California/L=San Francisco/O=OpenResty/OU=OpenResty/CN=test.com/emailAddress=agentzh@gmail.com',
+]
+
+--- no_error_log
+[error]
+[alert]
