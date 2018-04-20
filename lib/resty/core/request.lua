@@ -34,13 +34,13 @@ ffi.cdef[[
     } ngx_http_lua_ffi_table_elt_t;
 
     int ngx_http_lua_ffi_req_get_headers_count(ngx_http_request_t *r,
-        int max);
+        int max, int *truncated);
 
     int ngx_http_lua_ffi_req_get_headers(ngx_http_request_t *r,
         ngx_http_lua_ffi_table_elt_t *out, int count, int raw);
 
     int ngx_http_lua_ffi_req_get_uri_args_count(ngx_http_request_t *r,
-        int max);
+        int max, int *truncated);
 
     size_t ngx_http_lua_ffi_req_get_querystring_len(ngx_http_request_t *r);
 
@@ -64,6 +64,8 @@ ffi.cdef[[
 
 local table_elt_type = ffi.typeof("ngx_http_lua_ffi_table_elt_t*")
 local table_elt_size = ffi.sizeof("ngx_http_lua_ffi_table_elt_t")
+local truncated = ffi.new("int[1]")
+
 local req_headers_mt = {
     __index = function (tb, key)
         return rawget(tb, (gsub(lower(key), '_', '-', "jo")))
@@ -87,7 +89,8 @@ function ngx.req.get_headers(max_headers, raw)
         raw = 1
     end
 
-    local n = C.ngx_http_lua_ffi_req_get_headers_count(r, max_headers)
+    local n = C.ngx_http_lua_ffi_req_get_headers_count(r, max_headers,
+                                                       truncated)
     if n == FFI_BAD_CONTEXT then
         error("API disabled in the current context")
     end
@@ -123,9 +126,15 @@ function ngx.req.get_headers(max_headers, raw)
                 headers[key] = value
             end
         end
+
         if raw == 0 then
-            return setmetatable(headers, req_headers_mt)
+            headers = setmetatable(headers, req_headers_mt)
         end
+
+        if truncated[0] ~= 0 then
+            return headers, "truncated"
+        end
+
         return headers
     end
 
@@ -143,7 +152,7 @@ function ngx.req.get_uri_args(max_args)
         max_args = -1
     end
 
-    local n = C.ngx_http_lua_ffi_req_get_uri_args_count(r, max_args)
+    local n = C.ngx_http_lua_ffi_req_get_uri_args_count(r, max_args, truncated)
     if n == FFI_BAD_CONTEXT then
         error("API disabled in the current context")
     end
@@ -186,6 +195,11 @@ function ngx.req.get_uri_args(max_args)
             args[key] = value
         end
     end
+
+    if truncated[0] ~= 0 then
+        return args, "truncated"
+    end
+
     return args
 end
 
