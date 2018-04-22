@@ -26,14 +26,14 @@ if subsystem == 'http' then
 elseif subsystem == 'stream' then
     if not ngx.config
        or not ngx.config.ngx_lua_version
-       or ngx.config.ngx_lua_version < 4
+       or ngx.config.ngx_lua_version < 5
     then
-        error("ngx_stream_lua_module 0.0.4+ required")
+        error("ngx_stream_lua_module 0.0.5+ required")
     end
 
 else
     error("ngx_http_lua_module 0.10.13+ or "
-          .. "ngx_stream_lua_module 0.0.4+ required")
+          .. "ngx_stream_lua_module 0.0.5+ required")
 end
 
 
