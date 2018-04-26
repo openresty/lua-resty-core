@@ -374,7 +374,7 @@ This function can be called in whatever contexts where downstream https is used.
 [Back to TOC](#table-of-contents)
 
 get_tls1_version_str
-----------------
+--------------------
 **syntax:** *ver, err = ssl.get_tls1_version_str()*
 
 **context:** *any*
