@@ -348,6 +348,8 @@ end
 
 This function can be called in whatever contexts where downstream https is used.
 
+This function was first introduced in lua-resty-core 0.1.14.
+
 [Back to TOC](#table-of-contents)
 
 get_tls1_version

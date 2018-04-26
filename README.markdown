@@ -44,7 +44,7 @@ Table of Contents
 Status
 ======
 
-This library is production ready and under active development.
+This library is production ready.
 
 Synopsis
 ========
@@ -96,8 +96,8 @@ of this library in the particular OpenResty release you are using. Otherwise you
 into serious comaptibility issues.
 
 * LuaJIT 2.1 (for now, it is the v2.1 git branch in the official luajit-2.0 git repository: http://luajit.org/download.html )
-* [ngx_http_lua_module](https://github.com/openresty/lua-nginx-module) v0.10.12 or later.
-* [ngx_stream_lua_module](https://github.com/openresty/lua-nginx-module) v0.0.4 or later.
+* [ngx_http_lua_module](https://github.com/openresty/lua-nginx-module) v0.10.13.
+* [ngx_stream_lua_module](https://github.com/openresty/lua-nginx-module) v0.0.5.
 * [lua-resty-lrucache](https://github.com/openresty/lua-resty-lrucache)
 
 [Back to TOC](#table-of-contents)
