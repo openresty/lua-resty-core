@@ -20,6 +20,7 @@ Table of Contents
     * [raw_server_addr](#raw_server_addr)
     * [raw_client_addr](#raw_client_addr)
     * [get_tls1_version](#get_tls1_version)
+    * [get_tls1_version_str](#get_tls1_version_str)
     * [parse_pem_cert](#parse_pem_cert)
     * [parse_pem_priv_key](#parse_pem_priv_key)
     * [set_cert](#set_cert)
@@ -359,6 +360,26 @@ get_tls1_version
 **context:** *any*
 
 Returns the TLS 1.x version number used by the current SSL connection. Returns `nil` and
+a string describing the error otherwise.
+
+Typical return values are
+
+* `0x0300`(SSLv3)
+* `0x0301`(TLSv1)
+* `0x0302`(TLSv1.1)
+* `0x0303`(TLSv1.2)
+
+This function can be called in whatever contexts where downstream https is used.
+
+[Back to TOC](#table-of-contents)
+
+get_tls1_version_str
+--------------------
+**syntax:** *ver, err = ssl.get_tls1_version_str()*
+
+**context:** *any*
+
+Returns the TLS 1.x version string used by the current SSL connection. Returns `nil` and
 a string describing the error otherwise.
 
 Typical return values are
