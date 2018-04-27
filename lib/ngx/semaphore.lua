@@ -5,7 +5,7 @@
 
 
 local base = require "resty.core.base"
-base.allows_subsystem('http')
+base.allows_subsystem('http', 'stream')
 
 
 local ffi = require 'ffi'
@@ -25,31 +25,72 @@ local get_size_ptr = base.get_size_ptr
 local setmetatable = setmetatable
 local co_yield = coroutine._yield
 local ERR_BUF_SIZE = 128
+local subsystem = ngx.config.subsystem
 
 
 local errmsg = base.get_errmsg_ptr()
+local psem
+local ngx_lua_ffi_sema_new
+local ngx_lua_ffi_sema_post
+local ngx_lua_ffi_sema_count
+local ngx_lua_ffi_sema_wait
+local ngx_lua_ffi_sema_gc
 
 
-ffi.cdef[[
-    struct ngx_http_lua_sema_s;
-    typedef struct ngx_http_lua_sema_s ngx_http_lua_sema_t;
+if subsystem == 'http' then
+    ffi.cdef[[
+        struct ngx_http_lua_sema_s;
+        typedef struct ngx_http_lua_sema_s ngx_http_lua_sema_t;
 
-    int ngx_http_lua_ffi_sema_new(ngx_http_lua_sema_t **psem,
-        int n, char **errmsg);
+        int ngx_http_lua_ffi_sema_new(ngx_http_lua_sema_t **psem,
+            int n, char **errmsg);
 
-    int ngx_http_lua_ffi_sema_post(ngx_http_lua_sema_t *sem, int n);
+        int ngx_http_lua_ffi_sema_post(ngx_http_lua_sema_t *sem, int n);
 
-    int ngx_http_lua_ffi_sema_count(ngx_http_lua_sema_t *sem);
+        int ngx_http_lua_ffi_sema_count(ngx_http_lua_sema_t *sem);
 
-    int ngx_http_lua_ffi_sema_wait(ngx_http_request_t *r,
-        ngx_http_lua_sema_t *sem, int wait_ms,
-        unsigned char *errstr, size_t *errlen);
+        int ngx_http_lua_ffi_sema_wait(ngx_http_request_t *r,
+            ngx_http_lua_sema_t *sem, int wait_ms,
+            unsigned char *errstr, size_t *errlen);
 
-    void ngx_http_lua_ffi_sema_gc(ngx_http_lua_sema_t *sem);
-]]
+        void ngx_http_lua_ffi_sema_gc(ngx_http_lua_sema_t *sem);
+    ]]
 
 
-local psem = ffi_new("ngx_http_lua_sema_t *[1]")
+    psem = ffi_new("ngx_http_lua_sema_t *[1]")
+    ngx_lua_ffi_sema_new = C.ngx_http_lua_ffi_sema_new
+    ngx_lua_ffi_sema_post = C.ngx_http_lua_ffi_sema_post
+    ngx_lua_ffi_sema_count = C.ngx_http_lua_ffi_sema_count
+    ngx_lua_ffi_sema_wait = C.ngx_http_lua_ffi_sema_wait
+    ngx_lua_ffi_sema_gc = C.ngx_http_lua_ffi_sema_gc
+
+elseif subsystem == 'stream' then
+    ffi.cdef[[
+        struct ngx_stream_lua_sema_s;
+        typedef struct ngx_stream_lua_sema_s ngx_stream_lua_sema_t;
+
+        int ngx_stream_lua_ffi_sema_new(ngx_stream_lua_sema_t **psem,
+            int n, char **errmsg);
+
+        int ngx_stream_lua_ffi_sema_post(ngx_stream_lua_sema_t *sem, int n);
+
+        int ngx_stream_lua_ffi_sema_count(ngx_stream_lua_sema_t *sem);
+
+        int ngx_stream_lua_ffi_sema_wait(ngx_stream_lua_request_t *r,
+            ngx_stream_lua_sema_t *sem, int wait_ms,
+            unsigned char *errstr, size_t *errlen);
+
+        void ngx_stream_lua_ffi_sema_gc(ngx_stream_lua_sema_t *sem);
+    ]]
+
+
+    psem = ffi_new("ngx_stream_lua_sema_t *[1]")
+    ngx_lua_ffi_sema_new = C.ngx_stream_lua_ffi_sema_new
+    ngx_lua_ffi_sema_post = C.ngx_stream_lua_ffi_sema_post
+    ngx_lua_ffi_sema_count = C.ngx_stream_lua_ffi_sema_count
+    ngx_lua_ffi_sema_wait = C.ngx_stream_lua_ffi_sema_wait
+    ngx_lua_ffi_sema_gc = C.ngx_stream_lua_ffi_sema_gc
+end
 
 
 local _M = { version = base.version }
@@ -62,14 +103,14 @@ function _M.new(n)
         error("no negative number", 2)
     end
 
-    local ret = C.ngx_http_lua_ffi_sema_new(psem, n, errmsg)
+    local ret = ngx_lua_ffi_sema_new(psem, n, errmsg)
     if ret == FFI_ERROR then
         return nil, ffi_str(errmsg[0])
     end
 
     local sem = psem[0]
 
-    ffi_gc(sem, C.ngx_http_lua_ffi_sema_gc)
+    ffi_gc(sem, ngx_lua_ffi_sema_gc)
 
     return setmetatable({ sem = sem }, mt)
 end
@@ -96,8 +137,8 @@ function _M.wait(self, seconds)
     local errlen = get_size_ptr()
     errlen[0] = ERR_BUF_SIZE
 
-    local ret = C.ngx_http_lua_ffi_sema_wait(r, cdata_sem,
-                                             milliseconds, err, errlen)
+    local ret = ngx_lua_ffi_sema_wait(r, cdata_sem,
+                                      milliseconds, err, errlen)
 
     if ret == FFI_ERROR then
         return nil, ffi_str(err, errlen[0])
@@ -134,7 +175,7 @@ function _M.post(self, n)
     end
 
     -- always return NGX_OK
-    C.ngx_http_lua_ffi_sema_post(cdata_sem, num)
+    ngx_lua_ffi_sema_post(cdata_sem, num)
 
     return true
 end
@@ -145,7 +186,7 @@ function _M.count(self)
         error("not a semaphore instance", 2)
     end
 
-    return C.ngx_http_lua_ffi_sema_count(self.sem)
+    return ngx_lua_ffi_sema_count(self.sem)
 end
 
 
