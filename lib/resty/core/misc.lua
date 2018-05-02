@@ -63,6 +63,7 @@ ffi.cdef[[
     int ngx_http_lua_ffi_set_resp_status(ngx_http_request_t *r, int r);
     int ngx_http_lua_ffi_is_subrequest(ngx_http_request_t *r);
     int ngx_http_lua_ffi_headers_sent(ngx_http_request_t *r);
+    int ngx_http_lua_ffi_req_is_internal(ngx_http_request_t *r);
 ]]
 
 
@@ -150,6 +151,25 @@ local function headers_sent()
     return rc == 1
 end
 register_getter("headers_sent", headers_sent)
+
+
+-- ngx.req.is_internal
+
+function ngx.req.is_internal()
+    local r = getfenv(0).__ngx_req
+
+    if not r then
+        error("no request found")
+    end
+
+    local rc = C.ngx_http_lua_ffi_req_is_internal(r)
+
+    if rc == FFI_BAD_CONTEXT then
+        error("API disabled in the current context")
+    end
+
+    return rc == 1
+end
 
 
 return _M
