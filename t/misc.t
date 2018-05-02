@@ -10,7 +10,7 @@ log_level('warn');
 #repeat_each(120);
 repeat_each(2);
 
-plan tests => repeat_each() * (blocks() * 6 - 2);
+plan tests => repeat_each() * (blocks() * 5 - 6);
 
 my $pwd = cwd();
 
@@ -159,3 +159,74 @@ GET /t
  bad argument
 --- error_log
 unsupported subsystem: http
+
+
+
+=== TEST 6: not internal request
+--- http_config eval: $::HttpConfig
+--- config
+    location /test {
+        rewrite ^/test$ /lua last;
+    }
+    location /lua {
+        content_by_lua_block {
+            if ngx.req.is_internal() then
+                ngx.say("internal")
+            else
+                ngx.say("not internal")
+            end
+        }
+    }
+--- request
+GET /lua
+--- response_body
+not internal
+
+
+
+=== TEST 7: internal request
+--- http_config eval: $::HttpConfig
+--- config
+    location /test {
+        rewrite ^/test$ /lua last;
+    }
+    location /lua {
+        content_by_lua_block {
+            if ngx.req.is_internal() then
+                ngx.say("internal")
+            else
+                ngx.say("not internal")
+            end
+        }
+    }
+--- request
+GET /test
+--- response_body
+internal
+
+
+
+=== TEST 8: bad context
+--- http_config eval: $::HttpConfig
+--- config
+    location /lua {
+        content_by_lua_block {
+            local function test()
+                local ok, err = pcall(ngx.req.is_internal)
+                package.loaded.bad_context = {ok, err}
+            end
+
+            ngx.timer.at(0, test)
+            ngx.sleep(0.02)
+
+            local ctx = package.loaded.bad_context
+            ngx.say(ctx[1])
+            local i = string.find(ctx[2], "API disabled in the current context")
+            ngx.say(i > 1)
+        }
+    }
+--- request
+GET /lua
+--- response_body
+false
+true
