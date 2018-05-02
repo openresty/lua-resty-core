@@ -228,6 +228,7 @@ in the current request before you reusing the `ctx` table in some other place.
 * [ngx.status](https://github.com/openresty/lua-nginx-module#ngxstatus)
 * [ngx.is_subrequest](https://github.com/openresty/lua-nginx-module#ngxis_subrequest)
 * [ngx.headers_sent](https://github.com/openresty/lua-nginx-module#ngxheaders_sent)
+* [ngx.req.is_internal](https://github.com/openresty/lua-nginx-module#ngxreqis_internal)
 
 [Back to TOC](#table-of-contents)
 
