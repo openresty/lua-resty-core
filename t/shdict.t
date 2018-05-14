@@ -1636,3 +1636,63 @@ ttl: 2147483648
 [error]
 [alert]
 [crit]
+
+
+
+=== TEST 50: trying to use a non-string key is an error
+--- http_config eval: $::HttpConfig
+--- config
+    location = /t {
+        content_by_lua_block {
+            local dogs = ngx.shared.dogs
+            local ok, err
+            dogs:flush_all()
+
+            ok, err = pcall(dogs.set, dogs, {}, '')
+            ngx.say('set ', ok, ' ', err)
+
+            ok, err = pcall(dogs.safe_set, dogs, {}, '')
+            ngx.say('safe_set ', ok, ' ', err)
+
+            ok, err = pcall(dogs.get, dogs, function() end)
+            ngx.say('get ', ok, ' ', err)
+
+            ok, err = pcall(dogs.get_stale, dogs, function() end)
+            ngx.say('get_stale ', ok, ' ', err)
+
+            ok, err = pcall(dogs.add, dogs, 0, '')
+            ngx.say('add ', ok, ' ', err)
+
+            ok, err = pcall(dogs.safe_add, dogs, 0, '')
+            ngx.say('safe_add ', ok, ' ', err)
+
+            ok, err = pcall(dogs.replace, dogs, {}, '')
+            ngx.say('replace ', ok, ' ', err)
+
+            ok, err = pcall(dogs.delete, dogs, {})
+            ngx.say('delete ', ok, ' ', err)
+
+            ok, err = pcall(dogs.incr, dogs, true, 0)
+            ngx.say('incr ', ok, ' ', err)
+
+            ok, err = pcall(dogs.ttl, dogs, {})
+            ngx.say('ttl ', ok, ' ', err)
+        }
+    }
+--- request
+GET /t
+--- response_body_like
+set false .*: bad key \(string expected, got table\)
+safe_set false .*: bad key \(string expected, got table\)
+get false .*: bad key \(string expected, got function\)
+get_stale false .*: bad key \(string expected, got function\)
+add false .*: bad key \(string expected, got number\)
+safe_add false .*: bad key \(string expected, got number\)
+replace false .*: bad key \(string expected, got table\)
+delete false .*: bad key \(string expected, got table\)
+incr false .*: bad key \(string expected, got boolean\)
+ttl false .*: bad key \(string expected, got table\)
+--- no_error_log
+[error]
+[alert]
+[crit]
