@@ -6,6 +6,7 @@ use Cwd qw(cwd);
 workers(5);
 #worker_connections(1014);
 #master_process_enabled(1);
+master_on();
 #log_level('warn');
 
 repeat_each(3);
@@ -46,7 +47,7 @@ __DATA__
         content_by_lua_block {
             local v
             local count = ngx.worker.count
-            for i = 1, 400 do
+            for i = 1, 200 do
                 v = count()
             end
             ngx.say("workers: ", v)
