@@ -68,7 +68,7 @@ true
 < 0.11: true
 
 --- error_log eval
-qr/\[TRACE   \d+ content_by_lua\(nginx\.conf:\d+\):3 loop\]/
+qr/\[TRACE\s+\d+ content_by_lua\(nginx\.conf:\d+\):3 loop\]/
 --- no_error_log
 [error]
 bad argument type
@@ -98,7 +98,7 @@ true
 true
 
 --- error_log eval
-qr/\[TRACE   \d+ content_by_lua\(nginx\.conf:\d+\):3 loop\]/
+qr/\[TRACE\s+\d+ content_by_lua\(nginx\.conf:\d+\):3 loop\]/
 --- no_error_log
 [error]
 bad argument type
@@ -123,7 +123,7 @@ GET /t
 --- response_body
 true
 --- error_log eval
-qr/\[TRACE   \d+ content_by_lua\(nginx\.conf:\d+\):3 loop\]/
+qr/\[TRACE\s+\d+ content_by_lua\(nginx\.conf:\d+\):3 loop\]/
 --- no_error_log
 [error]
 bad argument type
@@ -147,7 +147,7 @@ stitch
 GET /t
 --- response_body_like: ^\d{4}-\d{2}-\d{2}
 --- error_log eval
-qr/\[TRACE   \d+ content_by_lua\(nginx\.conf:\d+\):3 loop\]/
+qr/\[TRACE\s+\d+ content_by_lua\(nginx\.conf:\d+\):3 loop\]/
 --- no_error_log
 [error]
 bad argument type
@@ -171,7 +171,7 @@ stitch
 GET /t
 --- response_body_like: ^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$
 --- error_log eval
-qr/\[TRACE   \d+ content_by_lua\(nginx\.conf:\d+\):3 loop\]/
+qr/\[TRACE\s+\d+ content_by_lua\(nginx\.conf:\d+\):3 loop\]/
 --- no_error_log
 [error]
 bad argument type
@@ -195,7 +195,7 @@ stitch
 GET /t
 --- response_body_like: ^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$
 --- error_log eval
-qr/\[TRACE   \d+ content_by_lua\(nginx\.conf:\d+\):3 loop\]/
+qr/\[TRACE\s+\d+ content_by_lua\(nginx\.conf:\d+\):3 loop\]/
 --- no_error_log
 [error]
 bad argument type
@@ -222,7 +222,7 @@ GET /t
 Thu, 18-Nov-10 11:27:35 GMT
 Sun, 18-Sep-2039 23:06:40 GMT
 --- error_log eval
-qr/\[TRACE   \d+ content_by_lua\(nginx\.conf:\d+\):3 loop\]/
+qr/\[TRACE\s+\d+ content_by_lua\(nginx\.conf:\d+\):3 loop\]/
 --- no_error_log
 [error]
 bad argument type
@@ -273,7 +273,7 @@ GET /t
 --- response_body
 Thu, 18 Nov 2010 11:27:35 GMT
 --- error_log eval
-qr/\[TRACE   \d+ content_by_lua\(nginx\.conf:\d+\):3 loop\]/
+qr/\[TRACE\s+\d+ content_by_lua\(nginx\.conf:\d+\):3 loop\]/
 --- no_error_log
 [error]
 bad argument type
@@ -328,7 +328,7 @@ GET /t
 1290079655
 nil
 --- error_log eval
-qr/\[TRACE   \d+ content_by_lua\(nginx\.conf:\d+\):3 loop\]/
+qr/\[TRACE\s+\d+ content_by_lua\(nginx\.conf:\d+\):3 loop\]/
 --- no_error_log
 [error]
 bad argument type

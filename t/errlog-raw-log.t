@@ -138,7 +138,7 @@ qr/\[error\] \S+: \S+ hello world/
 --- request
 GET /log
 --- error_log eval
-qr/\[TRACE   \d+ content_by_lua\(nginx.conf:\d+\):4 loop\]/
+qr/\[TRACE\s+\d+ content_by_lua\(nginx.conf:\d+\):4 loop\]/
 
 
 

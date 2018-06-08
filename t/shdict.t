@@ -69,7 +69,7 @@ value type: string
 value: bar
 flags: 72
 --- error_log eval
-qr/\[TRACE   \d+ content_by_lua\(nginx\.conf:\d+\):11 loop\]/
+qr/\[TRACE\s+\d+ content_by_lua\(nginx\.conf:\d+\):11 loop\]/
 --- no_error_log
 [error]
  -- NYI:
@@ -101,7 +101,7 @@ value type: nil
 value: nil
 flags: nil
 --- error_log eval
-qr/\[TRACE   \d+ content_by_lua\(nginx\.conf:\d+\):7 loop\]/
+qr/\[TRACE\s+\d+ content_by_lua\(nginx\.conf:\d+\):7 loop\]/
 --- no_error_log
 [error]
  -- NYI:
@@ -133,7 +133,7 @@ value type: boolean
 value: true
 flags: 5678
 --- error_log eval
-qr/\[TRACE   \d+ content_by_lua\(nginx\.conf:\d+\):7 loop\]/
+qr/\[TRACE\s+\d+ content_by_lua\(nginx\.conf:\d+\):7 loop\]/
 --- no_error_log
 [error]
  -- NYI:
@@ -165,7 +165,7 @@ value type: boolean
 value: false
 flags: 777
 --- error_log eval
-qr/\[TRACE   \d+ content_by_lua\(nginx\.conf:\d+\):7 loop\]/
+qr/\[TRACE\s+\d+ content_by_lua\(nginx\.conf:\d+\):7 loop\]/
 --- no_error_log
 [error]
  -- NYI:
@@ -197,7 +197,7 @@ value type: number
 value: 51203
 flags: nil
 --- error_log eval
-qr/\[TRACE   \d+ content_by_lua\(nginx\.conf:\d+\):7 loop\]/
+qr/\[TRACE\s+\d+ content_by_lua\(nginx\.conf:\d+\):7 loop\]/
 --- no_error_log
 [error]
  -- NYI:
@@ -229,7 +229,7 @@ value type: number
 value: 3.1415926
 flags: 78
 --- error_log eval
-qr/\[TRACE   \d+ content_by_lua\(nginx\.conf:\d+\):7 loop\]/
+qr/\[TRACE\s+\d+ content_by_lua\(nginx\.conf:\d+\):7 loop\]/
 --- no_error_log
 [error]
  -- NYI:
@@ -262,7 +262,7 @@ value: " . ("bbbb" x 1024) . "a
 flags: 912
 "
 --- error_log eval
-qr/\[TRACE   \d+ content_by_lua\(nginx\.conf:\d+\):7 loop\]/
+qr/\[TRACE\s+\d+ content_by_lua\(nginx\.conf:\d+\):7 loop\]/
 --- no_error_log
 [error]
  -- NYI:
@@ -296,7 +296,7 @@ value: bar
 flags: 72
 stale: false
 --- error_log eval
-qr/\[TRACE   \d+ content_by_lua\(nginx\.conf:\d+\):7 loop\]/
+qr/\[TRACE\s+\d+ content_by_lua\(nginx\.conf:\d+\):7 loop\]/
 --- no_error_log
 [error]
  -- NYI:
@@ -335,7 +335,7 @@ value: bar
 flags: 72
 stale: true
 --- error_log eval
-qr/\[TRACE   \d+ content_by_lua\(nginx\.conf:\d+\):12 loop\]/
+qr/\[TRACE\s+\d+ content_by_lua\(nginx\.conf:\d+\):12 loop\]/
 --- no_error_log
 [error]
  -- NYI:
@@ -369,7 +369,7 @@ GET /t
 value: 256
 err: nil
 --- error_log eval
-qr/\[TRACE   \d+ content_by_lua\(nginx\.conf:\d+\):11 loop\]/
+qr/\[TRACE\s+\d+ content_by_lua\(nginx\.conf:\d+\):11 loop\]/
 --- no_error_log
 [error]
  -- NYI:
@@ -399,7 +399,7 @@ GET /t
 value: 371
 err: nil
 --- error_log eval
-qr/\[TRACE   \d+ content_by_lua\(nginx\.conf:\d+\):7 loop\]/
+qr/\[TRACE\s+\d+ content_by_lua\(nginx\.conf:\d+\):7 loop\]/
 --- no_error_log
 [error]
  -- NYI:
@@ -436,7 +436,7 @@ value type: string
 value: bar
 flags: 72
 --- error_log eval
-qr/\[TRACE   \d+ content_by_lua\(nginx\.conf:\d+\):7 loop\]/
+qr/\[TRACE\s+\d+ content_by_lua\(nginx\.conf:\d+\):7 loop\]/
 --- no_error_log
 [error]
  -- NYI:
@@ -473,7 +473,7 @@ value type: boolean
 value: true
 flags: 5678
 --- error_log eval
-qr/\[TRACE   \d+ content_by_lua\(nginx\.conf:\d+\):7 loop\]/
+qr/\[TRACE\s+\d+ content_by_lua\(nginx\.conf:\d+\):7 loop\]/
 --- no_error_log
 [error]
  -- NYI:
@@ -505,7 +505,7 @@ value type: boolean
 value: false
 flags: 777
 --- error_log eval
-qr/\[TRACE   \d+ content_by_lua\(nginx\.conf:\d+\):6 loop\]/
+qr/\[TRACE\s+\d+ content_by_lua\(nginx\.conf:\d+\):6 loop\]/
 --- no_error_log
 [error]
  -- NYI:
@@ -537,7 +537,7 @@ value type: number
 value: 51203
 flags: nil
 --- error_log eval
-qr/\[TRACE   \d+ content_by_lua\(nginx\.conf:\d+\):6 loop\]/
+qr/\[TRACE\s+\d+ content_by_lua\(nginx\.conf:\d+\):6 loop\]/
 --- no_error_log
 [error]
  -- NYI:
@@ -569,7 +569,7 @@ value type: number
 value: 3.1415926
 flags: 78
 --- error_log eval
-qr/\[TRACE   \d+ content_by_lua\(nginx\.conf:\d+\):6 loop\]/
+qr/\[TRACE\s+\d+ content_by_lua\(nginx\.conf:\d+\):6 loop\]/
 --- no_error_log
 [error]
  -- NYI:
@@ -602,7 +602,7 @@ value type: nil
 value: nil
 flags: nil
 --- error_log eval
-qr/\[TRACE   \d+ content_by_lua\(nginx\.conf:\d+\):6 loop\]/
+qr/\[TRACE\s+\d+ content_by_lua\(nginx\.conf:\d+\):6 loop\]/
 --- no_error_log
 [error]
  -- NYI:
@@ -634,7 +634,7 @@ value type: number
 value: 3.1415926
 flags: 78
 --- error_log eval
-qr/\[TRACE   \d+ content_by_lua\(nginx\.conf:\d+\):6 loop\]/
+qr/\[TRACE\s+\d+ content_by_lua\(nginx\.conf:\d+\):6 loop\]/
 --- no_error_log
 [error]
  -- NYI:
@@ -672,7 +672,7 @@ value type: string
 value: bar
 flags: 72
 --- error_log eval
-qr/\[TRACE   \d+ content_by_lua\(nginx\.conf:\d+\):8 loop\]/
+qr/\[TRACE\s+\d+ content_by_lua\(nginx\.conf:\d+\):8 loop\]/
 --- no_error_log
 [error]
  -- NYI:
@@ -710,7 +710,7 @@ value type: string
 value: bar
 flags: 72
 --- error_log eval
-qr/\[TRACE   \d+ content_by_lua\(nginx\.conf:\d+\):8 loop\]/
+qr/\[TRACE\s+\d+ content_by_lua\(nginx\.conf:\d+\):8 loop\]/
 --- no_error_log
 [error]
  -- NYI:
@@ -748,7 +748,7 @@ value type: string
 value: bar100
 flags: 72
 --- error_log eval
-qr/\[TRACE   \d+ content_by_lua\(nginx\.conf:\d+\):8 loop\]/
+qr/\[TRACE\s+\d+ content_by_lua\(nginx\.conf:\d+\):8 loop\]/
 --- no_error_log
 [error]
  -- NYI:
@@ -781,7 +781,7 @@ value type: nil
 value: nil
 flags: nil
 --- error_log eval
-qr/\[TRACE   \d+ content_by_lua\(nginx\.conf:\d+\):6 loop\]/
+qr/\[TRACE\s+\d+ content_by_lua\(nginx\.conf:\d+\):6 loop\]/
 --- no_error_log
 [error]
  -- NYI:
@@ -911,7 +911,7 @@ value type: nil
 value: nil
 flags: nil
 --- error_log eval
-qr/\[TRACE   \d+ content_by_lua\(nginx\.conf:\d+\):7 loop\]/
+qr/\[TRACE\s+\d+ content_by_lua\(nginx\.conf:\d+\):7 loop\]/
 --- no_error_log
 [error]
  -- NYI:
