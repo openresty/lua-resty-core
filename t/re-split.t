@@ -68,7 +68,7 @@ b
 c
 d
 --- error_log eval
-qr/\[TRACE   \d+/
+qr/\[TRACE\s+\d+/
 --- no_error_log
 [error]
 
@@ -100,7 +100,7 @@ b
 c
 d;e
 --- error_log eval
-qr/\[TRACE   \d+/
+qr/\[TRACE\s+\d+/
 --- no_error_log
 [error]
 
@@ -132,7 +132,7 @@ b
 c
 d
 --- error_log eval
-qr/\[TRACE   \d+/
+qr/\[TRACE\s+\d+/
 --- no_error_log
 [error]
 
@@ -167,7 +167,7 @@ c
 ;
 d,e
 --- error_log eval
-qr/\[TRACE   \d+/
+qr/\[TRACE\s+\d+/
 --- no_error_log
 [error]
 
@@ -200,7 +200,7 @@ c
 d
 e
 --- error_log eval
-qr/\[TRACE   \d+/
+qr/\[TRACE\s+\d+/
 --- no_error_log
 [error]
 
@@ -231,7 +231,7 @@ a
 b
 c,d,e
 --- error_log eval
-qr/\[TRACE   \d+/
+qr/\[TRACE\s+\d+/
 --- no_error_log
 [error]
 
@@ -264,7 +264,7 @@ b
 ,
 c,d,e
 --- error_log eval
-qr/\[TRACE   \d+/
+qr/\[TRACE\s+\d+/
 --- no_error_log
 [error]
 
@@ -297,7 +297,7 @@ c
 d
 e
 --- error_log eval
-qr/\[TRACE   \d+/
+qr/\[TRACE\s+\d+/
 --- no_error_log
 [error]
 
@@ -330,7 +330,7 @@ c
 d
 e
 --- error_log eval
-qr/\[TRACE   \d+/
+qr/\[TRACE\s+\d+/
 --- no_error_log
 [error]
 
@@ -359,7 +359,7 @@ GET /re
 --- response_body
 a,b,c,d,e
 --- error_log eval
-qr/\[TRACE   \d+/
+qr/\[TRACE\s+\d+/
 --- no_error_log
 [error]
 
@@ -394,7 +394,7 @@ c
 d
 e
 --- error_log eval
-qr/\[TRACE   \d+/
+qr/\[TRACE\s+\d+/
 --- no_error_log
 [error]
 
@@ -433,7 +433,7 @@ c
 d
 e
 --- error_log eval
-qr/\[TRACE   \d+/
+qr/\[TRACE\s+\d+/
 --- no_error_log
 [error]
 
@@ -466,7 +466,7 @@ a
 b
 c,d,e
 --- error_log eval
-qr/\[TRACE   \d+/
+qr/\[TRACE\s+\d+/
 --- no_error_log
 [error]
 
@@ -503,7 +503,7 @@ a
 b
 c,d,e
 --- error_log eval
-qr/\[TRACE   \d+/
+qr/\[TRACE\s+\d+/
 --- no_error_log
 [error]
 
@@ -538,7 +538,7 @@ b
 ,
 c,d,e
 --- error_log eval
-qr/\[TRACE   \d+/
+qr/\[TRACE\s+\d+/
 --- no_error_log
 [error]
 
@@ -569,7 +569,7 @@ c
 d
 e
 --- error_log eval
-qr/\[TRACE   \d+/
+qr/\[TRACE\s+\d+/
 --- no_error_log
 [error]
 
@@ -606,7 +606,7 @@ b
 c
 d
 --- error_log eval
-qr/\[TRACE   \d+/
+qr/\[TRACE\s+\d+/
 --- no_error_log
 [error]
 attempt to get length of local 'regex' (a number value)
@@ -640,7 +640,7 @@ ghij
 hello world
 aaa
 --- error_log eval
-qr/\[TRACE   \d+/
+qr/\[TRACE\s+\d+/
 --- no_error_log
 [error]
 
@@ -669,7 +669,7 @@ GET /re
 --- response_body
 abcd
 --- error_log eval
-qr/\[TRACE   \d+/
+qr/\[TRACE\s+\d+/
 --- no_error_log
 [error]
 
@@ -700,7 +700,7 @@ GET /re
 451
 45
 --- error_log eval
-qr/\[TRACE   \d+/
+qr/\[TRACE\s+\d+/
 --- no_error_log
 [error]
 attempt to get length of local 'subj' (a number value)
@@ -766,7 +766,7 @@ GET /re
 5
 len: 5
 --- error_log eval
-qr/\[TRACE   \d+/
+qr/\[TRACE\s+\d+/
 --- no_error_log
 [error]
 
@@ -800,7 +800,7 @@ GET /re
 345
 len: 3
 --- error_log eval
-qr/\[TRACE   \d+/
+qr/\[TRACE\s+\d+/
 --- no_error_log
 [error]
 
@@ -835,7 +835,7 @@ GET /re
 5
 len: 4
 --- error_log eval
-qr/\[TRACE   \d+/
+qr/\[TRACE\s+\d+/
 --- no_error_log
 [error]
 
@@ -898,7 +898,7 @@ GET /re
 345
 len: 2
 --- error_log eval
-qr/\[TRACE   \d+/
+qr/\[TRACE\s+\d+/
 --- no_error_log
 [error]
 
@@ -927,7 +927,7 @@ GET /re
 a:b:c:d
 len: 4
 --- error_log eval
-qr/\[TRACE   \d+/
+qr/\[TRACE\s+\d+/
 --- no_error_log
 [error]
 
@@ -956,7 +956,7 @@ GET /re
 a:bcd
 len: 2
 --- error_log eval
-qr/\[TRACE   \d+/
+qr/\[TRACE\s+\d+/
 --- no_error_log
 [error]
 
@@ -985,7 +985,7 @@ GET /re
 a::b::c::d
 len: 7
 --- error_log eval
-qr/\[TRACE   \d+/
+qr/\[TRACE\s+\d+/
 --- no_error_log
 [error]
 
@@ -1017,7 +1017,7 @@ cd
 ef
 len: 1
 --- error_log eval
-qr/\[TRACE   \d+/
+qr/\[TRACE\s+\d+/
 --- no_error_log
 [error]
 
@@ -1049,7 +1049,7 @@ ab
 :ef
 len: 3
 --- error_log eval
-qr/\[TRACE   \d+/
+qr/\[TRACE\s+\d+/
 --- no_error_log
 [error]
 
@@ -1081,7 +1081,7 @@ ab
 ::ef
 len: 5
 --- error_log eval
-qr/\[TRACE   \d+/
+qr/\[TRACE\s+\d+/
 --- no_error_log
 [error]
 
@@ -1113,7 +1113,7 @@ ab
 ef
 len: 2
 --- error_log eval
-qr/\[TRACE   \d+/
+qr/\[TRACE\s+\d+/
 --- no_error_log
 [error]
 
@@ -1145,7 +1145,7 @@ ab
 :hij
 len: 3
 --- error_log eval
-qr/\[TRACE   \d+/
+qr/\[TRACE\s+\d+/
 --- no_error_log
 [error]
 
@@ -1177,7 +1177,7 @@ ab
 :2:hij
 len: 5
 --- error_log eval
-qr/\[TRACE   \d+/
+qr/\[TRACE\s+\d+/
 --- no_error_log
 [error]
 
@@ -1209,7 +1209,7 @@ GET /re
 15 1|T|T||||||||||||15
 15 1|T|T|T|||||||||||15
 --- error_log eval
-qr/\[TRACE   \d+/
+qr/\[TRACE\s+\d+/
 --- no_error_log
 [error]
 
@@ -1241,7 +1241,7 @@ GET /re
 13 ||||||||||||15
 13 |T|||||||||||15
 --- error_log eval
-qr/\[TRACE   \d+/
+qr/\[TRACE\s+\d+/
 --- no_error_log
 [error]
 
@@ -1270,7 +1270,7 @@ GET /re
 --- response_body
 3 a|b|cd
 --- error_log eval
-qr/\[TRACE   \d+/
+qr/\[TRACE\s+\d+/
 --- no_error_log
 [error]
 
@@ -1307,6 +1307,6 @@ GET /re
 6 a|b|cd|||
 6 a|b|cd|||
 --- error_log eval
-qr/\[TRACE   \d+/
+qr/\[TRACE\s+\d+/
 --- no_error_log
 [error]

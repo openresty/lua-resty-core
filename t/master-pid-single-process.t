@@ -71,7 +71,7 @@ GET /t
 got: \d+ \(number\)
 \z
 --- error_log eval
-qr/\[TRACE   \d+ content_by_lua\(nginx\.conf:\d+\):\d loop\]/
+qr/\[TRACE\s+\d+ content_by_lua\(nginx\.conf:\d+\):\d loop\]/
 --- no_error_log
 [error]
  -- NYI:
