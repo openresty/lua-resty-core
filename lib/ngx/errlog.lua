@@ -18,6 +18,7 @@ local num_value = ffi_new("double[1]")
 local getfenv = getfenv
 local tonumber = tonumber
 local type = type
+local error = error
 
 
 local _M = { version = base.version }

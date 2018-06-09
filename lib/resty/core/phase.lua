@@ -5,6 +5,7 @@ local C = ffi.C
 local FFI_ERROR = base.FFI_ERROR
 local error = error
 local tostring = tostring
+local getfenv = getfenv
 
 
 ffi.cdef[[
