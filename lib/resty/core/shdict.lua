@@ -40,8 +40,8 @@ if subsystem == 'http' then
             int get_stale, int *is_stale, char **errmsg);
 
         int ngx_http_lua_ffi_shdict_incr(void *zone, const unsigned char *key,
-            size_t key_len, double *value, char **err, int has_init, double init,
-            long init_ttl, int *forcible);
+            size_t key_len, double *value, char **err, int has_init,
+            double init, long init_ttl, int *forcible);
 
         int ngx_http_lua_ffi_shdict_store(void *zone, int op,
             const unsigned char *key, size_t key_len, int value_type,
@@ -68,7 +68,10 @@ if subsystem == 'http' then
     ngx_lua_ffi_shdict_set_expire = C.ngx_http_lua_ffi_shdict_set_expire
     ngx_lua_ffi_shdict_capacity = C.ngx_http_lua_ffi_shdict_capacity
 
-    if not pcall(function () return C.ngx_http_lua_ffi_shdict_free_space end) then
+    if not pcall(function ()
+        return C.ngx_http_lua_ffi_shdict_free_space
+    end)
+    then
         ffi.cdef[[
             size_t ngx_http_lua_ffi_shdict_free_space(void *zone);
         ]]
@@ -85,8 +88,8 @@ elseif subsystem == 'stream' then
             int get_stale, int *is_stale, char **errmsg);
 
         int ngx_stream_lua_ffi_shdict_incr(void *zone, const unsigned char *key,
-            size_t key_len, double *value, char **err, int has_init, double init,
-            long init_ttl, int *forcible);
+            size_t key_len, double *value, char **err, int has_init,
+            double init, long init_ttl, int *forcible);
 
         int ngx_stream_lua_ffi_shdict_store(void *zone, int op,
             const unsigned char *key, size_t key_len, int value_type,
@@ -113,7 +116,10 @@ elseif subsystem == 'stream' then
     ngx_lua_ffi_shdict_set_expire = C.ngx_stream_lua_ffi_shdict_set_expire
     ngx_lua_ffi_shdict_capacity = C.ngx_stream_lua_ffi_shdict_capacity
 
-    if not pcall(function () return C.ngx_stream_lua_ffi_shdict_free_space end) then
+    if not pcall(function ()
+        return C.ngx_stream_lua_ffi_shdict_free_space
+    end)
+    then
         ffi.cdef[[
             size_t ngx_stream_lua_ffi_shdict_free_space(void *zone);
         ]]
