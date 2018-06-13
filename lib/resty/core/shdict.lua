@@ -34,30 +34,30 @@ local ngx_lua_ffi_shdict_free_space
 
 if subsystem == 'http' then
     ffi.cdef[[
-        int ngx_http_lua_ffi_shdict_get(void *zone, const unsigned char *key,
-            size_t key_len, int *value_type, unsigned char **str_value_buf,
-            size_t *str_value_len, double *num_value, int *user_flags,
-            int get_stale, int *is_stale, char **errmsg);
+int ngx_http_lua_ffi_shdict_get(void *zone, const unsigned char *key,
+    size_t key_len, int *value_type, unsigned char **str_value_buf,
+    size_t *str_value_len, double *num_value, int *user_flags,
+    int get_stale, int *is_stale, char **errmsg);
 
-        int ngx_http_lua_ffi_shdict_incr(void *zone, const unsigned char *key,
-            size_t key_len, double *value, char **err, int has_init,
-            double init, long init_ttl, int *forcible);
+int ngx_http_lua_ffi_shdict_incr(void *zone, const unsigned char *key,
+    size_t key_len, double *value, char **err, int has_init,
+    double init, long init_ttl, int *forcible);
 
-        int ngx_http_lua_ffi_shdict_store(void *zone, int op,
-            const unsigned char *key, size_t key_len, int value_type,
-            const unsigned char *str_value_buf, size_t str_value_len,
-            double num_value, long exptime, int user_flags, char **errmsg,
-            int *forcible);
+int ngx_http_lua_ffi_shdict_store(void *zone, int op,
+    const unsigned char *key, size_t key_len, int value_type,
+    const unsigned char *str_value_buf, size_t str_value_len,
+    double num_value, long exptime, int user_flags, char **errmsg,
+    int *forcible);
 
-        int ngx_http_lua_ffi_shdict_flush_all(void *zone);
+int ngx_http_lua_ffi_shdict_flush_all(void *zone);
 
-        long ngx_http_lua_ffi_shdict_get_ttl(void *zone,
-             const unsigned char *key, size_t key_len);
+long ngx_http_lua_ffi_shdict_get_ttl(void *zone,
+     const unsigned char *key, size_t key_len);
 
-        int ngx_http_lua_ffi_shdict_set_expire(void *zone,
-            const unsigned char *key, size_t key_len, long exptime);
+int ngx_http_lua_ffi_shdict_set_expire(void *zone,
+    const unsigned char *key, size_t key_len, long exptime);
 
-        size_t ngx_http_lua_ffi_shdict_capacity(void *zone);
+size_t ngx_http_lua_ffi_shdict_capacity(void *zone);
     ]]
 
     ngx_lua_ffi_shdict_get = C.ngx_http_lua_ffi_shdict_get
@@ -73,7 +73,7 @@ if subsystem == 'http' then
     end)
     then
         ffi.cdef[[
-            size_t ngx_http_lua_ffi_shdict_free_space(void *zone);
+size_t ngx_http_lua_ffi_shdict_free_space(void *zone);
         ]]
     end
 
@@ -82,30 +82,30 @@ if subsystem == 'http' then
 elseif subsystem == 'stream' then
 
     ffi.cdef[[
-        int ngx_stream_lua_ffi_shdict_get(void *zone, const unsigned char *key,
-            size_t key_len, int *value_type, unsigned char **str_value_buf,
-            size_t *str_value_len, double *num_value, int *user_flags,
-            int get_stale, int *is_stale, char **errmsg);
+int ngx_stream_lua_ffi_shdict_get(void *zone, const unsigned char *key,
+    size_t key_len, int *value_type, unsigned char **str_value_buf,
+    size_t *str_value_len, double *num_value, int *user_flags,
+    int get_stale, int *is_stale, char **errmsg);
 
-        int ngx_stream_lua_ffi_shdict_incr(void *zone, const unsigned char *key,
-            size_t key_len, double *value, char **err, int has_init,
-            double init, long init_ttl, int *forcible);
+int ngx_stream_lua_ffi_shdict_incr(void *zone, const unsigned char *key,
+    size_t key_len, double *value, char **err, int has_init,
+    double init, long init_ttl, int *forcible);
 
-        int ngx_stream_lua_ffi_shdict_store(void *zone, int op,
-            const unsigned char *key, size_t key_len, int value_type,
-            const unsigned char *str_value_buf, size_t str_value_len,
-            double num_value, long exptime, int user_flags, char **errmsg,
-            int *forcible);
+int ngx_stream_lua_ffi_shdict_store(void *zone, int op,
+    const unsigned char *key, size_t key_len, int value_type,
+    const unsigned char *str_value_buf, size_t str_value_len,
+    double num_value, long exptime, int user_flags, char **errmsg,
+    int *forcible);
 
-        int ngx_stream_lua_ffi_shdict_flush_all(void *zone);
+int ngx_stream_lua_ffi_shdict_flush_all(void *zone);
 
-        long ngx_stream_lua_ffi_shdict_get_ttl(void *zone,
-             const unsigned char *key, size_t key_len);
+long ngx_stream_lua_ffi_shdict_get_ttl(void *zone,
+     const unsigned char *key, size_t key_len);
 
-        int ngx_stream_lua_ffi_shdict_set_expire(void *zone,
-            const unsigned char *key, size_t key_len, long exptime);
+int ngx_stream_lua_ffi_shdict_set_expire(void *zone,
+    const unsigned char *key, size_t key_len, long exptime);
 
-        size_t ngx_stream_lua_ffi_shdict_capacity(void *zone);
+size_t ngx_stream_lua_ffi_shdict_capacity(void *zone);
     ]]
 
     ngx_lua_ffi_shdict_get = C.ngx_stream_lua_ffi_shdict_get
@@ -121,7 +121,7 @@ elseif subsystem == 'stream' then
     end)
     then
         ffi.cdef[[
-            size_t ngx_stream_lua_ffi_shdict_free_space(void *zone);
+size_t ngx_stream_lua_ffi_shdict_free_space(void *zone);
         ]]
     end
 
@@ -133,7 +133,7 @@ end
 
 if not pcall(function () return C.free end) then
     ffi.cdef[[
-        void free(void *ptr);
+void free(void *ptr);
     ]]
 end
 
