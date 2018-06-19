@@ -92,7 +92,6 @@ end
 if subsystem == 'http' then
     if not pcall(ffi.typeof, "ngx_http_request_t") then
         ffi.cdef[[
-            struct ngx_http_request_s;
             typedef struct ngx_http_request_s  ngx_http_request_t;
         ]]
     end
@@ -109,7 +108,6 @@ if subsystem == 'http' then
 elseif subsystem == 'stream' then
     if not pcall(ffi.typeof, "ngx_stream_lua_request_t") then
         ffi.cdef[[
-            struct ngx_stream_lua_request_s;
             typedef struct ngx_stream_lua_request_s  ngx_stream_lua_request_t;
         ]]
     end
