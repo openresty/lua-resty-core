@@ -6,6 +6,7 @@ base.allows_subsystem('http')
 
 
 local ffi = require "ffi"
+local os = require "os"
 local C = ffi.C
 local ffi_str = ffi.string
 local getfenv = getfenv
@@ -26,15 +27,19 @@ local _M = { version = base.version }
 
 
 function os.getenv(varname)
-    local cycle = getfenv(0).__ngx_cycle
+    local t = getfenv(0)
+
+    local cycle = t.__ngx_cycle
     if not cycle then
         error("no cycle found")
     end
 
-    local r = getfenv(0).__ngx_req
+    local r = t.__ngx_req
 
     local value = C.ngx_http_lua_ffi_os_getenv(cycle, r, varname)
-    return ffi_str(value)
+    if value then
+        return ffi_str(value)
+    end
 end
 
 

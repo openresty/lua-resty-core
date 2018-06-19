@@ -23,7 +23,7 @@ run_tests();
 
 __DATA__
 
-=== TEST 1: env directive settings should be visiable to init_by_lua*
+=== TEST 1: env directive settings should be visible to init_by_lua*
 --- main_config
 env MyTestSysEnv=hello;
 --- http_config eval
