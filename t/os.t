@@ -80,3 +80,33 @@ bar
 bar
 --- no_error_log
 [error]
+
+
+
+=== TEST 3: test nil env
+--- main_config
+env baz;
+--- http_config eval
+    "lua_package_path '$::pwd/lib/?.lua;;';
+     init_by_lua_block {
+       local v = require \"jit.v\"
+       v.on(\"$Test::Nginx::Util::ErrLogFile\")
+       require \"resty.core\"
+
+       package.loaded.foo = os.getenv(\"baz\")
+     }
+    "
+--- config
+location /t {
+    content_by_lua_block {
+        ngx.say(package.loaded.foo)
+        ngx.say(os.getenv("baz"))
+    }
+}
+--- request
+GET /t
+--- response_body
+nil
+nil
+--- no_error_log
+[error]

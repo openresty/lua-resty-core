@@ -15,7 +15,6 @@ local error = error
 
 ffi.cdef[[
 
-struct ngx_cycle_s;
 typedef struct ngx_cycle_s  ngx_cycle_t;
 
 char *ngx_http_lua_ffi_os_getenv(ngx_cycle_t *cycle, ngx_http_request_t *r,
@@ -37,9 +36,11 @@ function os.getenv(varname)
     local r = t.__ngx_req
 
     local value = C.ngx_http_lua_ffi_os_getenv(cycle, r, varname)
-    if value then
-        return ffi_str(value)
+    if value == nil then
+        return nil
     end
+
+    return ffi_str(value)
 end
 
 
