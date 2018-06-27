@@ -219,7 +219,7 @@ function _M.allows_subsystem(...)
         end
     end
 
-    error("unsupported subsystem: " .. subsystem)
+    error("unsupported subsystem: " .. subsystem, 2)
 end
 
 
