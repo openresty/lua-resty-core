@@ -21,9 +21,6 @@ local FFI_OK = base.FFI_OK
 
 ffi.cdef[[
 
-struct ngx_ssl_conn_s;
-typedef struct ngx_ssl_conn_s  ngx_ssl_conn_t;
-
 int ngx_http_lua_ffi_ssl_set_der_certificate(ngx_http_request_t *r,
     const char *data, size_t len, char **err);
 
