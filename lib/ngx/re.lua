@@ -3,9 +3,6 @@
 
 
 local base = require "resty.core.base"
-base.allows_subsystem('http')
-
-
 local ffi = require 'ffi'
 local bit = require "bit"
 local core_regex = require "resty.core.regex"
@@ -27,6 +24,7 @@ local destroy_compiled_regex = core_regex.destroy_compiled_regex
 local get_string_buf = base.get_string_buf
 local get_size_ptr = base.get_size_ptr
 local FFI_OK = base.FFI_OK
+local subsystem = ngx.config.subsystem
 
 
 local MAX_ERR_MSG_LEN        = 128
@@ -36,12 +34,28 @@ local DEFAULT_SPLIT_RES_SIZE = 4
 
 
 local split_ctx = new_tab(0, 1)
+local ngx_lua_ffi_set_jit_stack_size
+local ngx_lua_ffi_exec_regex
 
 
-ffi.cdef[[
+if subsystem == 'http' then
+    ffi.cdef[[
 int ngx_http_lua_ffi_set_jit_stack_size(int size, unsigned char *errstr,
     size_t *errstr_size);
-]]
+    ]]
+
+    ngx_lua_ffi_exec_regex = C.ngx_http_lua_ffi_exec_regex
+    ngx_lua_ffi_set_jit_stack_size = C.ngx_http_lua_ffi_set_jit_stack_size
+
+elseif subsystem == 'stream' then
+    ffi.cdef[[
+int ngx_stream_lua_ffi_set_jit_stack_size(int size, unsigned char *errstr,
+    size_t *errstr_size);
+    ]]
+
+    ngx_lua_ffi_exec_regex = C.ngx_stream_lua_ffi_exec_regex
+    ngx_lua_ffi_set_jit_stack_size = C.ngx_stream_lua_ffi_set_jit_stack_size
+end
 
 
 local _M = { version = base.version }
@@ -52,7 +66,7 @@ local function re_split_helper(subj, compiled, compile_once, flags, ctx)
     do
         local pos = math_max(ctx.pos, 0)
 
-        rc = C.ngx_http_lua_ffi_exec_regex(compiled, flags, subj, #subj, pos)
+        rc = ngx_lua_ffi_exec_regex(compiled, flags, subj, #subj, pos)
     end
 
     if rc == PCRE_ERROR_NOMATCH then
@@ -282,7 +296,7 @@ function _M.opt(option, value)
         local sizep = get_size_ptr()
         sizep[0] = MAX_ERR_MSG_LEN
 
-        local rc = C.ngx_http_lua_ffi_set_jit_stack_size(value, errbuf, sizep)
+        local rc = ngx_lua_ffi_set_jit_stack_size(value, errbuf, sizep)
 
         if rc == FFI_OK then
             return

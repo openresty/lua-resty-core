@@ -8,7 +8,7 @@ base.allows_subsystem('http')
 local ffi = require "ffi"
 local C = ffi.C
 local ffi_str = ffi.string
-local getfenv = getfenv
+local get_request = base.get_request
 local error = error
 local tonumber = tonumber
 local errmsg = base.get_errmsg_ptr()
@@ -123,7 +123,7 @@ end
 
 
 function _M.set_ocsp_status_resp(ocsp_resp)
-    local r = getfenv(0).__ngx_req
+    local r = get_request()
     if not r then
         error("no request found")
     end

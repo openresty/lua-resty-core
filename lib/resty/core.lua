@@ -3,7 +3,9 @@
 local subsystem = ngx.config.subsystem
 
 
+require "resty.core.regex"
 require "resty.core.shdict"
+require "resty.core.time"
 
 
 if subsystem == 'http' then
@@ -20,6 +22,7 @@ if subsystem == 'http' then
     require "resty.core.time"
     require "resty.core.worker"
     require "resty.core.phase"
+    require "resty.core.ndk"
 end
 
 

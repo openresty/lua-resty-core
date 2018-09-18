@@ -20,7 +20,7 @@ local gsub = ngx.re.gsub
 local lower = string.lower
 local rawget = rawget
 local ngx = ngx
-local getfenv = getfenv
+local get_request = base.get_request
 local type = type
 local error = error
 local tostring = tostring
@@ -74,7 +74,7 @@ local req_headers_mt = {
 
 
 function ngx.req.get_headers(max_headers, raw)
-    local r = getfenv(0).__ngx_req
+    local r = get_request()
     if not r then
         error("no request found")
     end
@@ -143,7 +143,7 @@ end
 
 
 function ngx.req.get_uri_args(max_args)
-    local r = getfenv(0).__ngx_req
+    local r = get_request()
     if not r then
         error("no request found")
     end
@@ -205,7 +205,7 @@ end
 
 
 function ngx.req.start_time()
-    local r = getfenv(0).__ngx_req
+    local r = get_request()
     if not r then
         error("no request found")
     end
@@ -236,7 +236,7 @@ do
     local namep = ffi_new("unsigned char *[1]")
 
     function ngx.req.get_method()
-        local r = getfenv(0).__ngx_req
+        local r = get_request()
         if not r then
             error("no request found")
         end
@@ -265,7 +265,7 @@ end  -- do
 
 
 function ngx.req.set_method(method)
-    local r = getfenv(0).__ngx_req
+    local r = get_request()
     if not r then
         error("no request found")
     end
@@ -299,7 +299,7 @@ do
             return orig_func(name, value)
         end
 
-        local r = getfenv(0).__ngx_req
+        local r = get_request()
         if not r then
             error("no request found")
         end
@@ -336,7 +336,7 @@ end  -- do
 
 
 function ngx.req.clear_header(name)
-    local r = getfenv(0).__ngx_req
+    local r = get_request()
     if not r then
         error("no request found")
     end

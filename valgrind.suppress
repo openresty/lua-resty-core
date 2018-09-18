@@ -59,6 +59,12 @@
 }
 {
    <insert_a_suppression_name_here>
+   Memcheck:Param
+   epoll_pwait(sigmask)
+   fun:epoll_pwait
+}
+{
+   <insert_a_suppression_name_here>
    Memcheck:Cond
    obj:*
 }

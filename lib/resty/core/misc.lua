@@ -13,7 +13,7 @@ local getmetatable = getmetatable
 local ngx_magic_key_getters = new_tab(0, 4)
 local ngx_magic_key_setters = new_tab(0, 2)
 local ngx = ngx
-local getfenv = getfenv
+local get_request = base.get_request
 local type = type
 local error = error
 local tonumber = tonumber
@@ -69,7 +69,7 @@ ffi.cdef[[
 -- ngx.status
 
 local function get_status()
-    local r = getfenv(0).__ngx_req
+    local r = get_request()
 
     if not r then
         error("no request found")
@@ -87,7 +87,7 @@ register_getter("status", get_status)
 
 
 local function set_status(status)
-    local r = getfenv(0).__ngx_req
+    local r = get_request()
 
     if not r then
         error("no request found")
@@ -111,7 +111,7 @@ register_setter("status", set_status)
 -- ngx.is_subrequest
 
 local function is_subreq()
-    local r = getfenv(0).__ngx_req
+    local r = get_request()
 
     if not r then
         error("no request found")
@@ -131,7 +131,7 @@ register_getter("is_subrequest", is_subreq)
 -- ngx.headers_sent
 
 local function headers_sent()
-    local r = getfenv(0).__ngx_req
+    local r = get_request()
 
     if not r then
         error("no request found")

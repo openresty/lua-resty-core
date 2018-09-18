@@ -340,7 +340,7 @@ qr/\[TRACE\s+\d+ content_by_lua\(nginx\.conf:\d+\):11 loop\]/
 --- stream_server_config
     content_by_lua_block {
         local ffi = require "ffi"
-        local val
+        local val, err
         local dogs = ngx.shared.dogs
         -- local cd = ffi.cast("void *", dogs)
         dogs:set("foo", 56)

@@ -3,9 +3,9 @@ local base = require "resty.core.base"
 
 local C = ffi.C
 local FFI_ERROR = base.FFI_ERROR
+local get_request = base.get_request
 local error = error
 local tostring = tostring
-local getfenv = getfenv
 
 
 ffi.cdef[[
@@ -32,7 +32,7 @@ local context_names = {
 
 
 function ngx.get_phase()
-    local r = getfenv(0).__ngx_req
+    local r = get_request()
 
     -- if we have no request object, assume we are called from the "init" phase
     if not r then

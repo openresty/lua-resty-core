@@ -12,7 +12,7 @@ local errmsg = base.get_errmsg_ptr()
 local FFI_OK = base.FFI_OK
 local FFI_ERROR = base.FFI_ERROR
 local int_out = ffi.new("int[1]")
-local getfenv = getfenv
+local get_request = base.get_request
 local error = error
 local type = type
 local tonumber = tonumber
@@ -104,7 +104,7 @@ local _M = { version = base.version }
 
 
 function _M.set_current_peer(addr, port)
-    local r = getfenv(0).__ngx_req
+    local r = get_request()
     if not r then
         error("no request found")
     end
@@ -126,7 +126,7 @@ end
 
 
 function _M.set_more_tries(count)
-    local r = getfenv(0).__ngx_req
+    local r = get_request()
     if not r then
         error("no request found")
     end
@@ -144,7 +144,7 @@ end
 
 
 function _M.get_last_failure()
-    local r = getfenv(0).__ngx_req
+    local r = get_request()
     if not r then
         error("no request found")
     end
@@ -164,7 +164,7 @@ end
 
 
 function _M.set_timeouts(connect_timeout, send_timeout, read_timeout)
-    local r = getfenv(0).__ngx_req
+    local r = get_request()
     if not r then
         error("no request found")
     end
