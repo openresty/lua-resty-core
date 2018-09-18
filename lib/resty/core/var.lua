@@ -8,7 +8,7 @@ local ffi_new = ffi.new
 local ffi_str = ffi.string
 local C = ffi.C
 local type = type
-local getfenv = getfenv
+local get_request = base.get_request
 local get_string_buf = base.get_string_buf
 local get_size_ptr = base.get_size_ptr
 local error = error
@@ -36,7 +36,7 @@ local errmsg = base.get_errmsg_ptr()
 
 
 local function var_get(self, name)
-    local r = getfenv(0).__ngx_req
+    local r = get_request()
     if not r then
         error("no request found")
     end
@@ -76,7 +76,7 @@ end
 
 
 local function var_set(self, name, value)
-    local r = getfenv(0).__ngx_req
+    local r = get_request()
     if not r then
         error("no request found")
     end

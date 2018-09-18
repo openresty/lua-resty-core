@@ -9,7 +9,7 @@ local ffi = require "ffi"
 local C = ffi.C
 local ffi_str = ffi.string
 local ffi_gc = ffi.gc
-local getfenv = getfenv
+local get_request = base.get_request
 local error = error
 local tonumber = tonumber
 local errmsg = base.get_errmsg_ptr()
@@ -73,7 +73,7 @@ local intp = ffi.new("int[1]")
 
 
 function _M.clear_certs()
-    local r = getfenv(0).__ngx_req
+    local r = get_request()
     if not r then
         error("no request found")
     end
@@ -88,7 +88,7 @@ end
 
 
 function _M.set_der_cert(data)
-    local r = getfenv(0).__ngx_req
+    local r = get_request()
     if not r then
         error("no request found")
     end
@@ -104,7 +104,7 @@ end
 
 
 function _M.set_der_priv_key(data)
-    local r = getfenv(0).__ngx_req
+    local r = get_request()
     if not r then
         error("no request found")
     end
@@ -127,7 +127,7 @@ local addr_types = {
 
 
 function _M.raw_server_addr()
-    local r = getfenv(0).__ngx_req
+    local r = get_request()
     if not r then
         error("no request found")
     end
@@ -149,7 +149,7 @@ end
 
 
 function _M.server_name()
-    local r = getfenv(0).__ngx_req
+    local r = get_request()
     if not r then
         error("no request found")
     end
@@ -170,7 +170,7 @@ end
 
 
 function _M.raw_client_addr()
-    local r = getfenv(0).__ngx_req
+    local r = get_request()
     if not r then
         error("no request found")
     end
@@ -217,7 +217,7 @@ end
 
 local function get_tls1_version()
 
-    local r = getfenv(0).__ngx_req
+    local r = get_request()
     if not r then
         error("no request found")
     end
@@ -258,7 +258,7 @@ end
 
 
 function _M.set_cert(cert)
-    local r = getfenv(0).__ngx_req
+    local r = get_request()
     if not r then
         error("no request found")
     end
@@ -273,7 +273,7 @@ end
 
 
 function _M.set_priv_key(priv_key)
-    local r = getfenv(0).__ngx_req
+    local r = get_request()
     if not r then
         error("no request found")
     end

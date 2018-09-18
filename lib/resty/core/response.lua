@@ -16,7 +16,7 @@ local get_string_buf = base.get_string_buf
 local getmetatable = getmetatable
 local type = type
 local tostring = tostring
-local getfenv = getfenv
+local get_request = base.get_request
 local error = error
 local ngx = ngx
 
@@ -46,7 +46,7 @@ ffi.cdef[[
 
 
 local function set_resp_header(tb, key, value, no_override)
-    local r = getfenv(0).__ngx_req
+    local r = get_request()
     if not r then
         error("no request found")
     end
@@ -121,7 +121,7 @@ _M.set_resp_header = set_resp_header
 
 
 local function get_resp_header(tb, key)
-    local r = getfenv(0).__ngx_req
+    local r = get_request()
     if not r then
         error("no request found")
     end

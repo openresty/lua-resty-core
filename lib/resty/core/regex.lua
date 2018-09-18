@@ -29,6 +29,7 @@ local tonumber = tonumber
 local get_string_buf = base.get_string_buf
 local get_string_buf_size = base.get_string_buf_size
 local new_tab = base.new_tab
+local subsystem = ngx.config.subsystem
 
 
 if not ngx.re then
@@ -65,9 +66,21 @@ local regex_sub_str_cache = new_tab(0, 4)
 local max_regex_cache_size
 local regex_cache_size = 0
 local script_engine
+local ngx_lua_ffi_max_regex_cache_size
+local ngx_lua_ffi_destroy_regex
+local ngx_lua_ffi_compile_regex
+local ngx_lua_ffi_exec_regex
+local ngx_lua_ffi_create_script_engine
+local ngx_lua_ffi_destroy_script_engine
+local ngx_lua_ffi_init_script_engine
+local ngx_lua_ffi_compile_replace_template
+local ngx_lua_ffi_script_eval_len
+local ngx_lua_ffi_script_eval_data
 
 
-ffi.cdef[[
+if subsystem == 'http' then
+    ffi.cdef[[
+
     typedef struct {
         ngx_str_t                   value;
         void                       *lengths;
@@ -128,7 +141,99 @@ ffi.cdef[[
                                              unsigned char *dst);
 
     uint32_t ngx_http_lua_ffi_max_regex_cache_size(void);
-]]
+    ]]
+
+    ngx_lua_ffi_max_regex_cache_size = C.ngx_http_lua_ffi_max_regex_cache_size
+    ngx_lua_ffi_destroy_regex = C.ngx_http_lua_ffi_destroy_regex
+    ngx_lua_ffi_compile_regex = C.ngx_http_lua_ffi_compile_regex
+    ngx_lua_ffi_exec_regex = C.ngx_http_lua_ffi_exec_regex
+    ngx_lua_ffi_create_script_engine = C.ngx_http_lua_ffi_create_script_engine
+    ngx_lua_ffi_init_script_engine = C.ngx_http_lua_ffi_init_script_engine
+    ngx_lua_ffi_destroy_script_engine = C.ngx_http_lua_ffi_destroy_script_engine
+    ngx_lua_ffi_compile_replace_template =
+        C.ngx_http_lua_ffi_compile_replace_template
+    ngx_lua_ffi_script_eval_len = C.ngx_http_lua_ffi_script_eval_len
+    ngx_lua_ffi_script_eval_data = C.ngx_http_lua_ffi_script_eval_data
+
+elseif subsystem == 'stream' then
+    ffi.cdef[[
+
+    typedef struct {
+        ngx_str_t                   value;
+        void                       *lengths;
+        void                       *values;
+    } ngx_stream_lua_complex_value_t;
+
+    typedef struct {
+        void                            *pool;
+        unsigned char                   *name_table;
+        int                              name_count;
+        int                              name_entry_size;
+
+        int                              ncaptures;
+        int                             *captures;
+
+        void                            *regex;
+        void                            *regex_sd;
+
+        ngx_stream_lua_complex_value_t  *replace;
+
+        const char                      *pattern;
+    } ngx_stream_lua_regex_t;
+
+    ngx_stream_lua_regex_t *
+        ngx_stream_lua_ffi_compile_regex(const unsigned char *pat,
+            size_t pat_len, int flags,
+            int pcre_opts, unsigned char *errstr,
+            size_t errstr_size);
+
+    int ngx_stream_lua_ffi_exec_regex(ngx_stream_lua_regex_t *re, int flags,
+        const unsigned char *s, size_t len, int pos);
+
+    void ngx_stream_lua_ffi_destroy_regex(ngx_stream_lua_regex_t *re);
+
+    int ngx_stream_lua_ffi_compile_replace_template(ngx_stream_lua_regex_t *re,
+                                                    const unsigned char
+                                                    *replace_data,
+                                                    size_t replace_len);
+
+    struct ngx_stream_lua_script_engine_s;
+    typedef struct ngx_stream_lua_script_engine_s
+        *ngx_stream_lua_script_engine_t;
+
+    ngx_stream_lua_script_engine_t *
+        ngx_stream_lua_ffi_create_script_engine(void);
+
+    void ngx_stream_lua_ffi_init_script_engine(
+        ngx_stream_lua_script_engine_t *e, const unsigned char *subj,
+        ngx_stream_lua_regex_t *compiled, int count);
+
+    void ngx_stream_lua_ffi_destroy_script_engine(
+        ngx_stream_lua_script_engine_t *e);
+
+    size_t ngx_stream_lua_ffi_script_eval_len(
+        ngx_stream_lua_script_engine_t *e, ngx_stream_lua_complex_value_t *cv);
+
+    size_t ngx_stream_lua_ffi_script_eval_data(
+        ngx_stream_lua_script_engine_t *e, ngx_stream_lua_complex_value_t *cv,
+        unsigned char *dst);
+
+    uint32_t ngx_stream_lua_ffi_max_regex_cache_size(void);
+    ]]
+
+    ngx_lua_ffi_max_regex_cache_size = C.ngx_stream_lua_ffi_max_regex_cache_size
+    ngx_lua_ffi_destroy_regex = C.ngx_stream_lua_ffi_destroy_regex
+    ngx_lua_ffi_compile_regex = C.ngx_stream_lua_ffi_compile_regex
+    ngx_lua_ffi_exec_regex = C.ngx_stream_lua_ffi_exec_regex
+    ngx_lua_ffi_create_script_engine = C.ngx_stream_lua_ffi_create_script_engine
+    ngx_lua_ffi_init_script_engine = C.ngx_stream_lua_ffi_init_script_engine
+    ngx_lua_ffi_destroy_script_engine =
+        C.ngx_stream_lua_ffi_destroy_script_engine
+    ngx_lua_ffi_compile_replace_template =
+        C.ngx_stream_lua_ffi_compile_replace_template
+    ngx_lua_ffi_script_eval_len = C.ngx_stream_lua_ffi_script_eval_len
+    ngx_lua_ffi_script_eval_data = C.ngx_stream_lua_ffi_script_eval_data
+end
 
 
 local c_str_type = ffi.typeof("const char *")
@@ -152,7 +257,7 @@ local function get_max_regex_cache_size()
     if max_regex_cache_size then
         return max_regex_cache_size
     end
-    max_regex_cache_size = C.ngx_http_lua_ffi_max_regex_cache_size()
+    max_regex_cache_size = ngx_lua_ffi_max_regex_cache_size()
     return max_regex_cache_size
 end
 
@@ -301,7 +406,7 @@ _M.collect_captures = collect_captures
 
 
 local function destroy_compiled_regex(compiled)
-    C.ngx_http_lua_ffi_destroy_regex(ffi_gc(compiled, nil))
+    ngx_lua_ffi_destroy_regex(ffi_gc(compiled, nil))
 end
 
 
@@ -343,15 +448,15 @@ local function re_match_compile(regex, opts)
         -- print("compiled regex not found, compiling regex...")
         local errbuf = get_string_buf(MAX_ERR_MSG_LEN)
 
-        compiled = C.ngx_http_lua_ffi_compile_regex(regex, #regex,
-                                                    flags, pcre_opts,
-                                                    errbuf, MAX_ERR_MSG_LEN)
+        compiled = ngx_lua_ffi_compile_regex(regex, #regex, flags,
+                                                  pcre_opts, errbuf,
+                                                  MAX_ERR_MSG_LEN)
 
         if compiled == nil then
             return nil, ffi_string(errbuf)
         end
 
-        ffi_gc(compiled, C.ngx_http_lua_ffi_destroy_regex)
+        ffi_gc(compiled, ngx_lua_ffi_destroy_regex)
 
         -- print("ncaptures: ", compiled.ncaptures)
 
@@ -399,7 +504,7 @@ local function re_match_helper(subj, regex, opts, ctx, want_caps, res, nth)
             pos = 0
         end
 
-        rc = C.ngx_http_lua_ffi_exec_regex(compiled, flags, subj, #subj, pos)
+        rc = ngx_lua_ffi_exec_regex(compiled, flags, subj, #subj, pos)
     end
 
     if rc == PCRE_ERROR_NOMATCH then
@@ -503,8 +608,7 @@ do
             return nil
         end
 
-        local rc = C.ngx_http_lua_ffi_exec_regex(compiled, flags, subj,
-                                                subj_len, pos)
+        local rc = ngx_lua_ffi_exec_regex(compiled, flags, subj, subj_len, pos)
 
         if rc == PCRE_ERROR_NOMATCH then
             destroy_re_gmatch_iterator(self)
@@ -566,15 +670,14 @@ end  -- do
 
 local function new_script_engine(subj, compiled, count)
     if not script_engine then
-        script_engine = C.ngx_http_lua_ffi_create_script_engine()
+        script_engine = ngx_lua_ffi_create_script_engine()
         if script_engine == nil then
             return nil
         end
-        ffi_gc(script_engine, C.ngx_http_lua_ffi_destroy_script_engine)
+        ffi_gc(script_engine, ngx_lua_ffi_destroy_script_engine)
     end
 
-    C.ngx_http_lua_ffi_init_script_engine(script_engine, subj, compiled,
-                                          count)
+    ngx_lua_ffi_init_script_engine(script_engine, subj, compiled, count)
     return script_engine
 end
 
@@ -635,20 +738,19 @@ local function re_sub_compile(regex, opts, replace, func)
         -- print("compiled regex not found, compiling regex...")
         local errbuf = get_string_buf(MAX_ERR_MSG_LEN)
 
-        compiled = C.ngx_http_lua_ffi_compile_regex(regex, #regex, flags,
-                                                    pcre_opts, errbuf,
-                                                    MAX_ERR_MSG_LEN)
+        compiled = ngx_lua_ffi_compile_regex(regex, #regex, flags, pcre_opts,
+                                             errbuf, MAX_ERR_MSG_LEN)
 
         if compiled == nil then
             return nil, ffi_string(errbuf)
         end
 
-        ffi_gc(compiled, C.ngx_http_lua_ffi_destroy_regex)
+        ffi_gc(compiled, ngx_lua_ffi_destroy_regex)
 
         if func == nil then
             local rc =
-                C.ngx_http_lua_ffi_compile_replace_template(compiled,
-                                                            replace, #replace)
+                ngx_lua_ffi_compile_replace_template(compiled, replace,
+                                                     #replace)
             if rc ~= 0 then
                 if not compile_once then
                     destroy_compiled_regex(compiled)
@@ -727,8 +829,7 @@ local function re_sub_func_helper(subj, regex, replace, opts, global)
     local dst_len = 0
 
     while true do
-        local rc = C.ngx_http_lua_ffi_exec_regex(compiled, flags, subj,
-                                                 subj_len, pos)
+        local rc = ngx_lua_ffi_exec_regex(compiled, flags, subj, subj_len, pos)
         if rc == PCRE_ERROR_NOMATCH then
             break
         end
@@ -835,8 +936,7 @@ local function re_sub_str_helper(subj, regex, replace, opts, global)
     local dst_len = 0
 
     while true do
-        local rc = C.ngx_http_lua_ffi_exec_regex(compiled, flags, subj,
-                                                 subj_len, pos)
+        local rc = ngx_lua_ffi_exec_regex(compiled, flags, subj, subj_len, pos)
         if rc == PCRE_ERROR_NOMATCH then
             break
         end
@@ -869,7 +969,7 @@ local function re_sub_str_helper(subj, regex, replace, opts, global)
                 return nil, nil, "failed to create script engine"
             end
 
-            local bit_len = C.ngx_http_lua_ffi_script_eval_len(e, cv)
+            local bit_len = ngx_lua_ffi_script_eval_len(e, cv)
             local new_dst_len = dst_len + prefix_len + bit_len
             dst_buf, dst_buf_size, dst_pos, dst_len =
                 check_buf_size(dst_buf, dst_buf_size, dst_pos, dst_len,
@@ -882,7 +982,7 @@ local function re_sub_str_helper(subj, regex, replace, opts, global)
             end
 
             if bit_len > 0 then
-                C.ngx_http_lua_ffi_script_eval_data(e, cv, dst_pos)
+                ngx_lua_ffi_script_eval_data(e, cv, dst_pos)
                 dst_pos = dst_pos + bit_len
             end
 

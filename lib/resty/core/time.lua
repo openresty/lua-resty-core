@@ -15,9 +15,19 @@ local time_val = ffi_new("long[1]")
 local get_string_buf = base.get_string_buf
 local ngx = ngx
 local FFI_ERROR = base.FFI_ERROR
+local subsystem = ngx.config.subsystem
 
 
-ffi.cdef[[
+local ngx_lua_ffi_now
+local ngx_lua_ffi_time
+local ngx_lua_ffi_today
+local ngx_lua_ffi_localtime
+local ngx_lua_ffi_utctime
+local ngx_lua_ffi_update_time
+
+
+if subsystem == 'http' then
+    ffi.cdef[[
 double ngx_http_lua_ffi_now(void);
 long ngx_http_lua_ffi_time(void);
 void ngx_http_lua_ffi_today(unsigned char *buf);
@@ -28,21 +38,46 @@ int ngx_http_lua_ffi_cookie_time(unsigned char *buf, long t);
 void ngx_http_lua_ffi_http_time(unsigned char *buf, long t);
 void ngx_http_lua_ffi_parse_http_time(const unsigned char *str, size_t len,
     long *time);
-]]
+    ]]
+
+    ngx_lua_ffi_now = C.ngx_http_lua_ffi_now
+    ngx_lua_ffi_time = C.ngx_http_lua_ffi_time
+    ngx_lua_ffi_today = C.ngx_http_lua_ffi_today
+    ngx_lua_ffi_localtime = C.ngx_http_lua_ffi_localtime
+    ngx_lua_ffi_utctime = C.ngx_http_lua_ffi_utctime
+    ngx_lua_ffi_update_time = C.ngx_http_lua_ffi_update_time
+
+elseif subsystem == 'stream' then
+    ffi.cdef[[
+double ngx_stream_lua_ffi_now(void);
+long ngx_stream_lua_ffi_time(void);
+void ngx_stream_lua_ffi_today(unsigned char *buf);
+void ngx_stream_lua_ffi_localtime(unsigned char *buf);
+void ngx_stream_lua_ffi_utctime(unsigned char *buf);
+void ngx_stream_lua_ffi_update_time(void);
+    ]]
+
+    ngx_lua_ffi_now = C.ngx_stream_lua_ffi_now
+    ngx_lua_ffi_time = C.ngx_stream_lua_ffi_time
+    ngx_lua_ffi_today = C.ngx_stream_lua_ffi_today
+    ngx_lua_ffi_localtime = C.ngx_stream_lua_ffi_localtime
+    ngx_lua_ffi_utctime = C.ngx_stream_lua_ffi_utctime
+    ngx_lua_ffi_update_time = C.ngx_stream_lua_ffi_update_time
+end
 
 
 function ngx.now()
-    return tonumber(C.ngx_http_lua_ffi_now())
+    return tonumber(ngx_lua_ffi_now())
 end
 
 
 function ngx.time()
-    return tonumber(C.ngx_http_lua_ffi_time())
+    return tonumber(ngx_lua_ffi_time())
 end
 
 
 function ngx.update_time()
-    C.ngx_http_lua_ffi_update_time()
+    ngx_lua_ffi_update_time()
 end
 
 
@@ -50,7 +85,7 @@ function ngx.today()
     -- the format of today is 2010-11-19
     local today_buf_size = 10
     local buf = get_string_buf(today_buf_size)
-    C.ngx_http_lua_ffi_today(buf)
+    ngx_lua_ffi_today(buf)
     return ffi_str(buf, today_buf_size)
 end
 
@@ -59,7 +94,7 @@ function ngx.localtime()
     -- the format of localtime is 2010-11-19 20:56:31
     local localtime_buf_size = 19
     local buf = get_string_buf(localtime_buf_size)
-    C.ngx_http_lua_ffi_localtime(buf)
+    ngx_lua_ffi_localtime(buf)
     return ffi_str(buf, localtime_buf_size)
 end
 
@@ -68,10 +103,12 @@ function ngx.utctime()
     -- the format of utctime is 2010-11-19 20:56:31
     local utctime_buf_size = 19
     local buf = get_string_buf(utctime_buf_size)
-    C.ngx_http_lua_ffi_utctime(buf)
+    ngx_lua_ffi_utctime(buf)
     return ffi_str(buf, utctime_buf_size)
 end
 
+
+if subsystem == 'http' then
 
 function ngx.cookie_time(sec)
     if type(sec) ~= "number" then
@@ -115,6 +152,7 @@ function ngx.parse_http_time(time_str)
     return tonumber(res)
 end
 
+end
 
 return {
     version = base.version

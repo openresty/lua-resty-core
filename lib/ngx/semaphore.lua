@@ -19,7 +19,7 @@ local C = ffi.C
 local type = type
 local error = error
 local tonumber = tonumber
-local getfenv = getfenv
+local get_request = base.get_request
 local get_string_buf = base.get_string_buf
 local get_size_ptr = base.get_size_ptr
 local setmetatable = setmetatable
@@ -121,7 +121,7 @@ function _M.wait(self, seconds)
         error("not a semaphore instance", 2)
     end
 
-    local r = getfenv(0).__ngx_req
+    local r = get_request()
     if not r then
         error("no request found")
     end

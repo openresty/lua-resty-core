@@ -129,7 +129,7 @@ end
 local c_buf_type = ffi.typeof("char[?]")
 
 
-local _M = new_tab(0, 17)
+local _M = new_tab(0, 19)
 
 
 _M.version = "0.1.15"
@@ -230,6 +230,25 @@ _M.FFI_ERROR = -1
 _M.FFI_BUSY = -3
 _M.FFI_DONE = -4
 _M.FFI_DECLINED = -5
+
+
+local exdata
+ok, exdata = pcall(require, "thread.exdata")
+if ok and exdata then
+    function _M.get_request()
+        local r = exdata()
+        if r ~= nil then
+            return r
+        end
+    end
+
+else
+    local getfenv = getfenv
+
+    function _M.get_request()
+        return getfenv(0).__ngx_req
+    end
+end
 
 
 return _M

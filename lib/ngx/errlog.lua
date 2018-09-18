@@ -15,7 +15,7 @@ local ffi_new = ffi.new
 local charpp = ffi_new("char *[1]")
 local intp = ffi.new("int[1]")
 local num_value = ffi_new("double[1]")
-local getfenv = getfenv
+local get_request = base.get_request
 local tonumber = tonumber
 local type = type
 local error = error
@@ -107,7 +107,7 @@ end
 
 
 function _M.get_sys_filter_level()
-    local r = getfenv(0).__ngx_req
+    local r = get_request()
     return tonumber(C.ngx_http_lua_ffi_errlog_get_sys_filter_level(r))
 end
 
@@ -121,7 +121,7 @@ function _M.raw_log(level, msg)
         error("bad argument #2 to 'raw_log' (must be a string)", 2)
     end
 
-    local r = getfenv(0).__ngx_req
+    local r = get_request()
 
     local rc = C.ngx_http_lua_ffi_raw_log(r, level, msg, #msg)
 

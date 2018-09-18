@@ -382,7 +382,7 @@ qr/\[TRACE\s+\d+ content_by_lua\(nginx\.conf:\d+\):11 loop\]/
     location = /t {
         content_by_lua_block {
             local ffi = require "ffi"
-            local val
+            local val, err
             local dogs = ngx.shared.dogs
             -- local cd = ffi.cast("void *", dogs)
             dogs:set("foo", 56)
@@ -399,7 +399,7 @@ GET /t
 value: 371
 err: nil
 --- error_log eval
-qr/\[TRACE\s+\d+ content_by_lua\(nginx\.conf:\d+\):7 loop\]/
+qr/\[TRACE\s+\d+ content_by_lua\(nginx\.conf:\d+\):7 loop]/
 --- no_error_log
 [error]
  -- NYI:
@@ -1632,6 +1632,41 @@ ttl: 2147483648
 GET /t
 --- response_body
 ttl: 2147483648
+--- no_error_log
+[error]
+[alert]
+[crit]
+
+
+
+=== TEST 50: check zone argument
+--- http_config eval: $::HttpConfig
+--- config
+    location = /t {
+        content_by_lua_block {
+            local function check_in_pcall(f, ...)
+                local ok, err = pcall(f, ...)
+                if not ok then
+                    ngx.say(err)
+                else
+                    ngx.say("ok")
+                end
+            end
+
+            local dogs = ngx.shared.dogs
+            check_in_pcall(dogs.set, dogs, 'k', 1)
+            check_in_pcall(dogs.set, 'k', 1)
+            check_in_pcall(dogs.set, {1}, 'k', 1)
+            check_in_pcall(dogs.set, {ngx.null}, 'k', 1)
+        }
+    }
+--- request
+GET /t
+--- response_body_like
+ok
+.+shdict\.lua:\d+: bad "zone" argument
+.+shdict\.lua:\d+: bad "zone" argument
+.+shdict\.lua:\d+: bad "zone" argument
 --- no_error_log
 [error]
 [alert]

@@ -9,7 +9,7 @@ local error = error
 local base = require "resty.core.base"
 local get_string_buf = base.get_string_buf
 local get_size_ptr = base.get_size_ptr
-local getfenv = getfenv
+local get_request = base.get_request
 local co_yield = coroutine._yield
 
 
@@ -26,7 +26,7 @@ local FFI_DONE = base.FFI_DONE
 ngx.exit = function (rc)
     local err = get_string_buf(ERR_BUF_SIZE)
     local errlen = get_size_ptr()
-    local r = getfenv(0).__ngx_req
+    local r = get_request()
     if r == nil then
         error("no request found")
     end

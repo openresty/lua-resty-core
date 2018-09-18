@@ -8,7 +8,7 @@ base.allows_subsystem('http')
 local ffi = require "ffi"
 local C = ffi.C
 local ffi_str = ffi.string
-local getfenv = getfenv
+local get_request = base.get_request
 local error = error
 local errmsg = base.get_errmsg_ptr()
 local get_string_buf = base.get_string_buf
@@ -38,7 +38,7 @@ local _M = { version = base.version }
 
 -- return session, err
 function _M.get_serialized_session()
-    local r = getfenv(0).__ngx_req
+    local r = get_request()
     if not r then
         error("no request found")
     end
@@ -66,7 +66,7 @@ end
 
 -- return session_id, err
 function _M.get_session_id()
-    local r = getfenv(0).__ngx_req
+    local r = get_request()
     if not r then
         error("no request found")
     end
@@ -91,7 +91,7 @@ end
 
 -- return ok, err
 function _M.set_serialized_session(sess)
-    local r = getfenv(0).__ngx_req
+    local r = get_request()
     if not r then
         error("no request found")
     end

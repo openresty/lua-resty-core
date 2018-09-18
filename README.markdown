@@ -230,6 +230,10 @@ API Implemented
 
 [Back to TOC](#table-of-contents)
 
+## resty.core.ndk
+
+* [ndk.set_var](https://github.com/openresty/lua-nginx-module#ndkset_vardirective)
+
 ## ngx.semaphore
 
 This Lua module implements a semaphore API for efficient "light thread" synchronization,

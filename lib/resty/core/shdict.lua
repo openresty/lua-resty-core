@@ -17,7 +17,6 @@ local type = type
 local error = error
 local ngx_shared = ngx.shared
 local getmetatable = getmetatable
-local FFI_ERROR = base.FFI_ERROR
 local FFI_DECLINED = base.FFI_DECLINED
 local subsystem = ngx.config.subsystem
 
@@ -30,6 +29,7 @@ local ngx_lua_ffi_shdict_get_ttl
 local ngx_lua_ffi_shdict_set_expire
 local ngx_lua_ffi_shdict_capacity
 local ngx_lua_ffi_shdict_free_space
+local ngx_lua_ffi_shdict_udata_to_zone
 
 
 if subsystem == 'http' then
@@ -58,6 +58,8 @@ int ngx_http_lua_ffi_shdict_set_expire(void *zone,
     const unsigned char *key, size_t key_len, long exptime);
 
 size_t ngx_http_lua_ffi_shdict_capacity(void *zone);
+
+void *ngx_http_lua_ffi_shdict_udata_to_zone(void *zone_udata);
     ]]
 
     ngx_lua_ffi_shdict_get = C.ngx_http_lua_ffi_shdict_get
@@ -67,6 +69,8 @@ size_t ngx_http_lua_ffi_shdict_capacity(void *zone);
     ngx_lua_ffi_shdict_get_ttl = C.ngx_http_lua_ffi_shdict_get_ttl
     ngx_lua_ffi_shdict_set_expire = C.ngx_http_lua_ffi_shdict_set_expire
     ngx_lua_ffi_shdict_capacity = C.ngx_http_lua_ffi_shdict_capacity
+    ngx_lua_ffi_shdict_udata_to_zone =
+        C.ngx_http_lua_ffi_shdict_udata_to_zone
 
     if not pcall(function ()
         return C.ngx_http_lua_ffi_shdict_free_space
@@ -106,6 +110,8 @@ int ngx_stream_lua_ffi_shdict_set_expire(void *zone,
     const unsigned char *key, size_t key_len, long exptime);
 
 size_t ngx_stream_lua_ffi_shdict_capacity(void *zone);
+
+void *ngx_stream_lua_ffi_shdict_udata_to_zone(void *zone_udata);
     ]]
 
     ngx_lua_ffi_shdict_get = C.ngx_stream_lua_ffi_shdict_get
@@ -115,6 +121,8 @@ size_t ngx_stream_lua_ffi_shdict_capacity(void *zone);
     ngx_lua_ffi_shdict_get_ttl = C.ngx_stream_lua_ffi_shdict_get_ttl
     ngx_lua_ffi_shdict_set_expire = C.ngx_stream_lua_ffi_shdict_set_expire
     ngx_lua_ffi_shdict_capacity = C.ngx_stream_lua_ffi_shdict_capacity
+    ngx_lua_ffi_shdict_udata_to_zone =
+        C.ngx_stream_lua_ffi_shdict_udata_to_zone
 
     if not pcall(function ()
         return C.ngx_stream_lua_ffi_shdict_free_space
@@ -154,6 +162,11 @@ local function check_zone(zone)
 
     zone = zone[1]
     if type(zone) ~= "userdata" then
+        error("bad \"zone\" argument", 2)
+    end
+
+    zone = ngx_lua_ffi_shdict_udata_to_zone(zone)
+    if zone == nil then
         error("bad \"zone\" argument", 2)
     end
 
@@ -516,10 +529,6 @@ local function shdict_ttl(zone, key)
 
     local rc = ngx_lua_ffi_shdict_get_ttl(zone, key, key_len)
 
-    if rc == FFI_ERROR then
-        return nil, "bad zone"
-    end
-
     if rc == FFI_DECLINED then
         return nil, "not found"
     end
@@ -554,10 +563,6 @@ local function shdict_expire(zone, key, exptime)
 
     local rc = ngx_lua_ffi_shdict_set_expire(zone, key, key_len,
                                              exptime * 1000)
-
-    if rc == FFI_ERROR then
-        return nil, "bad zone"
-    end
 
     if rc == FFI_DECLINED then
         return nil, "not found"
