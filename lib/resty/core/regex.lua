@@ -449,8 +449,8 @@ local function re_match_compile(regex, opts)
         local errbuf = get_string_buf(MAX_ERR_MSG_LEN)
 
         compiled = ngx_lua_ffi_compile_regex(regex, #regex, flags,
-                                                  pcre_opts, errbuf,
-                                                  MAX_ERR_MSG_LEN)
+                                             pcre_opts, errbuf,
+                                             MAX_ERR_MSG_LEN)
 
         if compiled == nil then
             return nil, ffi_string(errbuf)

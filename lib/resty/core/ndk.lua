@@ -24,13 +24,12 @@ local _M = {
 
 
 ffi.cdef[[
-typedef unsigned char u_char;
 typedef void * ndk_set_var_value_pt;
 
-int ngx_http_lua_ffi_ndk_lookup_directive(const u_char *var_data,
+int ngx_http_lua_ffi_ndk_lookup_directive(const unsigned char *var_data,
     size_t var_len, ndk_set_var_value_pt *func);
 int ngx_http_lua_ffi_ndk_set_var_get(ngx_http_request_t *r,
-    ndk_set_var_value_pt func, const u_char *arg_data, size_t arg_len,
+    ndk_set_var_value_pt func, const unsigned char *arg_data, size_t arg_len,
     ngx_http_lua_ffi_str_t *value);
 ]]
 
