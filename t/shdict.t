@@ -399,7 +399,7 @@ GET /t
 value: 371
 err: nil
 --- error_log eval
-qr/\[TRACE\s+\d+ content_by_lua\(nginx\.conf:\d+\):7 loop]/
+qr/\[TRACE\s+\d+ content_by_lua\(nginx\.conf:\d+\):7 loop\]/
 --- no_error_log
 [error]
  -- NYI:
