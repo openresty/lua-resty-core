@@ -1,6 +1,8 @@
-local ffi = require 'ffi'
 local base = require "resty.core.base"
+base.allows_subsystem('http')
 
+
+local ffi = require 'ffi'
 local C = ffi.C
 local FFI_ERROR = base.FFI_ERROR
 local get_request = base.get_request

@@ -1,9 +1,12 @@
 -- Copyright (C) Yichun Zhang (agentzh)
 
 
+local base = require "resty.core.base"
+base.allows_subsystem('http')
+
+
 local ffi = require 'ffi'
 local debug = require 'debug'
-local base = require "resty.core.base"
 local misc = require "resty.core.misc"
 
 

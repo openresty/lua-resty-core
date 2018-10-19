@@ -2,9 +2,10 @@
 
 
 local base = require "resty.core.base"
+base.allows_subsystem('http')
+
+
 local ffi = require "ffi"
-
-
 local FFI_NO_REQ_CTX = base.FFI_NO_REQ_CTX
 local FFI_BAD_CONTEXT = base.FFI_BAD_CONTEXT
 local new_tab = base.new_tab

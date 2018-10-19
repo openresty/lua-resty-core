@@ -9,20 +9,18 @@ require "resty.core.time"
 
 
 if subsystem == 'http' then
-    require "resty.core.uri"
-    require "resty.core.hash"
     require "resty.core.base64"
-    require "resty.core.regex"
-    require "resty.core.exit"
-    require "resty.core.var"
     require "resty.core.ctx"
+    require "resty.core.exit"
+    require "resty.core.hash"
     require "resty.core.misc"
+    require "resty.core.ndk"
+    require "resty.core.phase"
     require "resty.core.request"
     require "resty.core.response"
-    require "resty.core.time"
+    require "resty.core.uri"
+    require "resty.core.var"
     require "resty.core.worker"
-    require "resty.core.phase"
-    require "resty.core.ndk"
 end
 
 

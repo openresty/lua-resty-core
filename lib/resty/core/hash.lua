@@ -1,6 +1,10 @@
 -- Copyright (C) Yichun Zhang (agentzh)
 
 
+local base = require "resty.core.base"
+base.allows_subsystem('http')
+
+
 local ffi = require 'ffi'
 local ffi_string = ffi.string
 local ffi_new = ffi.new
@@ -9,7 +13,6 @@ local ngx = ngx
 local type = type
 local tostring = tostring
 local error = error
-local base = require "resty.core.base"
 
 
 ffi.cdef[[
