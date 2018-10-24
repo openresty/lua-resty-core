@@ -68,6 +68,10 @@ local function set_resp_header(tb, key, value, no_override)
 
         if type(value) == "table" then
             mvals_len = #value
+            if mvals_len == 0 and no_override then
+                error("invalid header value", 3)
+            end
+
             buf = get_string_buf(ffi_str_size * mvals_len)
             mvals = ffi_cast(ffi_str_type, buf)
             for i = 1, mvals_len do

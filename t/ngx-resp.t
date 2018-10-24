@@ -101,3 +101,22 @@ fruit: apple, banana, cherry
     }
 --- response_body
 Date: now
+
+
+
+=== TEST 6: ngx.resp.add_header ({})
+--- config
+    location = /t {
+        content_by_lua_block {
+            local ngx_resp = require "ngx.resp"
+            ngx.header['Foo'] = 'aaa'
+            local ok, err = pcall(ngx_resp.add_header, "Foo", {})
+            if not ok then
+                ngx.say(err)
+            else
+                ngx.say("Foo: ", ngx.header["Foo"])
+            end
+        }
+    }
+--- response_body
+invalid header value

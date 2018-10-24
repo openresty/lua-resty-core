@@ -59,7 +59,10 @@ add_header
 **syntax:** *ngx_resp.add_header(header_name, header_value)*
 
 This function adds specified header with corresponding value to the response of
-current request. The `header_value` could be either a string or a table.
+current request. The `header_value` could be either a string or a non-empty table.
+
+Pass `nil` or `{}` as `header_value` will throw out the Lua exception
+`invalid header value`.
 
 The `ngx.resp.add_header` works mostly like:
 * [ngx.header.HEADER](https://github.com/openresty/lua-nginx-module#ngxheaderheader)
