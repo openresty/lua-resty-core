@@ -3,7 +3,9 @@
 local subsystem = ngx.config.subsystem
 
 
+-- regex module should be loaded first to inject ngx.re for other modules
 require "resty.core.regex"
+
 require "resty.core.shdict"
 require "resty.core.time"
 
