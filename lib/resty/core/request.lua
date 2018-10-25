@@ -29,6 +29,16 @@ local tonumber = tonumber
 local str_replace_char = utils.str_replace_char
 
 
+local _M = {
+    version = base.version
+}
+
+
+local errmsg = base.get_errmsg_ptr()
+local ffi_str_type = ffi.typeof("ngx_http_lua_ffi_str_t*")
+local ffi_str_size = ffi.sizeof("ngx_http_lua_ffi_str_t")
+
+
 ffi.cdef[[
     typedef struct {
         ngx_http_lua_ffi_str_t   key;
@@ -58,9 +68,10 @@ ffi.cdef[[
 
     int ngx_http_lua_ffi_req_set_method(ngx_http_request_t *r, int method);
 
-    int ngx_http_lua_ffi_req_header_set_single_value(ngx_http_request_t *r,
+    int ngx_http_lua_ffi_req_set_header(ngx_http_request_t *r,
         const unsigned char *key, size_t key_len, const unsigned char *value,
-        size_t value_len);
+        size_t value_len, ngx_http_lua_ffi_str_t *mvals, size_t mvals_len,
+        int override, char **errmsg);
 ]]
 
 
@@ -294,16 +305,14 @@ end
 
 
 do
-    local orig_func = ngx.req.set_header
-
-    function ngx.req.set_header(name, value)
-        if type(value) == "table" then
-            return orig_func(name, value)
-        end
-
+    local function set_req_header(name, value, override)
         local r = get_request()
         if not r then
-            error("no request found")
+            error("no request found", 3)
+        end
+
+        if name == nil then
+            error("bad 'name' argument: string expected, got nil", 3)
         end
 
         if type(name) ~= "string" then
@@ -311,17 +320,57 @@ do
         end
 
         local rc
-        if not value then
-            rc = C.ngx_http_lua_ffi_req_header_set_single_value(r, name,
-                                                         #name, nil, 0)
 
-        else
-            if type(value) ~= "string" then
-                value = tostring(value)
+        if value == nil then
+            if not override then
+                error("bad 'value' argument: string or table expected, got nil",
+                      3)
             end
 
-            rc = C.ngx_http_lua_ffi_req_header_set_single_value(r, name,
-                                                         #name, value, #value)
+            rc = C.ngx_http_lua_ffi_req_set_header(r, name, #name, nil, 0, nil,
+                                                   0, 1, errmsg)
+
+        else
+            local sval, sval_len, mvals, mvals_len, buf
+            local value_type = type(value)
+
+            if value_type == "table" then
+                mvals_len = #value
+                if mvals_len == 0 and not override then
+                    error("bad 'value' argument: non-empty table expected", 3)
+                end
+
+                buf = get_string_buf(ffi_str_size * mvals_len)
+                mvals = ffi_cast(ffi_str_type, buf)
+
+                for i = 1, mvals_len do
+                    local s = value[i]
+                    if type(s) ~= "string" then
+                        s = tostring(s)
+                        value[i] = s
+                    end
+
+                    local str = mvals[i - 1]
+                    str.data = s
+                    str.len = #s
+                end
+
+                sval_len = 0
+
+            else
+                if value_type ~= "string" then
+                    sval = tostring(value)
+                else
+                    sval = value
+                end
+
+                sval_len = #sval
+                mvals_len = 0
+            end
+
+            rc = C.ngx_http_lua_ffi_req_set_header(r, name, #name, sval,
+                                                   sval_len, mvals, mvals_len,
+                                                   override and 1 or 0, errmsg)
         end
 
         if rc == FFI_OK or rc == FFI_DECLINED then
@@ -329,10 +378,26 @@ do
         end
 
         if rc == FFI_BAD_CONTEXT then
-            error("API disabled in the current context", 2)
+            error("API disabled in the current context", 3)
         end
 
-        error("error")
+        -- rc == FFI_ERROR
+        error(ffi_str(errmsg[0]))
+    end
+
+
+    _M.set_req_header = set_req_header
+
+
+    local orig_func = ngx.req.set_header
+
+
+    function ngx.req.set_header(name, value)
+        if type(value) == "table" then
+            return orig_func(name, value)
+        end
+
+        set_req_header(name, value, true) -- override
     end
 end  -- do
 
@@ -347,8 +412,8 @@ function ngx.req.clear_header(name)
         name = tostring(name)
     end
 
-    local rc = C.ngx_http_lua_ffi_req_header_set_single_value(r, name, #name,
-                                                                       nil, 0)
+    local rc = C.ngx_http_lua_ffi_req_set_header(r, name, #name, nil, 0, nil, 0,
+                                                 1, errmsg)
 
     if rc == FFI_OK or rc == FFI_DECLINED then
         return
@@ -358,10 +423,9 @@ function ngx.req.clear_header(name)
         error("API disabled in the current context", 2)
     end
 
-    error("error")
+    -- rc == FFI_ERROR
+    error(ffi_str(errmsg[0]))
 end
 
 
-return {
-    version = base.version
-}
+return _M
