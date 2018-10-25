@@ -27,6 +27,15 @@ local tostring = tostring
 local tonumber = tonumber
 
 
+local _M = {
+    version = base.version
+}
+
+
+local ffi_str_type = ffi.typeof("ngx_http_lua_ffi_str_t*")
+local ffi_str_size = ffi.sizeof("ngx_http_lua_ffi_str_t")
+
+
 ffi.cdef[[
     typedef struct {
         ngx_http_lua_ffi_str_t   key;
@@ -56,9 +65,10 @@ ffi.cdef[[
 
     int ngx_http_lua_ffi_req_set_method(ngx_http_request_t *r, int method);
 
-    int ngx_http_lua_ffi_req_header_set_single_value(ngx_http_request_t *r,
+    int ngx_http_lua_ffi_req_set_header(ngx_http_request_t *r,
         const unsigned char *key, size_t key_len, const unsigned char *value,
-        size_t value_len);
+        size_t value_len, ngx_http_lua_ffi_str_t *mvals, size_t mvals_len,
+        int override);
 ]]
 
 
@@ -292,13 +302,7 @@ end
 
 
 do
-    local orig_func = ngx.req.set_header
-
-    function ngx.req.set_header(name, value)
-        if type(value) == "table" then
-            return orig_func(name, value)
-        end
-
+    local function set_req_header(name, value, override)
         local r = get_request()
         if not r then
             error("no request found")
@@ -310,16 +314,53 @@ do
 
         local rc
         if not value then
-            rc = C.ngx_http_lua_ffi_req_header_set_single_value(r, name,
-                                                         #name, nil, 0)
-
-        else
-            if type(value) ~= "string" then
-                value = tostring(value)
+            if not override then
+                error("invalid header value", 3)
             end
 
-            rc = C.ngx_http_lua_ffi_req_header_set_single_value(r, name,
-                                                         #name, value, #value)
+            rc = C.ngx_http_lua_ffi_req_set_header(r, name, #name, nil, 0, nil,
+                                                   0, 1)
+
+        else
+            local sval, sval_len, mvals, mvals_len, buf
+
+            if type(value) == "table" then
+                mvals_len = #value
+                if mvals_len == 0 and not override then
+                    error("invalid header value", 3)
+                end
+
+                buf = get_string_buf(ffi_str_size * mvals_len)
+                mvals = ffi_cast(ffi_str_type, buf)
+                for i = 1, mvals_len do
+                    local s = value[i]
+                    if type(s) ~= "string" then
+                        s = tostring(s)
+                        value[i] = s
+                    end
+
+                    local str = mvals[i - 1]
+                    str.data = s
+                    str.len = #s
+                end
+
+                sval_len = 0
+
+            else
+                if type(value) ~= "string" then
+                    sval = tostring(value)
+                else
+                    sval = value
+                end
+
+                sval_len = #sval
+                mvals_len = 0
+            end
+
+            local override_int = override and 1 or 0
+            rc = C.ngx_http_lua_ffi_req_set_header(r, name, #name, sval,
+                                                   sval_len, mvals, mvals_len,
+                                                   override_int)
         end
 
         if rc == FFI_OK or rc == FFI_DECLINED then
@@ -331,6 +372,19 @@ do
         end
 
         error("error")
+    end
+
+    _M.set_req_header = set_req_header
+
+    local orig_func = ngx.req.set_header
+
+    function ngx.req.set_header(name, value)
+        if type(value) == "table" then
+            return orig_func(name, value)
+        end
+
+        local override = true
+        set_req_header(name, value, override)
     end
 end  -- do
 
@@ -345,8 +399,8 @@ function ngx.req.clear_header(name)
         name = tostring(name)
     end
 
-    local rc = C.ngx_http_lua_ffi_req_header_set_single_value(r, name, #name,
-                                                                       nil, 0)
+    local rc = C.ngx_http_lua_ffi_req_set_header(r, name, #name, nil, 0, nil, 0,
+                                                 1)
 
     if rc == FFI_OK or rc == FFI_DECLINED then
         return
@@ -360,6 +414,4 @@ function ngx.req.clear_header(name)
 end
 
 
-return {
-    version = base.version
-}
+return _M
