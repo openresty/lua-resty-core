@@ -70,7 +70,7 @@ install:
   - git clone https://github.com/openresty/set-misc-nginx-module.git ../set-misc-nginx-module
   - git clone https://github.com/openresty/mockeagain.git
   - git clone https://github.com/openresty/test-nginx.git
-  - git clone -b datong/ssl_certby https://github.com/dndx/stream-lua-nginx-module.git ../stream-lua-nginx-module
+  - git clone https://github.com/openresty/stream-lua-nginx-module.git ../stream-lua-nginx-module
 
 script:
   - cd luajit2/
