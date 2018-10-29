@@ -19,7 +19,7 @@ no_long_string();
 env_to_nginx("PATH=" . $ENV{'PATH'});
 $ENV{TEST_NGINX_LUA_PACKAGE_PATH} = "$::CWD/lib/?.lua;;";
 $ENV{TEST_NGINX_HTML_DIR} ||= html_dir();
-$ENV{TEST_NGINX_SERVER_SSL_PORT} ||= 4443;
+$ENV{TEST_NGINX_SERVER_SSL_PORT} ||= 4433;
 
 run_tests();
 
