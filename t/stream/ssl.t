@@ -1,6 +1,7 @@
 # vim:set ft= ts=4 sw=4 et fdm=marker:
 
-use Test::Nginx::Socket::Lua::Stream;use Cwd qw(cwd);
+use Test::Nginx::Socket::Lua::Stream;
+use Cwd qw(cwd);
 
 #worker_connections(10140);
 #workers(1);

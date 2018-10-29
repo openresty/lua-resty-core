@@ -161,6 +161,7 @@ elseif subsystem == 'stream' then
     ngx_lua_ffi_free_priv_key = C.ngx_stream_lua_ffi_free_priv_key
 end
 
+
 local _M = { version = base.version }
 
 
@@ -189,8 +190,7 @@ function _M.set_der_cert(data)
         error("no request found")
     end
 
-    local rc = ngx_lua_ffi_ssl_set_der_certificate(r, data, #data,
-                                                          errmsg)
+    local rc = ngx_lua_ffi_ssl_set_der_certificate(r, data, #data, errmsg)
     if rc == FFI_OK then
         return true
     end
@@ -205,8 +205,7 @@ function _M.set_der_priv_key(data)
         error("no request found")
     end
 
-    local rc = ngx_lua_ffi_ssl_set_der_private_key(r, data, #data,
-                                                          errmsg)
+    local rc = ngx_lua_ffi_ssl_set_der_private_key(r, data, #data, errmsg)
     if rc == FFI_OK then
         return true
     end
@@ -230,8 +229,7 @@ function _M.raw_server_addr()
 
     local sizep = get_size_ptr()
 
-    local rc = ngx_lua_ffi_ssl_raw_server_addr(r, charpp, sizep,
-                                                      intp, errmsg)
+    local rc = ngx_lua_ffi_ssl_raw_server_addr(r, charpp, sizep, intp, errmsg)
     if rc == FFI_OK then
         local typ = addr_types[intp[0]]
         if not typ then
@@ -273,8 +271,7 @@ function _M.raw_client_addr()
 
     local sizep = get_size_ptr()
 
-    local rc = ngx_lua_ffi_ssl_raw_client_addr(r, charpp, sizep,
-                                                      intp, errmsg)
+    local rc = ngx_lua_ffi_ssl_raw_client_addr(r, charpp, sizep, intp, errmsg)
     if rc == FFI_OK then
         local typ = addr_types[intp[0]]
         if not typ then
