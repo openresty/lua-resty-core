@@ -28,6 +28,7 @@ our $HttpConfig = <<_EOC_;
         end
 
         require "resty.core"
+        jit.opt.start("hotloop=10")
         -- jit.off()
     }
 _EOC_
@@ -52,7 +53,7 @@ __DATA__
             ngx.say("failed to set: ", err)
             return
         end
-        for i = 1, 100 do
+        for i = 1, 30 do
             val, flags = dogs:get("foo")
         end
         ngx.say("value type: ", type(val))
@@ -80,7 +81,7 @@ qr/\[TRACE\s+\d+ content_by_lua\(nginx\.conf:\d+\):11 loop\]/
         local dogs = ngx.shared.dogs
         -- local cd = ffi.cast("void *", dogs)
         -- dogs:set("foo", "bar")
-        for i = 1, 100 do
+        for i = 1, 30 do
             val, flags = dogs:get("foo")
         end
         ngx.say("value type: ", type(val))
@@ -108,7 +109,7 @@ qr/\[TRACE\s+\d+ content_by_lua\(nginx\.conf:\d+\):7 loop\]/
         local dogs = ngx.shared.dogs
         -- local cd = ffi.cast("void *", dogs)
         dogs:set("foo", true, 0, 5678)
-        for i = 1, 100 do
+        for i = 1, 30 do
             val, flags = dogs:get("foo")
         end
         ngx.say("value type: ", type(val))
@@ -136,7 +137,7 @@ qr/\[TRACE\s+\d+ content_by_lua\(nginx\.conf:\d+\):7 loop\]/
         local dogs = ngx.shared.dogs
         -- local cd = ffi.cast("void *", dogs)
         dogs:set("foo", false, 0, 777)
-        for i = 1, 100 do
+        for i = 1, 30 do
             val, flags = dogs:get("foo")
         end
         ngx.say("value type: ", type(val))
@@ -164,7 +165,7 @@ qr/\[TRACE\s+\d+ content_by_lua\(nginx\.conf:\d+\):7 loop\]/
         local dogs = ngx.shared.dogs
         -- local cd = ffi.cast("void *", dogs)
         dogs:set("foo", 51203)
-        for i = 1, 100 do
+        for i = 1, 30 do
             val, flags = dogs:get("foo")
         end
         ngx.say("value type: ", type(val))
@@ -192,7 +193,7 @@ qr/\[TRACE\s+\d+ content_by_lua\(nginx\.conf:\d+\):7 loop\]/
         local dogs = ngx.shared.dogs
         -- local cd = ffi.cast("void *", dogs)
         dogs:set("foo", 3.1415926, 0, 78)
-        for i = 1, 100 do
+        for i = 1, 30 do
             val, flags = dogs:get("foo")
         end
         ngx.say("value type: ", type(val))
@@ -220,7 +221,7 @@ qr/\[TRACE\s+\d+ content_by_lua\(nginx\.conf:\d+\):7 loop\]/
         local dogs = ngx.shared.dogs
         -- local cd = ffi.cast("void *", dogs)
         dogs:set("foo", string.rep("bbbb", 1024) .. "a", 0, 912)
-        for i = 1, 100 do
+        for i = 1, 30 do
             val, flags = dogs:get("foo")
         end
         ngx.say("value type: ", type(val))
@@ -249,7 +250,7 @@ qr/\[TRACE\s+\d+ content_by_lua\(nginx\.conf:\d+\):7 loop\]/
         local dogs = ngx.shared.dogs
         -- local cd = ffi.cast("void *", dogs)
         dogs:set("foo", "bar", 0, 72)
-        for i = 1, 100 do
+        for i = 1, 30 do
             val, flags, stale = dogs:get_stale("foo")
         end
         ngx.say("value type: ", type(val))
@@ -284,7 +285,7 @@ qr/\[TRACE\s+\d+ content_by_lua\(nginx\.conf:\d+\):7 loop\]/
             return
         end
         ngx.sleep(0.002)
-        for i = 1, 100 do
+        for i = 1, 30 do
             val, flags, stale = dogs:get_stale("foo")
         end
         ngx.say("value type: ", type(val))
@@ -318,14 +319,14 @@ qr/\[TRACE\s+\d+ content_by_lua\(nginx\.conf:\d+\):12 loop\]/
             ngx.say("failed to set: ", err)
             return
         end
-        for i = 1, 100 do
+        for i = 1, 30 do
             val, err = dogs:incr("foo", 2)
         end
         ngx.say("value: ", val)
         ngx.say("err: ", err)
     }
 --- stream_response
-value: 256
+value: 116
 err: nil
 --- error_log eval
 qr/\[TRACE\s+\d+ content_by_lua\(nginx\.conf:\d+\):11 loop\]/
@@ -370,7 +371,7 @@ qr/\[TRACE\s+\d+ content_by_lua\(nginx\.conf:\d+\):7 loop\]/
         local dogs = ngx.shared.dogs
         -- local cd = ffi.cast("void *", dogs)
         local ok, err, forcible
-        for i = 1, 100 do
+        for i = 1, 30 do
             ok, err, forcible = dogs:set("foo", "bar", 0, 72)
         end
         if not ok then
@@ -403,7 +404,7 @@ qr/\[TRACE\s+\d+ content_by_lua\(nginx\.conf:\d+\):7 loop\]/
         local dogs = ngx.shared.dogs
         -- local cd = ffi.cast("void *", dogs)
         local ok, err, forcible
-        for i = 1, 100 do
+        for i = 1, 30 do
             ok, err, forcible = dogs:set("foo", true, 0, 5678)
         end
         if not ok then
@@ -435,7 +436,7 @@ qr/\[TRACE\s+\d+ content_by_lua\(nginx\.conf:\d+\):7 loop\]/
         local val, flags
         local dogs = ngx.shared.dogs
         -- local cd = ffi.cast("void *", dogs)
-        for i = 1, 100 do
+        for i = 1, 30 do
             dogs:set("foo", false, 0, 777)
         end
         val, flags = dogs:get("foo")
@@ -463,7 +464,7 @@ qr/\[TRACE\s+\d+ content_by_lua\(nginx\.conf:\d+\):6 loop\]/
         local val, flags
         local dogs = ngx.shared.dogs
         -- local cd = ffi.cast("void *", dogs)
-        for i = 1, 100 do
+        for i = 1, 30 do
             dogs:set("foo", 51203)
         end
         val, flags = dogs:get("foo")
@@ -491,7 +492,7 @@ qr/\[TRACE\s+\d+ content_by_lua\(nginx\.conf:\d+\):6 loop\]/
         local val, flags
         local dogs = ngx.shared.dogs
         -- local cd = ffi.cast("void *", dogs)
-        for i = 1, 100 do
+        for i = 1, 30 do
             dogs:set("foo", 3.1415926, 0, 78)
         end
         val, flags = dogs:get("foo")
@@ -548,7 +549,7 @@ qr/\[TRACE\s+\d+ content_by_lua\(nginx\.conf:\d+\):6 loop\]/
         local val, flags
         local dogs = ngx.shared.dogs
         -- local cd = ffi.cast("void *", dogs)
-        for i = 1, 100 do
+        for i = 1, 30 do
             dogs:safe_set("foo", 3.1415926, 0, 78)
         end
         val, flags = dogs:get("foo")
@@ -578,14 +579,14 @@ qr/\[TRACE\s+\d+ content_by_lua\(nginx\.conf:\d+\):6 loop\]/
         -- local cd = ffi.cast("void *", dogs)
         dogs:flush_all()
         local ok, err, forcible
-        for i = 1, 100 do
+        for i = 1, 30 do
             ok, err, forcible = dogs:add("foo" .. i, "bar", 0, 72)
         end
         if not ok then
             ngx.say("failed to set: ", err)
             return
         end
-        val, flags = dogs:get("foo100")
+        val, flags = dogs:get("foo30")
         ngx.say("value type: ", type(val))
         ngx.say("value: ", val)
         ngx.say("flags: ", flags)
@@ -612,14 +613,14 @@ qr/\[TRACE\s+\d+ content_by_lua\(nginx\.conf:\d+\):8 loop\]/
         -- local cd = ffi.cast("void *", dogs)
         dogs:flush_all()
         local ok, err, forcible
-        for i = 1, 100 do
+        for i = 1, 30 do
             ok, err, forcible = dogs:safe_add("foo" .. i, "bar", 0, 72)
         end
         if not ok then
             ngx.say("failed to set: ", err)
             return
         end
-        val, flags = dogs:get("foo100")
+        val, flags = dogs:get("foo30")
         ngx.say("value type: ", type(val))
         ngx.say("value: ", val)
         ngx.say("flags: ", flags)
@@ -646,7 +647,7 @@ qr/\[TRACE\s+\d+ content_by_lua\(nginx\.conf:\d+\):8 loop\]/
         -- local cd = ffi.cast("void *", dogs)
         dogs:set("foo", "hello")
         local ok, err, forcible
-        for i = 1, 100 do
+        for i = 1, 30 do
             ok, err, forcible = dogs:replace("foo", "bar" .. i, 0, 72)
         end
         if not ok then
@@ -660,7 +661,7 @@ qr/\[TRACE\s+\d+ content_by_lua\(nginx\.conf:\d+\):8 loop\]/
     }
 --- stream_response
 value type: string
-value: bar100
+value: bar30
 flags: 72
 --- error_log eval
 qr/\[TRACE\s+\d+ content_by_lua\(nginx\.conf:\d+\):8 loop\]/
@@ -1279,7 +1280,7 @@ foo after init_ttl = nil
 --- stream_server_config
     content_by_lua_block {
         local dogs = ngx.shared.dogs
-        for i = 1, 20 do
+        for i = 1, 30 do
             dogs:set("bar" .. i, i, 0.002)
         end
         dogs:set("foo", 32, 0.002)
