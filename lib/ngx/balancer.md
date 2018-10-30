@@ -99,7 +99,7 @@ stream {
             local ok, err = balancer.set_current_peer(host, port)
             if not ok then
                 ngx.log(ngx.ERR, "failed to set the current peer: ", err)
-                return ngx.exit(ngx.ERR)
+                return ngx.exit(ngx.ERROR)
             end
         }
     }
