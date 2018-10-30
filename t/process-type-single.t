@@ -38,10 +38,21 @@ our $HttpConfig = <<_EOC_;
 
         package.loaded.process_type = v
     }
+
+    init_worker_by_lua_block {
+        local v
+        local typ = (require "ngx.process").type
+        for i = 1, 400 do
+            v = typ()
+        end
+
+        ngx.log(ngx.WARN, "process type in init_by_lua*: ",
+                package.loaded.process_type)
+        ngx.log(ngx.WARN, "process type: ", v)
+    }
 _EOC_
 
 #worker_connections(1014);
-master_on();
 #log_level('error');
 
 #no_diff();
@@ -56,21 +67,35 @@ __DATA__
 --- config
     location = /t {
         content_by_lua_block {
-            ngx.say("process type: ", package.loaded.process_type)
+            local v
+            local typ = (require "ngx.process").type
+            for i = 1, 400 do
+                v = typ()
+            end
+
+            ngx.say("process type: ", v)
         }
     }
 --- request
 GET /t
 --- response_body
-process type: master
+process type: single
 --- grep_error_log eval
-qr/\[TRACE\s+\d+ init_by_lua:\d+ loop\]/
+qr/\[TRACE\s+\d+ init_by_lua:\d+ loop\]|\[TRACE\s+\d+ init_worker_by_lua:\d loop\]|\[TRACE\s+\d+ content_by_lua\(nginx\.conf:\d+\):\d loop\]|process type in init_by_lua\*: \w+|init_worker_by_lua:\d+: process type: \w+/
 --- grep_error_log_out eval
 [
-qr/\A\[TRACE\s+\d+ init_by_lua:16 loop\]
-\z/,
-qr/\A\[TRACE\s+\d+ init_by_lua:16 loop\]
-\z/
+qr/\[TRACE\s+\d+ init_by_lua:16 loop\]
+\[TRACE\s+\d+ init_worker_by_lua:4 loop\]
+\[TRACE\s+\d+ content_by_lua\(nginx.conf:83\):4 loop\]
+process type in init_by_lua\*: single
+init_worker_by_lua:10: process type: single
+/,
+qr/\[TRACE\s+\d+ init_by_lua:16 loop\]
+\[TRACE\s+\d+ init_worker_by_lua:4 loop\]
+\[TRACE\s+\d+ content_by_lua\(nginx.conf:83\):4 loop\]
+process type in init_by_lua\*: single
+init_worker_by_lua:10: process type: single
+/
 ]
 --- no_error_log
 [error]
