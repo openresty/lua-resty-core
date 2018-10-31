@@ -32,6 +32,7 @@ Table of Contents
     * [ngx.ssl.session](#ngxsslsession)
     * [ngx.re](#ngxre)
     * [ngx.resp](#ngxresp)
+    * [ngx.pipe](#ngxpipe)
     * [ngx.process](#ngxprocess)
     * [ngx.errlog](#ngxerrlog)
     * [ngx.base64](#ngxbase64)
@@ -283,6 +284,18 @@ See the [documentation](./lib/ngx/re.md) for this Lua module for more details.
 This Lua module provides Lua API which could be used to handle HTTP response.
 
 See the [documentation](./lib/ngx/resp.md) for this Lua module for more details.
+
+[Back to TOC](#table-of-contents)
+
+## ngx.pipe
+
+This module provides a Lua API to spawn processes and communicate with them in
+a non-blocking fashion.
+
+See the [documentation](./lib/ngx/pipe.md) for this Lua module for more
+details.
+
+This module was first introduced in lua-resty-core v0.1.16.
 
 [Back to TOC](#table-of-contents)
 
