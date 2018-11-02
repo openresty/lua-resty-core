@@ -27,7 +27,7 @@ add_block_preprocessor(sub {
             v.on("$Test::Nginx::Util::ErrLogFile")
         end
 
-        require "resty.core"
+        $init_by_lua_block
     }
 _EOC_
 
