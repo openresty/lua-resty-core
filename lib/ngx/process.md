@@ -93,22 +93,22 @@ type
 
 **context:** *any*
 
-Returns the current process's type name. Here are all of the names:
+Returns the type of the current Nginx process. Depending on the calling context
+and current process, the type can be one of:
 
-```
-single
-master
-signaller
-worker
-helper
-privileged agent
-```
+* `master`: returned when this function is called from within the master
+  process
+* `worker`: returned when this function is called from within a worker process
+* `single`: returned when Nginx is running in the single process mode
+* `signaller`: returned when Nginx is running as a signaller process
+* `privileged agent`: returned when this funtion is called from within a
+  privileged agent process
 
-For example,
+For example:
 
 ```lua
- local process = require "ngx.process"
- ngx.say("process type:", process.type())   -- RESPONSE: worker
+local process = require "ngx.process"
+ngx.say("process type:", process.type())   -- RESPONSE: worker
 ```
 
 [Back to TOC](#table-of-contents)
