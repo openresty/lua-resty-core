@@ -95,14 +95,11 @@ type
 
 Returns the current process's type name. Here are all of the names:
 
-```
-single
-master
-signaller
-worker
-helper
-privileged agent
-```
+* single: returned when Nginx is running in single process mode
+* signaller: returned when Nginx is running as a signaller
+* master: returned when the code is called in master process
+* worker: returned when the code is called in worker process
+* privileged agent: returned when the code is called in privileged agent
 
 For example,
 
