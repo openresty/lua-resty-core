@@ -121,7 +121,7 @@ enable_privileged_agent
 
 Enables the privileged agent process in Nginx.
 
-The priviledged agent process does not listen on any virtual server ports like those worker processes.
+The privileged agent process does not listen on any virtual server ports like those worker processes.
 And it uses the same system account as the nginx master process, which is usually a privileged account
 like `root`.
 
