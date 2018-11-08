@@ -15,6 +15,8 @@ my $pwd = cwd();
 
 our $HttpConfig = <<_EOC_;
     lua_shared_dict dogs 1m;
+    lua_shared_dict cats 16k;
+    lua_shared_dict birds 100k;
     lua_package_path "$pwd/lib/?.lua;../lua-resty-lrucache/lib/?.lua;;";
     init_by_lua_block {
         local verbose = false
@@ -32,7 +34,7 @@ our $HttpConfig = <<_EOC_;
 _EOC_
 
 #no_diff();
-#no_long_string();
+no_long_string();
 check_accum_error_log();
 run_tests();
 
@@ -67,7 +69,7 @@ value type: string
 value: bar
 flags: 72
 --- error_log eval
-qr/\[TRACE   \d+ content_by_lua\(nginx\.conf:\d+\):11 loop\]/
+qr/\[TRACE\s+\d+ content_by_lua\(nginx\.conf:\d+\):11 loop\]/
 --- no_error_log
 [error]
  -- NYI:
@@ -99,7 +101,7 @@ value type: nil
 value: nil
 flags: nil
 --- error_log eval
-qr/\[TRACE   \d+ content_by_lua\(nginx\.conf:\d+\):7 loop\]/
+qr/\[TRACE\s+\d+ content_by_lua\(nginx\.conf:\d+\):7 loop\]/
 --- no_error_log
 [error]
  -- NYI:
@@ -131,7 +133,7 @@ value type: boolean
 value: true
 flags: 5678
 --- error_log eval
-qr/\[TRACE   \d+ content_by_lua\(nginx\.conf:\d+\):7 loop\]/
+qr/\[TRACE\s+\d+ content_by_lua\(nginx\.conf:\d+\):7 loop\]/
 --- no_error_log
 [error]
  -- NYI:
@@ -163,7 +165,7 @@ value type: boolean
 value: false
 flags: 777
 --- error_log eval
-qr/\[TRACE   \d+ content_by_lua\(nginx\.conf:\d+\):7 loop\]/
+qr/\[TRACE\s+\d+ content_by_lua\(nginx\.conf:\d+\):7 loop\]/
 --- no_error_log
 [error]
  -- NYI:
@@ -195,7 +197,7 @@ value type: number
 value: 51203
 flags: nil
 --- error_log eval
-qr/\[TRACE   \d+ content_by_lua\(nginx\.conf:\d+\):7 loop\]/
+qr/\[TRACE\s+\d+ content_by_lua\(nginx\.conf:\d+\):7 loop\]/
 --- no_error_log
 [error]
  -- NYI:
@@ -227,7 +229,7 @@ value type: number
 value: 3.1415926
 flags: 78
 --- error_log eval
-qr/\[TRACE   \d+ content_by_lua\(nginx\.conf:\d+\):7 loop\]/
+qr/\[TRACE\s+\d+ content_by_lua\(nginx\.conf:\d+\):7 loop\]/
 --- no_error_log
 [error]
  -- NYI:
@@ -260,7 +262,7 @@ value: " . ("bbbb" x 1024) . "a
 flags: 912
 "
 --- error_log eval
-qr/\[TRACE   \d+ content_by_lua\(nginx\.conf:\d+\):7 loop\]/
+qr/\[TRACE\s+\d+ content_by_lua\(nginx\.conf:\d+\):7 loop\]/
 --- no_error_log
 [error]
  -- NYI:
@@ -294,7 +296,7 @@ value: bar
 flags: 72
 stale: false
 --- error_log eval
-qr/\[TRACE   \d+ content_by_lua\(nginx\.conf:\d+\):7 loop\]/
+qr/\[TRACE\s+\d+ content_by_lua\(nginx\.conf:\d+\):7 loop\]/
 --- no_error_log
 [error]
  -- NYI:
@@ -333,7 +335,7 @@ value: bar
 flags: 72
 stale: true
 --- error_log eval
-qr/\[TRACE   \d+ content_by_lua\(nginx\.conf:\d+\):12 loop\]/
+qr/\[TRACE\s+\d+ content_by_lua\(nginx\.conf:\d+\):12 loop\]/
 --- no_error_log
 [error]
  -- NYI:
@@ -367,7 +369,7 @@ GET /t
 value: 256
 err: nil
 --- error_log eval
-qr/\[TRACE   \d+ content_by_lua\(nginx\.conf:\d+\):11 loop\]/
+qr/\[TRACE\s+\d+ content_by_lua\(nginx\.conf:\d+\):11 loop\]/
 --- no_error_log
 [error]
  -- NYI:
@@ -380,7 +382,7 @@ qr/\[TRACE   \d+ content_by_lua\(nginx\.conf:\d+\):11 loop\]/
     location = /t {
         content_by_lua_block {
             local ffi = require "ffi"
-            local val
+            local val, err
             local dogs = ngx.shared.dogs
             -- local cd = ffi.cast("void *", dogs)
             dogs:set("foo", 56)
@@ -397,7 +399,7 @@ GET /t
 value: 371
 err: nil
 --- error_log eval
-qr/\[TRACE   \d+ content_by_lua\(nginx\.conf:\d+\):7 loop\]/
+qr/\[TRACE\s+\d+ content_by_lua\(nginx\.conf:\d+\):7 loop\]/
 --- no_error_log
 [error]
  -- NYI:
@@ -434,7 +436,7 @@ value type: string
 value: bar
 flags: 72
 --- error_log eval
-qr/\[TRACE   \d+ content_by_lua\(nginx\.conf:\d+\):7 loop\]/
+qr/\[TRACE\s+\d+ content_by_lua\(nginx\.conf:\d+\):7 loop\]/
 --- no_error_log
 [error]
  -- NYI:
@@ -471,7 +473,7 @@ value type: boolean
 value: true
 flags: 5678
 --- error_log eval
-qr/\[TRACE   \d+ content_by_lua\(nginx\.conf:\d+\):7 loop\]/
+qr/\[TRACE\s+\d+ content_by_lua\(nginx\.conf:\d+\):7 loop\]/
 --- no_error_log
 [error]
  -- NYI:
@@ -503,7 +505,7 @@ value type: boolean
 value: false
 flags: 777
 --- error_log eval
-qr/\[TRACE   \d+ content_by_lua\(nginx\.conf:\d+\):6 loop\]/
+qr/\[TRACE\s+\d+ content_by_lua\(nginx\.conf:\d+\):6 loop\]/
 --- no_error_log
 [error]
  -- NYI:
@@ -535,7 +537,7 @@ value type: number
 value: 51203
 flags: nil
 --- error_log eval
-qr/\[TRACE   \d+ content_by_lua\(nginx\.conf:\d+\):6 loop\]/
+qr/\[TRACE\s+\d+ content_by_lua\(nginx\.conf:\d+\):6 loop\]/
 --- no_error_log
 [error]
  -- NYI:
@@ -567,7 +569,7 @@ value type: number
 value: 3.1415926
 flags: 78
 --- error_log eval
-qr/\[TRACE   \d+ content_by_lua\(nginx\.conf:\d+\):6 loop\]/
+qr/\[TRACE\s+\d+ content_by_lua\(nginx\.conf:\d+\):6 loop\]/
 --- no_error_log
 [error]
  -- NYI:
@@ -600,7 +602,7 @@ value type: nil
 value: nil
 flags: nil
 --- error_log eval
-qr/\[TRACE   \d+ content_by_lua\(nginx\.conf:\d+\):6 loop\]/
+qr/\[TRACE\s+\d+ content_by_lua\(nginx\.conf:\d+\):6 loop\]/
 --- no_error_log
 [error]
  -- NYI:
@@ -632,7 +634,7 @@ value type: number
 value: 3.1415926
 flags: 78
 --- error_log eval
-qr/\[TRACE   \d+ content_by_lua\(nginx\.conf:\d+\):6 loop\]/
+qr/\[TRACE\s+\d+ content_by_lua\(nginx\.conf:\d+\):6 loop\]/
 --- no_error_log
 [error]
  -- NYI:
@@ -670,7 +672,7 @@ value type: string
 value: bar
 flags: 72
 --- error_log eval
-qr/\[TRACE   \d+ content_by_lua\(nginx\.conf:\d+\):8 loop\]/
+qr/\[TRACE\s+\d+ content_by_lua\(nginx\.conf:\d+\):8 loop\]/
 --- no_error_log
 [error]
  -- NYI:
@@ -708,7 +710,7 @@ value type: string
 value: bar
 flags: 72
 --- error_log eval
-qr/\[TRACE   \d+ content_by_lua\(nginx\.conf:\d+\):8 loop\]/
+qr/\[TRACE\s+\d+ content_by_lua\(nginx\.conf:\d+\):8 loop\]/
 --- no_error_log
 [error]
  -- NYI:
@@ -746,7 +748,7 @@ value type: string
 value: bar100
 flags: 72
 --- error_log eval
-qr/\[TRACE   \d+ content_by_lua\(nginx\.conf:\d+\):8 loop\]/
+qr/\[TRACE\s+\d+ content_by_lua\(nginx\.conf:\d+\):8 loop\]/
 --- no_error_log
 [error]
  -- NYI:
@@ -779,7 +781,7 @@ value type: nil
 value: nil
 flags: nil
 --- error_log eval
-qr/\[TRACE   \d+ content_by_lua\(nginx\.conf:\d+\):6 loop\]/
+qr/\[TRACE\s+\d+ content_by_lua\(nginx\.conf:\d+\):6 loop\]/
 --- no_error_log
 [error]
  -- NYI:
@@ -909,7 +911,7 @@ value type: nil
 value: nil
 flags: nil
 --- error_log eval
-qr/\[TRACE   \d+ content_by_lua\(nginx\.conf:\d+\):7 loop\]/
+qr/\[TRACE\s+\d+ content_by_lua\(nginx\.conf:\d+\):7 loop\]/
 --- no_error_log
 [error]
  -- NYI:
@@ -1019,5 +1021,675 @@ GET /t
 --- error_log
 number expected, got string
 --- no_error_log
+[alert]
+[crit]
+
+
+
+=== TEST 31: capacity
+--- http_config eval: $::HttpConfig
+--- config
+    location = /t {
+        content_by_lua_block {
+            local cats = ngx.shared.cats
+            local capacity = cats:capacity()
+            ngx.say("capacity type: ", type(capacity))
+            ngx.say("capacity: ", capacity)
+        }
+    }
+--- request
+GET /t
+--- response_body
+capacity type: number
+capacity: 16384
+--- no_error_log
+[error]
+[alert]
+[crit]
+
+
+
+=== TEST 32: free_space, empty (16k zone)
+--- skip_nginx: 5: < 1.11.7
+--- http_config eval: $::HttpConfig
+--- config
+    location = /t {
+        content_by_lua_block {
+            local cats = ngx.shared.cats
+            cats:flush_all()
+            cats:flush_expired()
+            local free_page_bytes = cats:free_space()
+            ngx.say("free_page_bytes type: ", type(free_page_bytes))
+            ngx.say("free_page_bytes: ", free_page_bytes)
+        }
+    }
+--- request
+GET /t
+--- response_body
+free_page_bytes type: number
+free_page_bytes: 4096
+--- no_error_log
+[error]
+[alert]
+[crit]
+
+
+
+=== TEST 33: free_space, empty (100k zone)
+--- skip_nginx: 5: < 1.11.7
+--- http_config eval: $::HttpConfig
+--- config
+    location = /t {
+        content_by_lua_block {
+            local birds = ngx.shared.birds
+            birds:flush_all()
+            birds:flush_expired()
+            local free_page_bytes = birds:free_space()
+            ngx.say("free_page_bytes type: ", type(free_page_bytes))
+            ngx.say("free_page_bytes: ", free_page_bytes)
+        }
+    }
+--- request
+GET /t
+--- response_body_like chomp
+\Afree_page_bytes type: number
+free_page_bytes: (?:90112|94208)
+\z
+--- no_error_log
+[error]
+[alert]
+[crit]
+
+
+
+=== TEST 34: free_space, about half full, one page left
+--- skip_nginx: 5: < 1.11.7
+--- http_config eval: $::HttpConfig
+--- config
+    location = /t {
+        content_by_lua_block {
+            local cats = ngx.shared.cats
+            cats:flush_all()
+            cats:flush_expired()
+            for i = 1, 31 do
+                local key = string.format("key%05d", i)
+                local val = string.format("val%05d", i)
+                local success, err, forcible = cats:set(key, val)
+                if err ~= nil then
+                    ngx.say(string.format("got error, i=%d, err=%s", i, err))
+                end
+                if forcible then
+                    ngx.say(string.format("got forcible, i=%d", i))
+                end
+                if not success then
+                    ngx.say(string.format("got not success, i=%d", i))
+                end
+            end
+            local free_page_bytes = cats:free_space()
+            ngx.say("free_page_bytes type: ", type(free_page_bytes))
+            ngx.say("free_page_bytes: ", free_page_bytes)
+        }
+    }
+--- request
+GET /t
+--- response_body
+free_page_bytes type: number
+free_page_bytes: 4096
+--- no_error_log
+[error]
+[alert]
+[crit]
+
+
+
+=== TEST 35: free_space, about half full, no page left
+--- skip_nginx: 5: < 1.11.7
+--- http_config eval: $::HttpConfig
+--- config
+    location = /t {
+        content_by_lua_block {
+            local cats = ngx.shared.cats
+            cats:flush_all()
+            cats:flush_expired()
+            for i = 1, 32 do
+                local key = string.format("key%05d", i)
+                local val = string.format("val%05d", i)
+                local success, err, forcible = cats:set(key, val)
+                if err ~= nil then
+                    ngx.say(string.format("got error, i=%d, err=%s", i, err))
+                end
+                if forcible then
+                    ngx.say(string.format("got forcible, i=%d", i))
+                end
+                if not success then
+                    ngx.say(string.format("got not success, i=%d", i))
+                end
+            end
+            local free_page_bytes = cats:free_space()
+            ngx.say("free_page_bytes type: ", type(free_page_bytes))
+            ngx.say("free_page_bytes: ", free_page_bytes)
+        }
+    }
+--- request
+GET /t
+--- response_body_like chomp
+\Afree_page_bytes type: number
+free_page_bytes: (?:0|4096)
+\z
+--- no_error_log
+[error]
+[alert]
+[crit]
+
+
+
+=== TEST 36: free_space, full
+--- skip_nginx: 5: < 1.11.7
+--- http_config eval: $::HttpConfig
+--- config
+    location = /t {
+        content_by_lua_block {
+            local cats = ngx.shared.cats
+            cats:flush_all()
+            cats:flush_expired()
+            for i = 1, 63 do
+                local key = string.format("key%05d", i)
+                local val = string.format("val%05d", i)
+                local success, err, forcible = cats:set(key, val)
+                if err ~= nil then
+                    ngx.say(string.format("got error, i=%d, err=%s", i, err))
+                end
+                if forcible then
+                    ngx.say(string.format("got forcible, i=%d", i))
+                end
+                if not success then
+                    ngx.say(string.format("got not success, i=%d", i))
+                end
+            end
+            local free_page_bytes = cats:free_space()
+            ngx.say("free_page_bytes type: ", type(free_page_bytes))
+            ngx.say("free_page_bytes: ", free_page_bytes)
+        }
+    }
+--- request
+GET /t
+--- response_body
+free_page_bytes type: number
+free_page_bytes: 0
+--- no_error_log
+[error]
+[alert]
+[crit]
+
+
+
+=== TEST 37: free_space, got forcible
+--- skip_nginx: 5: < 1.11.7
+--- http_config eval: $::HttpConfig
+--- config
+    location = /t {
+        content_by_lua_block {
+            local cats = ngx.shared.cats
+            cats:flush_all()
+            cats:flush_expired()
+            for i = 1, 64 do
+                local key = string.format("key%05d", i)
+                local val = string.format("val%05d", i)
+                local success, err, forcible = cats:set(key, val)
+                if err ~= nil then
+                    ngx.say(string.format("got error, i=%d, err=%s", i, err))
+                end
+                if forcible then
+                    ngx.say(string.format("got forcible, i=%d", i))
+                end
+                if not success then
+                    ngx.say(string.format("got not success, i=%d", i))
+                end
+            end
+            local free_page_bytes = cats:free_space()
+            ngx.say("free_page_bytes type: ", type(free_page_bytes))
+            ngx.say("free_page_bytes: ", free_page_bytes)
+        }
+    }
+--- request
+GET /t
+--- response_body_like chomp
+\A(?:got forcible, i=64
+)?free_page_bytes type: number
+free_page_bytes: 0
+\z
+--- no_error_log
+[error]
+[alert]
+[crit]
+
+
+
+=== TEST 38: free_space, full (100k)
+--- skip_nginx: 5: < 1.11.7
+--- http_config eval: $::HttpConfig
+--- config
+    location = /t {
+        content_by_lua_block {
+            local birds = ngx.shared.birds
+            birds:flush_all()
+            birds:flush_expired()
+            for i = 1, 1000 do
+                local key = string.format("key%05d", i)
+                local val = string.format("val%05d", i)
+                local ok, err, forcible = birds:set(key, val)
+                if err ~= nil then
+                    ngx.say(string.format("got error, i=%d, err=%s", i, err))
+                end
+                if forcible then
+                    ngx.say(string.format("got forcible, i=%d", i))
+                    break
+                end
+                if not ok then
+                    ngx.say(string.format("got not ok, i=%d", i))
+                    break
+                end
+            end
+            local free_page_bytes = birds:free_space()
+            ngx.say("free_page_bytes type: ", type(free_page_bytes))
+            ngx.say("free_page_bytes: ", free_page_bytes)
+        }
+    }
+--- request
+GET /t
+--- response_body_like chomp
+\A(?:got forcible, i=736
+)?free_page_bytes type: number
+free_page_bytes: (?:0|32768)
+\z
+--- no_error_log
+[error]
+[alert]
+[crit]
+
+
+
+=== TEST 39: incr bad init_ttl argument
+--- http_config eval: $::HttpConfig
+--- config
+    location = /t {
+        content_by_lua_block {
+            local dogs = ngx.shared.dogs
+            local pok, err = pcall(dogs.incr, dogs, "foo", 1, 0, -1)
+            if not pok then
+                ngx.say("not ok: ", err)
+                return
+            end
+
+            ngx.say("ok")
+        }
+    }
+--- request
+GET /t
+--- response_body
+not ok: bad "init_ttl" argument
+--- no_error_log
+[error]
+[alert]
+[crit]
+
+
+
+=== TEST 40: incr init_ttl argument is not a number
+--- http_config eval: $::HttpConfig
+--- config
+    location = /t {
+        content_by_lua_block {
+            local dogs = ngx.shared.dogs
+            local pok, err = pcall(dogs.incr, dogs, "foo", 1, 0, "bar")
+            if not pok then
+                ngx.say("not ok: ", err)
+                return
+            end
+
+            ngx.say("ok")
+        }
+    }
+--- request
+GET /t
+--- response_body
+not ok: bad init_ttl arg: number expected, got string
+--- no_error_log
+[error]
+[alert]
+[crit]
+
+
+
+=== TEST 41: incr init_ttl argument without init
+--- http_config eval: $::HttpConfig
+--- config
+    location = /t {
+        content_by_lua_block {
+            local dogs = ngx.shared.dogs
+            local pok, err = pcall(dogs.incr, dogs, "foo", 1, nil, 0.001)
+            if not pok then
+                ngx.say("not ok: ", err)
+                return
+            end
+
+            ngx.say("ok")
+        }
+    }
+--- request
+GET /t
+--- response_body
+not ok: must provide "init" when providing "init_ttl"
+--- no_error_log
+[error]
+[alert]
+[crit]
+
+
+
+=== TEST 42: incr key with init_ttl (key exists)
+--- http_config eval: $::HttpConfig
+--- config
+    location = /t {
+        content_by_lua_block {
+            local dogs = ngx.shared.dogs
+            dogs:set("foo", 32)
+
+            local res, err = dogs:incr("foo", 10502, 0, 0.001)
+            ngx.say("incr: ", res, " ", err)
+            ngx.say("foo = ", dogs:get("foo"))
+
+            ngx.sleep(0.002)
+
+            ngx.say("foo after incr init_ttl = ", dogs:get("foo"))
+        }
+    }
+--- request
+GET /t
+--- response_body
+incr: 10534 nil
+foo = 10534
+foo after incr init_ttl = 10534
+--- no_error_log
+[error]
+[alert]
+[crit]
+
+
+
+=== TEST 43: incr key with init and init_ttl (key not exists)
+--- http_config eval: $::HttpConfig
+--- config
+    location = /t {
+        content_by_lua_block {
+            local dogs = ngx.shared.dogs
+            dogs:flush_all()
+
+            local res, err = dogs:incr("foo", 10502, 1, 0.001)
+            ngx.say("incr: ", res, " ", err)
+            ngx.say("foo = ", dogs:get("foo"))
+
+            ngx.sleep(0.002)
+
+            ngx.say("foo after init_ttl = ", dogs:get("foo"))
+        }
+    }
+--- request
+GET /t
+--- response_body
+incr: 10503 nil
+foo = 10503
+foo after init_ttl = nil
+--- no_error_log
+[error]
+[alert]
+[crit]
+
+
+
+=== TEST 44: incr key with init and init_ttl as string (key not exists)
+--- http_config eval: $::HttpConfig
+--- config
+    location = /t {
+        content_by_lua_block {
+            local dogs = ngx.shared.dogs
+            dogs:flush_all()
+
+            local res, err = dogs:incr("foo", 10502, 1, "0.001")
+            ngx.say("incr: ", res, " ", err)
+            ngx.say("foo = ", dogs:get("foo"))
+
+            ngx.sleep(0.002)
+
+            ngx.say("foo after init_ttl = ", dogs:get("foo"))
+        }
+    }
+--- request
+GET /t
+--- response_body
+incr: 10503 nil
+foo = 10503
+foo after init_ttl = nil
+--- no_error_log
+[error]
+[alert]
+[crit]
+
+
+
+=== TEST 45: incr key with init and init_ttl (key expired and size matched)
+--- http_config eval: $::HttpConfig
+--- config
+    location = /t {
+        content_by_lua_block {
+            local dogs = ngx.shared.dogs
+            for i = 1, 20 do
+                dogs:set("bar" .. i, i, 0.002)
+            end
+            dogs:set("foo", 32, 0.002)
+            ngx.sleep(0.003)
+
+            local res, err = dogs:incr("foo", 10502, 0, 0.001)
+            ngx.say("incr: ", res, " ", err)
+            ngx.say("foo = ", dogs:get("foo"))
+
+            ngx.sleep(0.002)
+
+            ngx.say("foo after init_ttl = ", dogs:get("foo"))
+        }
+    }
+--- request
+GET /t
+--- response_body
+incr: 10502 nil
+foo = 10502
+foo after init_ttl = nil
+--- no_error_log
+[error]
+[alert]
+[crit]
+
+
+
+=== TEST 46: incr key with init and init_ttl (forcibly override other valid entries)
+--- http_config eval: $::HttpConfig
+--- config
+    location = /t {
+        content_by_lua_block {
+            local dogs = ngx.shared.dogs
+            dogs:flush_all()
+
+            local long_prefix = string.rep("1234567890", 100)
+            for i = 1, 1000 do
+                local success, err, forcible = dogs:set(long_prefix .. i, i)
+                if forcible then
+                    dogs:delete(long_prefix .. i)
+                    break
+                end
+            end
+
+            local res, err, forcible = dogs:incr(long_prefix .. "bar", 10502, 0)
+            ngx.say("incr: ", res, " ", err, " ", forcible)
+
+            local res, err, forcible = dogs:incr(long_prefix .. "foo", 10502, 0, 0.001)
+            ngx.say("incr: ", res, " ", err, " ", forcible)
+            ngx.say("foo = ", dogs:get(long_prefix .. "foo"))
+
+            ngx.sleep(0.002)
+            ngx.say("foo after init_ttl = ", dogs:get("foo"))
+        }
+    }
+--- request
+GET /t
+--- response_body
+incr: 10502 nil false
+incr: 10502 nil true
+foo = 10502
+foo after init_ttl = nil
+--- no_error_log
+[error]
+[alert]
+[crit]
+
+
+
+=== TEST 47: exptime uses long type to avoid overflow in set() + ttl()
+--- http_config eval: $::HttpConfig
+--- config
+    location = /t {
+        content_by_lua_block {
+            local dogs = ngx.shared.dogs
+            dogs:flush_all()
+
+            local ok, err = dogs:set("huge_ttl", true, 2 ^ 31)
+            if not ok then
+                ngx.say("err setting: ", err)
+                return
+            end
+
+            local ttl, err = dogs:ttl("huge_ttl")
+            if not ttl then
+                ngx.say("err retrieving ttl: ", err)
+                return
+            end
+
+            ngx.say("ttl: ", ttl)
+        }
+    }
+--- request
+GET /t
+--- response_body
+ttl: 2147483648
+--- no_error_log
+[error]
+[alert]
+[crit]
+
+
+
+=== TEST 48: exptime uses long type to avoid overflow in expire() + ttl()
+--- http_config eval: $::HttpConfig
+--- config
+    location = /t {
+        content_by_lua_block {
+            local dogs = ngx.shared.dogs
+            dogs:flush_all()
+
+            local ok, err = dogs:set("updated_huge_ttl", true)
+            if not ok then
+                ngx.say("err setting: ", err)
+                return
+            end
+
+            local ok, err = dogs:expire("updated_huge_ttl", 2 ^ 31)
+            if not ok then
+                ngx.say("err expire: ", err)
+                return
+            end
+
+            local ttl, err = dogs:ttl("updated_huge_ttl")
+            if not ttl then
+                ngx.say("err retrieving ttl: ", err)
+                return
+            end
+
+            ngx.say("ttl: ", ttl)
+        }
+    }
+--- request
+GET /t
+--- response_body
+ttl: 2147483648
+--- no_error_log
+[error]
+[alert]
+[crit]
+
+
+
+=== TEST 49: init_ttl uses long type to avoid overflow in incr() + ttl()
+--- http_config eval: $::HttpConfig
+--- config
+    location = /t {
+        content_by_lua_block {
+            local dogs = ngx.shared.dogs
+            dogs:flush_all()
+
+            local ok, err = dogs:incr("incr_huge_ttl", 1, 0, 2 ^ 31)
+            if not ok then
+                ngx.say("err incr: ", err)
+                return
+            end
+
+            local ttl, err = dogs:ttl("incr_huge_ttl")
+            if not ttl then
+                ngx.say("err retrieving ttl: ", err)
+                return
+            end
+
+            ngx.say("ttl: ", ttl)
+        }
+    }
+--- request
+GET /t
+--- response_body
+ttl: 2147483648
+--- no_error_log
+[error]
+[alert]
+[crit]
+
+
+
+=== TEST 50: check zone argument
+--- http_config eval: $::HttpConfig
+--- config
+    location = /t {
+        content_by_lua_block {
+            local function check_in_pcall(f, ...)
+                local ok, err = pcall(f, ...)
+                if not ok then
+                    ngx.say(err)
+                else
+                    ngx.say("ok")
+                end
+            end
+
+            local dogs = ngx.shared.dogs
+            check_in_pcall(dogs.set, dogs, 'k', 1)
+            check_in_pcall(dogs.set, 'k', 1)
+            check_in_pcall(dogs.set, {1}, 'k', 1)
+            check_in_pcall(dogs.set, {ngx.null}, 'k', 1)
+        }
+    }
+--- request
+GET /t
+--- response_body_like
+ok
+.+shdict\.lua:\d+: bad "zone" argument
+.+shdict\.lua:\d+: bad "zone" argument
+.+shdict\.lua:\d+: bad "zone" argument
+--- no_error_log
+[error]
 [alert]
 [crit]

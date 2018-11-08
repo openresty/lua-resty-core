@@ -1,7 +1,7 @@
 Name
 ====
 
-lua-resty-core - New FFI-based Lua API for the ngx_lua module
+lua-resty-core - New FFI-based Lua API for ngx_http_lua_module and/or ngx_stream_lua_module
 
 Table of Contents
 =================
@@ -25,13 +25,16 @@ Table of Contents
     * [resty.core.misc](#restycoremisc)
     * [resty.core.time](#restycoretime)
     * [resty.core.worker](#restycoreworker)
+    * [resty.core.phase](#restycorephase)
     * [ngx.semaphore](#ngxsemaphore)
     * [ngx.balancer](#ngxbalancer)
     * [ngx.ssl](#ngxssl)
     * [ngx.ssl.session](#ngxsslsession)
     * [ngx.re](#ngxre)
+    * [ngx.resp](#ngxresp)
     * [ngx.process](#ngxprocess)
     * [ngx.errlog](#ngxerrlog)
+    * [ngx.base64](#ngxbase64)
 * [Caveat](#caveat)
 * [TODO](#todo)
 * [Author](#author)
@@ -41,7 +44,7 @@ Table of Contents
 Status
 ======
 
-This library is production ready and under active development.
+This library is production ready.
 
 Synopsis
 ========
@@ -78,6 +81,8 @@ as proper Lua modules, like [ngx.semaphore](#ngxsemaphore) and [ngx.balancer](#n
 The FFI-based Lua API can work with LuaJIT's JIT compiler. ngx_lua's default API is based on the standard
 Lua C API, which will never be JIT compiled and the user Lua code is always interpreted (slowly).
 
+Support for the new [ngx_stream_lua_module](https://github.com/openresty/stream-lua-nginx-module) has also begun.
+
 This library is shipped with the OpenResty bundle by default. So you do not really need to worry about the dependencies
 and requirements.
 
@@ -91,7 +96,8 @@ of this library in the particular OpenResty release you are using. Otherwise you
 into serious comaptibility issues.
 
 * LuaJIT 2.1 (for now, it is the v2.1 git branch in the official luajit-2.0 git repository: http://luajit.org/download.html )
-* [ngx_lua](https://github.com/openresty/lua-nginx-module) v0.10.9 or later.
+* [ngx_http_lua_module](https://github.com/openresty/lua-nginx-module) v0.10.14.
+* [ngx_stream_lua_module](https://github.com/openresty/lua-nginx-module) v0.0.6.
 * [lua-resty-lrucache](https://github.com/openresty/lua-resty-lrucache)
 
 [Back to TOC](#table-of-contents)
@@ -126,6 +132,7 @@ API Implemented
 ## resty.core.regex
 
 * [ngx.re.match](https://github.com/openresty/lua-nginx-module#ngxrematch)
+* [ngx.re.gmatch](https://github.com/openresty/lua-nginx-module#ngxregmatch)
 * [ngx.re.find](https://github.com/openresty/lua-nginx-module#ngxrefind)
 * [ngx.re.sub](https://github.com/openresty/lua-nginx-module#ngxresub)
 * [ngx.re.gsub](https://github.com/openresty/lua-nginx-module#ngxregsub)
@@ -149,7 +156,11 @@ API Implemented
 * [ngx.shared.DICT.safe_add](https://github.com/openresty/lua-nginx-module#ngxshareddictsafe_add)
 * [ngx.shared.DICT.replace](https://github.com/openresty/lua-nginx-module#ngxshareddictreplace)
 * [ngx.shared.DICT.delete](https://github.com/openresty/lua-nginx-module#ngxshareddictdelete)
+* [ngx.shared.DICT.ttl](https://github.com/openresty/lua-nginx-module#ngxshareddictttl)
+* [ngx.shared.DICT.expire](https://github.com/openresty/lua-nginx-module#ngxshareddictexpire)
 * [ngx.shared.DICT.flush_all](https://github.com/openresty/lua-nginx-module#ngxshareddictflush_all)
+* [ngx.shared.DICT.free_space](https://github.com/openresty/lua-nginx-module#ngxshareddictfree_space)
+* [ngx.shared.DICT.capacity](https://github.com/openresty/lua-nginx-module#ngxshareddictcapacity)
 
 [Back to TOC](#table-of-contents)
 
@@ -195,6 +206,12 @@ API Implemented
 
 * [ngx.time](https://github.com/openresty/lua-nginx-module#ngxtime)
 * [ngx.now](https://github.com/openresty/lua-nginx-module#ngxnow)
+* [ngx.update_time](https://github.com/openresty/lua-nginx-module#ngxupdate_time)
+* [ngx.localtime](https://github.com/openresty/lua-nginx-module#ngxlocaltime)
+* [ngx.utctime](https://github.com/openresty/lua-nginx-module#ngxutctime)
+* [ngx.cookie_time](https://github.com/openresty/lua-nginx-module#ngxcookie_time)
+* [ngx.http_time](https://github.com/openresty/lua-nginx-module#ngxhttp_time)
+* [ngx.parse_http_time](https://github.com/openresty/lua-nginx-module#ngxparse_http_time)
 
 [Back to TOC](#table-of-contents)
 
@@ -206,6 +223,16 @@ API Implemented
 * [ngx.worker.count](https://github.com/openresty/lua-nginx-module#ngxworkercount)
 
 [Back to TOC](#table-of-contents)
+
+## resty.core.phase
+
+* [ngx.get_phase](https://github.com/openresty/lua-nginx-module#ngxget_phase)
+
+[Back to TOC](#table-of-contents)
+
+## resty.core.ndk
+
+* [ndk.set_var](https://github.com/openresty/lua-nginx-module#ndkset_vardirective)
 
 ## ngx.semaphore
 
@@ -251,6 +278,14 @@ See the [documentation](./lib/ngx/re.md) for this Lua module for more details.
 
 [Back to TOC](#table-of-contents)
 
+## ngx.resp
+
+This Lua module provides Lua API which could be used to handle HTTP response.
+
+See the [documentation](./lib/ngx/resp.md) for this Lua module for more details.
+
+[Back to TOC](#table-of-contents)
+
 ## ngx.process
 
 This Lua module is used to manage the nginx process in Lua.
@@ -271,6 +306,16 @@ This module was first introduced in lua-resty-core v0.1.12.
 
 [Back to TOC](#table-of-contents)
 
+## ngx.base64
+
+This Lua module provides Lua API to urlsafe base64 encode/decode.
+
+See the [documentation](./lib/ngx/base64.md) for this Lua module for more details.
+
+This module was first introduced in lua-resty-core v0.1.14.
+
+[Back to TOC](#table-of-contents)
+
 Caveat
 ======
 
@@ -284,7 +329,6 @@ TODO
 ====
 
 * Re-implement `ngx_lua`'s cosocket API with FFI.
-* Re-implement `ngx_lua`'s `ngx.get_phase` API function with FFI.
 * Re-implement `ngx_lua`'s `ngx.eof` and `ngx.flush` API functions with FFI.
 
 [Back to TOC](#table-of-contents)
@@ -301,7 +345,7 @@ Copyright and License
 
 This module is licensed under the BSD license.
 
-Copyright (C) 2013-2017, by Yichun "agentzh" Zhang, OpenResty Inc.
+Copyright (C) 2013-2018, by Yichun "agentzh" Zhang, OpenResty Inc.
 
 All rights reserved.
 

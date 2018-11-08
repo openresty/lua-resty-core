@@ -2,9 +2,9 @@
 -- to be licensed under the same terms as the rest of the code.
 
 
+local base = require "resty.core.base"
 local ffi = require 'ffi'
 local bit = require "bit"
-local base = require "resty.core.base"
 local core_regex = require "resty.core.regex"
 
 
@@ -24,6 +24,7 @@ local destroy_compiled_regex = core_regex.destroy_compiled_regex
 local get_string_buf = base.get_string_buf
 local get_size_ptr = base.get_size_ptr
 local FFI_OK = base.FFI_OK
+local subsystem = ngx.config.subsystem
 
 
 local MAX_ERR_MSG_LEN        = 128
@@ -33,12 +34,28 @@ local DEFAULT_SPLIT_RES_SIZE = 4
 
 
 local split_ctx = new_tab(0, 1)
+local ngx_lua_ffi_set_jit_stack_size
+local ngx_lua_ffi_exec_regex
 
 
-ffi.cdef[[
+if subsystem == 'http' then
+    ffi.cdef[[
 int ngx_http_lua_ffi_set_jit_stack_size(int size, unsigned char *errstr,
     size_t *errstr_size);
-]]
+    ]]
+
+    ngx_lua_ffi_exec_regex = C.ngx_http_lua_ffi_exec_regex
+    ngx_lua_ffi_set_jit_stack_size = C.ngx_http_lua_ffi_set_jit_stack_size
+
+elseif subsystem == 'stream' then
+    ffi.cdef[[
+int ngx_stream_lua_ffi_set_jit_stack_size(int size, unsigned char *errstr,
+    size_t *errstr_size);
+    ]]
+
+    ngx_lua_ffi_exec_regex = C.ngx_stream_lua_ffi_exec_regex
+    ngx_lua_ffi_set_jit_stack_size = C.ngx_stream_lua_ffi_set_jit_stack_size
+end
 
 
 local _M = { version = base.version }
@@ -47,15 +64,12 @@ local _M = { version = base.version }
 local function re_split_helper(subj, compiled, compile_once, flags, ctx)
     local rc
     do
-        local pos = math_max(ctx.pos - 1, 0)
+        local pos = math_max(ctx.pos, 0)
 
-        rc = C.ngx_http_lua_ffi_exec_regex(compiled, flags, subj, #subj, pos)
+        rc = ngx_lua_ffi_exec_regex(compiled, flags, subj, #subj, pos)
     end
 
     if rc == PCRE_ERROR_NOMATCH then
-        if not compile_once then
-            destroy_compiled_regex(compiled)
-        end
         return nil, nil, nil
     end
 
@@ -68,6 +82,9 @@ local function re_split_helper(subj, compiled, compile_once, flags, ctx)
 
     if rc == 0 then
         if band(flags, FLAG_DFA) == 0 then
+            if not compile_once then
+                destroy_compiled_regex(compiled)
+            end
             return nil, nil, nil, "capture size too small"
         end
 
@@ -84,11 +101,18 @@ local function re_split_helper(subj, compiled, compile_once, flags, ctx)
         return nil, nil, nil
     end
 
+    if from == to then
+        -- empty match, skip to next char
+        ctx.pos = to + 1
+
+    else
+        ctx.pos = to
+    end
+
     -- convert to Lua string indexes
 
     from = from + 1
     to = to + 1
-    ctx.pos = to + 1
 
     -- retrieve the first sub-match capture if any
 
@@ -129,7 +153,7 @@ function _M.split(subj, regex, opts, ctx, max, res)
         res = new_tab(narr, 0)
 
     elseif type(res) ~= "table" then
-        return error("res is not a table", 2)
+        error("res is not a table", 2)
     end
 
     local len = #subj
@@ -149,6 +173,9 @@ function _M.split(subj, regex, opts, ctx, max, res)
     local sub_idx = ctx.pos
     local res_idx = 0
     local last_empty_match
+
+    -- update to split_helper PCRE indexes
+    ctx.pos = sub_idx - 1
 
     -- splitting: with and without a max limiter
 
@@ -186,15 +213,9 @@ function _M.split(subj, regex, opts, ctx, max, res)
 
                 sub_idx = to
 
-                if sub_idx >= len then
+                if sub_idx > len then
                     break
                 end
-            end
-        end
-
-        if count == max then
-            if not compile_once then
-                destroy_compiled_regex(compiled)
             end
         end
 
@@ -229,7 +250,7 @@ function _M.split(subj, regex, opts, ctx, max, res)
 
                 sub_idx = to
 
-                if sub_idx >= len then
+                if sub_idx > len then
                     break
                 end
             end
@@ -237,10 +258,28 @@ function _M.split(subj, regex, opts, ctx, max, res)
 
     end
 
+    if not compile_once then
+        destroy_compiled_regex(compiled)
+    end
+
     -- trailing nil for non-cleared res tables
 
-    res[res_idx + 1] = sub(subj, sub_idx)
-    res[res_idx + 2] = nil
+    -- delete empty trailing ones (without max)
+    if max <= 0 and sub_idx > len then
+        for ety_idx = res_idx, 1, -1 do
+            if res[ety_idx] ~= "" then
+                res_idx = ety_idx
+                break
+            end
+
+            res[ety_idx] = nil
+        end
+    else
+        res_idx = res_idx + 1
+        res[res_idx] = sub(subj, sub_idx)
+    end
+
+    res[res_idx + 1] = nil
 
     return res
 end
@@ -257,7 +296,7 @@ function _M.opt(option, value)
         local sizep = get_size_ptr()
         sizep[0] = MAX_ERR_MSG_LEN
 
-        local rc = C.ngx_http_lua_ffi_set_jit_stack_size(value, errbuf, sizep)
+        local rc = ngx_lua_ffi_set_jit_stack_size(value, errbuf, sizep)
 
         if rc == FFI_OK then
             return

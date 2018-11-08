@@ -12,7 +12,7 @@ local register_setter = misc.register_ngx_magic_key_setter
 local registry = debug.getregistry()
 local new_tab = base.new_tab
 local ref_in_table = base.ref_in_table
-local getfenv = getfenv
+local get_request = base.get_request
 local C = ffi.C
 local FFI_NO_REQ_CTX = base.FFI_NO_REQ_CTX
 local FFI_OK = base.FFI_OK
@@ -31,15 +31,15 @@ local _M = {
 
 
 local function get_ctx_table()
-    local r = getfenv(0).__ngx_req
+    local r = get_request()
 
     if not r then
-        return error("no request found")
+        error("no request found")
     end
 
     local ctx_ref = C.ngx_http_lua_ffi_get_ctx_ref(r)
     if ctx_ref == FFI_NO_REQ_CTX then
-        return error("no request ctx found")
+        error("no request ctx found")
     end
 
     local ctxs = registry.ngx_lua_ctx_tables
@@ -57,15 +57,15 @@ register_getter("ctx", get_ctx_table)
 
 
 local function set_ctx_table(ctx)
-    local r = getfenv(0).__ngx_req
+    local r = get_request()
 
     if not r then
-        return error("no request found")
+        error("no request found")
     end
 
     local ctx_ref = C.ngx_http_lua_ffi_get_ctx_ref(r)
     if ctx_ref == FFI_NO_REQ_CTX then
-        return error("no request ctx found")
+        error("no request ctx found")
     end
 
     local ctxs = registry.ngx_lua_ctx_tables

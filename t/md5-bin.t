@@ -37,92 +37,92 @@ run_tests();
 
 __DATA__
 
-=== TEST 1: set sha1_bin (string)
+=== TEST 1: set md5_bin (string)
 --- http_config eval: $::HttpConfig
 --- config
-    location = /sha1_bin {
+    location = /md5_bin {
         content_by_lua_block {
             local s
             for i = 1, 100 do
-                s = ngx.sha1_bin("hello")
+                s = ngx.md5_bin("hello")
             end
             ngx.say(string.len(s))
         }
     }
 --- request
-GET /sha1_bin
+GET /md5_bin
 --- response_body
-20
+16
 --- error_log eval
-qr/\[TRACE   \d+ content_by_lua\(nginx\.conf:\d+\):3 loop\]/
+qr/\[TRACE\s+\d+ content_by_lua\(nginx\.conf:\d+\):3 loop\]/
 --- no_error_log
 [error]
 
 
 
-=== TEST 2: set sha1_bin (nil)
+=== TEST 2: set md5_bin (nil)
 --- http_config eval: $::HttpConfig
 --- config
-    location = /sha1_bin {
+    location = /md5_bin {
         content_by_lua_block {
             local s
             for i = 1, 100 do
-                s = ngx.sha1_bin(nil)
+                s = ngx.md5_bin(nil)
             end
             ngx.say(string.len(s))
         }
     }
 --- request
-GET /sha1_bin
+GET /md5_bin
 --- response_body
-20
+16
 --- error_log eval
-qr/\[TRACE   \d+ content_by_lua\(nginx\.conf:\d+\):3 loop\]/
+qr/\[TRACE\s+\d+ content_by_lua\(nginx\.conf:\d+\):3 loop\]/
 --- no_error_log
 [error]
 
 
 
-=== TEST 3: set sha1_bin (number)
+=== TEST 3: set md5_bin (number)
 --- http_config eval: $::HttpConfig
 --- config
-    location = /sha1_bin {
+    location = /md5_bin {
         content_by_lua_block {
             local s
             for i = 1, 100 do
-                s = ngx.sha1_bin(3.14)
+                s = ngx.md5_bin(3.14)
             end
             ngx.say(string.len(s))
         }
     }
 --- request
-GET /sha1_bin
+GET /md5_bin
 --- response_body
-20
+16
 --- error_log eval
-qr/\[TRACE   \d+ content_by_lua\(nginx\.conf:\d+\):3 loop\]/
+qr/\[TRACE\s+\d+ content_by_lua\(nginx\.conf:\d+\):3 loop\]/
 --- no_error_log
 [error]
 
 
 
-=== TEST 4: set sha1_bin (boolean)
+=== TEST 4: set md5_bin (boolean)
 --- http_config eval: $::HttpConfig
 --- config
-    location = /sha1_bin {
+    location = /md5_bin {
         content_by_lua_block {
             local s
             for i = 1, 100 do
-                s = ngx.sha1_bin(true)
+                s = ngx.md5_bin(true)
             end
             ngx.say(string.len(s))
         }
     }
 --- request
-GET /sha1_bin
+GET /md5_bin
 --- response_body
-20
+16
 --- error_log eval
-qr/\[TRACE   \d+ content_by_lua\(nginx\.conf:\d+\):3 loop\]/
+qr/\[TRACE\s+\d+ content_by_lua\(nginx\.conf:\d+\):3 loop\]/
 --- no_error_log
 [error]

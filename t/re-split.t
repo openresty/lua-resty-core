@@ -68,7 +68,7 @@ b
 c
 d
 --- error_log eval
-qr/\[TRACE   \d+/
+qr/\[TRACE\s+\d+/
 --- no_error_log
 [error]
 
@@ -100,7 +100,7 @@ b
 c
 d;e
 --- error_log eval
-qr/\[TRACE   \d+/
+qr/\[TRACE\s+\d+/
 --- no_error_log
 [error]
 
@@ -132,7 +132,7 @@ b
 c
 d
 --- error_log eval
-qr/\[TRACE   \d+/
+qr/\[TRACE\s+\d+/
 --- no_error_log
 [error]
 
@@ -167,7 +167,7 @@ c
 ;
 d,e
 --- error_log eval
-qr/\[TRACE   \d+/
+qr/\[TRACE\s+\d+/
 --- no_error_log
 [error]
 
@@ -200,7 +200,7 @@ c
 d
 e
 --- error_log eval
-qr/\[TRACE   \d+/
+qr/\[TRACE\s+\d+/
 --- no_error_log
 [error]
 
@@ -231,7 +231,7 @@ a
 b
 c,d,e
 --- error_log eval
-qr/\[TRACE   \d+/
+qr/\[TRACE\s+\d+/
 --- no_error_log
 [error]
 
@@ -264,7 +264,7 @@ b
 ,
 c,d,e
 --- error_log eval
-qr/\[TRACE   \d+/
+qr/\[TRACE\s+\d+/
 --- no_error_log
 [error]
 
@@ -297,7 +297,7 @@ c
 d
 e
 --- error_log eval
-qr/\[TRACE   \d+/
+qr/\[TRACE\s+\d+/
 --- no_error_log
 [error]
 
@@ -330,7 +330,7 @@ c
 d
 e
 --- error_log eval
-qr/\[TRACE   \d+/
+qr/\[TRACE\s+\d+/
 --- no_error_log
 [error]
 
@@ -359,7 +359,7 @@ GET /re
 --- response_body
 a,b,c,d,e
 --- error_log eval
-qr/\[TRACE   \d+/
+qr/\[TRACE\s+\d+/
 --- no_error_log
 [error]
 
@@ -394,7 +394,7 @@ c
 d
 e
 --- error_log eval
-qr/\[TRACE   \d+/
+qr/\[TRACE\s+\d+/
 --- no_error_log
 [error]
 
@@ -433,7 +433,7 @@ c
 d
 e
 --- error_log eval
-qr/\[TRACE   \d+/
+qr/\[TRACE\s+\d+/
 --- no_error_log
 [error]
 
@@ -466,7 +466,7 @@ a
 b
 c,d,e
 --- error_log eval
-qr/\[TRACE   \d+/
+qr/\[TRACE\s+\d+/
 --- no_error_log
 [error]
 
@@ -503,7 +503,7 @@ a
 b
 c,d,e
 --- error_log eval
-qr/\[TRACE   \d+/
+qr/\[TRACE\s+\d+/
 --- no_error_log
 [error]
 
@@ -538,7 +538,7 @@ b
 ,
 c,d,e
 --- error_log eval
-qr/\[TRACE   \d+/
+qr/\[TRACE\s+\d+/
 --- no_error_log
 [error]
 
@@ -569,7 +569,7 @@ c
 d
 e
 --- error_log eval
-qr/\[TRACE   \d+/
+qr/\[TRACE\s+\d+/
 --- no_error_log
 [error]
 
@@ -605,9 +605,8 @@ a
 b
 c
 d
-_blank_
 --- error_log eval
-qr/\[TRACE   \d+/
+qr/\[TRACE\s+\d+/
 --- no_error_log
 [error]
 attempt to get length of local 'regex' (a number value)
@@ -641,7 +640,7 @@ ghij
 hello world
 aaa
 --- error_log eval
-qr/\[TRACE   \d+/
+qr/\[TRACE\s+\d+/
 --- no_error_log
 [error]
 
@@ -670,7 +669,7 @@ GET /re
 --- response_body
 abcd
 --- error_log eval
-qr/\[TRACE   \d+/
+qr/\[TRACE\s+\d+/
 --- no_error_log
 [error]
 
@@ -701,7 +700,7 @@ GET /re
 451
 45
 --- error_log eval
-qr/\[TRACE   \d+/
+qr/\[TRACE\s+\d+/
 --- no_error_log
 [error]
 attempt to get length of local 'subj' (a number value)
@@ -767,7 +766,7 @@ GET /re
 5
 len: 5
 --- error_log eval
-qr/\[TRACE   \d+/
+qr/\[TRACE\s+\d+/
 --- no_error_log
 [error]
 
@@ -801,7 +800,7 @@ GET /re
 345
 len: 3
 --- error_log eval
-qr/\[TRACE   \d+/
+qr/\[TRACE\s+\d+/
 --- no_error_log
 [error]
 
@@ -836,7 +835,7 @@ GET /re
 5
 len: 4
 --- error_log eval
-qr/\[TRACE   \d+/
+qr/\[TRACE\s+\d+/
 --- no_error_log
 [error]
 
@@ -899,7 +898,7 @@ GET /re
 345
 len: 2
 --- error_log eval
-qr/\[TRACE   \d+/
+qr/\[TRACE\s+\d+/
 --- no_error_log
 [error]
 
@@ -928,7 +927,7 @@ GET /re
 a:b:c:d
 len: 4
 --- error_log eval
-qr/\[TRACE   \d+/
+qr/\[TRACE\s+\d+/
 --- no_error_log
 [error]
 
@@ -957,7 +956,7 @@ GET /re
 a:bcd
 len: 2
 --- error_log eval
-qr/\[TRACE   \d+/
+qr/\[TRACE\s+\d+/
 --- no_error_log
 [error]
 
@@ -986,7 +985,7 @@ GET /re
 a::b::c::d
 len: 7
 --- error_log eval
-qr/\[TRACE   \d+/
+qr/\[TRACE\s+\d+/
 --- no_error_log
 [error]
 
@@ -1018,7 +1017,7 @@ cd
 ef
 len: 1
 --- error_log eval
-qr/\[TRACE   \d+/
+qr/\[TRACE\s+\d+/
 --- no_error_log
 [error]
 
@@ -1050,7 +1049,7 @@ ab
 :ef
 len: 3
 --- error_log eval
-qr/\[TRACE   \d+/
+qr/\[TRACE\s+\d+/
 --- no_error_log
 [error]
 
@@ -1082,7 +1081,7 @@ ab
 ::ef
 len: 5
 --- error_log eval
-qr/\[TRACE   \d+/
+qr/\[TRACE\s+\d+/
 --- no_error_log
 [error]
 
@@ -1114,7 +1113,7 @@ ab
 ef
 len: 2
 --- error_log eval
-qr/\[TRACE   \d+/
+qr/\[TRACE\s+\d+/
 --- no_error_log
 [error]
 
@@ -1146,7 +1145,7 @@ ab
 :hij
 len: 3
 --- error_log eval
-qr/\[TRACE   \d+/
+qr/\[TRACE\s+\d+/
 --- no_error_log
 [error]
 
@@ -1178,6 +1177,136 @@ ab
 :2:hij
 len: 5
 --- error_log eval
-qr/\[TRACE   \d+/
+qr/\[TRACE\s+\d+/
+--- no_error_log
+[error]
+
+
+
+=== TEST 36: split by unit separator 1/2 (GH issue lua-nginx-module #1217)
+--- http_config eval: $::HttpConfig
+--- config
+    location /re {
+        content_by_lua_block {
+            local ngx_re = require "ngx.re"
+
+            local subjs = {
+                "1\x1fT\x1f\x1f\x1f\x1f\x1f\x1f\x1f\x1f\x1f\x1f\x1f\x1f\x1f15",
+                "1\x1fT\x1fT\x1f\x1f\x1f\x1f\x1f\x1f\x1f\x1f\x1f\x1f\x1f\x1f15",
+                "1\x1fT\x1fT\x1fT\x1f\x1f\x1f\x1f\x1f\x1f\x1f\x1f\x1f\x1f\x1f15",
+            }
+
+            for _, subj in ipairs(subjs) do
+                local col_list = ngx_re.split(subj, "\\x1f")
+                ngx.say(#col_list, " ", table.concat(col_list, "|"))
+            end
+        }
+    }
+--- request
+GET /re
+--- response_body
+15 1|T|||||||||||||15
+15 1|T|T||||||||||||15
+15 1|T|T|T|||||||||||15
+--- error_log eval
+qr/\[TRACE\s+\d+/
+--- no_error_log
+[error]
+
+
+
+=== TEST 37: split by unit separator 2/2 (with ctx.pos)
+--- http_config eval: $::HttpConfig
+--- config
+    location /re {
+        content_by_lua_block {
+            local ngx_re = require "ngx.re"
+
+            local subjs = {
+                "1\x1fT\x1f\x1f\x1f\x1f\x1f\x1f\x1f\x1f\x1f\x1f\x1f\x1f\x1f15",
+                "1\x1fT\x1fT\x1f\x1f\x1f\x1f\x1f\x1f\x1f\x1f\x1f\x1f\x1f\x1f15",
+                "1\x1fT\x1fT\x1fT\x1f\x1f\x1f\x1f\x1f\x1f\x1f\x1f\x1f\x1f\x1f15",
+            }
+
+            for _, subj in ipairs(subjs) do
+                local col_list = ngx_re.split(subj, "\\x1f", nil, { pos = 6 })
+                ngx.say(#col_list, " ", table.concat(col_list, "|"))
+            end
+        }
+    }
+--- request
+GET /re
+--- response_body
+12 |||||||||||15
+13 ||||||||||||15
+13 |T|||||||||||15
+--- error_log eval
+qr/\[TRACE\s+\d+/
+--- no_error_log
+[error]
+
+
+
+=== TEST 38: remaining characters are matched by regex (without max)
+--- http_config eval: $::HttpConfig
+--- config
+    location /re {
+        content_by_lua_block {
+            local ngx_re = require "ngx.re"
+
+            local subj = "a,b,cd,,,"
+
+            local res, err = ngx_re.split(subj, ",")
+            if err then
+                ngx.log(ngx.ERR, "failed: ", err)
+                return
+            end
+
+            ngx.say(#res, " ", table.concat(res, "|"))
+        }
+    }
+--- request
+GET /re
+--- response_body
+3 a|b|cd
+--- error_log eval
+qr/\[TRACE\s+\d+/
+--- no_error_log
+[error]
+
+
+
+=== TEST 39: remaining characters are matched by regex (with max)
+--- http_config eval: $::HttpConfig
+--- config
+    location /re {
+        content_by_lua_block {
+            local ngx_re = require "ngx.re"
+
+            local subj = "a,b,cd,,,"
+
+            for max = 1, 7 do
+                local res, err = ngx_re.split(subj, ",", nil, nil, max)
+                if err then
+                    ngx.log(ngx.ERR, "failed: ", err)
+                    return
+                end
+
+                ngx.say(#res, " ", table.concat(res, "|"))
+            end
+        }
+    }
+--- request
+GET /re
+--- response_body
+1 a,b,cd,,,
+2 a|b,cd,,,
+3 a|b|cd,,,
+4 a|b|cd|,,
+5 a|b|cd||,
+6 a|b|cd|||
+6 a|b|cd|||
+--- error_log eval
+qr/\[TRACE\s+\d+/
 --- no_error_log
 [error]

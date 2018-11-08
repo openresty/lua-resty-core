@@ -1,8 +1,11 @@
 -- Copyright (C) Yichun Zhang (agentzh)
 
 
-local ffi = require 'ffi'
 local base = require "resty.core.base"
+base.allows_subsystem('http')
+
+
+local ffi = require 'ffi'
 local ffi_string = ffi.string
 local get_string_buf = base.get_string_buf
 local get_size_ptr = base.get_size_ptr
@@ -12,8 +15,10 @@ local ffi_new = ffi.new
 local charpp = ffi_new("char *[1]")
 local intp = ffi.new("int[1]")
 local num_value = ffi_new("double[1]")
-local getfenv = getfenv
+local get_request = base.get_request
 local tonumber = tonumber
+local type = type
+local error = error
 
 
 local _M = { version = base.version }
@@ -26,6 +31,9 @@ int ngx_http_lua_ffi_errlog_get_msg(char **log, int *loglevel,
     unsigned char *err, size_t *errlen, double *log_time);
 
 int ngx_http_lua_ffi_errlog_get_sys_filter_level(ngx_http_request_t *r);
+
+int ngx_http_lua_ffi_raw_log(ngx_http_request_t *r, int level,
+    const unsigned char *s, size_t s_len);
 ]]
 
 
@@ -99,8 +107,27 @@ end
 
 
 function _M.get_sys_filter_level()
-    local r = getfenv(0).__ngx_req
+    local r = get_request()
     return tonumber(C.ngx_http_lua_ffi_errlog_get_sys_filter_level(r))
+end
+
+
+function _M.raw_log(level, msg)
+    if type(level) ~= "number" then
+        error("bad argument #1 to 'raw_log' (must be a number)", 2)
+    end
+
+    if type(msg) ~= "string" then
+        error("bad argument #2 to 'raw_log' (must be a string)", 2)
+    end
+
+    local r = get_request()
+
+    local rc = C.ngx_http_lua_ffi_raw_log(r, level, msg, #msg)
+
+    if rc == FFI_ERROR then
+        error("bad log level")
+    end
 end
 
 

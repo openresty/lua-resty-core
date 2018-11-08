@@ -9,7 +9,7 @@ use Cwd qw(cwd);
 
 repeat_each(2);
 
-plan tests => repeat_each() * (blocks() * 5);
+plan tests => repeat_each() * (blocks() * 5 - 2);
 
 my $pwd = cwd();
 
@@ -54,7 +54,7 @@ GET /base64
 --- response_body
 hello
 --- error_log eval
-qr/\[TRACE   \d+ content_by_lua\(nginx\.conf:\d+\):3 loop\]/
+qr/\[TRACE\s+\d+ content_by_lua\(nginx\.conf:\d+\):3 loop\]/
 --- no_error_log
 [error]
  -- NYI:
@@ -77,7 +77,7 @@ qr/\[TRACE   \d+ content_by_lua\(nginx\.conf:\d+\):3 loop\]/
 GET /base64
 --- response_body eval: "\n"
 --- error_log eval
-qr/\[TRACE   \d+ content_by_lua\(nginx\.conf:\d+\):3 loop\]/
+qr/\[TRACE\s+\d+ content_by_lua\(nginx\.conf:\d+\):3 loop\]/
 --- no_error_log
 [error]
  -- NYI:
@@ -101,7 +101,7 @@ GET /base64
 --- response_body
 3.14
 --- error_log eval
-qr/\[TRACE   \d+ content_by_lua\(nginx\.conf:\d+\):3 loop\]/
+qr/\[TRACE\s+\d+ content_by_lua\(nginx\.conf:\d+\):3 loop\]/
 --- no_error_log
 [error]
  -- NYI:
@@ -125,7 +125,7 @@ GET /base64
 --- response_body
 true
 --- error_log eval
-qr/\[TRACE   \d+ content_by_lua\(nginx\.conf:\d+\):3 loop\]/
+qr/\[TRACE\s+\d+ content_by_lua\(nginx\.conf:\d+\):3 loop\]/
 --- no_error_log
 [error]
  -- NYI:
@@ -153,7 +153,7 @@ GET /base64
 --- response_body
 4095
 --- error_log eval
-qr/\[TRACE   \d+ content_by_lua\(nginx\.conf:\d+\):3 loop\]/
+qr/\[TRACE\s+\d+ content_by_lua\(nginx\.conf:\d+\):3 loop\]/
 --- no_error_log
 [error]
  -- NYI:
@@ -181,7 +181,73 @@ GET /base64
 --- response_body
 4096
 --- error_log eval
-qr/\[TRACE   \d+ content_by_lua\(nginx\.conf:\d+\):3 loop\]/
+qr/\[TRACE\s+\d+ content_by_lua\(nginx\.conf:\d+\):3 loop\]/
+--- no_error_log
+[error]
+ -- NYI:
+
+
+
+=== TEST 7: decode_base64url
+--- http_config eval: $::HttpConfig
+--- config
+    location = /t {
+        content_by_lua_block {
+            local enc = require("ngx.base64")
+
+            local function to_hex(str)
+                return (str:gsub('.', function(c)
+                    return string.format('%02x', string.byte(c))
+                end))
+            end
+
+            -- RFC 4648 test vectors
+            ngx.say("decode_base64url(\"\") = \"", enc.decode_base64url(""), "\"")
+            ngx.say("decode_base64url(\"Zg\") = \"", enc.decode_base64url("Zg"), "\"")
+            ngx.say("decode_base64url(\"Zm8\") = \"", enc.decode_base64url("Zm8"), "\"")
+            ngx.say("decode_base64url(\"Zm9v\") = \"", enc.decode_base64url("Zm9v"), "\"")
+            ngx.say("decode_base64url(\"Zm9vYg\") = \"", enc.decode_base64url("Zm9vYg"), "\"")
+            ngx.say("decode_base64url(\"Zm9vYmE\") = \"", enc.decode_base64url("Zm9vYmE"), "\"")
+            ngx.say("decode_base64url(\"Zm9vYmFy\") = \"", enc.decode_base64url("Zm9vYmFy"), "\"")
+            ngx.say("decode_base64url(\"_w\") = \"\\x", to_hex(enc.decode_base64url("_w")), "\"")
+
+            ngx.say("decode_base64url(\"YQBi\") = \"\\x", to_hex(enc.decode_base64url("YQBi")), "\"")
+        }
+    }
+--- request
+GET /t
+--- response_body
+decode_base64url("") = ""
+decode_base64url("Zg") = "f"
+decode_base64url("Zm8") = "fo"
+decode_base64url("Zm9v") = "foo"
+decode_base64url("Zm9vYg") = "foob"
+decode_base64url("Zm9vYmE") = "fooba"
+decode_base64url("Zm9vYmFy") = "foobar"
+decode_base64url("_w") = "\xff"
+decode_base64url("YQBi") = "\x610062"
+--- no_error_log
+[error]
+ -- NYI:
+
+
+
+=== TEST 8: decode_base64url with invalid input
+--- http_config eval: $::HttpConfig
+--- config
+    location = /t {
+        content_by_lua_block {
+            local enc = require("ngx.base64")
+
+            local res, err = enc.decode_base64url("     ")
+
+            ngx.say("decode_base64url returned: ", res, ", ", err)
+        }
+    }
+--- request
+GET /t
+--- response_body
+decode_base64url returned: nil, invalid input
 --- no_error_log
 [error]
  -- NYI:

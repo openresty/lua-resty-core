@@ -31,6 +31,9 @@ This Lua module is currently considered experimental.
 Synopsis
 ========
 
+http subsystem
+--------------
+
 ```nginx
 http {
     upstream backend {
@@ -76,12 +79,57 @@ http {
 }
 ```
 
+stream subsystem
+----------------
+
+```nginx
+stream {
+    upstream backend {
+        server 0.0.0.1:1234;   # just an invalid address as a place holder
+
+        balancer_by_lua_block {
+            local balancer = require "ngx.balancer"
+
+            -- well, usually we calculate the peer's host and port
+            -- according to some balancing policies instead of using
+            -- hard-coded values like below
+            local host = "127.0.0.2"
+            local port = 8080
+
+            local ok, err = balancer.set_current_peer(host, port)
+            if not ok then
+                ngx.log(ngx.ERR, "failed to set the current peer: ", err)
+                return ngx.exit(ngx.ERROR)
+            end
+        }
+    }
+
+    server {
+        # this is the real entry point
+        listen 10000;
+
+        location / {
+            # make use of the upstream named "backend" defined above:
+            proxy_pass backend;
+        }
+    }
+
+    server {
+        # this server is just for mocking up a backend peer here...
+        listen 127.0.0.2:8080;
+
+        echo "this is the fake backend peer...";
+    }
+}
+```
+
 Description
 ===========
 
 This Lua module provides API functions to allow defining highly dynamic NGINX load balancers for
-any existing nginx upstream modules like [ngx_proxy](http://nginx.org/en/docs/http/ngx_http_proxy_module.html) and
-[ngx_fastcgi](http://nginx.org/en/docs/http/ngx_http_fastcgi_module.html).
+any existing nginx upstream modules like [ngx_http_proxy_module](http://nginx.org/en/docs/http/ngx_http_proxy_module.html),
+[ngx_http_fastcgi_module](http://nginx.org/en/docs/http/ngx_http_fastcgi_module.html) and
+[ngx_stream_proxy_module](https://nginx.org/en/docs/stream/ngx_stream_proxy_module.html).
 
 It allows you to dynamically select a backend peer to connect to (or retry) on a per-request
 basis from a list of backend peers which may also be dynamic.
@@ -138,7 +186,7 @@ get_last_failure
 **context:** *balancer_by_lua&#42;*
 
 Retrieves the failure details about the previous failed attempt (if any) when the `next_upstream` retrying
-mechanism is in action. When there was indeed a failed previous attempt, it returned a string descrbing
+mechanism is in action. When there was indeed a failed previous attempt, it returned a string describing
 that attempt's state name, as well as an integer describing the status code of that attempt.
 
 Possible state names are as follows:
@@ -150,6 +198,8 @@ can still be reused for future requests.
 the backend connection must be aborted and cannot get reused.
 
 Possible status codes are those HTTP error status codes like `502` and `504`.
+
+For stream module, `status_code` will always be 0 (ngx.OK) and is provided for compatibility reasons.
 
 When the current attempt is the first attempt for the current downstream request (which means
 there is no previous attempts at all), this
@@ -172,6 +222,11 @@ just specify the `nil` value for the corresponding argument (like the `connect_t
 Zero and negative timeout values are not allowed.
 
 You can specify millisecond precision in the timeout values by using floating point numbers like 0.001 (which means 1ms).
+
+**Note:** `send_timeout` and `read_timeout` are controlled by the same config
+[`proxy_timeout`](https://nginx.org/en/docs/stream/ngx_stream_proxy_module.html#proxy_timeout)
+for `ngx_stream_proxy_module`. To keep API compatibility, this function will use `max(send_timeout, read_timeout)`
+as the value for setting `proxy_timeout`.
 
 Returns `true` when the operation is successful; returns `nil` and a string describing the error
 otherwise.

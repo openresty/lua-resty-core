@@ -1,4 +1,4 @@
-# vim:set ft=ts=4 sw=4 et fdm=marker:
+# vim:set ft= ts=4 sw=4 et fdm=marker:
 
 use Test::Nginx::Socket::Lua;
 use Cwd qw(abs_path realpath cwd);
@@ -30,7 +30,7 @@ __DATA__
 
 === TEST 1: get new session serialized
 --- http_config
-    lua_package_path "$TEST_NGINX_LUA_PACKAGE_PATH/?.lua;;";
+    lua_package_path "$TEST_NGINX_LUA_PACKAGE_PATH";
     ssl_session_store_by_lua_block {
         local ssl = require "ngx.ssl.session"
         local sess = ssl.get_serialized_session()
@@ -40,7 +40,7 @@ __DATA__
     server {
         listen unix:$TEST_NGINX_HTML_DIR/nginx.sock ssl;
         server_name test.com;
-        ssl_protocols SSLv3;
+        ssl_session_tickets off;
         ssl_certificate $TEST_NGINX_CERT_DIR/cert/test.crt;
         ssl_certificate_key $TEST_NGINX_CERT_DIR/cert/test.key;
 
@@ -102,7 +102,7 @@ qr/ssl_session_store_by_lua_block:4: session size: \d+/s
 
 === TEST 2: get new session id serialized
 --- http_config
-    lua_package_path "$TEST_NGINX_LUA_PACKAGE_PATH/?.lua;;";
+    lua_package_path "$TEST_NGINX_LUA_PACKAGE_PATH";
     ssl_session_store_by_lua_block {
         local ssl = require "ngx.ssl.session"
         local sid = ssl.get_session_id()
@@ -112,7 +112,7 @@ qr/ssl_session_store_by_lua_block:4: session size: \d+/s
     server {
         listen unix:$TEST_NGINX_HTML_DIR/nginx.sock ssl;
         server_name test.com;
-        ssl_protocols SSLv3;
+        ssl_session_tickets off;
         ssl_certificate $TEST_NGINX_CERT_DIR/cert/test.crt;
         ssl_certificate_key $TEST_NGINX_CERT_DIR/cert/test.key;
 
@@ -174,7 +174,7 @@ qr/ssl_session_store_by_lua_block:4: session id: [a-fA-f\d]+/s
 
 === TEST 3: store the session via timer to memcached
 --- http_config
-    lua_package_path "$TEST_NGINX_LUA_PACKAGE_PATH/?.lua;;";
+    lua_package_path "$TEST_NGINX_LUA_PACKAGE_PATH";
     ssl_session_store_by_lua_block {
         local ssl = require "ngx.ssl.session"
         local function f(premature, key, value)
@@ -220,7 +220,7 @@ qr/ssl_session_store_by_lua_block:4: session id: [a-fA-f\d]+/s
     server {
         listen unix:$TEST_NGINX_HTML_DIR/nginx.sock ssl;
         server_name test.com;
-        ssl_protocols SSLv3;
+        ssl_session_tickets off;
         ssl_certificate $TEST_NGINX_CERT_DIR/cert/test.crt;
         ssl_certificate_key $TEST_NGINX_CERT_DIR/cert/test.key;
 

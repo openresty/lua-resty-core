@@ -4,7 +4,9 @@
 local ffi = require 'ffi'
 local ffi_new = ffi.new
 local error = error
+local select = select
 local ceil = math.ceil
+local subsystem = ngx.config.subsystem
 
 
 local str_buf_size = 4096
@@ -13,15 +15,29 @@ local size_ptr
 local FREE_LIST_REF = 0
 
 
-if not ngx.config
-   or not ngx.config.ngx_lua_version
-   or ngx.config.ngx_lua_version < 10009
-then
-    error("ngx_lua 0.10.9+ required")
+if subsystem == 'http' then
+    if not ngx.config
+       or not ngx.config.ngx_lua_version
+       or ngx.config.ngx_lua_version ~= 10014
+    then
+        error("ngx_http_lua_module 0.10.14 required")
+    end
+
+elseif subsystem == 'stream' then
+    if not ngx.config
+       or not ngx.config.ngx_lua_version
+       or ngx.config.ngx_lua_version ~= 6
+    then
+        error("ngx_stream_lua_module 0.0.6 required")
+    end
+
+else
+    error("ngx_http_lua_module 0.10.14 or "
+          .. "ngx_stream_lua_module 0.0.6 required")
 end
 
 
-if string.find(jit.version, " 2.0") then
+if string.find(jit.version, " 2.0", 1, true) then
     ngx.log(ngx.ALERT, "use of lua-resty-core with LuaJIT 2.0 is ",
             "not recommended; use LuaJIT 2.1+ instead")
 end
@@ -36,6 +52,7 @@ end
 local clear_tab
 ok, clear_tab = pcall(require, "table.clear")
 if not ok then
+    local pairs = pairs
     clear_tab = function (tab)
                     for k, _ in pairs(tab) do
                         tab[k] = nil
@@ -72,31 +89,50 @@ if not pcall(ffi.typeof, "ngx_str_t") then
 end
 
 
-if not pcall(ffi.typeof, "ngx_http_request_t") then
-    ffi.cdef[[
-        struct ngx_http_request_s;
-        typedef struct ngx_http_request_s  ngx_http_request_t;
-    ]]
-end
+if subsystem == 'http' then
+    if not pcall(ffi.typeof, "ngx_http_request_t") then
+        ffi.cdef[[
+            typedef struct ngx_http_request_s  ngx_http_request_t;
+        ]]
+    end
 
+    if not pcall(ffi.typeof, "ngx_http_lua_ffi_str_t") then
+        ffi.cdef[[
+            typedef struct {
+                int                       len;
+                const unsigned char      *data;
+            } ngx_http_lua_ffi_str_t;
+        ]]
+    end
 
-if not pcall(ffi.typeof, "ngx_http_lua_ffi_str_t") then
-    ffi.cdef[[
-        typedef struct {
-            int                       len;
-            const unsigned char      *data;
-        } ngx_http_lua_ffi_str_t;
-    ]]
+elseif subsystem == 'stream' then
+    if not pcall(ffi.typeof, "ngx_stream_lua_request_t") then
+        ffi.cdef[[
+            typedef struct ngx_stream_lua_request_s  ngx_stream_lua_request_t;
+        ]]
+    end
+
+    if not pcall(ffi.typeof, "ngx_stream_lua_ffi_str_t") then
+        ffi.cdef[[
+            typedef struct {
+                int                       len;
+                const unsigned char      *data;
+            } ngx_stream_lua_ffi_str_t;
+        ]]
+    end
+
+else
+    error("unknown subsystem: " .. subsystem)
 end
 
 
 local c_buf_type = ffi.typeof("char[?]")
 
 
-local _M = new_tab(0, 16)
+local _M = new_tab(0, 18)
 
 
-_M.version = "0.1.12"
+_M.version = "0.1.16"
 _M.new_tab = new_tab
 _M.clear_tab = clear_tab
 
@@ -113,7 +149,7 @@ end
 
 
 if not ngx then
-    return error("no existing ngx. table found")
+    error("no existing ngx. table found")
 end
 
 
@@ -174,6 +210,19 @@ function _M.ref_in_table(tb, key)
 end
 
 
+function _M.allows_subsystem(...)
+    local total = select("#", ...)
+
+    for i = 1, total do
+        if select(i, ...) == subsystem then
+            return
+        end
+    end
+
+    error("unsupported subsystem: " .. subsystem)
+end
+
+
 _M.FFI_OK = 0
 _M.FFI_NO_REQ_CTX = -100
 _M.FFI_BAD_CONTEXT = -101
@@ -181,6 +230,28 @@ _M.FFI_ERROR = -1
 _M.FFI_BUSY = -3
 _M.FFI_DONE = -4
 _M.FFI_DECLINED = -5
+
+
+do
+    local exdata
+
+    ok, exdata = pcall(require, "thread.exdata")
+    if ok and exdata then
+        function _M.get_request()
+            local r = exdata()
+            if r ~= nil then
+                return r
+            end
+        end
+
+    else
+        local getfenv = getfenv
+
+        function _M.get_request()
+            return getfenv(0).__ngx_req
+        end
+    end
+end
 
 
 return _M

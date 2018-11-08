@@ -13,6 +13,8 @@ plan tests => repeat_each() * (blocks() * 5 + 5);
 
 my $pwd = cwd();
 
+$ENV{TEST_NGINX_HOTLOOP} ||= 9;
+
 our $HttpConfig = <<_EOC_;
     lua_shared_dict dogs 1m;
     lua_package_path "$pwd/lib/?.lua;../lua-resty-lrucache/lib/?.lua;;";
@@ -27,6 +29,9 @@ our $HttpConfig = <<_EOC_;
         end
 
         require "resty.core"
+
+        local jit = require "jit"
+        jit.opt.start("hotloop=$ENV{TEST_NGINX_HOTLOOP}")
         -- jit.off()
     }
 _EOC_
@@ -56,7 +61,7 @@ GET /t
 Foo: 100
 
 --- error_log eval
-qr/\[TRACE   \d+ content_by_lua\(nginx\.conf:\d+\):2 loop\]/
+qr/\[TRACE\s+\d+ content_by_lua\(nginx\.conf:\d+\):2 loop\]/
 --- no_error_log
 [error]
  -- NYI:
@@ -82,7 +87,7 @@ GET /t
 Foo: nil
 
 --- error_log eval
-qr/\[TRACE   \d+ content_by_lua\(nginx\.conf:\d+\):2 loop\]/
+qr/\[TRACE\s+\d+ content_by_lua\(nginx\.conf:\d+\):2 loop\]/
 --- wait: 0.2
 --- no_error_log
 [error]
@@ -113,7 +118,7 @@ GET /t
 Foo: 200, 201
 
 --- error_log eval
-qr/\[TRACE   \d+ content_by_lua\(nginx\.conf:\d+\):2 loop\]/
+qr/\[TRACE\s+\d+ content_by_lua\(nginx\.conf:\d+\):2 loop\]/
 --- no_error_log
 [error]
  -- NYI:
@@ -140,7 +145,7 @@ GET /t
 Foo: 100
 
 --- error_log eval
-qr/\[TRACE   \d+ content_by_lua\(nginx\.conf:\d+\):3 loop\]/
+qr/\[TRACE\s+\d+ content_by_lua\(nginx\.conf:\d+\):3 loop\]/
 --- no_error_log eval
 [
 "[error]",
@@ -169,7 +174,7 @@ GET /t
 Foo: nil
 
 --- error_log eval
-qr/\[TRACE   \d+ content_by_lua\(nginx\.conf:\d+\):3 loop\]/
+qr/\[TRACE\s+\d+ content_by_lua\(nginx\.conf:\d+\):3 loop\]/
 --- no_error_log
 [error]
  -- NYI:
@@ -197,7 +202,7 @@ GET /t
 Foo: foo, bar
 
 --- error_log eval
-qr/\[TRACE   \d+ content_by_lua\(nginx\.conf:\d+\):4 loop\]/
+qr/\[TRACE\s+\d+ content_by_lua\(nginx\.conf:\d+\):4 loop\]/
 --- no_error_log
 [error]
  -- NYI:
@@ -226,7 +231,7 @@ Cache-Control: no-cache, blah, foo
 --- response_body_like chop
 ^Cache-Control: no-cache[;,] blah[;,] foo$
 --- error_log eval
-qr/\[TRACE   \d+ content_by_lua\(nginx\.conf:\d+\):5 (?:loop|-> \d+)\]/
+qr/\[TRACE\s+\d+ content_by_lua\(nginx\.conf:\d+\):5 (?:loop|-> \d+)\]/
 --- no_error_log
 [error]
  -- NYI:

@@ -10,7 +10,7 @@ log_level('warn');
 #repeat_each(120);
 repeat_each(2);
 
-plan tests => repeat_each() * (blocks() * 6 + 1);
+plan tests => repeat_each() * (blocks() * 6 - 2);
 
 my $pwd = cwd();
 
@@ -114,3 +114,48 @@ headers sent: true
  bad argument
 --- error_log eval
 qr/\[TRACE\s+\d+\s+content_by_lua\(nginx\.conf:\d+\):4 loop\]/
+
+
+
+=== TEST 4: base.check_subsystem
+--- http_config eval: $::HttpConfig
+--- config
+    location = /t {
+        content_by_lua_block {
+            local base = require "resty.core.base"
+            base.allows_subsystem('http', 'stream')
+            base.allows_subsystem('http')
+
+            ngx.say("ok")
+        }
+    }
+--- request
+GET /t
+--- response_body
+ok
+--- no_error_log
+[error]
+ -- NYI:
+ bad argument
+
+
+
+=== TEST 5: base.check_subsystem with non-http subsystem
+--- http_config eval: $::HttpConfig
+--- config
+    location = /t {
+        content_by_lua_block {
+            local base = require "resty.core.base"
+            base.allows_subsystem('stream')
+
+            ngx.say("ok")
+        }
+    }
+--- request
+GET /t
+--- error_code: 500
+--- no_error_log
+ -- NYI:
+ bad argument
+--- error_log
+unsupported subsystem: http

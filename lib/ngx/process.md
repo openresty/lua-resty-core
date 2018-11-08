@@ -9,11 +9,11 @@ Table of Contents
 * [Name](#name)
 * [Status](#status)
 * [Synopsis](#synopsis)
-    * [Enables privileged agent process and get process type](#enables-privileged-agent-process-and-get-process-type)
 * [Functions](#functions)
     * [type](#type)
     * [enable_privileged_agent](#enable_privileged_agent)
     * [signal_graceful_exit](#signal_graceful_exit)
+    * [get_master_pid](#get_master_pid)
 * [Community](#community)
     * [English Mailing List](#english-mailing-list)
     * [Chinese Mailing List](#chinese-mailing-list)
@@ -31,8 +31,7 @@ The API is still in flux and may change in the future without notice.
 Synopsis
 ========
 
-Enables privileged agent process and get process type
------------------------------------------
+Enables privileged agent process, gets process type, and then gets the master process PID:
 
 ```nginx
 # http config
@@ -60,6 +59,7 @@ server {
         content_by_lua_block {
             local process = require "ngx.process"
             ngx.say("process type: ", process.type())
+            ngx.say("master process pid: ", process.get_master_pid() or "-")
         }
     }
 }
@@ -79,6 +79,7 @@ The example location above produces the following response body:
 
 ```
 process type: worker
+master process pid: 8261
 ```
 
 [Back to TOC](#table-of-contents)
@@ -92,22 +93,22 @@ type
 
 **context:** *any*
 
-Returns the current process's type name. Here are all of the names:
+Returns the type of the current Nginx process. Depending on the calling context
+and current process, the type can be one of:
 
-```
-single
-master
-signaller
-worker
-helper
-privileged agent
-```
+* `master`: returned when this function is called from within the master
+  process
+* `worker`: returned when this function is called from within a worker process
+* `single`: returned when Nginx is running in the single process mode
+* `signaller`: returned when Nginx is running as a signaller process
+* `privileged agent`: returned when this funtion is called from within a
+  privileged agent process
 
-For example,
+For example:
 
 ```lua
- local process = require "ngx.process"
- ngx.say("process type:", process.type())   -- RESPONSE: worker
+local process = require "ngx.process"
+ngx.say("process type:", process.type())   -- RESPONSE: worker
 ```
 
 [Back to TOC](#table-of-contents)
@@ -120,7 +121,7 @@ enable_privileged_agent
 
 Enables the privileged agent process in Nginx.
 
-The priviledged agent process does not listen on any virtual server ports like those worker processes.
+The privileged agent process does not listen on any virtual server ports like those worker processes.
 And it uses the same system account as the nginx master process, which is usually a privileged account
 like `root`.
 
@@ -147,6 +148,20 @@ WARNING: the official NGINX core does not perform the graceful exiting procedure
 directive is turned `off`. The OpenResty's NGINX core has a
 [custom patch](https://github.com/openresty/openresty/blob/master/patches/nginx-1.11.2-single_process_graceful_exit.patch)
 applied, which fixes this issue.
+
+[Back to TOC](#table-of-contents)
+
+get_master_pid
+--------------
+**syntax:** *pid = process_module.get_master_pid()*
+
+**context:** *any*
+
+Returns a number value for the nginx master process's process ID (or PID).
+
+This function requires NGINX 1.13.8+ cores to work properly. Otherwise it returns `nil`.
+
+This feature first appeared in lua-resty-core v0.1.14.
 
 [Back to TOC](#table-of-contents)
 

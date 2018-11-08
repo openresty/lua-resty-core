@@ -8,10 +8,6 @@ use lib 'lib';
 use Test::Nginx::Socket::Lua;
 use Cwd qw(cwd);
 
-#worker_connections(1014);
-master_process_enabled(1);
-#log_level('error');
-
 repeat_each(2);
 
 plan tests => repeat_each() * (blocks() * 5);
@@ -33,18 +29,20 @@ our $HttpConfig = <<_EOC_;
 
         require "resty.core"
         -- jit.off()
-    }
 
-    init_worker_by_lua_block {
         local v
         local typ = (require "ngx.process").type
         for i = 1, 400 do
             v = typ()
         end
 
-        ngx.log(ngx.WARN, "process type: ", v)
+        package.loaded.process_type = v
     }
 _EOC_
+
+#worker_connections(1014);
+master_on();
+#log_level('error');
 
 #no_diff();
 #no_long_string();
@@ -58,31 +56,21 @@ __DATA__
 --- config
     location = /t {
         content_by_lua_block {
-            local v
-            local typ = (require "ngx.process").type
-            for i = 1, 400 do
-                v = typ()
-            end
-
-            ngx.say("process type: ", v)
+            ngx.say("process type: ", package.loaded.process_type)
         }
     }
 --- request
 GET /t
 --- response_body
-process type: worker
+process type: master
 --- grep_error_log eval
-qr/\[TRACE   \d+ init_worker_by_lua:4 loop\]|\[TRACE   \d+ content_by_lua\(nginx\.conf:\d+\):4 loop\]|init_worker_by_lua:\d: process type: \w+/
+qr/\[TRACE\s+\d+ init_by_lua:\d+ loop\]/
 --- grep_error_log_out eval
 [
-qr/\[TRACE   1 init_worker_by_lua:4 loop\]
-\[TRACE   2 content_by_lua\(nginx.conf:73\):4 loop\]
-init_worker_by_lua:8: process type: worker
-/,
-qr/\[TRACE   1 init_worker_by_lua:4 loop\]
-\[TRACE   2 content_by_lua\(nginx.conf:73\):4 loop\]
-init_worker_by_lua:8: process type: worker
-/
+qr/\A\[TRACE\s+\d+ init_by_lua:16 loop\]
+\z/,
+qr/\A\[TRACE\s+\d+ init_by_lua:16 loop\]
+\z/
 ]
 --- no_error_log
 [error]

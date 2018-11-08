@@ -57,7 +57,7 @@ GET /t
 --- response_body
 value: hello
 --- error_log eval
-qr/\[TRACE   \d+ content_by_lua\(nginx\.conf:\d+\):4 loop\]/
+qr/\[TRACE\s+\d+ content_by_lua\(nginx\.conf:\d+\):4 loop\]/
 --- no_error_log
 [error]
  -- NYI: (?!return to lower frame)
@@ -83,7 +83,7 @@ GET /t
 --- response_body
 value: hello
 --- error_log eval
-qr/\[TRACE   \d+ content_by_lua\(nginx\.conf:\d+\):4 loop\]/
+qr/\[TRACE\s+\d+ content_by_lua\(nginx\.conf:\d+\):4 loop\]/
 --- no_error_log
 [error]
  -- NYI: (?!return to lower frame)
@@ -109,7 +109,7 @@ GET /t
 --- response_body
 value: nil
 --- error_log eval
-qr/\[TRACE   \d+ content_by_lua\(nginx\.conf:\d+\):4 loop\]/
+qr/\[TRACE\s+\d+ content_by_lua\(nginx\.conf:\d+\):4 loop\]/
 --- no_error_log
 [error]
  -- NYI:
@@ -135,7 +135,7 @@ GET /t
 --- response_body
 value: /t
 --- error_log eval
-qr/\[TRACE   \d+ content_by_lua\(nginx\.conf:\d+\):4 loop\]/
+qr/\[TRACE\s+\d+ content_by_lua\(nginx\.conf:\d+\):4 loop\]/
 --- no_error_log
 [error]
  -- NYI: (?!return to lower frame)
@@ -161,7 +161,7 @@ GET /t
 --- response_body
 value: hello
 --- error_log eval
-qr/\[TRACE   \d+ content_by_lua\(nginx\.conf:\d+\):4 loop\]/
+qr/\[TRACE\s+\d+ content_by_lua\(nginx\.conf:\d+\):4 loop\]/
 --- no_error_log
 [error]
  -- NYI:
@@ -186,7 +186,7 @@ GET /t
 --- response_body
 value: nil
 --- error_log eval
-qr/\[TRACE   \d+ content_by_lua\(nginx\.conf:\d+\):3 loop\]/
+qr/\[TRACE\s+\d+ content_by_lua\(nginx\.conf:\d+\):3 loop\]/
 --- no_error_log
 [error]
  -- NYI:
@@ -211,7 +211,32 @@ GET /t
 --- response_body
 value: 100
 --- error_log eval
-qr/\[TRACE   \d+ content_by_lua\(nginx\.conf:\d+\):3 loop\]/
+qr/\[TRACE\s+\d+ content_by_lua\(nginx\.conf:\d+\):3 loop\]/
 --- no_error_log
 [error]
+ -- NYI:
+
+
+
+=== TEST 8: error buffer overread
+--- http_config eval: $::HttpConfig
+--- config
+    location = /test {
+        content_by_lua_block {
+            local ok1, err1 = pcall(function () ngx.var.foo = 32; end)
+            local ok2, err2 = pcall(function () ngx.var.server_port = 32; end)
+            assert(not ok1)
+            ngx.say(err1)
+            assert(not ok2)
+            ngx.say(err2)
+        }
+    }
+--- request
+GET /test
+--- response_body_like
+.+/var\.lua:\d+: variable "foo" not found for writing; maybe it is a built-in variable that is not changeable or you forgot to use "set \$foo '';" in the config file to define it first
+.+/var\.lua:\d+: variable "server_port" not changeable
+--- no_error_log
+[error]
+[alert]
  -- NYI:

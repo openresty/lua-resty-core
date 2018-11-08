@@ -9,7 +9,7 @@ local error = error
 local base = require "resty.core.base"
 local get_string_buf = base.get_string_buf
 local get_size_ptr = base.get_size_ptr
-local getfenv = getfenv
+local get_request = base.get_request
 local co_yield = coroutine._yield
 
 
@@ -26,9 +26,9 @@ local FFI_DONE = base.FFI_DONE
 ngx.exit = function (rc)
     local err = get_string_buf(ERR_BUF_SIZE)
     local errlen = get_size_ptr()
-    local r = getfenv(0).__ngx_req
+    local r = get_request()
     if r == nil then
-        return error("no request found")
+        error("no request found")
     end
     errlen[0] = ERR_BUF_SIZE
     rc = C.ngx_http_lua_ffi_exit(r, rc, err, errlen)
@@ -39,7 +39,7 @@ ngx.exit = function (rc)
     if rc == FFI_DONE then
         return
     end
-    return error(ffi_string(err, errlen[0]))
+    error(ffi_string(err, errlen[0]))
 end
 
 

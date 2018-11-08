@@ -610,7 +610,7 @@ qr/-->\d+/
 --- request
 GET /t
 --- response_body_like chomp
-\Alog lines: #21
+\A(?:log lines: #21
 log level:4
 log body:\d{4}/\d{2}/\d{2} \d{2}:\d{2}:\d{2} \[error\] (\d+).*access_by_lua\(nginx.conf:\d+\):\d+: --> 90, client: 127.0.0.1, server: localhost, request: "GET /t HTTP/1.1", host: "localhost"
 log level:5
@@ -621,7 +621,20 @@ log level:5
 log body:\d{4}/\d{2}/\d{2} \d{2}:\d{2}:\d{2} \[warn\] (\d+).*access_by_lua\(nginx.conf:\d+\):\d+: --> 100, client: 127.0.0.1, server: localhost, request: "GET /t HTTP/1.1", host: "localhost"
 log level:4
 log body:\d{4}/\d{2}/\d{2} \d{2}:\d{2}:\d{2} \[error\] (\d+).*access_by_lua\(nginx.conf:\d+\):\d+: --> 100, client: 127.0.0.1, server: localhost, request: "GET /t HTTP/1.1", host: "localhost"
-\z
+|log lines: #20
+log level:5
+log body:\d{4}/\d{2}/\d{2} \d{2}:\d{2}:\d{2} \[warn\] (\d+).*access_by_lua\(nginx.conf:\d+\):\d+: --> 91, client: 127.0.0.1, server: localhost, request: "GET /t HTTP/1.1", host: "localhost"
+log level:4
+log body:\d{4}/\d{2}/\d{2} \d{2}:\d{2}:\d{2} \[error\] (\d+).*access_by_lua\(nginx.conf:\d+\):\d+: --> 91, client: 127.0.0.1, server: localhost, request: "GET /t HTTP/1.1", host: "localhost"
+log level:5
+log body:\d{4}/\d{2}/\d{2} \d{2}:\d{2}:\d{2} \[warn\] (\d+).*access_by_lua\(nginx.conf:\d+\):\d+: --> 92, client: 127.0.0.1, server: localhost, request: "GET /t HTTP/1.1", host: "localhost"
+log level:4
+log body:\d{4}/\d{2}/\d{2} \d{2}:\d{2}:\d{2} \[error\] (\d+).*access_by_lua\(nginx.conf:\d+\):\d+: --> 99, client: 127.0.0.1, server: localhost, request: "GET /t HTTP/1.1", host: "localhost"
+log level:5
+log body:\d{4}/\d{2}/\d{2} \d{2}:\d{2}:\d{2} \[warn\] (\d+).*access_by_lua\(nginx.conf:\d+\):\d+: --> 100, client: 127.0.0.1, server: localhost, request: "GET /t HTTP/1.1", host: "localhost"
+log level:4
+log body:\d{4}/\d{2}/\d{2} \d{2}:\d{2}:\d{2} \[error\] (\d+).*access_by_lua\(nginx.conf:\d+\):\d+: --> 100, client: 127.0.0.1, server: localhost, request: "GET /t HTTP/1.1", host: "localhost"
+)\z
 --- skip_nginx: 2: <1.11.2
 --- wait: 0.1
 

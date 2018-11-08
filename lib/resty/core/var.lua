@@ -8,13 +8,15 @@ local ffi_new = ffi.new
 local ffi_str = ffi.string
 local C = ffi.C
 local type = type
-local getfenv = getfenv
+local get_request = base.get_request
 local get_string_buf = base.get_string_buf
 local get_size_ptr = base.get_size_ptr
 local error = error
 local tostring = tostring
 local ngx_var = ngx.var
 local getmetatable = getmetatable
+
+local ERR_BUF_SIZE = 256
 
 
 ffi.cdef[[
@@ -25,7 +27,7 @@ ffi.cdef[[
     int ngx_http_lua_ffi_var_set(ngx_http_request_t *r,
         const unsigned char *name_data, size_t name_len,
         unsigned char *lowcase_buf, const unsigned char *value,
-        size_t value_len, unsigned char *errbuf, size_t errlen);
+        size_t value_len, unsigned char *errbuf, size_t *errlen);
 ]]
 
 
@@ -34,9 +36,9 @@ local errmsg = base.get_errmsg_ptr()
 
 
 local function var_get(self, name)
-    local r = getfenv(0).__ngx_req
+    local r = get_request()
     if not r then
-        return error("no request found")
+        error("no request found")
     end
 
     local value_len = get_size_ptr()
@@ -47,7 +49,7 @@ local function var_get(self, name)
 
     else
         if type(name) ~= "string" then
-            return error("bad variable name")
+            error("bad variable name", 2)
         end
 
         local name_len = #name
@@ -68,24 +70,25 @@ local function var_get(self, name)
     end
 
     if rc == -1 then  -- NGX_ERROR
-        return error(ffi_str(errmsg[0]))
+        error(ffi_str(errmsg[0]))
     end
 end
 
 
 local function var_set(self, name, value)
-    local r = getfenv(0).__ngx_req
+    local r = get_request()
     if not r then
-        return error("no request found")
+        error("no request found")
     end
 
     if type(name) ~= "string" then
-        return error("bad variable name")
+        error("bad variable name", 2)
     end
     local name_len = #name
 
-    local errlen = 256
-    local lowcase_buf = get_string_buf(name_len + errlen)
+    local errlen = get_size_ptr()
+    errlen[0] = ERR_BUF_SIZE
+    local lowcase_buf = get_string_buf(name_len + ERR_BUF_SIZE)
 
     local value_len
     if value == nil then
@@ -108,7 +111,7 @@ local function var_set(self, name, value)
     end
 
     if rc == -1 then  -- NGX_ERROR
-        return error(ffi_str(errbuf, errlen))
+        error(ffi_str(errbuf, errlen[0]))
     end
 end
 

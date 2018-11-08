@@ -1,8 +1,11 @@
 -- Copyright (C) Yichun Zhang (agentzh)
 
 
-local ffi = require 'ffi'
 local base = require "resty.core.base"
+base.allows_subsystem('http')
+
+
+local ffi = require 'ffi'
 local errmsg = base.get_errmsg_ptr()
 local FFI_ERROR = base.FFI_ERROR
 local ffi_str = ffi.string
@@ -28,6 +31,7 @@ ffi.cdef[[
 int ngx_http_lua_ffi_enable_privileged_agent(char **err);
 int ngx_http_lua_ffi_get_process_type(void);
 void ngx_http_lua_ffi_process_signal_graceful_exit(void);
+int ngx_http_lua_ffi_master_pid(void);
 ]]
 
 
@@ -54,6 +58,16 @@ end
 
 function _M.signal_graceful_exit()
     C.ngx_http_lua_ffi_process_signal_graceful_exit()
+end
+
+
+function _M.get_master_pid()
+    local pid = C.ngx_http_lua_ffi_master_pid()
+    if pid == FFI_ERROR then
+        return nil
+    end
+
+    return tonumber(pid)
 end
 
 

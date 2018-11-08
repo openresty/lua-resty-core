@@ -18,7 +18,9 @@ Table of Contents
     * [set_der_priv_key](#set_der_priv_key)
     * [server_name](#server_name)
     * [raw_server_addr](#raw_server_addr)
+    * [raw_client_addr](#raw_client_addr)
     * [get_tls1_version](#get_tls1_version)
+    * [get_tls1_version_str](#get_tls1_version_str)
     * [parse_pem_cert](#parse_pem_cert)
     * [parse_pem_priv_key](#parse_pem_priv_key)
     * [set_cert](#set_cert)
@@ -299,6 +301,58 @@ This function can be called in whatever contexts where downstream https is used.
 
 [Back to TOC](#table-of-contents)
 
+raw_client_addr
+---------------
+**syntax:** *addr_data, addr_type, err = ssl.raw_client_addr()*
+
+**context:** *any*
+
+Returns the raw client address of the current SSL connection.
+
+The first two return values are strings representing the address data and the address type, respectively.
+The address values are interpreted differently according to the address type values:
+
+* `unix`
+: The address data is a file path for the UNIX domain socket.
+* `inet`
+: The address data is a binary IPv4 address of 4 bytes long.
+* `inet6`
+: The address data is a binary IPv6 address of 16 bytes long.
+
+Returns two `nil` values and a Lua string describing the error.
+
+The following code snippet shows how to print out the UNIX domain socket address and
+the IPv4 address as human-readable strings:
+
+```lua
+local ssl = require "ngx.ssl"
+local byte = string.byte
+
+local addr, addrtyp, err = ssl.raw_client_addr()
+if not addr then
+    ngx.log(ngx.ERR, "failed to fetch raw client addr: ", err)
+    return
+end
+
+if addrtyp == "inet" then  -- IPv4
+    ip = string.format("%d.%d.%d.%d", byte(addr, 1), byte(addr, 2),
+                       byte(addr, 3), byte(addr, 4))
+    print("Client IPv4 address: ", ip)
+
+elseif addrtyp == "unix" then  -- UNIX
+    print("Client unix socket file ", addr)
+
+else  -- IPv6
+    -- leave as an exercise for the readers
+end
+```
+
+This function can be called in whatever contexts where downstream https is used.
+
+This function was first introduced in lua-resty-core 0.1.14.
+
+[Back to TOC](#table-of-contents)
+
 get_tls1_version
 ----------------
 **syntax:** *ver, err = ssl.get_tls1_version()*
@@ -306,6 +360,26 @@ get_tls1_version
 **context:** *any*
 
 Returns the TLS 1.x version number used by the current SSL connection. Returns `nil` and
+a string describing the error otherwise.
+
+Typical return values are
+
+* `0x0300`(SSLv3)
+* `0x0301`(TLSv1)
+* `0x0302`(TLSv1.1)
+* `0x0303`(TLSv1.2)
+
+This function can be called in whatever contexts where downstream https is used.
+
+[Back to TOC](#table-of-contents)
+
+get_tls1_version_str
+--------------------
+**syntax:** *ver, err = ssl.get_tls1_version_str()*
+
+**context:** *any*
+
+Returns the TLS 1.x version string used by the current SSL connection. Returns `nil` and
 a string describing the error otherwise.
 
 Typical return values are
