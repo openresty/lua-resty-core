@@ -1,9 +1,11 @@
 -- Copyright (C) Yichun Zhang (agentzh)
 
 
-local ffi = require 'ffi'
 local base = require "resty.core.base"
+base.allows_subsystem('http')
 
+
+local ffi = require 'ffi'
 local ffi_string = ffi.string
 local C = ffi.C
 local ngx = ngx

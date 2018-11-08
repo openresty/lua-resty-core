@@ -1,12 +1,15 @@
 -- Copyright (C) Yichun Zhang (agentzh)
 
 
+local base = require "resty.core.base"
+base.allows_subsystem('http')
+
+
 local ffi = require 'ffi'
 local ffi_string = ffi.string
 local C = ffi.C
 local ngx = ngx
 local error = error
-local base = require "resty.core.base"
 local get_string_buf = base.get_string_buf
 local get_size_ptr = base.get_size_ptr
 local get_request = base.get_request

@@ -1,10 +1,11 @@
 -- Copyright (C) Yichun Zhang (agentzh)
 
 
-local ffi = require 'ffi'
 local base = require "resty.core.base"
+base.allows_subsystem('http')
 
 
+local ffi = require 'ffi'
 local FFI_BAD_CONTEXT = base.FFI_BAD_CONTEXT
 local FFI_DECLINED = base.FFI_DECLINED
 local FFI_OK = base.FFI_OK
