@@ -9,7 +9,7 @@ use Cwd qw(cwd);
 
 repeat_each(2);
 
-plan tests => repeat_each() * (blocks() * 5 + 5);
+plan tests => repeat_each() * (blocks() * 5 + 4);
 
 my $pwd = cwd();
 
@@ -236,3 +236,64 @@ qr/\[TRACE\s+\d+ content_by_lua\(nginx\.conf:\d+\):5 (?:loop|-> \d+)\]/
 [error]
  -- NYI:
 stitch
+
+
+
+=== TEST 8: don't generate Content-Type header when setting other response headers
+--- http_config eval: $::HttpConfig
+--- config
+    location = /t {
+        default_type text/html;
+        rewrite_by_lua_block {
+            ngx.header.blah = "foo"
+        }
+        proxy_pass http://127.0.0.1:$TEST_NGINX_SERVER_PORT/backend;
+    }
+
+    location = /backend {
+        content_by_lua_block {
+            ngx.say("foo")
+        }
+        header_filter_by_lua_block {
+            ngx.header.content_type = nil
+        }
+    }
+--- request
+GET /t
+--- response_body
+foo
+--- response_headers
+blah: foo
+Content-Type:
+--- no_error_log
+[error]
+
+
+
+=== TEST 9: don't generate Content-Type header when getting other response headers
+--- http_config eval: $::HttpConfig
+--- config
+    location = /t {
+        default_type text/html;
+        rewrite_by_lua_block {
+            local h = ngx.header.content_length
+        }
+        proxy_pass http://127.0.0.1:$TEST_NGINX_SERVER_PORT/backend;
+    }
+
+    location = /backend {
+        content_by_lua_block {
+            ngx.say("foo")
+        }
+        header_filter_by_lua_block {
+            ngx.header.content_type = nil
+        }
+    }
+--- request
+GET /t
+--- response_body
+foo
+--- response_headers
+Content-Type:
+--- no_error_log
+[error]

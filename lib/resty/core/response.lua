@@ -12,6 +12,7 @@ local new_tab = base.new_tab
 local FFI_BAD_CONTEXT = base.FFI_BAD_CONTEXT
 local FFI_NO_REQ_CTX = base.FFI_NO_REQ_CTX
 local FFI_DECLINED = base.FFI_DECLINED
+local FFI_ERROR = base.FFI_ERROR
 local get_string_buf = base.get_string_buf
 local getmetatable = getmetatable
 local type = type
@@ -41,7 +42,7 @@ ffi.cdef[[
     int ngx_http_lua_ffi_get_resp_header(ngx_http_request_t *r,
         const unsigned char *key, size_t key_len,
         unsigned char *key_buf, ngx_http_lua_ffi_str_t *values,
-        int max_nvalues);
+        int max_nvalues, char **errmsg);
 ]]
 
 
@@ -135,12 +136,17 @@ local function get_resp_header(tb, key)
     local key_buf = get_string_buf(key_len + ffi_str_size * MAX_HEADER_VALUES)
     local values = ffi_cast(ffi_str_type, key_buf + key_len)
     local n = C.ngx_http_lua_ffi_get_resp_header(r, key, key_len, key_buf,
-                                                 values, MAX_HEADER_VALUES)
+                                                 values, MAX_HEADER_VALUES,
+                                                 errmsg)
 
     -- print("retval: ", n)
 
     if n == FFI_BAD_CONTEXT then
         error("API disabled in the current context")
+    end
+
+    if n == FFI_ERROR then
+        error(ffi_str(errmsg[0]))
     end
 
     if n == 0 then
@@ -161,8 +167,7 @@ local function get_resp_header(tb, key)
         return ret
     end
 
-    -- n == FFI_ERROR
-    error("no memory")
+    error("unreachable")
 end
 
 
