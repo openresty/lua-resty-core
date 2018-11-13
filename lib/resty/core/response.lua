@@ -41,7 +41,7 @@ ffi.cdef[[
     int ngx_http_lua_ffi_get_resp_header(ngx_http_request_t *r,
         const unsigned char *key, size_t key_len,
         unsigned char *key_buf, ngx_http_lua_ffi_str_t *values,
-        int max_nvalues);
+        int max_nvalues, char **errmsg);
 ]]
 
 
@@ -135,7 +135,8 @@ local function get_resp_header(tb, key)
     local key_buf = get_string_buf(key_len + ffi_str_size * MAX_HEADER_VALUES)
     local values = ffi_cast(ffi_str_type, key_buf + key_len)
     local n = C.ngx_http_lua_ffi_get_resp_header(r, key, key_len, key_buf,
-                                                 values, MAX_HEADER_VALUES)
+                                                 values, MAX_HEADER_VALUES,
+                                                 errmsg)
 
     -- print("retval: ", n)
 
@@ -162,7 +163,7 @@ local function get_resp_header(tb, key)
     end
 
     -- n == FFI_ERROR
-    error("no memory")
+    error(ffi_str(errmsg[0]))
 end
 
 
