@@ -6,6 +6,7 @@ local subsystem = ngx.config.subsystem
 require "resty.core.regex"
 require "resty.core.shdict"
 require "resty.core.time"
+require "resty.core.misc"
 
 
 if subsystem == 'http' then
@@ -16,7 +17,6 @@ if subsystem == 'http' then
     require "resty.core.exit"
     require "resty.core.var"
     require "resty.core.ctx"
-    require "resty.core.misc"
     require "resty.core.request"
     require "resty.core.response"
     require "resty.core.time"
