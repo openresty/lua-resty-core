@@ -124,22 +124,7 @@ UA: Mozilla/5.0 (Android; Mobile; rv:13.0) Gecko/13.0 Firefox/13.0
 
 
 
-=== TEST 5: ngx.req.add_header (multiple value)
---- config
-    location = /t {
-        content_by_lua_block {
-            local ngx_req = require "ngx.req"
-            ngx.req.set_header("Foo", "bar")
-            ngx_req.add_header("Foo", {"baz", 2})
-            ngx.say("Foo: ", table.concat(ngx.req.get_headers()["Foo"], ", "))
-        }
-    }
---- response_body
-Foo: bar, baz, 2
-
-
-
-=== TEST 5: ngx.req.add_header (multiple value)
+=== TEST 5: ngx.req.add_header (multiple values)
 --- config
     location = /t {
         content_by_lua_block {
