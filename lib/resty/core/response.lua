@@ -145,10 +145,6 @@ local function get_resp_header(tb, key)
         error("API disabled in the current context")
     end
 
-    if n == FFI_ERROR then
-        error(ffi_str(errmsg[0]))
-    end
-
     if n == 0 then
         return nil
     end
@@ -167,7 +163,8 @@ local function get_resp_header(tb, key)
         return ret
     end
 
-    error("unreachable")
+    -- n == FFI_ERROR
+    error(ffi_str(errmsg[0]))
 end
 
 
