@@ -2,7 +2,7 @@
 *.swo
 *~
 go
-t/servroot/
+t/servroot*
 reindex
 nginx
 ctags
