@@ -283,6 +283,9 @@ Sends a signal to the sub-process.
 Note that the `signum` argument should be signal's numerical value. If the
 specified `signum` is not a number, an error will be thrown.
 
+You should use [lua-resty-signal's signum function](https://github.com/openresty/lua-resty-signal#signum)
+to convert signal names to signal numbers for the sake of portable.
+
 In case of success, this method returns `true`. Otherwise, it returns `nil` and
 a string describing the error.
 
