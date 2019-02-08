@@ -1,7 +1,6 @@
 # vim:set ft= ts=4 sw=4 et fdm=marker:
-use lib 'lib';
-use Test::Nginx::Socket::Lua::Stream;
-use Cwd qw(cwd);
+use lib '.';
+use t::TestCore::Stream;
 
 #worker_connections(1014);
 #master_process_enabled(1);
@@ -11,31 +10,6 @@ repeat_each(2);
 
 plan tests => repeat_each() * (blocks() * 4 + 8);
 
-my $pwd = cwd();
-
-our $StreamConfig = <<_EOC_;
-    lua_shared_dict dogs 1m;
-    lua_package_path "$pwd/lib/?.lua;../lua-resty-lrucache/lib/?.lua;;";
-    init_by_lua_block {
-        -- local verbose = true
-        local verbose = false
-        local outfile = "$Test::Nginx::Util::ErrLogFile"
-        -- local outfile = "/tmp/v.log"
-        if verbose then
-            local dump = require "jit.dump"
-            dump.on(nil, outfile)
-        else
-            local v = require "jit.v"
-            v.on(outfile)
-        end
-
-        require "resty.core"
-        -- jit.opt.start("hotloop=1")
-        -- jit.opt.start("loopunroll=1000000")
-        -- jit.off()
-    }
-_EOC_
-
 #no_diff();
 no_long_string();
 check_accum_error_log();
@@ -44,7 +18,6 @@ run_tests();
 __DATA__
 
 === TEST 1: sub, no submatch, no jit compile, regex cache
---- stream_config eval: $::StreamConfig
 --- stream_server_config
     content_by_lua_block {
         local m, err
@@ -72,7 +45,6 @@ NYI
 
 
 === TEST 2: sub, no submatch, no jit compile, no regex cache
---- stream_config eval: $::StreamConfig
 --- stream_server_config
     content_by_lua_block {
         local m, err
@@ -99,7 +71,6 @@ bad argument type
 
 
 === TEST 3: func + submatches
---- stream_config eval: $::StreamConfig
 --- stream_server_config
     content_by_lua_block {
         local m, err
@@ -130,7 +101,6 @@ qr/NYI (?!bytecode 51 at)/,
 
 
 === TEST 4: replace template + submatches
---- stream_config eval: $::StreamConfig
 --- stream_server_config
     content_by_lua_block {
         local m, err
@@ -159,7 +129,6 @@ NYI
 
 
 === TEST 5: replace template + submatches (exceeding buffers)
---- stream_config eval: $::StreamConfig
 --- stream_server_config
     content_by_lua_block {
         local m, err
@@ -186,7 +155,8 @@ bad argument type
 
 
 === TEST 6: ngx.re.gsub: use of resty.core's API in the user callback
---- stream_config eval: $::StreamConfig
+--- stream_config
+    lua_shared_dict dogs 12k;
 --- stream_server_config
     content_by_lua_block {
         local dogs = ngx.shared.dogs
@@ -216,7 +186,6 @@ NYI
 
 
 === TEST 7: ngx.re.gsub: recursive calling (github openresty/lua-nginx-module#445)
---- stream_config eval: $::StreamConfig
 --- stream_server_config
     content_by_lua_block {
         function test()
@@ -258,7 +227,6 @@ NYI
 
 
 === TEST 8: string replace subj is not a string type
---- stream_config eval: $::StreamConfig
 --- stream_server_config
     content_by_lua_block {
         local newstr, n, err = ngx.re.sub(1234, "([0-9])[0-9]", 5, "jo")
@@ -274,7 +242,6 @@ attempt to get length of local 'subj' (a number value)
 
 
 === TEST 9: func replace return is not a string type (ngx.re.sub)
---- stream_config eval: $::StreamConfig
 --- stream_server_config
     content_by_lua_block {
         local lookup = function(m)
@@ -294,7 +261,6 @@ attempt to get length of local 'bit' (a number value)
 
 
 === TEST 10: func replace return is not a string type (ngx.re.gsub)
---- stream_config eval: $::StreamConfig
 --- stream_server_config
     content_by_lua_block {
         local lookup = function(m)

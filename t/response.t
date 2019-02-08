@@ -1,7 +1,6 @@
 # vim:set ft= ts=4 sw=4 et fdm=marker:
-use lib 'lib';
-use Test::Nginx::Socket::Lua;
-use Cwd qw(cwd);
+use lib '.';
+use t::TestCore;
 
 #worker_connections(1014);
 #master_process_enabled(1);
@@ -11,31 +10,6 @@ repeat_each(2);
 
 plan tests => repeat_each() * (blocks() * 5 + 5);
 
-my $pwd = cwd();
-
-$ENV{TEST_NGINX_HOTLOOP} ||= 9;
-
-our $HttpConfig = <<_EOC_;
-    lua_shared_dict dogs 1m;
-    lua_package_path "$pwd/lib/?.lua;../lua-resty-lrucache/lib/?.lua;;";
-    init_by_lua_block {
-        local verbose = false
-        if verbose then
-            local dump = require "jit.dump"
-            dump.on("b", "$Test::Nginx::Util::ErrLogFile")
-        else
-            local v = require "jit.v"
-            v.on("$Test::Nginx::Util::ErrLogFile")
-        end
-
-        require "resty.core"
-
-        local jit = require "jit"
-        jit.opt.start("hotloop=$ENV{TEST_NGINX_HOTLOOP}")
-        -- jit.off()
-    }
-_EOC_
-
 #no_diff();
 #no_long_string();
 check_accum_error_log();
@@ -44,7 +18,6 @@ run_tests();
 __DATA__
 
 === TEST 1: write to ngx.header.HEADER (single value)
---- http_config eval: $::HttpConfig
 --- config
     location = /t {
         set $foo hello;
@@ -69,7 +42,6 @@ qr/\[TRACE\s+\d+ content_by_lua\(nginx\.conf:\d+\):2 loop\]/
 
 
 === TEST 2: write to ngx.header.HEADER (nil)
---- http_config eval: $::HttpConfig
 --- config
     location = /t {
         set $foo hello;
@@ -96,7 +68,6 @@ qr/\[TRACE\s+\d+ content_by_lua\(nginx\.conf:\d+\):2 loop\]/
 
 
 === TEST 3: write to ngx.header.HEADER (multi-value)
---- http_config eval: $::HttpConfig
 --- config
     location = /t {
         set $foo hello;
@@ -126,7 +97,6 @@ qr/\[TRACE\s+\d+ content_by_lua\(nginx\.conf:\d+\):2 loop\]/
 
 
 === TEST 4: read from ngx.header.HEADER (single value)
---- http_config eval: $::HttpConfig
 --- config
     location = /t {
         set $foo hello;
@@ -156,7 +126,6 @@ qr/ -- NYI: (?!return to lower frame)/,
 
 
 === TEST 5: read from ngx.header.HEADER (not found)
---- http_config eval: $::HttpConfig
 --- config
     location = /t {
         set $foo hello;
@@ -183,7 +152,6 @@ stitch
 
 
 === TEST 6: read from ngx.header.HEADER (multi-value)
---- http_config eval: $::HttpConfig
 --- config
     location = /t {
         set $foo hello;
@@ -211,7 +179,6 @@ stitch
 
 
 === TEST 7: set multi values to cache-control and override it with multiple values
---- http_config eval: $::HttpConfig
 --- config
     location /lua {
         content_by_lua_block {

@@ -1,6 +1,6 @@
 # vim:set ft= ts=4 sw=4 et fdm=marker:
-use lib 'lib';
-use Test::Nginx::Socket::Lua::Stream;use Cwd qw(cwd);
+use lib '.';
+use t::TestCore::Stream;
 
 #worker_connections(1014);
 #master_process_enabled(1);
@@ -10,28 +10,20 @@ repeat_each(2);
 
 plan tests => repeat_each() * (blocks() * 5);
 
-my $pwd = cwd();
+add_block_preprocessor(sub {
+    my $block = shift;
 
-our $HttpConfig = <<_EOC_;
+    my $stream_config = $block->stream_config || '';
+
+    $stream_config .= <<_EOC_;
     lua_shared_dict dogs 1m;
     lua_shared_dict cats 16k;
     lua_shared_dict birds 100k;
-    lua_package_path "$pwd/lib/?.lua;../lua-resty-lrucache/lib/?.lua;;";
-    init_by_lua_block {
-        local verbose = false
-        if verbose then
-            local dump = require "jit.dump"
-            dump.on(nil, "$Test::Nginx::Util::ErrLogFile")
-        else
-            local v = require "jit.v"
-            v.on("$Test::Nginx::Util::ErrLogFile")
-        end
-
-        require "resty.core"
-        jit.opt.start("hotloop=10")
-        -- jit.off()
-    }
+    $t::TestCore::Stream::StreamConfig
 _EOC_
+
+    $block->set_value("stream_config", $stream_config);
+});
 
 #no_diff();
 no_long_string();
@@ -41,7 +33,6 @@ run_tests();
 __DATA__
 
 === TEST 1: get a string value
---- stream_config eval: $::HttpConfig
 --- stream_server_config
     content_by_lua_block {
         local ffi = require "ffi"
@@ -53,7 +44,7 @@ __DATA__
             ngx.say("failed to set: ", err)
             return
         end
-        for i = 1, 30 do
+        for i = 1, 100 do
             val, flags = dogs:get("foo")
         end
         ngx.say("value type: ", type(val))
@@ -73,7 +64,6 @@ qr/\[TRACE\s+\d+ content_by_lua\(nginx\.conf:\d+\):11 loop\]/
 
 
 === TEST 2: get an nonexistent key
---- stream_config eval: $::HttpConfig
 --- stream_server_config
     content_by_lua_block {
         local ffi = require "ffi"
@@ -81,7 +71,7 @@ qr/\[TRACE\s+\d+ content_by_lua\(nginx\.conf:\d+\):11 loop\]/
         local dogs = ngx.shared.dogs
         -- local cd = ffi.cast("void *", dogs)
         -- dogs:set("foo", "bar")
-        for i = 1, 30 do
+        for i = 1, 100 do
             val, flags = dogs:get("foo")
         end
         ngx.say("value type: ", type(val))
@@ -101,7 +91,6 @@ qr/\[TRACE\s+\d+ content_by_lua\(nginx\.conf:\d+\):7 loop\]/
 
 
 === TEST 3: get a boolean value (true)
---- stream_config eval: $::HttpConfig
 --- stream_server_config
     content_by_lua_block {
         local ffi = require "ffi"
@@ -109,7 +98,7 @@ qr/\[TRACE\s+\d+ content_by_lua\(nginx\.conf:\d+\):7 loop\]/
         local dogs = ngx.shared.dogs
         -- local cd = ffi.cast("void *", dogs)
         dogs:set("foo", true, 0, 5678)
-        for i = 1, 30 do
+        for i = 1, 100 do
             val, flags = dogs:get("foo")
         end
         ngx.say("value type: ", type(val))
@@ -129,7 +118,6 @@ qr/\[TRACE\s+\d+ content_by_lua\(nginx\.conf:\d+\):7 loop\]/
 
 
 === TEST 4: get a boolean value (false)
---- stream_config eval: $::HttpConfig
 --- stream_server_config
     content_by_lua_block {
         local ffi = require "ffi"
@@ -137,7 +125,7 @@ qr/\[TRACE\s+\d+ content_by_lua\(nginx\.conf:\d+\):7 loop\]/
         local dogs = ngx.shared.dogs
         -- local cd = ffi.cast("void *", dogs)
         dogs:set("foo", false, 0, 777)
-        for i = 1, 30 do
+        for i = 1, 100 do
             val, flags = dogs:get("foo")
         end
         ngx.say("value type: ", type(val))
@@ -157,7 +145,6 @@ qr/\[TRACE\s+\d+ content_by_lua\(nginx\.conf:\d+\):7 loop\]/
 
 
 === TEST 5: get a number value (int)
---- stream_config eval: $::HttpConfig
 --- stream_server_config
     content_by_lua_block {
         local ffi = require "ffi"
@@ -165,7 +152,7 @@ qr/\[TRACE\s+\d+ content_by_lua\(nginx\.conf:\d+\):7 loop\]/
         local dogs = ngx.shared.dogs
         -- local cd = ffi.cast("void *", dogs)
         dogs:set("foo", 51203)
-        for i = 1, 30 do
+        for i = 1, 100 do
             val, flags = dogs:get("foo")
         end
         ngx.say("value type: ", type(val))
@@ -185,7 +172,6 @@ qr/\[TRACE\s+\d+ content_by_lua\(nginx\.conf:\d+\):7 loop\]/
 
 
 === TEST 6: get a number value (double)
---- stream_config eval: $::HttpConfig
 --- stream_server_config
     content_by_lua_block {
         local ffi = require "ffi"
@@ -193,7 +179,7 @@ qr/\[TRACE\s+\d+ content_by_lua\(nginx\.conf:\d+\):7 loop\]/
         local dogs = ngx.shared.dogs
         -- local cd = ffi.cast("void *", dogs)
         dogs:set("foo", 3.1415926, 0, 78)
-        for i = 1, 30 do
+        for i = 1, 100 do
             val, flags = dogs:get("foo")
         end
         ngx.say("value type: ", type(val))
@@ -213,7 +199,6 @@ qr/\[TRACE\s+\d+ content_by_lua\(nginx\.conf:\d+\):7 loop\]/
 
 
 === TEST 7: get a large string value
---- stream_config eval: $::HttpConfig
 --- stream_server_config
     content_by_lua_block {
         local ffi = require "ffi"
@@ -221,7 +206,7 @@ qr/\[TRACE\s+\d+ content_by_lua\(nginx\.conf:\d+\):7 loop\]/
         local dogs = ngx.shared.dogs
         -- local cd = ffi.cast("void *", dogs)
         dogs:set("foo", string.rep("bbbb", 1024) .. "a", 0, 912)
-        for i = 1, 30 do
+        for i = 1, 100 do
             val, flags = dogs:get("foo")
         end
         ngx.say("value type: ", type(val))
@@ -242,7 +227,6 @@ qr/\[TRACE\s+\d+ content_by_lua\(nginx\.conf:\d+\):7 loop\]/
 
 
 === TEST 8: get_stale (false)
---- stream_config eval: $::HttpConfig
 --- stream_server_config
     content_by_lua_block {
         local ffi = require "ffi"
@@ -250,7 +234,7 @@ qr/\[TRACE\s+\d+ content_by_lua\(nginx\.conf:\d+\):7 loop\]/
         local dogs = ngx.shared.dogs
         -- local cd = ffi.cast("void *", dogs)
         dogs:set("foo", "bar", 0, 72)
-        for i = 1, 30 do
+        for i = 1, 100 do
             val, flags, stale = dogs:get_stale("foo")
         end
         ngx.say("value type: ", type(val))
@@ -272,7 +256,6 @@ qr/\[TRACE\s+\d+ content_by_lua\(nginx\.conf:\d+\):7 loop\]/
 
 
 === TEST 9: get_stale (true)
---- stream_config eval: $::HttpConfig
 --- stream_server_config
     content_by_lua_block {
         local ffi = require "ffi"
@@ -286,7 +269,7 @@ qr/\[TRACE\s+\d+ content_by_lua\(nginx\.conf:\d+\):7 loop\]/
         end
         ngx.update_time()
         ngx.sleep(0.002)
-        for i = 1, 30 do
+        for i = 1, 100 do
             val, flags, stale = dogs:get_stale("foo")
         end
         ngx.say("value type: ", type(val))
@@ -300,7 +283,7 @@ value: bar
 flags: 72
 stale: true
 --- error_log eval
-qr/\[TRACE\s+\d+ content_by_lua\(nginx\.conf:\d+\):12 loop\]/
+qr/\[TRACE\s+\d+ content_by_lua\(nginx\.conf:\d+\):13 loop\]/
 --- no_error_log
 [error]
  -- NYI:
@@ -308,7 +291,6 @@ qr/\[TRACE\s+\d+ content_by_lua\(nginx\.conf:\d+\):12 loop\]/
 
 
 === TEST 10: incr int
---- stream_config eval: $::HttpConfig
 --- stream_server_config
     content_by_lua_block {
         local ffi = require "ffi"
@@ -320,14 +302,14 @@ qr/\[TRACE\s+\d+ content_by_lua\(nginx\.conf:\d+\):12 loop\]/
             ngx.say("failed to set: ", err)
             return
         end
-        for i = 1, 30 do
+        for i = 1, 100 do
             val, err = dogs:incr("foo", 2)
         end
         ngx.say("value: ", val)
         ngx.say("err: ", err)
     }
 --- stream_response
-value: 116
+value: 256
 err: nil
 --- error_log eval
 qr/\[TRACE\s+\d+ content_by_lua\(nginx\.conf:\d+\):11 loop\]/
@@ -338,7 +320,6 @@ qr/\[TRACE\s+\d+ content_by_lua\(nginx\.conf:\d+\):11 loop\]/
 
 
 === TEST 11: incr double
---- stream_config eval: $::HttpConfig
 --- stream_server_config
     content_by_lua_block {
         local ffi = require "ffi"
@@ -364,7 +345,6 @@ qr/\[TRACE\s+\d+ content_by_lua\(nginx\.conf:\d+\):7 loop\]/
 
 
 === TEST 12: set a string value
---- stream_config eval: $::HttpConfig
 --- stream_server_config
     content_by_lua_block {
         local ffi = require "ffi"
@@ -372,7 +352,7 @@ qr/\[TRACE\s+\d+ content_by_lua\(nginx\.conf:\d+\):7 loop\]/
         local dogs = ngx.shared.dogs
         -- local cd = ffi.cast("void *", dogs)
         local ok, err, forcible
-        for i = 1, 30 do
+        for i = 1, 100 do
             ok, err, forcible = dogs:set("foo", "bar", 0, 72)
         end
         if not ok then
@@ -397,7 +377,6 @@ qr/\[TRACE\s+\d+ content_by_lua\(nginx\.conf:\d+\):7 loop\]/
 
 
 === TEST 13: set a boolean value (true)
---- stream_config eval: $::HttpConfig
 --- stream_server_config
     content_by_lua_block {
         local ffi = require "ffi"
@@ -405,7 +384,7 @@ qr/\[TRACE\s+\d+ content_by_lua\(nginx\.conf:\d+\):7 loop\]/
         local dogs = ngx.shared.dogs
         -- local cd = ffi.cast("void *", dogs)
         local ok, err, forcible
-        for i = 1, 30 do
+        for i = 1, 100 do
             ok, err, forcible = dogs:set("foo", true, 0, 5678)
         end
         if not ok then
@@ -430,14 +409,13 @@ qr/\[TRACE\s+\d+ content_by_lua\(nginx\.conf:\d+\):7 loop\]/
 
 
 === TEST 14: set a boolean value (false)
---- stream_config eval: $::HttpConfig
 --- stream_server_config
     content_by_lua_block {
         local ffi = require "ffi"
         local val, flags
         local dogs = ngx.shared.dogs
         -- local cd = ffi.cast("void *", dogs)
-        for i = 1, 30 do
+        for i = 1, 100 do
             dogs:set("foo", false, 0, 777)
         end
         val, flags = dogs:get("foo")
@@ -458,14 +436,13 @@ qr/\[TRACE\s+\d+ content_by_lua\(nginx\.conf:\d+\):6 loop\]/
 
 
 === TEST 15: set a number value (int)
---- stream_config eval: $::HttpConfig
 --- stream_server_config
     content_by_lua_block {
         local ffi = require "ffi"
         local val, flags
         local dogs = ngx.shared.dogs
         -- local cd = ffi.cast("void *", dogs)
-        for i = 1, 30 do
+        for i = 1, 100 do
             dogs:set("foo", 51203)
         end
         val, flags = dogs:get("foo")
@@ -486,14 +463,13 @@ qr/\[TRACE\s+\d+ content_by_lua\(nginx\.conf:\d+\):6 loop\]/
 
 
 === TEST 16: set a number value (double)
---- stream_config eval: $::HttpConfig
 --- stream_server_config
     content_by_lua_block {
         local ffi = require "ffi"
         local val, flags
         local dogs = ngx.shared.dogs
         -- local cd = ffi.cast("void *", dogs)
-        for i = 1, 30 do
+        for i = 1, 100 do
             dogs:set("foo", 3.1415926, 0, 78)
         end
         val, flags = dogs:get("foo")
@@ -514,7 +490,6 @@ qr/\[TRACE\s+\d+ content_by_lua\(nginx\.conf:\d+\):6 loop\]/
 
 
 === TEST 17: set a number value and a nil
---- stream_config eval: $::HttpConfig
 --- stream_server_config
     content_by_lua_block {
         local ffi = require "ffi"
@@ -543,14 +518,13 @@ qr/\[TRACE\s+\d+ content_by_lua\(nginx\.conf:\d+\):6 loop\]/
 
 
 === TEST 18: safe set a number value
---- stream_config eval: $::HttpConfig
 --- stream_server_config
     content_by_lua_block {
         local ffi = require "ffi"
         local val, flags
         local dogs = ngx.shared.dogs
         -- local cd = ffi.cast("void *", dogs)
-        for i = 1, 30 do
+        for i = 1, 100 do
             dogs:safe_set("foo", 3.1415926, 0, 78)
         end
         val, flags = dogs:get("foo")
@@ -571,7 +545,6 @@ qr/\[TRACE\s+\d+ content_by_lua\(nginx\.conf:\d+\):6 loop\]/
 
 
 === TEST 19: add a string value
---- stream_config eval: $::HttpConfig
 --- stream_server_config
     content_by_lua_block {
         local ffi = require "ffi"
@@ -580,14 +553,14 @@ qr/\[TRACE\s+\d+ content_by_lua\(nginx\.conf:\d+\):6 loop\]/
         -- local cd = ffi.cast("void *", dogs)
         dogs:flush_all()
         local ok, err, forcible
-        for i = 1, 30 do
+        for i = 1, 100 do
             ok, err, forcible = dogs:add("foo" .. i, "bar", 0, 72)
         end
         if not ok then
             ngx.say("failed to set: ", err)
             return
         end
-        val, flags = dogs:get("foo30")
+        val, flags = dogs:get("foo100")
         ngx.say("value type: ", type(val))
         ngx.say("value: ", val)
         ngx.say("flags: ", flags)
@@ -605,7 +578,6 @@ qr/\[TRACE\s+\d+ content_by_lua\(nginx\.conf:\d+\):8 loop\]/
 
 
 === TEST 20: safe add a string value
---- stream_config eval: $::HttpConfig
 --- stream_server_config
     content_by_lua_block {
         local ffi = require "ffi"
@@ -614,14 +586,14 @@ qr/\[TRACE\s+\d+ content_by_lua\(nginx\.conf:\d+\):8 loop\]/
         -- local cd = ffi.cast("void *", dogs)
         dogs:flush_all()
         local ok, err, forcible
-        for i = 1, 30 do
+        for i = 1, 100 do
             ok, err, forcible = dogs:safe_add("foo" .. i, "bar", 0, 72)
         end
         if not ok then
             ngx.say("failed to set: ", err)
             return
         end
-        val, flags = dogs:get("foo30")
+        val, flags = dogs:get("foo100")
         ngx.say("value type: ", type(val))
         ngx.say("value: ", val)
         ngx.say("flags: ", flags)
@@ -639,7 +611,6 @@ qr/\[TRACE\s+\d+ content_by_lua\(nginx\.conf:\d+\):8 loop\]/
 
 
 === TEST 21: replace a string value
---- stream_config eval: $::HttpConfig
 --- stream_server_config
     content_by_lua_block {
         local ffi = require "ffi"
@@ -648,7 +619,7 @@ qr/\[TRACE\s+\d+ content_by_lua\(nginx\.conf:\d+\):8 loop\]/
         -- local cd = ffi.cast("void *", dogs)
         dogs:set("foo", "hello")
         local ok, err, forcible
-        for i = 1, 30 do
+        for i = 1, 100 do
             ok, err, forcible = dogs:replace("foo", "bar" .. i, 0, 72)
         end
         if not ok then
@@ -662,7 +633,7 @@ qr/\[TRACE\s+\d+ content_by_lua\(nginx\.conf:\d+\):8 loop\]/
     }
 --- stream_response
 value type: string
-value: bar30
+value: bar100
 flags: 72
 --- error_log eval
 qr/\[TRACE\s+\d+ content_by_lua\(nginx\.conf:\d+\):8 loop\]/
@@ -673,7 +644,6 @@ qr/\[TRACE\s+\d+ content_by_lua\(nginx\.conf:\d+\):8 loop\]/
 
 
 === TEST 22: set a number value and delete
---- stream_config eval: $::HttpConfig
 --- stream_server_config
     content_by_lua_block {
         local ffi = require "ffi"
@@ -703,7 +673,6 @@ stitch
 
 
 === TEST 23: set nil key
---- stream_config eval: $::HttpConfig
 --- stream_server_config
     content_by_lua_block {
         local val, flags
@@ -723,7 +692,6 @@ failed to set: nil key
 
 
 === TEST 24: get nil key
---- stream_config eval: $::HttpConfig
 --- stream_server_config
     content_by_lua_block {
         local val, flags
@@ -743,7 +711,6 @@ failed to get: nil key
 
 
 === TEST 25: get stale key
---- stream_config eval: $::HttpConfig
 --- stream_server_config
     content_by_lua_block {
         local val, flags
@@ -763,7 +730,6 @@ failed to get stale: nil key
 
 
 === TEST 26: incr key
---- stream_config eval: $::HttpConfig
 --- stream_server_config
     content_by_lua_block {
         local val, flags
@@ -783,7 +749,6 @@ failed to incr: nil key
 
 
 === TEST 27: flush_all
---- stream_config eval: $::HttpConfig
 --- stream_server_config
     content_by_lua_block {
         local ffi = require "ffi"
@@ -813,7 +778,6 @@ stitch
 
 
 === TEST 28: incr, value is not number
---- stream_config eval: $::HttpConfig
 --- stream_server_config
     content_by_lua_block {
         local val, flags
@@ -832,7 +796,6 @@ cannot convert 'nil' to 'double'
 
 
 === TEST 29: incr with init
---- stream_config eval: $::HttpConfig
 --- stream_server_config
     content_by_lua_block {
         local val, flags
@@ -862,8 +825,7 @@ incr ok, value: 20, forcible: false
 
 
 
-=== TEST 30: incr, init is not number
---- stream_config eval: $::HttpConfig
+=== TEST 100: incr, init is not number
 --- stream_server_config
     content_by_lua_block {
         local val, flags
@@ -882,7 +844,6 @@ number expected, got string
 
 
 === TEST 31: capacity
---- stream_config eval: $::HttpConfig
 --- stream_server_config
     content_by_lua_block {
         local cats = ngx.shared.cats
@@ -902,7 +863,6 @@ capacity: 16384
 
 === TEST 32: free_space, empty (16k zone)
 --- skip_nginx: 5: < 1.11.7
---- stream_config eval: $::HttpConfig
 --- stream_server_config
     content_by_lua_block {
         local cats = ngx.shared.cats
@@ -924,7 +884,6 @@ free_page_bytes: 4096
 
 === TEST 33: free_space, empty (100k zone)
 --- skip_nginx: 5: < 1.11.7
---- stream_config eval: $::HttpConfig
 --- stream_server_config
     content_by_lua_block {
         local birds = ngx.shared.birds
@@ -947,7 +906,6 @@ free_page_bytes: (?:90112|94208)
 
 === TEST 34: free_space, about half full, one page left
 --- skip_nginx: 5: < 1.11.7
---- stream_config eval: $::HttpConfig
 --- stream_server_config
     content_by_lua_block {
         local cats = ngx.shared.cats
@@ -983,7 +941,6 @@ free_page_bytes: 4096
 
 === TEST 35: free_space, about half full, no page left
 --- skip_nginx: 5: < 1.11.7
---- stream_config eval: $::HttpConfig
 --- stream_server_config
     content_by_lua_block {
         local cats = ngx.shared.cats
@@ -1020,7 +977,6 @@ free_page_bytes: (?:0|4096)
 
 === TEST 36: free_space, full
 --- skip_nginx: 5: < 1.11.7
---- stream_config eval: $::HttpConfig
 --- stream_server_config
     content_by_lua_block {
         local cats = ngx.shared.cats
@@ -1056,7 +1012,6 @@ free_page_bytes: 0
 
 === TEST 37: free_space, got forcible
 --- skip_nginx: 5: < 1.11.7
---- stream_config eval: $::HttpConfig
 --- stream_server_config
     content_by_lua_block {
         local cats = ngx.shared.cats
@@ -1094,7 +1049,6 @@ free_page_bytes: 0
 
 === TEST 38: free_space, full (100k)
 --- skip_nginx: 5: < 1.11.7
---- stream_config eval: $::HttpConfig
 --- stream_server_config
     content_by_lua_block {
         local birds = ngx.shared.birds
@@ -1133,7 +1087,6 @@ free_page_bytes: (?:0|32768)
 
 
 === TEST 39: incr bad init_ttl argument
---- stream_config eval: $::HttpConfig
 --- stream_server_config
     content_by_lua_block {
         local dogs = ngx.shared.dogs
@@ -1155,7 +1108,6 @@ not ok: bad "init_ttl" argument
 
 
 === TEST 40: incr init_ttl argument is not a number
---- stream_config eval: $::HttpConfig
 --- stream_server_config
     content_by_lua_block {
         local dogs = ngx.shared.dogs
@@ -1177,7 +1129,6 @@ not ok: bad init_ttl arg: number expected, got string
 
 
 === TEST 41: incr init_ttl argument without init
---- stream_config eval: $::HttpConfig
 --- stream_server_config
     content_by_lua_block {
         local dogs = ngx.shared.dogs
@@ -1199,7 +1150,6 @@ not ok: must provide "init" when providing "init_ttl"
 
 
 === TEST 42: incr key with init_ttl (key exists)
---- stream_config eval: $::HttpConfig
 --- stream_server_config
     content_by_lua_block {
         local dogs = ngx.shared.dogs
@@ -1226,7 +1176,6 @@ foo after incr init_ttl = 10534
 
 
 === TEST 43: incr key with init and init_ttl (key not exists)
---- stream_config eval: $::HttpConfig
 --- stream_server_config
     content_by_lua_block {
         local dogs = ngx.shared.dogs
@@ -1253,7 +1202,6 @@ foo after init_ttl = nil
 
 
 === TEST 44: incr key with init and init_ttl as string (key not exists)
---- stream_config eval: $::HttpConfig
 --- stream_server_config
     content_by_lua_block {
         local dogs = ngx.shared.dogs
@@ -1280,11 +1228,10 @@ foo after init_ttl = nil
 
 
 === TEST 45: incr key with init and init_ttl (key expired and size matched)
---- stream_config eval: $::HttpConfig
 --- stream_server_config
     content_by_lua_block {
         local dogs = ngx.shared.dogs
-        for i = 1, 30 do
+        for i = 1, 100 do
             dogs:set("bar" .. i, i, 0.002)
         end
         dogs:set("foo", 32, 0.002)
@@ -1312,7 +1259,6 @@ foo after init_ttl = nil
 
 
 === TEST 46: incr key with init and init_ttl (forcibly override other valid entries)
---- stream_config eval: $::HttpConfig
 --- stream_server_config
     content_by_lua_block {
         local dogs = ngx.shared.dogs
@@ -1351,7 +1297,6 @@ foo after init_ttl = nil
 
 
 === TEST 47: exptime uses long type to avoid overflow in set() + ttl()
---- stream_config eval: $::HttpConfig
 --- stream_server_config
     content_by_lua_block {
         local dogs = ngx.shared.dogs
@@ -1381,7 +1326,6 @@ ttl: 2147483648
 
 
 === TEST 48: exptime uses long type to avoid overflow in expire() + ttl()
---- stream_config eval: $::HttpConfig
 --- stream_server_config
     content_by_lua_block {
         local dogs = ngx.shared.dogs
@@ -1417,7 +1361,6 @@ ttl: 2147483648
 
 
 === TEST 49: init_ttl uses long type to avoid overflow in incr() + ttl()
---- stream_config eval: $::HttpConfig
 --- stream_server_config
     content_by_lua_block {
         local dogs = ngx.shared.dogs

@@ -1,26 +1,11 @@
 # vim:set ft= ts=4 sw=4 et fdm=marker:
-use Test::Nginx::Socket::Lua::Stream;
-use Cwd qw(cwd);
+use lib '.';
+use t::TestCore::Stream;
 
 plan tests => repeat_each() * (blocks() * 2);
 
-my $pwd = cwd();
-
-add_block_preprocessor(sub {
-    my $block = shift;
-
-    my $stream_config = $block->stream_config || '';
-
-    $stream_config .= <<_EOC_;
-
-    lua_package_path "$pwd/lib/?.lua;../lua-resty-lrucache/lib/?.lua;;";
-_EOC_
-
-    $block->set_value("stream_config", $stream_config);
-});
-
-
 $ENV{TEST_NGINX_BAR} = 'world';
+$ENV{TEST_NGINX_LUA_PACKAGE_PATH} = "$t::TestCore::Stream::lua_package_path";
 
 run_tests();
 
@@ -30,6 +15,8 @@ __DATA__
 --- main_config
 env FOO=hello;
 --- stream_config
+    lua_package_path "$TEST_NGINX_LUA_PACKAGE_PATH";
+
     init_by_lua_block {
         require "resty.core"
         package.loaded.foo = os.getenv("FOO")
@@ -48,6 +35,7 @@ hello
 --- main_config
 env FOO=hello;
 --- stream_config
+    lua_package_path "$TEST_NGINX_LUA_PACKAGE_PATH";
     lua_shared_dict dogs 24k;
 
     init_by_lua_block {
@@ -68,6 +56,8 @@ hello
 --- main_config
 env FOO=hello;
 --- stream_config
+    lua_package_path "$TEST_NGINX_LUA_PACKAGE_PATH";
+
     init_by_lua_block {
         require "resty.core"
         package.loaded.foo = os.getenv("foo")
@@ -86,6 +76,8 @@ nil
 --- main_config
 env FOO;
 --- stream_config
+    lua_package_path "$TEST_NGINX_LUA_PACKAGE_PATH";
+
     init_by_lua_block {
         require "resty.core"
         package.loaded.foo = os.getenv("FOO")
@@ -104,6 +96,8 @@ nil
 --- main_config
 env TEST_NGINX_BAR;
 --- stream_config
+    lua_package_path "$TEST_NGINX_LUA_PACKAGE_PATH";
+
     init_by_lua_block {
         require "resty.core"
         package.loaded.foo = os.getenv("TEST_NGINX_BAR")
@@ -122,6 +116,8 @@ world
 --- main_config
 env TEST_NGINX_BAR=goodbye;
 --- stream_config
+    lua_package_path "$TEST_NGINX_LUA_PACKAGE_PATH";
+
     init_by_lua_block {
         require "resty.core"
         package.loaded.foo = os.getenv("TEST_NGINX_BAR")
@@ -140,6 +136,8 @@ goodbye
 --- main_config
 env FOO=;
 --- stream_config
+    lua_package_path "$TEST_NGINX_LUA_PACKAGE_PATH";
+
     init_by_lua_block {
         require "resty.core"
         package.loaded.foo = os.getenv("FOO")
@@ -157,6 +155,8 @@ in content:\s+
 
 === TEST 8: os.getenv() overwrite is reverted in worker phases
 --- stream_config
+    lua_package_path "$TEST_NGINX_LUA_PACKAGE_PATH";
+
     init_by_lua_block {
         package.loaded.os_getenv = os.getenv
         require "resty.core"

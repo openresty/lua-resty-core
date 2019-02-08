@@ -1,7 +1,6 @@
 # vim:set ft= ts=4 sw=4 et fdm=marker:
-
-use Test::Nginx::Socket::Lua;
-use Cwd qw(cwd);
+use lib '.';
+use t::TestCore;
 
 #worker_connections(1014);
 #master_process_enabled(1);
@@ -11,18 +10,16 @@ repeat_each(2);
 
 plan tests => repeat_each() * (blocks() * 2 + 15);
 
-my $pwd = cwd();
-
 add_block_preprocessor(sub {
     my $block = shift;
 
     my $http_config = $block->http_config || '';
-    my $init_by_lua_block = $block->init_by_lua_block || 'require "resty.core"';
+    my $init_by_lua_block = $block->init_by_lua_block || '';
 
     $http_config .= <<_EOC_;
-
-    lua_package_path "$pwd/lib/?.lua;../lua-resty-lrucache/lib/?.lua;;";
+    lua_package_path '$t::TestCore::lua_package_path';
     init_by_lua_block {
+        $t::TestCore::init_by_lua_block
         $init_by_lua_block
     }
 _EOC_
@@ -986,7 +983,6 @@ Is "emerg" the system default filter level? true
 
 === TEST 25: get system default filter level during Nginx starts (init)
 --- init_by_lua_block
-    require "resty.core"
     local errlog = require "ngx.errlog"
     package.loaded.log_level = errlog.get_sys_filter_level()
 

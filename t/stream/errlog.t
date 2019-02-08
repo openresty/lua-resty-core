@@ -1,7 +1,6 @@
 # vim:set ft= ts=4 sw=4 et fdm=marker:
-
-use Test::Nginx::Socket::Lua::Stream;
-use Cwd qw(cwd);
+use lib '.';
+use t::TestCore::Stream;
 
 #worker_connections(1014);
 #master_process_enabled(1);
@@ -11,16 +10,17 @@ repeat_each(2);
 
 plan tests => repeat_each() * (blocks() * 2 + 10);
 
-my $pwd = cwd();
-
 add_block_preprocessor(sub {
     my $block = shift;
 
     my $stream_config = $block->stream_config || '';
 
     $stream_config .= <<_EOC_;
-
-    lua_package_path "$pwd/lib/?.lua;../lua-resty-lrucache/lib/?.lua;;";
+    lua_package_path '$t::TestCore::Stream::lua_package_path';
+    init_by_lua_block {
+        $t::TestCore::Stream::init_by_lua_block
+        $init_by_lua_block
+    }
 _EOC_
 
     $block->set_value("stream_config", $stream_config);

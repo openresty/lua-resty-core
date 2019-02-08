@@ -1,7 +1,6 @@
 # vim:set ft= ts=4 sw=4 et fdm=marker:
-
-use Test::Nginx::Socket::Lua;
-use Cwd qw(cwd);
+use lib '.';
+use t::TestCore;
 
 #worker_connections(1014);
 #master_on();
@@ -12,7 +11,7 @@ repeat_each(2);
 
 plan tests => repeat_each() * (blocks() * 4 + 5);
 
-$ENV{TEST_NGINX_CWD} = cwd();
+$ENV{TEST_NGINX_LUA_PACKAGE_PATH} = "$t::TestCore::lua_package_path";
 
 #worker_connections(1024);
 #no_diff();
@@ -23,7 +22,7 @@ __DATA__
 
 === TEST 1: set current peer (separate addr and port)
 --- http_config
-    lua_package_path "$TEST_NGINX_CWD/lib/?.lua;;";
+    lua_package_path "$TEST_NGINX_LUA_PACKAGE_PATH";
 
     upstream backend {
         server 0.0.0.1;
@@ -54,7 +53,7 @@ qr{connect\(\) failed .*?, upstream: "http://127\.0\.0\.3:12345/t"},
 === TEST 2: set current peer & next upstream (3 tries)
 --- skip_nginx: 4: < 1.7.5
 --- http_config
-    lua_package_path "$TEST_NGINX_CWD/lib/?.lua;;";
+    lua_package_path "$TEST_NGINX_LUA_PACKAGE_PATH";
 
     proxy_next_upstream error timeout invalid_header http_500 http_502 http_503 http_504 http_403 http_404;
     proxy_next_upstream_tries 10;
@@ -99,7 +98,7 @@ qr#^(?:connect\(\) failed .*?, upstream: "http://127.0.0.3:12345/t"\n){3}$#
 === TEST 3: set current peer & next upstream (no retries)
 --- skip_nginx: 4: < 1.7.5
 --- http_config
-    lua_package_path "$TEST_NGINX_CWD/lib/?.lua;;";
+    lua_package_path "$TEST_NGINX_LUA_PACKAGE_PATH";
 
     proxy_next_upstream error timeout invalid_header http_500 http_502 http_503 http_504 http_403 http_404;
 
@@ -135,7 +134,7 @@ qr#^(?:connect\(\) failed .*?, upstream: "http://127.0.0.3:12345/t"\n){1}$#
 === TEST 4: set current peer & next upstream (3 tries exceeding the limit)
 --- skip_nginx: 4: < 1.7.5
 --- http_config
-    lua_package_path "$TEST_NGINX_CWD/lib/?.lua;;";
+    lua_package_path "$TEST_NGINX_LUA_PACKAGE_PATH";
 
     proxy_next_upstream error timeout invalid_header http_500 http_502 http_503 http_504 http_403 http_404;
     proxy_next_upstream_tries 2;
@@ -180,7 +179,7 @@ set more tries: reduced tries due to limit
 === TEST 5: get last peer failure status (404)
 --- skip_nginx: 4: < 1.7.5
 --- http_config
-    lua_package_path "$TEST_NGINX_CWD/lib/?.lua;;";
+    lua_package_path "$TEST_NGINX_LUA_PACKAGE_PATH";
 
     proxy_next_upstream error timeout invalid_header http_500 http_502 http_503 http_504 http_403 http_404;
     proxy_next_upstream_tries 10;
@@ -235,7 +234,7 @@ last peer failure: next 404
 === TEST 6: get last peer failure status (500)
 --- skip_nginx: 4: < 1.7.5
 --- http_config
-    lua_package_path "$TEST_NGINX_CWD/lib/?.lua;;";
+    lua_package_path "$TEST_NGINX_LUA_PACKAGE_PATH";
 
     proxy_next_upstream error timeout invalid_header http_500 http_502 http_503 http_504 http_403 http_404;
     proxy_next_upstream_tries 10;
@@ -290,7 +289,7 @@ last peer failure: failed 500
 === TEST 7: get last peer failure status (503)
 --- skip_nginx: 4: < 1.7.5
 --- http_config
-    lua_package_path "$TEST_NGINX_CWD/lib/?.lua;;";
+    lua_package_path "$TEST_NGINX_LUA_PACKAGE_PATH";
 
     proxy_next_upstream error timeout invalid_header http_500 http_502 http_503 http_504 http_403 http_404;
     proxy_next_upstream_tries 10;
@@ -346,7 +345,7 @@ last peer failure: failed 50[23]
 === TEST 8: get last peer failure status (connect failed)
 --- skip_nginx: 4: < 1.7.5
 --- http_config
-    lua_package_path "$TEST_NGINX_CWD/lib/?.lua;;";
+    lua_package_path "$TEST_NGINX_LUA_PACKAGE_PATH";
 
     proxy_next_upstream error timeout invalid_header http_500 http_502 http_503 http_504 http_403 http_404;
     proxy_next_upstream_tries 10;
@@ -400,7 +399,7 @@ last peer failure: failed 502
 
 === TEST 9: set current peer (port embedded in addr)
 --- http_config
-    lua_package_path "$TEST_NGINX_CWD/lib/?.lua;;";
+    lua_package_path "$TEST_NGINX_LUA_PACKAGE_PATH";
 
     upstream backend {
         server 0.0.0.1;
@@ -430,7 +429,7 @@ qr{connect\(\) failed .*?, upstream: "http://127\.0\.0\.3:12345/t"},
 
 === TEST 10: keepalive before balancer
 --- http_config
-    lua_package_path "$TEST_NGINX_CWD/lib/?.lua;;";
+    lua_package_path "$TEST_NGINX_LUA_PACKAGE_PATH";
 
     upstream backend {
         server 0.0.0.1;
@@ -468,7 +467,7 @@ qr{connect\(\) failed .*?, upstream: "http://127\.0\.0\.3:12345/t"},
 
 === TEST 11: keepalive after balancer
 --- http_config
-    lua_package_path "$TEST_NGINX_CWD/lib/?.lua;;";
+    lua_package_path "$TEST_NGINX_LUA_PACKAGE_PATH";
 
     upstream backend {
         server 0.0.0.1;
@@ -529,7 +528,7 @@ free keepalive peer: saving connection
 === TEST 12: set_current_peer called in a wrong context
 --- wait: 0.2
 --- http_config
-    lua_package_path "$TEST_NGINX_CWD/lib/?.lua;;";
+    lua_package_path "$TEST_NGINX_LUA_PACKAGE_PATH";
 
     upstream backend {
         server 127.0.0.1:$TEST_NGINX_SERVER_PORT;
@@ -572,7 +571,7 @@ qr/\[error\] .*? log_by_lua.*? failed to call: API disabled in the current conte
 === TEST 13: get_last_failure called in a wrong context
 --- wait: 0.2
 --- http_config
-    lua_package_path "$TEST_NGINX_CWD/lib/?.lua;;";
+    lua_package_path "$TEST_NGINX_LUA_PACKAGE_PATH";
 
     upstream backend {
         server 127.0.0.1:$TEST_NGINX_SERVER_PORT;
@@ -615,7 +614,7 @@ qr/\[error\] .*? log_by_lua.*? failed to call: API disabled in the current conte
 === TEST 14: set_more_tries called in a wrong context
 --- wait: 0.2
 --- http_config
-    lua_package_path "$TEST_NGINX_CWD/lib/?.lua;;";
+    lua_package_path "$TEST_NGINX_LUA_PACKAGE_PATH";
 
     upstream backend {
         server 127.0.0.1:$TEST_NGINX_SERVER_PORT;
@@ -659,7 +658,7 @@ qr/\[error\] .*? log_by_lua.*? failed to call: API disabled in the current conte
 github issue openresty/lua-nginx-module#693
 --- skip_nginx: 4: < 1.7.5
 --- http_config
-    lua_package_path "$TEST_NGINX_CWD/lib/?.lua;;";
+    lua_package_path "$TEST_NGINX_LUA_PACKAGE_PATH";
 
     upstream backend {
         server 0.0.0.1;
@@ -710,7 +709,7 @@ qr/\[error] .*? upstream prematurely closed connection while reading response he
 === TEST 16: https (keepalive)
 --- skip_nginx: 5: < 1.7.5
 --- http_config
-    lua_package_path "$TEST_NGINX_CWD/lib/?.lua;;";
+    lua_package_path "$TEST_NGINX_LUA_PACKAGE_PATH";
 
     upstream backend {
         server 0.0.0.1;
@@ -756,7 +755,7 @@ hello from balancer by lua!
 === TEST 17: https (no keepalive)
 --- skip_nginx: 5: < 1.7.5
 --- http_config
-    lua_package_path "$TEST_NGINX_CWD/lib/?.lua;;";
+    lua_package_path "$TEST_NGINX_LUA_PACKAGE_PATH";
 
     upstream backend {
         server 0.0.0.1;
@@ -801,7 +800,7 @@ hello from balancer by lua!
 === TEST 18: test ngx.var.upstream_addr after using more than one set_current_peer
 --- wait: 0.2
 --- http_config
-    lua_package_path "$TEST_NGINX_CWD/lib/?.lua;;";
+    lua_package_path "$TEST_NGINX_LUA_PACKAGE_PATH";
     proxy_next_upstream_tries 3;
 
     upstream backend {

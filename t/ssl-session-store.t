@@ -1,7 +1,7 @@
 # vim:set ft= ts=4 sw=4 et fdm=marker:
-
-use Test::Nginx::Socket::Lua;
-use Cwd qw(abs_path realpath cwd);
+use lib '.';
+use t::TestCore;
+use Cwd qw(abs_path realpath);
 use File::Basename;
 
 #worker_connections(10140);
@@ -12,12 +12,10 @@ repeat_each(2);
 
 plan tests => repeat_each() * (blocks() * 6 + 2);
 
-our $CWD = cwd();
-
 no_long_string();
 #no_diff();
 
-$ENV{TEST_NGINX_LUA_PACKAGE_PATH} = "$::CWD/lib/?.lua;;";
+$ENV{TEST_NGINX_LUA_PACKAGE_PATH} = "$t::TestCore::lua_package_path";
 $ENV{TEST_NGINX_HTML_DIR} ||= html_dir();
 
 $ENV{TEST_NGINX_MEMCACHED_PORT} ||= 11211;

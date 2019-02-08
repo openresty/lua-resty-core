@@ -1,7 +1,6 @@
 # vim:set ft= ts=4 sw=4 et fdm=marker:
-use lib 'lib';
-use Test::Nginx::Socket::Lua;
-use Cwd qw(cwd);
+use lib '.';
+use t::TestCore;
 
 #worker_connections(1014);
 #master_process_enabled(1);
@@ -11,30 +10,6 @@ repeat_each(2);
 
 plan tests => repeat_each() * blocks() * 4 + (2 * repeat_each());
 
-my $pwd = cwd();
-
-our $HttpConfig = <<_EOC_;
-    lua_package_path "$pwd/lib/?.lua;../lua-resty-lrucache/lib/?.lua;;";
-    init_by_lua_block {
-        -- local verbose = true
-        local verbose = false
-        local outfile = "$Test::Nginx::Util::ErrLogFile"
-        -- local outfile = "/tmp/v.log"
-        if verbose then
-            local dump = require "jit.dump"
-            dump.on(nil, outfile)
-        else
-            local v = require "jit.v"
-            v.on(outfile)
-        end
-
-        require "resty.core"
-        -- jit.opt.start("hotloop=1")
-        -- jit.opt.start("loopunroll=1000000")
-        -- jit.off()
-    }
-_EOC_
-
 no_diff();
 no_long_string();
 check_accum_error_log();
@@ -43,7 +18,6 @@ run_tests();
 __DATA__
 
 === TEST 1: split matches, no submatch, no jit compile, no regex cache
---- http_config eval: $::HttpConfig
 --- config
     location = /re {
         content_by_lua_block {
@@ -75,7 +49,6 @@ qr/\[TRACE\s+\d+/
 
 
 === TEST 2: split matches, no submatch, no jit compile, no regex cache
---- http_config eval: $::HttpConfig
 --- config
     location = /re {
         content_by_lua_block {
@@ -107,7 +80,6 @@ qr/\[TRACE\s+\d+/
 
 
 === TEST 3: split matches, no submatch, jit compile, regex cache
---- http_config eval: $::HttpConfig
 --- config
     location = /re {
         content_by_lua_block {
@@ -139,7 +111,6 @@ qr/\[TRACE\s+\d+/
 
 
 === TEST 4: split matches + submatch (matching)
---- http_config eval: $::HttpConfig
 --- config
     location = /re {
         content_by_lua_block {
@@ -174,7 +145,6 @@ qr/\[TRACE\s+\d+/
 
 
 === TEST 5: split matches + submatch (not matching)
---- http_config eval: $::HttpConfig
 --- config
     location = /re {
         content_by_lua_block {
@@ -207,7 +177,6 @@ qr/\[TRACE\s+\d+/
 
 
 === TEST 6: split matches + max limiter
---- http_config eval: $::HttpConfig
 --- config
     location = /re {
         content_by_lua_block {
@@ -238,7 +207,6 @@ qr/\[TRACE\s+\d+/
 
 
 === TEST 7: split matches + submatch + max limiter
---- http_config eval: $::HttpConfig
 --- config
     location = /re {
         content_by_lua_block {
@@ -271,7 +239,6 @@ qr/\[TRACE\s+\d+/
 
 
 === TEST 8: split matches + max limiter set to 0
---- http_config eval: $::HttpConfig
 --- config
     location = /re {
         content_by_lua_block {
@@ -304,7 +271,6 @@ qr/\[TRACE\s+\d+/
 
 
 === TEST 9: split matches + max limiter set to a negative value
---- http_config eval: $::HttpConfig
 --- config
     location = /re {
         content_by_lua_block {
@@ -337,7 +303,6 @@ qr/\[TRACE\s+\d+/
 
 
 === TEST 10: split matches + max limiter set to 1
---- http_config eval: $::HttpConfig
 --- config
     location = /re {
         content_by_lua_block {
@@ -366,7 +331,6 @@ qr/\[TRACE\s+\d+/
 
 
 === TEST 11: split matches, provided res table
---- http_config eval: $::HttpConfig
 --- config
     location = /re {
         content_by_lua_block {
@@ -401,7 +365,6 @@ qr/\[TRACE\s+\d+/
 
 
 === TEST 12: split matches, provided res table (non-cleared)
---- http_config eval: $::HttpConfig
 --- config
     location = /re {
         content_by_lua_block {
@@ -440,7 +403,6 @@ qr/\[TRACE\s+\d+/
 
 
 === TEST 13: split matches, provided res table + max limiter
---- http_config eval: $::HttpConfig
 --- config
     location = /re {
         content_by_lua_block {
@@ -473,7 +435,6 @@ qr/\[TRACE\s+\d+/
 
 
 === TEST 14: split matches, provided res table (non-cleared) + max limiter
---- http_config eval: $::HttpConfig
 --- config
     location = /re {
         content_by_lua_block {
@@ -510,7 +471,6 @@ qr/\[TRACE\s+\d+/
 
 
 === TEST 15: split matches, provided res table + max limiter + sub-match capturing group
---- http_config eval: $::HttpConfig
 --- config
     location = /re {
         content_by_lua_block {
@@ -545,7 +505,6 @@ qr/\[TRACE\s+\d+/
 
 
 === TEST 16: split matches, ctx arg
---- http_config eval: $::HttpConfig
 --- config
     location = /re {
         content_by_lua_block {
@@ -576,7 +535,6 @@ qr/\[TRACE\s+\d+/
 
 
 === TEST 17: split matches, trailing subjects
---- http_config eval: $::HttpConfig
 --- config
     location /re {
         content_by_lua_block {
@@ -614,7 +572,6 @@ attempt to get length of local 'regex' (a number value)
 
 
 === TEST 18: split matches, real use-case
---- http_config eval: $::HttpConfig
 --- config
     location /re {
         content_by_lua_block {
@@ -647,7 +604,6 @@ qr/\[TRACE\s+\d+/
 
 
 === TEST 19: split no matches
---- http_config eval: $::HttpConfig
 --- config
     location /re {
         content_by_lua_block {
@@ -676,7 +632,6 @@ qr/\[TRACE\s+\d+/
 
 
 === TEST 20: subject is not a string type
---- http_config eval: $::HttpConfig
 --- config
     location /re {
         content_by_lua_block {
@@ -708,7 +663,6 @@ attempt to get length of local 'subj' (a number value)
 
 
 === TEST 21: split matches, pos is larger than subject length
---- http_config eval: $::HttpConfig
 --- config
     location = /re {
         content_by_lua_block {
@@ -737,7 +691,6 @@ len: 0
 
 
 === TEST 22: regex is ""
---- http_config eval: $::HttpConfig
 --- config
     location /re {
         content_by_lua_block {
@@ -773,7 +726,6 @@ qr/\[TRACE\s+\d+/
 
 
 === TEST 23: regex is "" with max
---- http_config eval: $::HttpConfig
 --- config
     location /re {
         content_by_lua_block {
@@ -807,7 +759,6 @@ qr/\[TRACE\s+\d+/
 
 
 === TEST 24: regex is "" with pos
---- http_config eval: $::HttpConfig
 --- config
     location /re {
         content_by_lua_block {
@@ -842,7 +793,6 @@ qr/\[TRACE\s+\d+/
 
 
 === TEST 25: regex is "" with pos larger than subject length
---- http_config eval: $::HttpConfig
 --- config
     location /re {
         content_by_lua_block {
@@ -872,7 +822,6 @@ len: 0
 
 
 === TEST 26: regex is "" with pos & max
---- http_config eval: $::HttpConfig
 --- config
     location /re {
         content_by_lua_block {
@@ -905,7 +854,6 @@ qr/\[TRACE\s+\d+/
 
 
 === TEST 27: no match separator (github issue #104)
---- http_config eval: $::HttpConfig
 --- config
     location /re {
         content_by_lua_block {
@@ -934,7 +882,6 @@ qr/\[TRACE\s+\d+/
 
 
 === TEST 28: no match separator (github issue #104) & max
---- http_config eval: $::HttpConfig
 --- config
     location /re {
         content_by_lua_block {
@@ -963,7 +910,6 @@ qr/\[TRACE\s+\d+/
 
 
 === TEST 29: no match separator bis (github issue #104)
---- http_config eval: $::HttpConfig
 --- config
     location /re {
         content_by_lua_block {
@@ -992,7 +938,6 @@ qr/\[TRACE\s+\d+/
 
 
 === TEST 30: behavior with /^/ differs from Perl's split
---- http_config eval: $::HttpConfig
 --- config
     location /re {
         content_by_lua_block {
@@ -1024,7 +969,6 @@ qr/\[TRACE\s+\d+/
 
 
 === TEST 31: behavior with /^/m
---- http_config eval: $::HttpConfig
 --- config
     location /re {
         content_by_lua_block {
@@ -1056,7 +1000,6 @@ qr/\[TRACE\s+\d+/
 
 
 === TEST 32: behavior with /^()/m (capture)
---- http_config eval: $::HttpConfig
 --- config
     location /re {
         content_by_lua_block {
@@ -1088,7 +1031,6 @@ qr/\[TRACE\s+\d+/
 
 
 === TEST 33: behavior with /^/m & max
---- http_config eval: $::HttpConfig
 --- config
     location /re {
         content_by_lua_block {
@@ -1120,7 +1062,6 @@ qr/\[TRACE\s+\d+/
 
 
 === TEST 34: behavior with /^\d/m
---- http_config eval: $::HttpConfig
 --- config
     location /re {
         content_by_lua_block {
@@ -1152,7 +1093,6 @@ qr/\[TRACE\s+\d+/
 
 
 === TEST 35: behavior with /^(\d)/m (capture)
---- http_config eval: $::HttpConfig
 --- config
     location /re {
         content_by_lua_block {
@@ -1184,7 +1124,6 @@ qr/\[TRACE\s+\d+/
 
 
 === TEST 36: split by unit separator 1/2 (GH issue lua-nginx-module #1217)
---- http_config eval: $::HttpConfig
 --- config
     location /re {
         content_by_lua_block {
@@ -1216,7 +1155,6 @@ qr/\[TRACE\s+\d+/
 
 
 === TEST 37: split by unit separator 2/2 (with ctx.pos)
---- http_config eval: $::HttpConfig
 --- config
     location /re {
         content_by_lua_block {
@@ -1248,7 +1186,6 @@ qr/\[TRACE\s+\d+/
 
 
 === TEST 38: remaining characters are matched by regex (without max)
---- http_config eval: $::HttpConfig
 --- config
     location /re {
         content_by_lua_block {
@@ -1277,7 +1214,6 @@ qr/\[TRACE\s+\d+/
 
 
 === TEST 39: remaining characters are matched by regex (with max)
---- http_config eval: $::HttpConfig
 --- config
     location /re {
         content_by_lua_block {
