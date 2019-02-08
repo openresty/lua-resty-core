@@ -1,7 +1,6 @@
 # vim:set ft= ts=4 sw=4 et fdm=marker:
-use lib 'lib';
-use Test::Nginx::Socket::Lua;
-use Cwd qw(cwd);
+use lib '.';
+use t::TestCore;
 
 #worker_connections(1014);
 #master_process_enabled(1);
@@ -11,30 +10,6 @@ repeat_each(2);
 
 plan tests => repeat_each() * (blocks() * 4 + 9);
 
-my $pwd = cwd();
-
-our $HttpConfig = <<_EOC_;
-    lua_package_path "$pwd/lib/?.lua;../lua-resty-lrucache/lib/?.lua;;";
-    init_by_lua_block {
-        -- local verbose = true
-        local verbose = false
-        local outfile = "$Test::Nginx::Util::ErrLogFile"
-        -- local outfile = "/tmp/v.log"
-        if verbose then
-            local dump = require "jit.dump"
-            dump.on(nil, outfile)
-        else
-            local v = require "jit.v"
-            v.on(outfile)
-        end
-
-        require "resty.core"
-        -- jit.opt.start("hotloop=1")
-        -- jit.opt.start("loopunroll=1000000")
-        -- jit.off()
-    }
-_EOC_
-
 #no_diff();
 no_long_string();
 check_accum_error_log();
@@ -43,14 +18,13 @@ run_tests();
 __DATA__
 
 === TEST 1: sub, no submatch, no jit compile, regex cache
---- http_config eval: $::HttpConfig
 --- config
     location = /re {
         access_log off;
         content_by_lua_block {
             local m, err
             local sub = ngx.re.sub
-            for i = 1, 350 do
+            for i = 1, 300 do
                 s, n, err = sub("abcbd", "b", "B", "jo")
             end
             if not s then
@@ -76,14 +50,13 @@ NYI
 
 
 === TEST 2: sub, no submatch, no jit compile, no regex cache
---- http_config eval: $::HttpConfig
 --- config
     location = /re {
         access_log off;
         content_by_lua_block {
             local m, err
             local sub = ngx.re.sub
-            for i = 1, 400 do
+            for i = 1, 300 do
                 s, n, err = sub("abcbd", "b", "B")
             end
             if not s then
@@ -108,7 +81,6 @@ bad argument type
 
 
 === TEST 3: func + submatches
---- http_config eval: $::HttpConfig
 --- config
     location = /re {
         access_log off;
@@ -118,7 +90,7 @@ bad argument type
                 return "[" .. m[0] .. "(" .. m[1] .. ")]"
             end
             local sub = ngx.re.sub
-            for i = 1, 200 do
+            for i = 1, 300 do
                 s, n, err = sub("abcbd", "b(c)", f, "jo")
             end
             if not s then
@@ -144,14 +116,13 @@ qr/NYI (?!bytecode 51 at)/,
 
 
 === TEST 4: replace template + submatches
---- http_config eval: $::HttpConfig
 --- config
     location = /re {
         access_log off;
         content_by_lua_block {
             local m, err
             local sub = ngx.re.sub
-            for i = 1, 350 do
+            for i = 1, 300 do
                 s, n, err = sub("abcbd", "b(c)", "[$0($1)]", "jo")
             end
             if not s then
@@ -178,7 +149,6 @@ NYI
 
 
 === TEST 5: replace template + submatches (exceeding buffers)
---- http_config eval: $::HttpConfig
 --- config
     location = /re {
         access_log off;
@@ -210,7 +180,6 @@ bad argument type
 
 
 === TEST 6: ngx.re.gsub: use of ngx.req.get_headers in the user callback
---- http_config eval: $::HttpConfig
 --- config
 
 location = /t {
@@ -246,7 +215,6 @@ NYI
 
 
 === TEST 7: ngx.re.gsub: use of ngx.var in the user callback
---- http_config eval: $::HttpConfig
 --- config
 
 location = /t {
@@ -282,7 +250,6 @@ NYI
 
 
 === TEST 8: ngx.re.gsub: recursive calling (github openresty/lua-nginx-module#445)
---- http_config eval: $::HttpConfig
 --- config
 
 location = /t {
@@ -329,7 +296,6 @@ NYI
 
 
 === TEST 9: string replace subj is not a string type
---- http_config eval: $::HttpConfig
 --- config
     location /re {
         content_by_lua_block {
@@ -349,7 +315,6 @@ attempt to get length of local 'subj' (a number value)
 
 
 === TEST 10: func replace return is not a string type (ngx.re.sub)
---- http_config eval: $::HttpConfig
 --- config
     location /re {
         content_by_lua_block {
@@ -373,7 +338,6 @@ attempt to get length of local 'bit' (a number value)
 
 
 === TEST 11: func replace return is not a string type (ngx.re.gsub)
---- http_config eval: $::HttpConfig
 --- config
     location /re {
         content_by_lua_block {

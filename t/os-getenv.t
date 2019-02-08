@@ -1,22 +1,11 @@
 # vim:set ft= ts=4 sw=4 et fdm=marker:
-use Test::Nginx::Socket::Lua;
-use Cwd qw(cwd);
+use lib '.';
+use t::TestCore;
 
 plan tests => repeat_each() * (blocks() * 3);
 
-my $pwd = cwd();
-
 add_block_preprocessor(sub {
     my $block = shift;
-
-    my $http_config = $block->http_config || '';
-    my $init_by_lua_block = $block->init_by_lua_block || 'require "resty.core"';
-
-    $http_config .= <<_EOC_;
-    lua_package_path "$pwd/lib/?.lua;../lua-resty-lrucache/lib/?.lua;;";
-_EOC_
-
-    $block->set_value("http_config", $http_config);
 
     if (!defined $block->error_log) {
         $block->set_value("no_error_log", "[error]");
@@ -28,6 +17,7 @@ _EOC_
 });
 
 $ENV{TEST_NGINX_BAR} = 'world';
+$ENV{TEST_NGINX_LUA_PACKAGE_PATH} = "$t::TestCore::lua_package_path";
 
 run_tests();
 
@@ -37,6 +27,8 @@ __DATA__
 --- main_config
 env FOO=hello;
 --- http_config
+    lua_package_path "$TEST_NGINX_LUA_PACKAGE_PATH";
+
     init_by_lua_block {
         require "resty.core"
         package.loaded.foo = os.getenv("FOO")
@@ -57,6 +49,7 @@ hello
 --- main_config
 env FOO=hello;
 --- http_config
+    lua_package_path "$TEST_NGINX_LUA_PACKAGE_PATH";
     lua_shared_dict dogs 24k;
 
     init_by_lua_block {
@@ -79,6 +72,8 @@ hello
 --- main_config
 env FOO=hello;
 --- http_config
+    lua_package_path "$TEST_NGINX_LUA_PACKAGE_PATH";
+
     init_by_lua_block {
         require "resty.core"
         package.loaded.foo = os.getenv("foo")
@@ -99,6 +94,8 @@ nil
 --- main_config
 env FOO;
 --- http_config
+    lua_package_path "$TEST_NGINX_LUA_PACKAGE_PATH";
+
     init_by_lua_block {
         require "resty.core"
         package.loaded.foo = os.getenv("FOO")
@@ -119,6 +116,8 @@ nil
 --- main_config
 env TEST_NGINX_BAR;
 --- http_config
+    lua_package_path "$TEST_NGINX_LUA_PACKAGE_PATH";
+
     init_by_lua_block {
         require "resty.core"
         package.loaded.foo = os.getenv("TEST_NGINX_BAR")
@@ -139,6 +138,8 @@ world
 --- main_config
 env TEST_NGINX_BAR=goodbye;
 --- http_config
+    lua_package_path "$TEST_NGINX_LUA_PACKAGE_PATH";
+
     init_by_lua_block {
         require "resty.core"
         package.loaded.foo = os.getenv("TEST_NGINX_BAR")
@@ -159,6 +160,8 @@ goodbye
 --- main_config
 env FOO=;
 --- http_config
+    lua_package_path "$TEST_NGINX_LUA_PACKAGE_PATH";
+
     init_by_lua_block {
         require "resty.core"
         package.loaded.foo = os.getenv("FOO")
@@ -178,6 +181,8 @@ in content:\s+
 
 === TEST 8: os.getenv() overwrite is reverted in worker phases
 --- http_config
+    lua_package_path "$TEST_NGINX_LUA_PACKAGE_PATH";
+
     init_by_lua_block {
         package.loaded.os_getenv = os.getenv
         require "resty.core"

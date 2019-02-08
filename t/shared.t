@@ -1,35 +1,14 @@
 # vim:set ft= ts=4 sw=4 et fdm=marker:
-use lib 'lib';
-use Test::Nginx::Socket::Lua;
-use Cwd qw(cwd);
+use lib '.';
+use t::TestCore;
 
 repeat_each(2);
 
 plan tests => repeat_each() * blocks() * 4;
 
-my $pwd = cwd();
-
 our $HttpConfig = <<_EOC_;
-    lua_package_path "$pwd/lib/?.lua;../lua-resty-lrucache/lib/?.lua;;";
     lua_shared_dict dogs 1m;
-    init_by_lua_block {
-        -- local verbose = true
-        local verbose = false
-        local outfile = "$Test::Nginx::Util::ErrLogFile"
-        -- local outfile = "/tmp/v.log"
-        if verbose then
-            local dump = require "jit.dump"
-            dump.on(nil, outfile)
-        else
-            local v = require "jit.v"
-            v.on(outfile)
-        end
-
-        require "resty.core"
-        -- jit.opt.start("hotloop=1")
-        -- jit.opt.start("loopunroll=1000000")
-        -- jit.off()
-    }
+    $t::TestCore::HttpConfig
 _EOC_
 
 no_diff();
@@ -222,7 +201,7 @@ sleep for 0.1s...
         content_by_lua_block {
             local ok, err = ngx.shared.dogs:set("key", true)
 
-            for i = 1, 100 do
+            for i = 1, 30 do
                 local ttl, err = ngx.shared.dogs:ttl("key")
                 if not ttl then
                     ngx.log(ngx.ERR, "failed to get ttl: ", err)
@@ -437,7 +416,7 @@ after 0.4s: nil
                 ngx.log(ngx.ERR, "failed to set: ", err)
             end
 
-            for i = 1, 100 do
+            for i = 1, 30 do
                 local ok, err = dogs:expire("key", 0.3)
                 if not ok then
                     ngx.say("failed to set ttl: ", err)

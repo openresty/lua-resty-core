@@ -1,22 +1,11 @@
 # vim:set ft= ts=4 sw=4 et fdm=marker:
-use Test::Nginx::Socket::Lua;
-use Cwd qw(cwd);
+use lib '.';
+use t::TestCore;
 
 plan tests => repeat_each() * (blocks() * 4);
 
-my $pwd = cwd();
-
 add_block_preprocessor(sub {
     my $block = shift;
-
-    my $http_config = $block->http_config || '';
-    my $init_by_lua_block = $block->init_by_lua_block || 'require "resty.core"';
-
-    $http_config .= <<_EOC_;
-    lua_package_path "$pwd/lib/?.lua;../lua-resty-lrucache/lib/?.lua;;";
-_EOC_
-
-    $block->set_value("http_config", $http_config);
 
     if (!defined $block->error_log) {
         $block->set_value("error_log",
@@ -36,6 +25,7 @@ no_shuffle();
 use_hup();
 
 $ENV{TEST_NGINX_BAR} = 'old';
+$ENV{TEST_NGINX_LUA_PACKAGE_PATH} = "$t::TestCore::lua_package_path";
 
 run_tests();
 
@@ -45,6 +35,8 @@ __DATA__
 --- main_config
 env FOO=old;
 --- http_config
+    lua_package_path "$TEST_NGINX_LUA_PACKAGE_PATH";
+
     init_by_lua_block {
         require "resty.core"
         package.loaded.foo = os.getenv("FOO")
@@ -66,6 +58,8 @@ old
 --- main_config
 env FOO=new;
 --- http_config
+    lua_package_path "$TEST_NGINX_LUA_PACKAGE_PATH";
+
     init_by_lua_block {
         require "resty.core"
         package.loaded.foo = os.getenv("FOO")
@@ -85,6 +79,8 @@ new
 --- main_config
 env FOO=;
 --- http_config
+    lua_package_path "$TEST_NGINX_LUA_PACKAGE_PATH";
+
     init_by_lua_block {
         require "resty.core"
         package.loaded.foo = os.getenv("FOO")
@@ -104,6 +100,8 @@ location /t {
 --- main_config
 env FOO;
 --- http_config
+    lua_package_path "$TEST_NGINX_LUA_PACKAGE_PATH";
+
     init_by_lua_block {
         require "resty.core"
         package.loaded.foo = os.getenv("FOO")
@@ -123,6 +121,8 @@ nil
 --- main_config
 env TEST_NGINX_BAR;
 --- http_config
+    lua_package_path "$TEST_NGINX_LUA_PACKAGE_PATH";
+
     init_by_lua_block {
         require "resty.core"
         package.loaded.test_nginx_bar = os.getenv("TEST_NGINX_BAR")
@@ -142,6 +142,8 @@ old
 --- main_config
 env TEST_NGINX_BAR=new;
 --- http_config
+    lua_package_path "$TEST_NGINX_LUA_PACKAGE_PATH";
+
     init_by_lua_block {
         require "resty.core"
         package.loaded.test_nginx_bar = os.getenv("TEST_NGINX_BAR")

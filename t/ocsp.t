@@ -1,7 +1,6 @@
 # vim:set ft= ts=4 sw=4 et fdm=marker:
-
-use Test::Nginx::Socket::Lua;
-use Cwd qw(cwd);
+use lib '.';
+use t::TestCore;
 
 #worker_connections(10140);
 #workers(1);
@@ -11,12 +10,10 @@ repeat_each(2);
 
 plan tests => repeat_each() * (blocks() * 6 + 13);
 
-our $CWD = cwd();
-
 no_long_string();
 #no_diff();
 
-$ENV{TEST_NGINX_LUA_PACKAGE_PATH} = "$::CWD/lib/?.lua;;";
+$ENV{TEST_NGINX_LUA_PACKAGE_PATH} = "$t::TestCore::lua_package_path";
 $ENV{TEST_NGINX_HTML_DIR} ||= html_dir();
 
 run_tests();
@@ -38,6 +35,7 @@ __DATA__
             local cert_data = f:read("*a")
             f:close()
 
+            local err
             cert_data, err = ssl.cert_pem_to_der(cert_data)
             if not cert_data then
                 ngx.log(ngx.ERR, "failed to convert pem cert to der cert: ", err)
@@ -74,6 +72,7 @@ __DATA__
 
                 sock:settimeout(3000)
 
+                local err
                 local ok, err = sock:connect("unix:$TEST_NGINX_HTML_DIR/nginx.sock")
                 if not ok then
                     ngx.say("failed to connect: ", err)
@@ -125,6 +124,7 @@ OCSP url found: http://127.0.0.1:8888/ocsp?foo=1,
             local cert_data = f:read("*a")
             f:close()
 
+            local err
             cert_data, err = ssl.cert_pem_to_der(cert_data)
             if not cert_data then
                 ngx.log(ngx.ERR, "failed to convert pem cert to der cert: ", err)
@@ -216,6 +216,7 @@ OCSP responder not found
             local cert_data = f:read("*a")
             f:close()
 
+            local err
             cert_data, err = ssl.cert_pem_to_der(cert_data)
             if not cert_data then
                 ngx.log(ngx.ERR, "failed to convert pem cert to der cert: ", err)
@@ -306,6 +307,7 @@ failed to get OCSP responder: no issuer certificate in chain
             local cert_data = f:read("*a")
             f:close()
 
+            local err
             cert_data, err = ssl.cert_pem_to_der(cert_data)
             if not cert_data then
                 ngx.log(ngx.ERR, "failed to convert pem cert to der cert: ", err)
@@ -396,6 +398,7 @@ failed to get OCSP responder: issuer certificate not next to leaf
             local cert_data = f:read("*a")
             f:close()
 
+            local err
             cert_data, err = ssl.cert_pem_to_der(cert_data)
             if not cert_data then
                 ngx.log(ngx.ERR, "failed to convert pem cert to der cert: ", err)
@@ -492,6 +495,7 @@ still get an error: truncated
             local cert_data = f:read("*a")
             f:close()
 
+            local err
             cert_data, err = ssl.cert_pem_to_der(cert_data)
             if not cert_data then
                 ngx.log(ngx.ERR, "failed to convert pem cert to der cert: ", err)
@@ -586,6 +590,7 @@ OCSP request created with length 68
             local cert_data = f:read("*a")
             f:close()
 
+            local err
             cert_data, err = ssl.cert_pem_to_der(cert_data)
             if not cert_data then
                 ngx.log(ngx.ERR, "failed to convert pem cert to der cert: ", err)
@@ -759,6 +764,7 @@ failed to create OCSP request: d2i_X509_bio() failed
             local cert_data = f:read("*a")
             f:close()
 
+            local err
             cert_data, err = ssl.cert_pem_to_der(cert_data)
             if not cert_data then
                 ngx.log(ngx.ERR, "failed to convert pem cert to der cert: ", err)
@@ -850,6 +856,7 @@ failed to create OCSP request: no issuer certificate in chain
             local cert_data = f:read("*a")
             f:close()
 
+            local err
             cert_data, err = ssl.cert_pem_to_der(cert_data)
             if not cert_data then
                 ngx.log(ngx.ERR, "failed to convert pem cert to der cert: ", err)
@@ -941,6 +948,7 @@ OCSP response validation ok
             local cert_data = f:read("*a")
             f:close()
 
+            local err
             cert_data, err = ssl.cert_pem_to_der(cert_data)
             if not cert_data then
                 ngx.log(ngx.ERR, "failed to convert pem cert to der cert: ", err)
@@ -1032,6 +1040,7 @@ OCSP response validation ok
             local cert_data = f:read("*a")
             f:close()
 
+            local err
             cert_data, err = ssl.cert_pem_to_der(cert_data)
             if not cert_data then
                 ngx.log(ngx.ERR, "failed to convert pem cert to der cert: ", err)
@@ -1126,6 +1135,7 @@ FIXME: we should complain in this case.
             local cert_data = f:read("*a")
             f:close()
 
+            local err
             cert_data, err = ssl.cert_pem_to_der(cert_data)
             if not cert_data then
                 ngx.log(ngx.ERR, "failed to convert pem cert to der cert: ", err)
@@ -1218,6 +1228,7 @@ OCSP response validation ok
             local cert_data = f:read("*a")
             f:close()
 
+            local err
             cert_data, err = ssl.cert_pem_to_der(cert_data)
             if not cert_data then
                 ngx.log(ngx.ERR, "failed to convert pem cert to der cert: ", err)
@@ -1309,6 +1320,7 @@ OCSP response validation ok
             local cert_data = f:read("*a")
             f:close()
 
+            local err
             cert_data, err = ssl.cert_pem_to_der(cert_data)
             if not cert_data then
                 ngx.log(ngx.ERR, "failed to convert pem cert to der cert: ", err)

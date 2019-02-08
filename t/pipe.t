@@ -1,24 +1,21 @@
 # vim:set ft= ts=4 sw=4 et fdm=marker:
-use Test::Nginx::Socket::Lua;
-use Cwd qw(abs_path realpath cwd);
-use File::Basename;
+use lib '.';
+use t::TestCore;
 
 repeat_each(2);
 
 plan tests => repeat_each() * (blocks() * 3 + 16);
 
-my $pwd = cwd();
-
 add_block_preprocessor(sub {
     my $block = shift;
 
     my $http_config = $block->http_config || '';
-    my $init_by_lua_block = $block->init_by_lua_block || 'require "resty.core"';
+    my $init_by_lua_block = $block->init_by_lua_block || '';
 
     $http_config .= <<_EOC_;
-
-    lua_package_path "$pwd/lib/?.lua;../lua-resty-lrucache/lib/?.lua;;";
+    lua_package_path '$t::TestCore::lua_package_path';
     init_by_lua_block {
+        $t::TestCore::init_by_lua_block
         $init_by_lua_block
     }
 _EOC_
@@ -35,7 +32,7 @@ _EOC_
 });
 
 $ENV{TEST_NGINX_HTML_DIR} ||= html_dir();
-$ENV{TEST_NGINX_LIB_DIR} ||= $pwd;
+$ENV{TEST_NGINX_LIB_DIR} ||= $t::TestCore::pwd;
 
 env_to_nginx("PATH");
 no_long_string();

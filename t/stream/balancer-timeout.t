@@ -20,7 +20,8 @@ BEGIN {
     $ENV{TEST_NGINX_POSTPONE_OUTPUT} = 1;
 }
 
-use Test::Nginx::Socket::Lua::Stream;use Cwd qw(cwd);
+use lib '.';
+use t::TestCore::Stream;
 
 #worker_connections(1014);
 #master_on();
@@ -31,7 +32,7 @@ repeat_each(2);
 
 plan tests => repeat_each() * (blocks() * 3 + 5);
 
-$ENV{TEST_NGINX_CWD} = cwd();
+$ENV{TEST_NGINX_LUA_PACKAGE_PATH} = "$t::TestCore::Stream::lua_package_path";
 
 #worker_connections(1024);
 #no_diff();
@@ -42,7 +43,7 @@ __DATA__
 
 === TEST 1: set_timeouts
 --- stream_config
-    lua_package_path "$TEST_NGINX_CWD/lib/?.lua;;";
+    lua_package_path "$TEST_NGINX_LUA_PACKAGE_PATH";
 
     server {
         listen 23456;
@@ -73,7 +74,7 @@ event timer add: \d+: 7689:
 
 === TEST 2: set_timeouts (nil connect timeout)
 --- stream_config
-    lua_package_path "$TEST_NGINX_CWD/lib/?.lua;;";
+    lua_package_path "$TEST_NGINX_LUA_PACKAGE_PATH";
     proxy_connect_timeout 1234ms;
 
     server {
@@ -105,7 +106,7 @@ event timer add: \d+: 7689:
 
 === TEST 3: set_timeouts (nil send timeout)
 --- stream_config
-    lua_package_path "$TEST_NGINX_CWD/lib/?.lua;;";
+    lua_package_path "$TEST_NGINX_LUA_PACKAGE_PATH";
     proxy_timeout 5678ms;
 
     server {
@@ -137,7 +138,7 @@ event timer add: \d+: 7689:
 
 === TEST 4: set_timeouts (nil read timeout)
 --- stream_config
-    lua_package_path "$TEST_NGINX_CWD/lib/?.lua;;";
+    lua_package_path "$TEST_NGINX_LUA_PACKAGE_PATH";
     proxy_timeout 7689ms;
 
     server {
@@ -169,7 +170,7 @@ event timer add: \d+: 5678:
 
 === TEST 5: set connect timeout to 0
 --- stream_config
-    lua_package_path "$TEST_NGINX_CWD/lib/?.lua;;";
+    lua_package_path "$TEST_NGINX_LUA_PACKAGE_PATH";
 
     upstream backend {
         server 0.0.0.1:1234;
@@ -190,7 +191,7 @@ qr/\[error\] .*? balancer_by_lua:3: bad connect timeout/
 
 === TEST 6: set connect timeout to -1
 --- stream_config
-    lua_package_path "$TEST_NGINX_CWD/lib/?.lua;;";
+    lua_package_path "$TEST_NGINX_LUA_PACKAGE_PATH";
 
     upstream backend {
         server 0.0.0.1:1234;
@@ -211,7 +212,7 @@ qr/\[error\] .*? balancer_by_lua:3: bad connect timeout/
 
 === TEST 7: set send timeout to 0
 --- stream_config
-    lua_package_path "$TEST_NGINX_CWD/lib/?.lua;;";
+    lua_package_path "$TEST_NGINX_LUA_PACKAGE_PATH";
 
     upstream backend {
         server 0.0.0.1:1234;
@@ -232,7 +233,7 @@ qr/\[error\] .*? balancer_by_lua:3: bad send timeout/
 
 === TEST 8: set send timeout to -1
 --- stream_config
-    lua_package_path "$TEST_NGINX_CWD/lib/?.lua;;";
+    lua_package_path "$TEST_NGINX_LUA_PACKAGE_PATH";
 
     upstream backend {
         server 0.0.0.1:1234;
@@ -253,7 +254,7 @@ qr/\[error\] .*? balancer_by_lua:3: bad send timeout/
 
 === TEST 9: set read timeout to 0
 --- stream_config
-    lua_package_path "$TEST_NGINX_CWD/lib/?.lua;;";
+    lua_package_path "$TEST_NGINX_LUA_PACKAGE_PATH";
 
     upstream backend {
         server 0.0.0.1:1234;
@@ -274,7 +275,7 @@ qr/\[error\] .*? balancer_by_lua:3: bad read timeout/
 
 === TEST 10 set read timeout to -1
 --- stream_config
-    lua_package_path "$TEST_NGINX_CWD/lib/?.lua;;";
+    lua_package_path "$TEST_NGINX_LUA_PACKAGE_PATH";
 
     upstream backend {
         server 0.0.0.1:1234;
@@ -295,7 +296,7 @@ qr/\[error\] .*? balancer_by_lua:3: bad read timeout/
 
 === TEST 11: set_timeouts called in a wrong context
 --- stream_config
-    lua_package_path "$TEST_NGINX_CWD/lib/?.lua;;";
+    lua_package_path "$TEST_NGINX_LUA_PACKAGE_PATH";
 
 --- stream_server_config
 
@@ -319,7 +320,7 @@ failed to call: API disabled in the current context
 
 === TEST 12: set_timeouts called with a non-numerical parameter
 --- stream_config
-    lua_package_path "$TEST_NGINX_CWD/lib/?.lua;;";
+    lua_package_path "$TEST_NGINX_LUA_PACKAGE_PATH";
 
     upstream backend {
         server 0.0.0.1:1234;

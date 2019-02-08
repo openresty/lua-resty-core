@@ -1,7 +1,6 @@
 # vim:set ft= ts=4 sw=4 et fdm=marker:
-use lib 'lib';
-use Test::Nginx::Socket::Lua;
-use Cwd qw(cwd);
+use lib '.';
+use t::TestCore;
 
 #worker_connections(1014);
 #master_process_enabled(1);
@@ -12,24 +11,22 @@ repeat_each(120);
 
 plan tests => repeat_each() * (blocks() * 5);
 
-my $pwd = cwd();
+add_block_preprocessor(sub {
+    my $block = shift;
 
-our $HttpConfig = <<_EOC_;
-    lua_package_path "$pwd/lib/?.lua;\$prefix/html/?.lua;../lua-resty-lrucache/lib/?.lua;;";
+    my $http_config = $block->http_config || '';
+    my $init_by_lua_block = $block->init_by_lua_block || '';
+
+    $http_config .= <<_EOC_;
+    lua_package_path '\$prefix/html/?.lua;$t::TestCore::lua_package_path';
     init_by_lua_block {
-        local verbose = false
-        if verbose then
-            local dump = require "jit.dump"
-            dump.on(nil, "$Test::Nginx::Util::ErrLogFile")
-        else
-            local v = require "jit.v"
-            v.on("$Test::Nginx::Util::ErrLogFile")
-        end
-
-        require "resty.core"
-        -- jit.off()
+        $t::TestCore::init_by_lua_block
+        $init_by_lua_block
     }
 _EOC_
+
+    $block->set_value("http_config", $http_config);
+});
 
 #no_diff();
 #no_long_string();
@@ -38,7 +35,6 @@ run_tests();
 __DATA__
 
 === TEST 1: sanity
---- http_config eval: $::HttpConfig
 --- config
     location = /t {
         content_by_lua_block {
@@ -57,7 +53,6 @@ qr/ -- NYI: (?!FastFunc coroutine.yield)/,
 
 
 === TEST 2: call ngx.exit() from a custom lua module
---- http_config eval: $::HttpConfig
 --- config
     location = /t {
         content_by_lua_block {

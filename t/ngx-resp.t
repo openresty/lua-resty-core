@@ -1,37 +1,12 @@
-use lib 'lib';
-use Test::Nginx::Socket::Lua;
-use Cwd qw(cwd);
+use lib '.';
+use t::TestCore;
 
 repeat_each(2);
 
 plan tests => repeat_each() * (blocks() * 3);
 
-my $pwd = cwd();
-
 add_block_preprocessor(sub {
     my $block = shift;
-
-    my $http_config = $block->http_config || '';
-    my $init_by_lua_block = $block->init_by_lua_block || 'require "resty.core"';
-
-    $http_config .= <<_EOC_;
-
-    lua_package_path "$pwd/lib/?.lua;../lua-resty-lrucache/lib/?.lua;;";
-    init_by_lua_block {
-        local verbose = false
-        if verbose then
-            local dump = require "jit.dump"
-            dump.on("b", "$Test::Nginx::Util::ErrLogFile")
-        else
-            local v = require "jit.v"
-            v.on("$Test::Nginx::Util::ErrLogFile")
-        end
-
-        $init_by_lua_block
-    }
-_EOC_
-
-    $block->set_value("http_config", $http_config);
 
     if (!defined $block->error_log) {
         $block->set_value("no_error_log", "[error]");
@@ -40,7 +15,6 @@ _EOC_
     if (!defined $block->request) {
         $block->set_value("request", "GET /t");
     }
-
 });
 
 check_accum_error_log();
@@ -116,7 +90,6 @@ fruit: apple, banana, cherry
 
 
 === TEST 5: ngx.resp.add_header (override builtin header)
---- http_config eval: $::HttpConfig
 --- config
     location = /t {
         set $foo hello;

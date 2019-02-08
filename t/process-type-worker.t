@@ -4,32 +4,15 @@ BEGIN {
     undef $ENV{TEST_NGINX_USE_STAP};
 }
 
-use lib 'lib';
-use Test::Nginx::Socket::Lua;
-use Cwd qw(cwd);
+use lib '.';
+use t::TestCore;
 
 repeat_each(2);
 
 plan tests => repeat_each() * (blocks() * 5);
 
-my $pwd = cwd();
-
 our $HttpConfig = <<_EOC_;
-    lua_shared_dict dogs 1m;
-    lua_package_path "$pwd/lib/?.lua;../lua-resty-lrucache/lib/?.lua;;";
-    init_by_lua_block {
-        local verbose = false
-        if verbose then
-            local dump = require "jit.dump"
-            dump.on("b", "$Test::Nginx::Util::ErrLogFile")
-        else
-            local v = require "jit.v"
-            v.on("$Test::Nginx::Util::ErrLogFile")
-        end
-
-        require "resty.core"
-        -- jit.off()
-    }
+    $t::TestCore::HttpConfig
 
     init_worker_by_lua_block {
         local v
@@ -76,11 +59,11 @@ qr/\[TRACE\s+\d+ init_worker_by_lua:\d loop\]|\[TRACE\s+\d+ content_by_lua\(ngin
 --- grep_error_log_out eval
 [
 qr/\[TRACE\s+\d+ init_worker_by_lua:4 loop\]
-\[TRACE\s+\d+ content_by_lua\(nginx.conf:73\):4 loop\]
+\[TRACE\s+\d+ content_by_lua\(nginx.conf:\d+\):4 loop\]
 init_worker_by_lua:8: process type: worker
 /,
 qr/\[TRACE\s+\d+ init_worker_by_lua:4 loop\]
-\[TRACE\s+\d+ content_by_lua\(nginx.conf:73\):4 loop\]
+\[TRACE\s+\d+ content_by_lua\(nginx.conf:\d+\):4 loop\]
 init_worker_by_lua:8: process type: worker
 /
 ]

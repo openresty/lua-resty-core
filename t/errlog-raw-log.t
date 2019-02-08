@@ -1,7 +1,6 @@
 # vim:set ft= ts=4 sw=4 et fdm=marker:
-
-use Test::Nginx::Socket::Lua;
-use Cwd qw(cwd);
+use lib '.';
+use t::TestCore;
 
 log_level('error');
 
@@ -9,20 +8,17 @@ repeat_each(1);
 
 plan tests => repeat_each() * (blocks() * 2 + 5);
 
-my $pwd = cwd();
-
 add_block_preprocessor(sub {
     my $block = shift;
 
     my $http_config = $block->http_config || '';
-    my $init_by_lua_block = $block->init_by_lua_block || 'require "resty.core"';
+    my $init_by_lua_block = $block->init_by_lua_block || '';
 
     $http_config .= <<_EOC_;
-
-    lua_package_path "$pwd/lib/?.lua;../lua-resty-lrucache/lib/?.lua;;";
+    lua_package_path '$t::TestCore::lua_package_path';
     init_by_lua_block {
+        $t::TestCore::init_by_lua_block
         $init_by_lua_block
-        local errlog_file = "$Test::Nginx::Util::ErrLogFile"
     }
 _EOC_
 

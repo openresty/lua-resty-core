@@ -1,7 +1,6 @@
 # vim:set ft= ts=4 sw=4 et fdm=marker:
-use lib 'lib';
-use Test::Nginx::Socket::Lua;
-use Cwd qw(cwd);
+use lib '.';
+use t::TestCore;
 
 #worker_connections(1014);
 #master_process_enabled(1);
@@ -11,27 +10,20 @@ repeat_each(2);
 
 plan tests => repeat_each() * (blocks() * 5 + 2);
 
-my $pwd = cwd();
+add_block_preprocessor(sub {
+    my $block = shift;
 
-our $HttpConfig = <<_EOC_;
+    my $http_config = $block->http_config || '';
+
+    $http_config .= <<_EOC_;
     lua_shared_dict dogs 1m;
     lua_shared_dict cats 16k;
     lua_shared_dict birds 100k;
-    lua_package_path "$pwd/lib/?.lua;../lua-resty-lrucache/lib/?.lua;;";
-    init_by_lua_block {
-        local verbose = false
-        if verbose then
-            local dump = require "jit.dump"
-            dump.on(nil, "$Test::Nginx::Util::ErrLogFile")
-        else
-            local v = require "jit.v"
-            v.on("$Test::Nginx::Util::ErrLogFile")
-        end
-
-        require "resty.core"
-        -- jit.off()
-    }
+    $t::TestCore::HttpConfig
 _EOC_
+
+    $block->set_value("http_config", $http_config);
+});
 
 #no_diff();
 no_long_string();
@@ -41,7 +33,6 @@ run_tests();
 __DATA__
 
 === TEST 1: get a string value
---- http_config eval: $::HttpConfig
 --- config
     location = /t {
         content_by_lua_block {
@@ -77,7 +68,6 @@ qr/\[TRACE\s+\d+ content_by_lua\(nginx\.conf:\d+\):11 loop\]/
 
 
 === TEST 2: get an nonexistent key
---- http_config eval: $::HttpConfig
 --- config
     location = /t {
         content_by_lua_block {
@@ -109,7 +99,6 @@ qr/\[TRACE\s+\d+ content_by_lua\(nginx\.conf:\d+\):7 loop\]/
 
 
 === TEST 3: get a boolean value (true)
---- http_config eval: $::HttpConfig
 --- config
     location = /t {
         content_by_lua_block {
@@ -141,7 +130,6 @@ qr/\[TRACE\s+\d+ content_by_lua\(nginx\.conf:\d+\):7 loop\]/
 
 
 === TEST 4: get a boolean value (false)
---- http_config eval: $::HttpConfig
 --- config
     location = /t {
         content_by_lua_block {
@@ -173,7 +161,6 @@ qr/\[TRACE\s+\d+ content_by_lua\(nginx\.conf:\d+\):7 loop\]/
 
 
 === TEST 5: get a number value (int)
---- http_config eval: $::HttpConfig
 --- config
     location = /t {
         content_by_lua_block {
@@ -205,7 +192,6 @@ qr/\[TRACE\s+\d+ content_by_lua\(nginx\.conf:\d+\):7 loop\]/
 
 
 === TEST 6: get a number value (double)
---- http_config eval: $::HttpConfig
 --- config
     location = /t {
         content_by_lua_block {
@@ -237,7 +223,6 @@ qr/\[TRACE\s+\d+ content_by_lua\(nginx\.conf:\d+\):7 loop\]/
 
 
 === TEST 7: get a large string value
---- http_config eval: $::HttpConfig
 --- config
     location = /t {
         content_by_lua_block {
@@ -270,7 +255,6 @@ qr/\[TRACE\s+\d+ content_by_lua\(nginx\.conf:\d+\):7 loop\]/
 
 
 === TEST 8: get_stale (false)
---- http_config eval: $::HttpConfig
 --- config
     location = /t {
         content_by_lua_block {
@@ -304,7 +288,6 @@ qr/\[TRACE\s+\d+ content_by_lua\(nginx\.conf:\d+\):7 loop\]/
 
 
 === TEST 9: get_stale (true)
---- http_config eval: $::HttpConfig
 --- config
     location = /t {
         content_by_lua_block {
@@ -319,7 +302,7 @@ qr/\[TRACE\s+\d+ content_by_lua\(nginx\.conf:\d+\):7 loop\]/
             end
             ngx.update_time()
             ngx.sleep(0.002)
-            for i = 1, 100 do
+            for i = 1, 30 do
                 val, flags, stale = dogs:get_stale("foo")
             end
             ngx.say("value type: ", type(val))
@@ -336,7 +319,7 @@ value: bar
 flags: 72
 stale: true
 --- error_log eval
-qr/\[TRACE\s+\d+ content_by_lua\(nginx\.conf:\d+\):12 loop\]/
+qr/\[TRACE\s+\d+ content_by_lua\(nginx\.conf:\d+\):13 loop\]/
 --- no_error_log
 [error]
  -- NYI:
@@ -344,7 +327,6 @@ qr/\[TRACE\s+\d+ content_by_lua\(nginx\.conf:\d+\):12 loop\]/
 
 
 === TEST 10: incr int
---- http_config eval: $::HttpConfig
 --- config
     location = /t {
         content_by_lua_block {
@@ -378,7 +360,6 @@ qr/\[TRACE\s+\d+ content_by_lua\(nginx\.conf:\d+\):11 loop\]/
 
 
 === TEST 11: incr double
---- http_config eval: $::HttpConfig
 --- config
     location = /t {
         content_by_lua_block {
@@ -408,7 +389,6 @@ qr/\[TRACE\s+\d+ content_by_lua\(nginx\.conf:\d+\):7 loop\]/
 
 
 === TEST 12: set a string value
---- http_config eval: $::HttpConfig
 --- config
     location = /t {
         content_by_lua_block {
@@ -445,7 +425,6 @@ qr/\[TRACE\s+\d+ content_by_lua\(nginx\.conf:\d+\):7 loop\]/
 
 
 === TEST 13: set a boolean value (true)
---- http_config eval: $::HttpConfig
 --- config
     location = /t {
         content_by_lua_block {
@@ -482,7 +461,6 @@ qr/\[TRACE\s+\d+ content_by_lua\(nginx\.conf:\d+\):7 loop\]/
 
 
 === TEST 14: set a boolean value (false)
---- http_config eval: $::HttpConfig
 --- config
     location = /t {
         content_by_lua_block {
@@ -514,7 +492,6 @@ qr/\[TRACE\s+\d+ content_by_lua\(nginx\.conf:\d+\):6 loop\]/
 
 
 === TEST 15: set a number value (int)
---- http_config eval: $::HttpConfig
 --- config
     location = /t {
         content_by_lua_block {
@@ -546,7 +523,6 @@ qr/\[TRACE\s+\d+ content_by_lua\(nginx\.conf:\d+\):6 loop\]/
 
 
 === TEST 16: set a number value (double)
---- http_config eval: $::HttpConfig
 --- config
     location = /t {
         content_by_lua_block {
@@ -578,7 +554,6 @@ qr/\[TRACE\s+\d+ content_by_lua\(nginx\.conf:\d+\):6 loop\]/
 
 
 === TEST 17: set a number value and a nil
---- http_config eval: $::HttpConfig
 --- config
     location = /t {
         content_by_lua_block {
@@ -611,7 +586,6 @@ qr/\[TRACE\s+\d+ content_by_lua\(nginx\.conf:\d+\):6 loop\]/
 
 
 === TEST 18: safe set a number value
---- http_config eval: $::HttpConfig
 --- config
     location = /t {
         content_by_lua_block {
@@ -643,7 +617,6 @@ qr/\[TRACE\s+\d+ content_by_lua\(nginx\.conf:\d+\):6 loop\]/
 
 
 === TEST 19: add a string value
---- http_config eval: $::HttpConfig
 --- config
     location = /t {
         content_by_lua_block {
@@ -681,7 +654,6 @@ qr/\[TRACE\s+\d+ content_by_lua\(nginx\.conf:\d+\):8 loop\]/
 
 
 === TEST 20: safe add a string value
---- http_config eval: $::HttpConfig
 --- config
     location = /t {
         content_by_lua_block {
@@ -719,7 +691,6 @@ qr/\[TRACE\s+\d+ content_by_lua\(nginx\.conf:\d+\):8 loop\]/
 
 
 === TEST 21: replace a string value
---- http_config eval: $::HttpConfig
 --- config
     location = /t {
         content_by_lua_block {
@@ -757,7 +728,6 @@ qr/\[TRACE\s+\d+ content_by_lua\(nginx\.conf:\d+\):8 loop\]/
 
 
 === TEST 22: set a number value and delete
---- http_config eval: $::HttpConfig
 --- config
     location = /t {
         content_by_lua_block {
@@ -791,7 +761,6 @@ stitch
 
 
 === TEST 23: set nil key
---- http_config eval: $::HttpConfig
 --- config
     location = /t {
         content_by_lua_block {
@@ -815,7 +784,6 @@ failed to set: nil key
 
 
 === TEST 24: get nil key
---- http_config eval: $::HttpConfig
 --- config
     location = /t {
         content_by_lua_block {
@@ -839,7 +807,6 @@ failed to get: nil key
 
 
 === TEST 25: get stale key
---- http_config eval: $::HttpConfig
 --- config
     location = /t {
         content_by_lua_block {
@@ -863,7 +830,6 @@ failed to get stale: nil key
 
 
 === TEST 26: incr key
---- http_config eval: $::HttpConfig
 --- config
     location = /t {
         content_by_lua_block {
@@ -887,7 +853,6 @@ failed to incr: nil key
 
 
 === TEST 27: flush_all
---- http_config eval: $::HttpConfig
 --- config
     location = /t {
         content_by_lua_block {
@@ -921,7 +886,6 @@ stitch
 
 
 === TEST 28: incr, value is not number
---- http_config eval: $::HttpConfig
 --- config
     location = /t {
         content_by_lua_block {
@@ -946,7 +910,6 @@ cannot convert 'nil' to 'double'
 
 
 === TEST 29: incr with init
---- http_config eval: $::HttpConfig
 --- config
     location = /t {
         content_by_lua_block {
@@ -981,7 +944,6 @@ incr ok, value: 20, forcible: false
 
 
 === TEST 30: incr, init is not number
---- http_config eval: $::HttpConfig
 --- config
     location = /t {
         content_by_lua_block {
@@ -1006,7 +968,6 @@ number expected, got string
 
 
 === TEST 31: capacity
---- http_config eval: $::HttpConfig
 --- config
     location = /t {
         content_by_lua_block {
@@ -1030,7 +991,6 @@ capacity: 16384
 
 === TEST 32: free_space, empty (16k zone)
 --- skip_nginx: 5: < 1.11.7
---- http_config eval: $::HttpConfig
 --- config
     location = /t {
         content_by_lua_block {
@@ -1056,7 +1016,6 @@ free_page_bytes: 4096
 
 === TEST 33: free_space, empty (100k zone)
 --- skip_nginx: 5: < 1.11.7
---- http_config eval: $::HttpConfig
 --- config
     location = /t {
         content_by_lua_block {
@@ -1083,7 +1042,6 @@ free_page_bytes: (?:90112|94208)
 
 === TEST 34: free_space, about half full, one page left
 --- skip_nginx: 5: < 1.11.7
---- http_config eval: $::HttpConfig
 --- config
     location = /t {
         content_by_lua_block {
@@ -1123,7 +1081,6 @@ free_page_bytes: 4096
 
 === TEST 35: free_space, about half full, no page left
 --- skip_nginx: 5: < 1.11.7
---- http_config eval: $::HttpConfig
 --- config
     location = /t {
         content_by_lua_block {
@@ -1164,7 +1121,6 @@ free_page_bytes: (?:0|4096)
 
 === TEST 36: free_space, full
 --- skip_nginx: 5: < 1.11.7
---- http_config eval: $::HttpConfig
 --- config
     location = /t {
         content_by_lua_block {
@@ -1204,7 +1160,6 @@ free_page_bytes: 0
 
 === TEST 37: free_space, got forcible
 --- skip_nginx: 5: < 1.11.7
---- http_config eval: $::HttpConfig
 --- config
     location = /t {
         content_by_lua_block {
@@ -1246,7 +1201,6 @@ free_page_bytes: 0
 
 === TEST 38: free_space, full (100k)
 --- skip_nginx: 5: < 1.11.7
---- http_config eval: $::HttpConfig
 --- config
     location = /t {
         content_by_lua_block {
@@ -1289,7 +1243,6 @@ free_page_bytes: (?:0|32768)
 
 
 === TEST 39: incr bad init_ttl argument
---- http_config eval: $::HttpConfig
 --- config
     location = /t {
         content_by_lua_block {
@@ -1315,7 +1268,6 @@ not ok: bad "init_ttl" argument
 
 
 === TEST 40: incr init_ttl argument is not a number
---- http_config eval: $::HttpConfig
 --- config
     location = /t {
         content_by_lua_block {
@@ -1341,7 +1293,6 @@ not ok: bad init_ttl arg: number expected, got string
 
 
 === TEST 41: incr init_ttl argument without init
---- http_config eval: $::HttpConfig
 --- config
     location = /t {
         content_by_lua_block {
@@ -1367,7 +1318,6 @@ not ok: must provide "init" when providing "init_ttl"
 
 
 === TEST 42: incr key with init_ttl (key exists)
---- http_config eval: $::HttpConfig
 --- config
     location = /t {
         content_by_lua_block {
@@ -1398,7 +1348,6 @@ foo after incr init_ttl = 10534
 
 
 === TEST 43: incr key with init and init_ttl (key not exists)
---- http_config eval: $::HttpConfig
 --- config
     location = /t {
         content_by_lua_block {
@@ -1429,7 +1378,6 @@ foo after init_ttl = nil
 
 
 === TEST 44: incr key with init and init_ttl as string (key not exists)
---- http_config eval: $::HttpConfig
 --- config
     location = /t {
         content_by_lua_block {
@@ -1460,7 +1408,6 @@ foo after init_ttl = nil
 
 
 === TEST 45: incr key with init and init_ttl (key expired and size matched)
---- http_config eval: $::HttpConfig
 --- config
     location = /t {
         content_by_lua_block {
@@ -1496,7 +1443,6 @@ foo after init_ttl = nil
 
 
 === TEST 46: incr key with init and init_ttl (forcibly override other valid entries)
---- http_config eval: $::HttpConfig
 --- config
     location = /t {
         content_by_lua_block {
@@ -1539,7 +1485,6 @@ foo after init_ttl = nil
 
 
 === TEST 47: exptime uses long type to avoid overflow in set() + ttl()
---- http_config eval: $::HttpConfig
 --- config
     location = /t {
         content_by_lua_block {
@@ -1573,7 +1518,6 @@ ttl: 2147483648
 
 
 === TEST 48: exptime uses long type to avoid overflow in expire() + ttl()
---- http_config eval: $::HttpConfig
 --- config
     location = /t {
         content_by_lua_block {
@@ -1613,7 +1557,6 @@ ttl: 2147483648
 
 
 === TEST 49: init_ttl uses long type to avoid overflow in incr() + ttl()
---- http_config eval: $::HttpConfig
 --- config
     location = /t {
         content_by_lua_block {
@@ -1647,7 +1590,6 @@ ttl: 2147483648
 
 
 === TEST 50: check zone argument
---- http_config eval: $::HttpConfig
 --- config
     location = /t {
         content_by_lua_block {

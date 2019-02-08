@@ -1,32 +1,10 @@
 # vim:set ft= ts=4 sw=4 et fdm=marker:
-use lib 'lib';
-use Test::Nginx::Socket::Lua::Stream;
-use Cwd qw(cwd);
+use lib '.';
+use t::TestCore::Stream;
 
 repeat_each(2);
 
 plan tests => repeat_each() * (blocks() * 6);
-
-my $pwd = cwd();
-
-our $StreamConfig = <<_EOC_;
-    lua_package_path "$pwd/lib/?.lua;../lua-resty-lrucache/lib/?.lua;;";
-    init_by_lua_block {
-        -- local verbose = true
-        local verbose = false
-        local outfile = "$Test::Nginx::Util::ErrLogFile"
-        -- local outfile = "/tmp/v.log"
-        if verbose then
-            local dump = require "jit.dump"
-            dump.on(nil, outfile)
-        else
-            local v = require "jit.v"
-            v.on(outfile)
-        end
-
-        require "resty.core"
-    }
-_EOC_
 
 no_long_string();
 check_accum_error_log();
@@ -35,7 +13,6 @@ run_tests();
 __DATA__
 
 === TEST 1: ngx.now()
---- stream_config eval: $::StreamConfig
 --- stream_server_config
     content_by_lua_block {
         local t
@@ -64,7 +41,6 @@ stitch
 
 
 === TEST 2: ngx.time()
---- stream_config eval: $::StreamConfig
 --- stream_server_config
     content_by_lua_block {
         local t
@@ -89,7 +65,6 @@ stitch
 
 
 === TEST 3: ngx.update_time()
---- stream_config eval: $::StreamConfig
 --- stream_server_config
     content_by_lua_block {
         local start = ngx.now()
@@ -110,7 +85,6 @@ stitch
 
 
 === TEST 4: ngx.today()
---- stream_config eval: $::StreamConfig
 --- stream_server_config
     content_by_lua_block {
         local t
@@ -130,7 +104,6 @@ stitch
 
 
 === TEST 5: ngx.localtime()
---- stream_config eval: $::StreamConfig
 --- stream_server_config
     content_by_lua_block {
         local t
@@ -150,7 +123,6 @@ stitch
 
 
 === TEST 6: ngx.utctime()
---- stream_config eval: $::StreamConfig
 --- stream_server_config
     content_by_lua_block {
         local t
