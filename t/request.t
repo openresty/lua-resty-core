@@ -24,7 +24,7 @@ __DATA__
         content_by_lua_block {
             local ffi = require "ffi"
             local headers
-            for i = 1, 300 do
+            for i = 1, 500 do
                 headers = ngx.req.get_headers()
             end
             local keys = {}
@@ -66,7 +66,7 @@ qr/ -- NYI: (?!return to lower frame)/,
         content_by_lua_block {
             local ffi = require "ffi"
             local headers
-            for i = 1, 300 do
+            for i = 1, 500 do
                 headers = ngx.req.get_headers(100, true)
             end
             local keys = {}
@@ -106,7 +106,7 @@ qr/\[TRACE\s+\d+ .*? -> \d+\]/
         content_by_lua_block {
             local ffi = require "ffi"
             local headers
-            for i = 1, 300 do
+            for i = 1, 500 do
                 headers = ngx.req.get_headers(2, true)
             end
             local keys = {}
@@ -143,7 +143,7 @@ qr/\[TRACE\s+\d+ content_by_lua\(nginx\.conf:\d+\):4 loop\]/
         content_by_lua_block {
             local ffi = require "ffi"
             local headers, header
-            for i = 1, 100 do
+            for i = 1, 500 do
                 headers = ngx.req.get_headers()
                 header = headers["foo_BAR"]
             end
@@ -185,7 +185,7 @@ qr/ -- NYI: (?!return to lower frame at)(?!C function 0x[0-9a-f]+ at content_by_
         content_by_lua_block {
             local ffi = require "ffi"
             local args
-            for i = 1, 300 do
+            for i = 1, 500 do
                 args = ngx.req.get_uri_args()
             end
             if type(args) ~= "table" then
@@ -229,7 +229,7 @@ qr/\[TRACE\s+\d+ .*? -> \d+\]/
         content_by_lua_block {
             local ffi = require "ffi"
             local args
-            for i = 1, 300 do
+            for i = 1, 500 do
                 args = ngx.req.get_uri_args()
             end
             if type(args) ~= "table" then

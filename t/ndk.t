@@ -47,11 +47,11 @@ __DATA__
             ngx.say(set_unescape_uri("a%20b"))
 
             local res
-            for i = 1, $TEST_NGINX_HOTLOOP + 2 do
+            for i = 1, $TEST_NGINX_HOTLOOP * 5 do
                 res = set_escape_uri(" :")
             end
 
-            for i = 1, $TEST_NGINX_HOTLOOP + 2 do
+            for i = 1, $TEST_NGINX_HOTLOOP * 5 do
                 res = set_unescape_uri("a%20b")
             end
         }
