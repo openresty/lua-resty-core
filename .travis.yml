@@ -57,7 +57,6 @@ install:
   - if [ ! -f download-cache/openssl-$OPENSSL_VER.tar.gz ]; then wget -O download-cache/openssl-$OPENSSL_VER.tar.gz https://www.openssl.org/source/openssl-$OPENSSL_VER.tar.gz; fi
   - if [ ! -f download-cache/old-openssl-$OLD_OPENSSL_VER.tar.gz ]; then wget -O download-cache/old-openssl-$OLD_OPENSSL_VER.tar.gz https://www.openssl.org/source/openssl-$OLD_OPENSSL_VER.tar.gz; fi
   - if [ ! -f download-cache/pcre-$PCRE_VER.tar.gz ]; then wget -P download-cache http://ftp.cs.stanford.edu/pub/exim/pcre/pcre-$PCRE_VER.tar.gz; fi
-  - wget http://nginx.org/download/nginx-${NGINX_VERSION}.tar.gz
   - git clone https://github.com/openresty/openresty.git ../openresty
   - git clone https://github.com/openresty/openresty-devel-utils.git
   - git clone https://github.com/openresty/resty-cli.git ../resty-cli
