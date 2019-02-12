@@ -32,7 +32,7 @@ _EOC_
 });
 
 $ENV{TEST_NGINX_HTML_DIR} ||= html_dir();
-$ENV{TEST_NGINX_LIB_DIR} ||= $t::TestCore::pwd;
+$ENV{TEST_NGINX_LUA_PACKAGE_PATH} = "$t::TestCore::lua_package_path";
 
 env_to_nginx("PATH");
 no_long_string();
@@ -1358,11 +1358,17 @@ lua pipe kill process:
 --- config
     location = /t {
         content_by_lua_block {
+            local function get_ngx_bin_path()
+                local ffi = require "ffi"
+                ffi.cdef[[char **ngx_argv;]]
+                return ffi.string(ffi.C.ngx_argv[0])
+            end
+
+            local conf_file = "$TEST_NGINX_HTML_DIR/nginx.conf"
+            local nginx = get_ngx_bin_path()
+
+            local cmd = nginx .. " -p $TEST_NGINX_HTML_DIR -c " .. conf_file
             local ngx_pipe = require "ngx.pipe"
-            local cmd = [[resty -I $TEST_NGINX_LIB_DIR/lib]]
-                .. [[ --nginx `which nginx`]]
-                .. [[ -e 'print(require "ngx.pipe".spawn{"no-such-cmd"}]]
-                .. [[:wait())']]
             local proc, err = ngx_pipe.spawn(cmd)
             if not proc then
                 ngx.log(ngx.ERR, err)
@@ -1378,6 +1384,25 @@ lua pipe kill process:
             ngx.say(data)
         }
     }
+--- user_files
+>>> nginx.conf
+events {
+    worker_connections 64;
+}
+error_log stderr error;
+daemon off;
+master_process off;
+worker_processes 1;
+http {
+    lua_package_path "$TEST_NGINX_LUA_PACKAGE_PATH";
+    init_worker_by_lua_block {
+        ngx.timer.at(0, function()
+            require "ngx.pipe".spawn{"no-such-cmd"}:wait()
+            os.exit(0)
+        end)
+    }
+}
+>>> logs/error.log
 --- response_body_like
 lua pipe child execvp\(\) failed while executing no-such-cmd \(2: No such file or directory\)
 
