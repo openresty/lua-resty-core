@@ -1358,47 +1358,13 @@ lua pipe kill process:
 --- config
     location = /t {
         content_by_lua_block {
-            local function set_up_ngx_tmp_conf(package_path)
-                local conf = [[
-                    events {
-                        worker_connections 64;
-                    }
-                    error_log stderr error;
-                    daemon off;
-                    master_process off;
-                    worker_processes 1;
-                    http {
-                        lua_package_path "]] .. package_path .. [[";
-                        init_worker_by_lua_block {
-                            ngx.timer.at(0, function()
-                                require "ngx.pipe".spawn{"no-such-cmd"}:wait()
-                                os.exit(0)
-                            end)
-                        }
-                    }
-                ]]
-
-                assert(os.execute("mkdir -p $TEST_NGINX_HTML_DIR/logs"))
-
-                local conf_file = "$TEST_NGINX_HTML_DIR/nginx.conf"
-                local f, err = io.open(conf_file, "w")
-                if not f then
-                    error(err)
-                    return
-                end
-
-                assert(f:write(conf))
-                f:close()
-                return conf_file
-            end
-
             local function get_ngx_bin_path()
                 local ffi = require "ffi"
                 ffi.cdef[[char **ngx_argv;]]
                 return ffi.string(ffi.C.ngx_argv[0])
             end
 
-            local conf_file = set_up_ngx_tmp_conf("$TEST_NGINX_LIB_DIR/lib/?.lua;;")
+            local conf_file = "$TEST_NGINX_HTML_DIR/nginx.conf"
             local nginx = get_ngx_bin_path()
 
             local cmd = nginx .. " -p $TEST_NGINX_HTML_DIR -c " .. conf_file
@@ -1418,6 +1384,25 @@ lua pipe kill process:
             ngx.say(data)
         }
     }
+--- user_files
+>>> nginx.conf
+events {
+    worker_connections 64;
+}
+error_log stderr error;
+daemon off;
+master_process off;
+worker_processes 1;
+http {
+    lua_package_path "$TEST_NGINX_LIB_DIR/lib/?.lua;;";
+    init_worker_by_lua_block {
+        ngx.timer.at(0, function()
+            require "ngx.pipe".spawn{"no-such-cmd"}:wait()
+            os.exit(0)
+        end)
+    }
+}
+>>> logs/error.log
 --- response_body_like
 lua pipe child execvp\(\) failed while executing no-such-cmd \(2: No such file or directory\)
 
