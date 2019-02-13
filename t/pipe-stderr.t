@@ -621,7 +621,7 @@ closed
                 >&2 echo -n data
             ]]
 
-            proc = ngx_pipe.spawn({"sh", "-c", script}, {merge_stderr = true})
+            local proc = ngx_pipe.spawn({"sh", "-c", script}, {merge_stderr = true})
             ngx.say("reading stdout all")
             local data, err = proc:stdout_read_all()
             if not data then
@@ -632,7 +632,7 @@ closed
 
             proc = ngx_pipe.spawn({"sh", "-c", script}, {merge_stderr = true})
             ngx.say("reading any")
-            i = 1
+            local i = 1
             while true do
                 local data, err = proc:stdout_read_any(1024)
 
