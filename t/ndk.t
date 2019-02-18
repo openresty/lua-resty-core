@@ -5,8 +5,6 @@ repeat_each(2);
 
 plan tests => repeat_each() * (blocks() * 5 + 2);
 
-$ENV{TEST_NGINX_HOTLOOP} ||= 9;
-
 add_block_preprocessor(sub {
     my $block = shift;
 
@@ -47,11 +45,11 @@ __DATA__
             ngx.say(set_unescape_uri("a%20b"))
 
             local res
-            for i = 1, $TEST_NGINX_HOTLOOP * 5 do
+            for i = 1, $TEST_NGINX_HOTLOOP * 10 do
                 res = set_escape_uri(" :")
             end
 
-            for i = 1, $TEST_NGINX_HOTLOOP * 5 do
+            for i = 1, $TEST_NGINX_HOTLOOP * 10 do
                 res = set_unescape_uri("a%20b")
             end
         }
