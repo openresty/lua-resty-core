@@ -4,7 +4,7 @@ use t::TestCore;
 
 repeat_each(2);
 
-plan tests => repeat_each() * (blocks() * 3 + 16);
+plan tests => repeat_each() * (blocks() * 3 + 17);
 
 add_block_preprocessor(sub {
     my $block = shift;
@@ -1462,3 +1462,34 @@ ok
 qr/\[notice\] .* signal \d+ \(SIGCHLD\) received from \d+/
 --- no_error_log
 [error]
+
+
+
+=== TEST 42: return nil plus string 'timeout' when waiting process timed out
+--- config
+    location = /t {
+        content_by_lua_block {
+            local ngx_pipe = require "ngx.pipe"
+            local proc, err = ngx_pipe.spawn({"sleep", "10s"})
+            if not proc then
+                ngx.say(err)
+                return
+            end
+
+            proc:set_timeouts(nil, nil, nil, 10)
+            local ok, err = proc:wait()
+            if not ok then
+                ngx.say(ok)
+                ngx.say(err)
+            else
+                ngx.say("ok")
+            end
+        }
+    }
+--- response_body
+nil
+timeout
+--- no_error_log
+[error]
+--- error_log
+lua pipe wait process:
