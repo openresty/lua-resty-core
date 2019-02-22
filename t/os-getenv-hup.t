@@ -1,6 +1,18 @@
 # vim:set ft= ts=4 sw=4 et fdm=marker:
+
+our $SkipReason;
+
+BEGIN {
+    if ($ENV{TEST_NGINX_CHECK_LEAK}) {
+        $SkipReason = "unavailable for the hup tests";
+
+    } else {
+        undef $ENV{TEST_NGINX_USE_STAP};
+    }
+}
+
 use lib '.';
-use t::TestCore;
+use t::TestCore $SkipReason ? (skip_all => $SkipReason) : ();
 
 plan tests => repeat_each() * (blocks() * 4);
 
