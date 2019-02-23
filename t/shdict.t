@@ -1620,3 +1620,192 @@ ok
 [error]
 [alert]
 [crit]
+
+
+
+=== TEST 51: lindex index argument is not a number
+--- config
+    location = /t {
+            content_by_lua_block {
+                local dogs = ngx.shared.dogs
+                dogs:flush_all()
+                local ok, err = dogs:lindex("corgi", nil)
+                ngx.say("ok: ", ok, " err: ", err)
+            }
+    }
+--- request
+GET /t
+--- response_body
+ok: nil err: bad index
+--- no_error_log
+[error]
+[alert]
+[crit]
+
+
+
+=== TEST 52: lindex value is not a list
+--- config
+    location = /t {
+            content_by_lua_block {
+                local dogs = ngx.shared.dogs
+                dogs:flush_all()
+                local ok, err = dogs:set("corgi", "cute")
+                if not ok then
+                    ngx.say("dogs:set() error: ", err)
+                    return
+                end
+
+                local ok, err = dogs:lindex("corgi", -1)
+                ngx.say("ok: ", ok, " err: ", err)
+            }
+    }
+--- request
+GET /t
+--- response_body
+ok: nil err: value not a list
+--- no_error_log
+[error]
+[alert]
+[crit]
+
+
+
+=== TEST 53: lindex value is nil
+--- config
+    location = /t {
+            content_by_lua_block {
+                local dogs = ngx.shared.dogs
+                dogs:flush_all()
+                local ok, err = dogs:lindex("corgi", -1)
+                ngx.say("ok: ", ok, " err: ", err)
+            }
+    }
+--- request
+GET /t
+--- response_body
+ok: nil err: nil
+--- no_error_log
+[error]
+[alert]
+[crit]
+
+
+
+=== TEST 54: lindex negative index
+--- config
+    location = /t {
+            content_by_lua_block {
+                local dogs = ngx.shared.dogs
+                dogs:flush_all()
+                local value = { 2147, 483647, "meat", "bone" }
+                for i = 1, #value do
+                    local ok, err = dogs:lpush("corgi", value[i])
+                    if not ok then
+                        ngx.say("dogs:lpush() error: ", err)
+                        return
+                    end
+                end
+
+                -- bone meat 483647 2147
+
+                for i = -1, -(#value), -1 do
+                    local val, err = dogs:lindex("corgi", i)
+                    if err ~= nil then
+                        ngx.say("index: ", i, " error: ", err)
+                        return
+                    end
+
+                    ngx.say("index: ", i, " value: ", val)
+                end
+            }
+    }
+--- request
+GET /t
+--- response_body
+index: -1 value: 2147
+index: -2 value: 483647
+index: -3 value: meat
+index: -4 value: bone
+--- no_error_log
+[error]
+[alert]
+[crit]
+
+
+
+=== TEST 55: lindex non-negative index
+--- config
+    location = /t {
+            content_by_lua_block {
+                local dogs = ngx.shared.dogs
+                dogs:flush_all()
+                local value = { 2147, 483647, "meat", "bone" }
+                for i = 1, #value do
+                    local ok, err = dogs:lpush("corgi", value[i])
+                    if not ok then
+                        ngx.say("dogs:lpush() error: ", err)
+                        return
+                    end
+                end
+
+                -- bone meat 483647 2147
+
+                for i = 0, #value - 1 do
+                    local val, err = dogs:lindex("corgi", i)
+                    if err ~= nil then
+                        ngx.say("index: ", i, " error: ", err)
+                        return
+                    end
+
+                    ngx.say("index: ", i, " value: ", val)
+                end
+            }
+    }
+--- request
+GET /t
+--- response_body
+index: 0 value: bone
+index: 1 value: meat
+index: 2 value: 483647
+index: 3 value: 2147
+--- no_error_log
+[error]
+[alert]
+[crit]
+
+
+
+=== TEST 56: lindex index out of bound
+--- config
+    location = /t {
+            content_by_lua_block {
+                local dogs = ngx.shared.dogs
+                dogs:flush_all()
+                local value = { 2147, 483647, "meat", "bone" }
+                for i = 1, #value do
+                    local ok, err = dogs:lpush("corgi", value[i])
+                    if not ok then
+                        ngx.say("dogs:lpush() error: ", err)
+                        return
+                    end
+                end
+
+                -- bone meat 483647 2147
+
+                local val, err = dogs:lindex("corgi", -5)
+                ngx.say("val: ", val, " err: ", err)
+
+                local val, err = dogs:lindex("corgi", 4)
+                ngx.say("val: ", val, " err: ", err)
+            }
+    }
+--- request
+GET /t
+--- response_body
+val: nil err: nil
+val: nil err: nil
+--- no_error_log
+[error]
+[alert]
+[crit]

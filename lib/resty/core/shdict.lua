@@ -30,6 +30,7 @@ local ngx_lua_ffi_shdict_set_expire
 local ngx_lua_ffi_shdict_capacity
 local ngx_lua_ffi_shdict_free_space
 local ngx_lua_ffi_shdict_udata_to_zone
+local ngx_lua_ffi_shdict_lindex
 
 
 if subsystem == 'http' then
@@ -60,6 +61,10 @@ int ngx_http_lua_ffi_shdict_set_expire(void *zone,
 size_t ngx_http_lua_ffi_shdict_capacity(void *zone);
 
 void *ngx_http_lua_ffi_shdict_udata_to_zone(void *zone_udata);
+
+int ngx_http_lua_ffi_shdict_lindex(void *zone, const unsigned char *key,
+    size_t key_len, int *value_type, unsigned char **str_value_buf,
+    size_t *str_value_len, double *num_value, int index, char **errmsg);
     ]]
 
     ngx_lua_ffi_shdict_get = C.ngx_http_lua_ffi_shdict_get
@@ -71,6 +76,7 @@ void *ngx_http_lua_ffi_shdict_udata_to_zone(void *zone_udata);
     ngx_lua_ffi_shdict_capacity = C.ngx_http_lua_ffi_shdict_capacity
     ngx_lua_ffi_shdict_udata_to_zone =
         C.ngx_http_lua_ffi_shdict_udata_to_zone
+    ngx_lua_ffi_shdict_lindex = C.ngx_http_lua_ffi_shdict_lindex
 
     if not pcall(function ()
         return C.ngx_http_lua_ffi_shdict_free_space
@@ -588,6 +594,77 @@ local function shdict_free_space(zone)
 end
 
 
+local function shdict_lindex(zone, key, index)
+    zone = check_zone(zone)
+
+    if key == nil then
+        return nil, "nil key"
+    end
+
+    if type(key) ~= "string" then
+        key = tostring(key)
+    end
+
+    local key_len = #key
+    if key_len == 0 then
+        return nil, "empty key"
+    end
+
+    if key_len > 65535 then
+        return nil, "key too long"
+    end
+
+    if type(index) ~= "number" then
+        return nil, "bad index"
+    end
+
+    local size = get_string_buf_size()
+    local buf = get_string_buf(size)
+    str_value_buf[0] = buf
+    local value_len = get_size_ptr()
+    value_len[0] = size
+
+    local rc = ngx_lua_ffi_shdict_lindex(zone, key, key_len, value_type,
+                                         str_value_buf, value_len,
+                                         num_value, index, errmsg)
+
+    if rc ~= 0 then
+        if errmsg[0] then
+            return nil, ffi_str(errmsg[0])
+        end
+
+        error("failed to index the key")
+    end
+
+    local typ = value_type[0]
+
+    if typ == 0 then -- LUA_TNIL
+        return nil
+    end
+
+    local val
+
+    if typ == 4 then -- LUA_TSTRING
+        if str_value_buf[0] ~= buf then
+            buf = str_value_buf[0]
+            val = ffi_str(buf, value_len[0])
+            C.free(buf)
+
+        else
+            val = ffi_str(buf, value_len[0])
+        end
+
+    elseif typ == 3 then -- LUA_TNUMBER
+        val = tonumber(num_value[0])
+
+    else
+        error("unknown value type: " .. typ)
+    end
+
+    return val
+end
+
+
 if ngx_shared then
     local _, dict = next(ngx_shared, nil)
     if dict then
@@ -609,6 +686,7 @@ if ngx_shared then
                 mt.expire = shdict_expire
                 mt.capacity = shdict_capacity
                 mt.free_space = shdict_free_space
+                mt.lindex = shdict_lindex
             end
         end
     end
