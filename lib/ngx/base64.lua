@@ -46,18 +46,16 @@ function _M.encode_base64url(s)
 
     local len = #s
     local trans_len = base64_encoded_length(len)
-    local src = src_str_t[0]
-    local dst = dst_str_t[0]
 
-    src.data = s
-    src.len = len
+    src_str_t[0].data = s
+    src_str_t[0].len = len
 
-    dst.data = get_string_buf(trans_len)
-    dst.len = trans_len
+    dst_str_t[0].data = get_string_buf(trans_len)
+    dst_str_t[0].len = trans_len
 
     C.ngx_encode_base64url(dst_str_t, src_str_t)
 
-    return ffi_str(dst.data, dst.len)
+    return ffi_str(dst_str_t[0].data, dst_str_t[0].len)
 end
 
 
@@ -68,21 +66,19 @@ function _M.decode_base64url(s)
 
     local len = #s
     local trans_len = base64_decoded_length(len)
-    local src = src_str_t[0]
-    local dst = dst_str_t[0]
 
-    src.data = s
-    src.len = len
+    src_str_t[0].data = s
+    src_str_t[0].len = len
 
-    dst.data = get_string_buf(trans_len)
-    dst.len = trans_len
+    dst_str_t[0].data = get_string_buf(trans_len)
+    dst_str_t[0].len = trans_len
 
     local ret = C.ngx_decode_base64url(dst_str_t, src_str_t)
     if ret == NGX_ERROR then
         return nil, "invalid input"
     end
 
-    return ffi_str(dst.data, dst.len)
+    return ffi_str(dst_str_t[0].data, dst_str_t[0].len)
 end
 
 
