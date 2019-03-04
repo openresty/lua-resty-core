@@ -825,7 +825,7 @@ incr ok, value: 20, forcible: false
 
 
 
-=== TEST 100: incr, init is not number
+=== TEST 30: incr, init is not number
 --- stream_server_config
     content_by_lua_block {
         local val, flags
