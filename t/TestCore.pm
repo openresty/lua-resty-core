@@ -4,6 +4,7 @@ use Test::Nginx::Socket::Lua -Base;
 use Cwd qw(cwd);
 
 $ENV{TEST_NGINX_HOTLOOP} ||= 10;
+$ENV{TEST_NGINX_MEMCACHED_PORT} ||= 11211;
 
 our $pwd = cwd();
 

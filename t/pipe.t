@@ -1493,3 +1493,56 @@ timeout
 [error]
 --- error_log
 lua pipe wait process:
+
+
+
+=== TEST 43: spawn sub-process when error_log is configured with syslog
+--- config
+    location = /t {
+        content_by_lua_block {
+            local function get_ngx_bin_path()
+                local ffi = require "ffi"
+                ffi.cdef[[char **ngx_argv;]]
+                return ffi.string(ffi.C.ngx_argv[0])
+            end
+
+            local conf_file = "$TEST_NGINX_HTML_DIR/nginx.conf"
+            local nginx = get_ngx_bin_path()
+
+            local cmd = nginx .. " -p $TEST_NGINX_HTML_DIR -c " .. conf_file
+            local ngx_pipe = require "ngx.pipe"
+            local ok, reason, status = ngx_pipe.spawn(cmd):wait()
+            ngx.say(ok)
+            ngx.say(reason)
+            ngx.say(status)
+        }
+    }
+--- user_files
+>>> nginx.conf
+events {
+    worker_connections 64;
+}
+error_log  syslog:server=127.0.0.1:$TEST_NGINX_MEMCACHED_PORT,facility=local1 info;
+daemon off;
+master_process off;
+worker_processes 1;
+http {
+    lua_package_path "$TEST_NGINX_LUA_PACKAGE_PATH";
+    init_worker_by_lua_block {
+        ngx.timer.at(0, function()
+            local ngx_pipe = require "ngx.pipe"
+            local ok, reason, status = ngx_pipe.spawn("echo"):wait()
+            if not ok then
+                os.exit(status)
+            end
+            os.exit(0)
+        end)
+    }
+}
+>>> logs/error.log
+--- response_body
+true
+exit
+0
+--- no_error_log
+[error]
