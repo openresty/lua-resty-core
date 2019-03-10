@@ -45,6 +45,9 @@ env:
     - NGINX_VERSION=1.15.8 OPENSSL_VER=1.0.2n OPENSSL_PATCH_VER=1.0.2h
     - NGINX_VERSION=1.15.8 OPENSSL_VER=1.1.0h OPENSSL_PATCH_VER=1.1.0d
 
+services:
+  - memcache
+
 before_install:
   - sudo luarocks install luacheck $LUACHECK_VER
   - luacheck -q .
