@@ -69,7 +69,7 @@ Synopsis
 
 [Back to TOC](#table-of-contents)
 
-Methods
+Method
 =======
 
 resolve
@@ -85,7 +85,6 @@ Please, note that resolver has its own configuration option `ipv6=on|off`, which
 The 'ipv4' flag has default value `true`.
 
 It is required to configure the [resolver](http://nginx.org/en/docs/http/ngx_http_core_module.html#resolver) directive in the `nginx.conf`.
-
 
 [Back to TOC](#table-of-contents)
 

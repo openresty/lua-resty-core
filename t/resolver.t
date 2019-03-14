@@ -10,7 +10,6 @@ run_tests();
 
 __DATA__
 
-
 === TEST 1: use resolver in rewrite_by_lua_block
 --- http_config
     lua_package_path "$TEST_NGINX_LUA_PACKAGE_PATH";
