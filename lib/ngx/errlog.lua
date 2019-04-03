@@ -162,7 +162,7 @@ function _M.raw_log(level, msg)
     local rc = ngx_lua_ffi_raw_log(r, level, msg, #msg)
 
     if rc == FFI_ERROR then
-        error("bad log level")
+        error("bad log level", 2)
     end
 end
 

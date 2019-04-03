@@ -39,7 +39,7 @@ ngx.exit = function (rc)
     if rc == FFI_DONE then
         return
     end
-    error(ffi_string(err, errlen[0]))
+    error(ffi_string(err, errlen[0]), 2)
 end
 
 

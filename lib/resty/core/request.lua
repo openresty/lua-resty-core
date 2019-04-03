@@ -92,7 +92,7 @@ function ngx.req.get_headers(max_headers, raw)
     local n = C.ngx_http_lua_ffi_req_get_headers_count(r, max_headers,
                                                        truncated)
     if n == FFI_BAD_CONTEXT then
-        error("API disabled in the current context")
+        error("API disabled in the current context", 2)
     end
 
     if n == 0 then
@@ -154,7 +154,7 @@ function ngx.req.get_uri_args(max_args)
 
     local n = C.ngx_http_lua_ffi_req_get_uri_args_count(r, max_args, truncated)
     if n == FFI_BAD_CONTEXT then
-        error("API disabled in the current context")
+        error("API disabled in the current context", 2)
     end
 
     if n == 0 then
@@ -244,7 +244,7 @@ do
         do
             local id = C.ngx_http_lua_ffi_req_get_method(r)
             if id == FFI_BAD_CONTEXT then
-                error("API disabled in the current context")
+                error("API disabled in the current context", 2)
             end
 
             local method = methods[id]
@@ -280,11 +280,11 @@ function ngx.req.set_method(method)
     end
 
     if rc == FFI_BAD_CONTEXT then
-        error("API disabled in the current context")
+        error("API disabled in the current context", 2)
     end
 
     if rc == FFI_DECLINED then
-        error("unsupported HTTP method: " .. method)
+        error("unsupported HTTP method: " .. method, 2)
     end
 
     error("unknown error: " .. rc)
@@ -327,7 +327,7 @@ do
         end
 
         if rc == FFI_BAD_CONTEXT then
-            error("API disabled in the current context")
+            error("API disabled in the current context", 2)
         end
 
         error("error")
@@ -353,7 +353,7 @@ function ngx.req.clear_header(name)
     end
 
     if rc == FFI_BAD_CONTEXT then
-        error("API disabled in the current context")
+        error("API disabled in the current context", 2)
     end
 
     error("error")
