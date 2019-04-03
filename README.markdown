@@ -94,7 +94,7 @@ Prerequisites
 
 **WARNING** This library is included with every OpenResty release. You should use the bundled version
 of this library in the particular OpenResty release you are using. Otherwise you may run
-into serious comaptibility issues.
+into serious compatibility issues.
 
 * LuaJIT 2.1 (for now, it is the v2.1 git branch in the official luajit-2.0 git repository: http://luajit.org/download.html )
 * [ngx_http_lua_module](https://github.com/openresty/lua-nginx-module) v0.10.15.

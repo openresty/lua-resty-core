@@ -125,9 +125,9 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 
 See Also
 ========
-* library [lua-resty-core](https://github.com/openresty/lua-resty-core)
+* the [lua-resty-core](https://github.com/openresty/lua-resty-core) library.
 * the ngx_lua module: https://github.com/openresty/lua-nginx-module
-* OpenResty: http://openresty.org
+* OpenResty: https://openresty.org
 
 [Back to TOC](#table-of-contents)
 
