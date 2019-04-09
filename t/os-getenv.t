@@ -182,6 +182,7 @@ in content:\s+
 === TEST 8: os.getenv() overwrite is reverted in worker phases
 --- http_config
     lua_package_path "$TEST_NGINX_LUA_PACKAGE_PATH";
+    lua_load_resty_core off;
 
     init_by_lua_block {
         package.loaded.os_getenv = os.getenv
