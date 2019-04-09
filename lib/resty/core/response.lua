@@ -109,11 +109,11 @@ local function set_resp_header(tb, key, value, no_override)
     end
 
     if rc == FFI_BAD_CONTEXT then
-        error("API disabled in the current context")
+        error("API disabled in the current context", 2)
     end
 
     -- rc == FFI_ERROR
-    error(ffi_str(errmsg[0]))
+    error(ffi_str(errmsg[0]), 2)
 end
 
 
@@ -141,7 +141,7 @@ local function get_resp_header(tb, key)
     -- print("retval: ", n)
 
     if n == FFI_BAD_CONTEXT then
-        error("API disabled in the current context")
+        error("API disabled in the current context", 2)
     end
 
     if n == 0 then
@@ -163,7 +163,7 @@ local function get_resp_header(tb, key)
     end
 
     -- n == FFI_ERROR
-    error(ffi_str(errmsg[0]))
+    error(ffi_str(errmsg[0]), 2)
 end
 
 

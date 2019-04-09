@@ -43,8 +43,8 @@ __DATA__
 
         ngx.say("ok")
     }
---- stream_response_like
-not ok: .*? bad log level
+--- stream_response
+not ok: bad log level
 --- no_error_log
 [error]
 
@@ -63,8 +63,8 @@ not ok: .*? bad log level
 
         ngx.say("ok")
     }
---- stream_response_like
-not ok: .*? bad log level
+--- stream_response
+not ok: bad log level
 --- no_error_log
 [error]
 

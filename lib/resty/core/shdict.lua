@@ -157,17 +157,17 @@ local errmsg = base.get_errmsg_ptr()
 
 local function check_zone(zone)
     if not zone or type(zone) ~= "table" then
-        error("bad \"zone\" argument", 2)
+        error("bad \"zone\" argument", 3)
     end
 
     zone = zone[1]
     if type(zone) ~= "userdata" then
-        error("bad \"zone\" argument", 2)
+        error("bad \"zone\" argument", 3)
     end
 
     zone = ngx_lua_ffi_shdict_udata_to_zone(zone)
     if zone == nil then
-        error("bad \"zone\" argument", 2)
+        error("bad \"zone\" argument", 3)
     end
 
     return zone

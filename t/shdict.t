@@ -1611,11 +1611,11 @@ ttl: 2147483648
     }
 --- request
 GET /t
---- response_body_like
+--- response_body
 ok
-.+shdict\.lua:\d+: bad "zone" argument
-.+shdict\.lua:\d+: bad "zone" argument
-.+shdict\.lua:\d+: bad "zone" argument
+bad "zone" argument
+bad "zone" argument
+bad "zone" argument
 --- no_error_log
 [error]
 [alert]

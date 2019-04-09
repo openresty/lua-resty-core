@@ -97,7 +97,7 @@ int ngx_http_lua_ffi_get_conf_env(const unsigned char *name,
         local rc = C.ngx_http_lua_ffi_get_resp_status(r)
 
         if rc == FFI_BAD_CONTEXT then
-            error("API disabled in the current context")
+            error("API disabled in the current context", 2)
         end
 
         return rc
@@ -119,7 +119,7 @@ int ngx_http_lua_ffi_get_conf_env(const unsigned char *name,
         local rc = C.ngx_http_lua_ffi_set_resp_status(r, status)
 
         if rc == FFI_BAD_CONTEXT then
-            error("API disabled in the current context")
+            error("API disabled in the current context", 2)
         end
 
         return
@@ -139,7 +139,7 @@ int ngx_http_lua_ffi_get_conf_env(const unsigned char *name,
         local rc = C.ngx_http_lua_ffi_is_subrequest(r)
 
         if rc == FFI_BAD_CONTEXT then
-            error("API disabled in the current context")
+            error("API disabled in the current context", 2)
         end
 
         return rc == 1
@@ -163,7 +163,7 @@ int ngx_http_lua_ffi_get_conf_env(const unsigned char *name,
         end
 
         if rc == FFI_BAD_CONTEXT then
-            error("API disabled in the current context")
+            error("API disabled in the current context", 2)
         end
 
         return rc == 1

@@ -41,7 +41,7 @@ function ngx.get_phase()
 
     local context = C.ngx_http_lua_ffi_get_phase(r, errmsg)
     if context == FFI_ERROR then -- NGX_ERROR
-        error(errmsg)
+        error(errmsg, 2)
     end
 
     local phase = context_names[context]
