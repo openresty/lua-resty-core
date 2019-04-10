@@ -42,8 +42,9 @@ env:
     - LUACHECK_VER=0.21.1
     - OLD_OPENSSL_VER=0.9.8o
   matrix:
-    - NGINX_VERSION=1.15.8 OPENSSL_VER=1.0.2n OPENSSL_PATCH_VER=1.0.2h
-    - NGINX_VERSION=1.15.8 OPENSSL_VER=1.1.0h OPENSSL_PATCH_VER=1.1.0d
+    - NGINX_VERSION=1.15.8 OPENSSL_VER=1.0.2q OPENSSL_OPT="" OPENSSL_PATCH_VER=1.0.2h
+    - NGINX_VERSION=1.15.8 OPENSSL_VER=1.1.0j OPENSSL_OPT="" OPENSSL_PATCH_VER=1.1.0d
+    - NGINX_VERSION=1.15.8 OPENSSL_VER=1.1.1b OPENSSL_OPT="enable-tls1_3" OPENSSL_PATCH_VER=""
 
 services:
   - memcache
@@ -60,10 +61,10 @@ install:
   - if [ ! -f download-cache/openssl-$OPENSSL_VER.tar.gz ]; then wget -O download-cache/openssl-$OPENSSL_VER.tar.gz https://www.openssl.org/source/openssl-$OPENSSL_VER.tar.gz; fi
   - if [ ! -f download-cache/old-openssl-$OLD_OPENSSL_VER.tar.gz ]; then wget -O download-cache/old-openssl-$OLD_OPENSSL_VER.tar.gz https://www.openssl.org/source/openssl-$OLD_OPENSSL_VER.tar.gz; fi
   - if [ ! -f download-cache/pcre-$PCRE_VER.tar.gz ]; then wget -P download-cache http://ftp.cs.stanford.edu/pub/exim/pcre/pcre-$PCRE_VER.tar.gz; fi
-  - git clone https://github.com/openresty/openresty.git ../openresty
+  - git clone -b support_openssl_1.1.1b https://github.com/spacewander/openresty.git ../openresty
   - git clone https://github.com/openresty/openresty-devel-utils.git
   - git clone https://github.com/simpl/ngx_devel_kit.git ../ndk-nginx-module
-  - git clone https://github.com/openresty/lua-nginx-module.git ../lua-nginx-module
+  - git clone -b support_openssl_1.1.1b https://github.com/spacewander/lua-nginx-module.git ../lua-nginx-module
   - git clone https://github.com/openresty/no-pool-nginx.git ../no-pool-nginx
   - git clone https://github.com/openresty/echo-nginx-module.git ../echo-nginx-module
   - git clone https://github.com/openresty/lua-resty-lrucache.git
@@ -82,8 +83,8 @@ script:
   - cd lua-resty-lrucache && sudo make DESTDIR=$LUAJIT_PREFIX LUA_LIB_DIR=/share/lua/5.1 install && cd ..
   - tar zxf download-cache/openssl-$OPENSSL_VER.tar.gz
   - cd openssl-$OPENSSL_VER/
-  - patch -p1 < ../../openresty/patches/openssl-$OPENSSL_PATCH_VER-sess_set_get_cb_yield.patch
-  - ./config no-threads shared enable-ssl3 enable-ssl3-method -g --prefix=$OPENSSL_PREFIX -DPURIFY > build.log 2>&1 || (cat build.log && exit 1)
+  - if [ -n "$OPENSSL_PATCH_VER" ]; then patch -p1 < ../../openresty/patches/openssl-$OPENSSL_PATCH_VER-sess_set_get_cb_yield.patch; fi
+  - ./config no-threads shared enable-ssl3 enable-ssl3-method $OPENSSL_OPT -g --prefix=$OPENSSL_PREFIX -DPURIFY > build.log 2>&1 || (cat build.log && exit 1)
   - make -j$JOBS > build.log 2>&1 || (cat build.log && exit 1)
   - sudo make PATH=$PATH install_sw > build.log 2>&1 || (cat build.log && exit 1)
   - cd ../mockeagain/ && make CC=$CC -j$JOBS && cd ..
