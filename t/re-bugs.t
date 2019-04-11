@@ -39,7 +39,6 @@ __DATA__
         content_by_lua_block {
             ngx.say(ngx.re.sub('c', 'a', 'b', ''))
             ngx.say(ngx.re.sub('c', 'a', 'b', 'jo'))
-            ngx.say("it works!")
         }
     }
 --- request
@@ -47,7 +46,6 @@ __DATA__
 --- response_body
 c0
 c0
-it works!
 --- grep_error_log eval
 qr/.+parse_regex_opts\(\): running regex in init phase under macOS,.+/
 --- grep_error_log_out eval
@@ -67,7 +65,6 @@ qr/(:?.+parse_regex_opts\(\): running regex in init phase under macOS,.+){2}/s
         content_by_lua_block {
             ngx.say(ngx.re.sub('c', 'a', 'b', ''))
             ngx.say(ngx.re.sub('c', 'a', 'b', 'jo'))
-            ngx.say("it works!")
         }
     }
 --- request
@@ -75,7 +72,6 @@ qr/(:?.+parse_regex_opts\(\): running regex in init phase under macOS,.+){2}/s
 --- response_body
 c0
 c0
-it works!
 --- no_error_log
 [error]
 running regex in init phase under macOS
