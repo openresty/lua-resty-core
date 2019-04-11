@@ -55,7 +55,7 @@ qr/(:?.+parse_regex_opts\(\): running regex in init phase under macOS,.+){2}/s
 
 
 
-=== TEST 2: PCRE MAP_JIT bug fix does not affect other O/Ses
+=== TEST 2: PCRE MAP_JIT bug fix does not affect other OSes
 --- init_by_lua_block
     ngx.re.match('c', 'test', 'jo')
 --- skip_eval
