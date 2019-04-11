@@ -30,6 +30,9 @@ local get_string_buf = base.get_string_buf
 local get_string_buf_size = base.get_string_buf_size
 local new_tab = base.new_tab
 local subsystem = ngx.config.subsystem
+local ngx_phase = ngx.get_phase
+local ngx_log = ngx.log
+local ngx_NOTICE = ngx.NOTICE
 
 
 if not ngx.re then
@@ -76,6 +79,25 @@ local ngx_lua_ffi_init_script_engine
 local ngx_lua_ffi_compile_replace_template
 local ngx_lua_ffi_script_eval_len
 local ngx_lua_ffi_script_eval_data
+-- PCRE 8.43 on macOS introduced the MAP_JIT option when creating memory region
+-- used to store JIT compiled code, which does not survive across `fork()`,
+-- causing further usage of PCRE JIT compiler to segfault in worker processes
+--
+-- this flag prevents any regex used in init phase to be JIT compiled or cached
+-- when running under macOS even if the user requests so. caching is disabled
+-- to prevent further calls of same regex in worker to have poor performance.
+local pcre_map_jit_fix = true
+
+
+local function get_pcre_map_jit_fix()
+    if not pcre_map_jit_fix then
+        return pcre_map_jit_fix
+    end
+
+    pcre_map_jit_fix = (jit.os == "OSX" and ngx_phase() == "init")
+
+    return pcre_map_jit_fix
+end
 
 
 if subsystem == 'http' then
@@ -289,10 +311,22 @@ local function parse_regex_opts(opts)
     for i = 1, len do
         local opt = byte(opts, i)
         if opt == byte("o") then
-            flags = bor(flags, FLAG_COMPILE_ONCE)
+            if get_pcre_map_jit_fix() then
+                ngx_log(ngx_NOTICE, "running regex in init phase under macOS, ",
+                                    "compilation cache temporarily disabled")
+
+            else
+                flags = bor(flags, FLAG_COMPILE_ONCE)
+            end
 
         elseif opt == byte("j") then
-            flags = bor(flags, FLAG_JIT)
+            if get_pcre_map_jit_fix() then
+                ngx_log(ngx_NOTICE, "running regex in init phase under macOS, ",
+                                    "PCRE JIT compilation temporarily disabled")
+
+            else
+                flags = bor(flags, FLAG_JIT)
+            end
 
         elseif opt == byte("i") then
             pcre_opts = bor(pcre_opts, PCRE_CASELESS)
