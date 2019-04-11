@@ -1,21 +1,27 @@
 # vim:set ft= ts=4 sw=4 et fdm=marker:
-use lib 'lib';
-use Test::Nginx::Socket::Lua;
-use Cwd qw(cwd);
+use lib '.';
+use t::TestCore;
 
 repeat_each(2);
 
 plan tests => repeat_each() * (blocks() * 4);
 
-my $pwd = cwd();
+add_block_preprocessor(sub {
+    my $block = shift;
 
-our $HttpConfig = <<_EOC_;
-    lua_package_path "$pwd/lib/?.lua;../lua-resty-lrucache/lib/?.lua;;";
+    my $http_config = $block->http_config || '';
+    my $init_by_lua_block = $block->init_by_lua_block || '';
+
+    $http_config .= <<_EOC_;
+    lua_package_path '$t::TestCore::lua_package_path';
     init_by_lua_block {
-        require "resty.core"
-        ngx.re.match('c', 'test', 'jo')
+        $t::TestCore::init_by_lua_block
+        $init_by_lua_block
     }
 _EOC_
+
+    $block->set_value("http_config", $http_config);
+});
 
 no_long_string();
 check_accum_error_log();
@@ -24,9 +30,10 @@ run_tests();
 __DATA__
 
 === TEST 1: PCRE MAP_JIT bug on macOS
+--- init_by_lua_block
+    ngx.re.match('c', 'test', 'jo')
 --- skip_eval
 4: $^O ne 'darwin'
---- http_config eval: $::HttpConfig
 --- config
     location /re {
         content_by_lua_block {
@@ -51,9 +58,10 @@ qr/(:?.+parse_regex_opts\(\): running regex in init phase under macOS,.+){2}/s
 
 
 === TEST 2: PCRE MAP_JIT bug fix does not affect other O/Ses
+--- init_by_lua_block
+    ngx.re.match('c', 'test', 'jo')
 --- skip_eval
 4: $^O ne 'linux'
---- http_config eval: $::HttpConfig
 --- config
     location /re {
         content_by_lua_block {
@@ -68,7 +76,6 @@ qr/(:?.+parse_regex_opts\(\): running regex in init phase under macOS,.+){2}/s
 c0
 c0
 it works!
-
 --- no_error_log
 [error]
 running regex in init phase under macOS
