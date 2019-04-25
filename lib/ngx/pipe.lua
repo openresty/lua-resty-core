@@ -11,6 +11,7 @@ local ipairs = ipairs
 local tonumber = tonumber
 local tostring = tostring
 local type = type
+local str_find = string.find
 local table_concat = table.concat
 local ffi = require "ffi"
 local C = ffi.C
@@ -46,7 +47,7 @@ typedef struct {
 
 int ngx_http_lua_ffi_pipe_spawn(ngx_http_lua_ffi_pipe_proc_t *proc,
     const char *file, const char **argv, int merge_stderr, size_t buffer_size,
-    u_char *errbuf, size_t *errbuf_size);
+    const char **environ, u_char *errbuf, size_t *errbuf_size);
 
 int ngx_http_lua_ffi_pipe_proc_read(ngx_http_request_t *r,
     ngx_http_lua_ffi_pipe_proc_t *proc, int from_stderr, int reader_type,
@@ -520,16 +521,13 @@ do
 
         local exe
         local proc_args
+        local proc_envs
 
         local args_type = type(args)
         if args_type == "table" then
             local nargs = 0
 
             for i, arg in ipairs(args)  do
-                if arg == nil then
-                    break
-                end
-
                 nargs = nargs + 1
 
                 if type(arg) ~= "string" then
@@ -566,6 +564,38 @@ do
                     error("bad buffer_size option", 2)
                 end
             end
+
+            if opts.environ then
+                local environ = opts.environ
+                local environ_type = type(environ)
+                if environ_type ~= "table" then
+                    error("bad environ option: table expected, got " ..
+                          environ_type, 2)
+                end
+
+                local nenv = 0
+
+                for i, env in ipairs(environ) do
+                    nenv = nenv + 1
+
+                    local env_type = type(env)
+                    if env_type ~= "string" then
+                        error("bad value at index " .. i .. " of environ " ..
+                              "option: string expected, got " .. env_type, 2)
+                    end
+
+                    if not str_find(env, "=", 2, true) then
+                        error("bad value at index " .. i .. " of environ " ..
+                              "option: 'name=[value]' format expected, got '" ..
+                              env .. "'", 2)
+                    end
+                end
+
+                if nenv > 0 then
+                    proc_envs = ffi_new("const char* [?]", nenv + 1, environ)
+                    proc_envs[nenv] = nil
+                end
+            end
         end
 
         local proc = Proc()
@@ -574,7 +604,7 @@ do
         errbuf_size[0] = ERR_BUF_SIZE
         local rc = C.ngx_http_lua_ffi_pipe_spawn(proc, exe, proc_args,
                                                  merge_stderr, buffer_size,
-                                                 errbuf, errbuf_size)
+                                                 proc_envs, errbuf, errbuf_size)
         if rc == FFI_ERROR then
             return nil, ffi_str(errbuf, errbuf_size[0])
         end

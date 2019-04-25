@@ -1599,3 +1599,191 @@ stdout: ok
 stderr err: closed
 --- no_error_log
 [error]
+
+
+
+=== TEST 45: spawn process, with environ option (sanity)
+--- config
+    location = /t {
+        content_by_lua_block {
+            local ngx_pipe = require "ngx.pipe"
+
+            local proc, err = ngx_pipe.spawn('echo $TEST_ENV', {
+                environ = { "TEST_ENV=blahblah" }
+            })
+            if not proc then
+                ngx.say(err)
+                return
+            end
+
+            local data, err = proc:stdout_read_line()
+            if not data then
+                ngx.say(err)
+            else
+                ngx.say(data)
+            end
+        }
+    }
+--- response_body
+blahblah
+
+
+
+=== TEST 46: spawn process, with environ option (multiple values)
+--- config
+    location = /t {
+        content_by_lua_block {
+            local ngx_pipe = require "ngx.pipe"
+
+            local proc, err = ngx_pipe.spawn('echo "$TEST_ENV $TEST_FOO"', {
+                environ = { "TEST_ENV=blahblah", "TEST_FOO=hello" }
+            })
+            if not proc then
+                ngx.say(err)
+                return
+            end
+
+            local data, err = proc:stdout_read_line()
+            if not data then
+                ngx.say(err)
+            else
+                ngx.say(data)
+            end
+        }
+    }
+--- response_body
+blahblah hello
+
+
+
+=== TEST 47: spawn process, with empty environ option (no values)
+--- config
+    location = /t {
+        content_by_lua_block {
+            local ngx_pipe = require "ngx.pipe"
+
+            local proc, err = ngx_pipe.spawn('echo "TEST_ENV:$TEST_ENV"', {
+                environ = {}
+            })
+            if not proc then
+                ngx.say(err)
+                return
+            end
+
+            local data, err = proc:stdout_read_line()
+            if not data then
+                ngx.say(err)
+            else
+                ngx.say(data)
+            end
+        }
+    }
+--- response_body
+TEST_ENV:
+
+
+
+=== TEST 48: spawn process, with invalid environ option
+--- config
+    location = /t {
+        content_by_lua_block {
+            local ngx_pipe = require "ngx.pipe"
+
+            local function spawn(environ)
+                local pok, perr = pcall(ngx_pipe.spawn, 'echo $TEST_ENV', {
+                    environ = environ
+                })
+                if not pok then
+                    ngx.say(perr)
+                else
+                    ngx.say("ok")
+                end
+            end
+
+            spawn("TEST_ENV=1")
+            spawn({ "TEST_ENV=", 1 })
+            spawn({ "TEST_ENV" })
+            spawn({ "=1" })
+        }
+    }
+--- response_body
+bad environ option: table expected, got string
+bad value at index 2 of environ option: string expected, got number
+bad value at index 1 of environ option: 'name=[value]' format expected, got 'TEST_ENV'
+bad value at index 1 of environ option: 'name=[value]' format expected, got '=1'
+
+
+
+=== TEST 49: spawn process, with invalid environ option
+--- config
+    location = /t {
+        content_by_lua_block {
+            local ngx_pipe = require "ngx.pipe"
+
+            local function spawn(environ)
+                local pok, perr = pcall(ngx_pipe.spawn, 'echo "TEST_ENV:$TEST_ENV"', {
+                    environ = environ
+                })
+                if not pok then
+                    ngx.say(perr)
+                    return
+                end
+
+                local proc = perr
+
+                local data, err = proc:stdout_read_line()
+                if not data then
+                    ngx.say(err)
+                else
+                    ngx.say(data)
+                end
+            end
+
+            spawn({ "TEST_ENV =1" })
+            spawn({ "TEST_ENV= 1" })
+            spawn({ "TEST_ENV==1" })
+        }
+    }
+--- response_body
+TEST_ENV:
+TEST_ENV: 1
+TEST_ENV:=1
+
+
+
+=== TEST 50: spawn process, with environ option containing nil holes
+--- config
+    location = /t {
+        content_by_lua_block {
+            local ngx_pipe = require "ngx.pipe"
+
+            local function spawn(environ)
+                local proc, err = ngx_pipe.spawn('echo "$TEST_ENV2$TEST_ENV"', {
+                    environ = environ
+                })
+                if not proc then
+                    ngx.say(err)
+                    return
+                end
+
+                local data, err = proc:stdout_read_line()
+                if not data then
+                    ngx.say(err)
+                else
+                    ngx.say(data)
+                end
+            end
+
+            spawn({ "TEST_ENV=1", nil, "TEST_ENV2=2", nil })
+            spawn({ "TEST_ENV=1", nil, "TEST_ENV2=2" })
+            spawn({ nil, "TEST_ENV=1", "TEST_ENV2=2"})
+            spawn({ hash_key = true, "TEST_ENV=1", nil, "TEST_ENV2=2", nil })
+            spawn({ hash_key = true, "TEST_ENV=1", nil, "TEST_ENV2=2" })
+        }
+    }
+--- response_body
+1
+1
+
+1
+1
