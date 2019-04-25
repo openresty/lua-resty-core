@@ -1599,3 +1599,88 @@ stdout: ok
 stderr err: closed
 --- no_error_log
 [error]
+
+
+
+=== TEST 45: spawn process, with environ option
+--- config
+    location = /t {
+        content_by_lua_block {
+            local ngx_pipe = require "ngx.pipe"
+            local environ = {"TEST_ENV=blahblah"}
+            local proc, err = ngx_pipe.spawn('echo $TEST_ENV', {environ = environ})
+            if not proc then
+                ngx.say(err)
+                return
+            end
+
+            local data, err = proc:stdout_read_line()
+            if not data then
+                ngx.say(err)
+            else
+                ngx.say(data)
+            end
+        }
+    }
+--- response_body
+blahblah
+
+
+
+=== TEST 46: spawn process, with invalid environ option
+--- config
+    location = /t {
+        content_by_lua_block {
+            local ngx_pipe = require "ngx.pipe"
+            local environ = {"TEST_ENV=", 1}
+            local function spawn(environ)
+                local ok, err = pcall(ngx_pipe.spawn, 'echo $TEST_ENV',
+                                      {environ = environ})
+                if not ok then
+                    ngx.say(err)
+                else
+                    ngx.say('ok')
+                end
+            end
+
+            spawn(environ)
+            spawn("TEST_ENV=1")
+            spawn({"TEST_ENV"})
+            spawn({"=1"})
+        }
+    }
+--- response_body
+bad environ option in index 2: string expected, got number
+bad environ option: table expected, got string
+bad environ option in index 1: name=[value] format required, got TEST_ENV
+bad environ option in index 1: name=[value] format required, got =1
+
+
+
+=== TEST 47: spawn process, with environ option contains nil hole
+--- config
+    location = /t {
+        content_by_lua_block {
+            local ngx_pipe = require "ngx.pipe"
+            local environ = {"TEST_ENV=1", nil, "TEST_ENV2=2"}
+            local function spawn(environ)
+                local proc, err = ngx_pipe.spawn('echo "$TEST_ENV2 $TEST_ENV"',
+                                      {environ = environ})
+                if not proc then
+                    ngx.say(err)
+                    return
+                end
+
+                local data, err = proc:stdout_read_line()
+                if not data then
+                    ngx.say(err)
+                else
+                    ngx.say(data)
+                end
+            end
+
+            spawn(environ)
+        }
+    }
+--- response_body
+ 1
