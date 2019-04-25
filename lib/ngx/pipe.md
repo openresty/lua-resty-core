@@ -335,8 +335,7 @@ If the `merge_stderr` option is specified in [spawn](#spawn), closing the
 `stderr` direction will return `nil` and the error string `"merged to stdout"`.
 
 Shutting down a direction when a light thread is waiting on it (such as during
-reading or writing) will return `nil` and the error string `"pipe busy
-writing"` (for stdin) or `"pipe busy reading"` (for the others).
+reading or writing) will abort the light thread and return `true`.
 
 Shutting down directions of an exited process will return `nil` and the error
 string `"closed"`.
@@ -375,6 +374,9 @@ Only one light thread is allowed to write to the sub-process at a time. If
 another light thread tries to write to it, this method will return `nil` and
 the error string `"pipe busy writing"`.
 
+If the `write` operation is aborted by the [shutdown](#shutdown) method,
+it will return `nil` and the error string `"aborted"`.
+
 Writing to an exited sub-process will return `nil` and the error string
 `"closed"`.
 
@@ -404,6 +406,9 @@ will return `nil` and the error string `"merged to stdout"`.
 Only one light thread is allowed to read from a sub-process's stderr or stdout
 stream at a time. If another thread tries to read from the same stream, this
 method will return `nil` and the error string `"pipe busy reading"`.
+
+If the reading operation is aborted by the [shutdown](#shutdown) method,
+it will return `nil` and the error string `"aborted"`.
 
 Streams for stdout and stderr are separated, so at most two light threads may
 be reading from a sub-process at a time (one for each stream).

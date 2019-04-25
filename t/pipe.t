@@ -822,16 +822,30 @@ bad shutdown arg: 0
             local proc = ngx_pipe.spawn({"sleep", "10s"})
             proc:set_timeouts(100, 100, 100)
 
-            ngx.thread.spawn(function() proc:stdout_read_line() end)
+            ngx.thread.spawn(function()
+                local ok, err = proc:stdout_read_line()
+                if not ok then
+                    ngx.say("read stdout err: ", err)
+                else
+                    ngx.say("read stdout ok")
+                end
+            end)
             local ok, err = proc:shutdown('stdout')
             if not ok then
-                ngx.say(err)
+                ngx.say("shutdown stdout err: ", err)
             end
 
-            ngx.thread.spawn(function() proc:stderr_read_line() end)
+            ngx.thread.spawn(function()
+                local ok, err = proc:stderr_read_line()
+                if not ok then
+                    ngx.say("read stderr err: ", err)
+                else
+                    ngx.say("read stderr ok")
+                end
+            end)
             local ok, err = proc:shutdown('stderr')
             if not ok then
-                ngx.say(err)
+                ngx.say("shutdown stderr err: ", err)
             end
 
             local data = ("1234"):rep(2048)
@@ -841,7 +855,7 @@ bad shutdown arg: 0
             while true do
                 local data, err = proc:write(data)
                 if not data then
-                    ngx.say(err)
+                    ngx.say("write stdin err: ", err)
                     break
                 end
 
@@ -851,18 +865,25 @@ bad shutdown arg: 0
                 end
             end
 
-            ngx.thread.spawn(function() proc:write(data) end)
+            ngx.thread.spawn(function()
+                local ok, err = proc:write(data)
+                if not ok then
+                    ngx.say("write stdin err: ", err)
+                else
+                    ngx.say("write stdin ok")
+                end
+            end)
             local ok, err = proc:shutdown('stdin')
             if not ok then
-                ngx.say(err)
+                ngx.say("shutdown stdin err: ", err)
             end
         }
     }
 --- response_body
-pipe busy reading
-pipe busy reading
-timeout
-pipe busy writing
+read stdout err: aborted
+read stderr err: aborted
+write stdin err: timeout
+write stdin err: aborted
 --- no_error_log
 [error]
 --- grep_error_log eval
