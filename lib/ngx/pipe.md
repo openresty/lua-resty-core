@@ -212,6 +212,18 @@ The following options are supported:
   must be a single-level, array-like Lua table with string values. If the
   current platform does not support this option, `nil` plus a string `"environ
   option not supported"` will be returned.
+* `write_timeout`: specifies the write timeout threshold, in milliseconds. The
+  default threshold is `10000`. If the threshold is `0`, the write operation
+  will never time out.
+* `stdout_read_timeout`: specifies the stdout read timeout threshold, in
+  milliseconds. The default threshold is `10000`. If the threshold is `0`, the
+  stdout read operation will never time out.
+* `stderr_read_timeout`: specifies the stderr read timeout threshold, in
+  milliseconds. The default threshold is `10000`. If the threshold is `0`, the
+  stderr read operation will never time out.
+* `wait_timeout`: specifies the wait timeout threshold, in milliseconds. The
+  default threshold is `10000`. If the threshold is `0`, the wait operation
+  will never time out.
 
 [Back to TOC](#table-of-contents)
 

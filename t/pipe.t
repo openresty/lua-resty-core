@@ -4,7 +4,7 @@ use t::TestCore;
 
 repeat_each(2);
 
-plan tests => repeat_each() * (blocks() * 3 + 17);
+plan tests => repeat_each() * (blocks() * 3 + 20);
 
 add_block_preprocessor(sub {
     my $block = shift;
@@ -497,19 +497,19 @@ signal
 --- response_body
 write_timeout:
 set_timeouts: ok
-failed to set timeouts: bad timeout value
+failed to set timeouts: bad write_timeout option
 
 stdout_read_timeout:
 set_timeouts: ok
-failed to set timeouts: bad timeout value
+failed to set timeouts: bad stdout_read_timeout option
 
 stderr_read_timeout:
 set_timeouts: ok
-failed to set timeouts: bad timeout value
+failed to set timeouts: bad stderr_read_timeout option
 
 wait_timeout:
 set_timeouts: ok
-failed to set timeouts: bad timeout value
+failed to set timeouts: bad wait_timeout option
 
 
 
@@ -552,16 +552,16 @@ failed to set timeouts: bad timeout value
 set_timeouts: ok
 
 write_timeout:
-failed to set timeouts: bad timeout value
+failed to set timeouts: bad write_timeout option
 
 stdout_read_timeout:
-failed to set timeouts: bad timeout value
+failed to set timeouts: bad stdout_read_timeout option
 
 stderr_read_timeout:
-failed to set timeouts: bad timeout value
+failed to set timeouts: bad stderr_read_timeout option
 
 wait_timeout:
-failed to set timeouts: bad timeout value
+failed to set timeouts: bad wait_timeout option
 
 
 
@@ -1787,3 +1787,108 @@ TEST_ENV:=1
 
 1
 1
+
+
+
+=== TEST 51: spawn process with wait_timeout option
+--- config
+    location = /t {
+        content_by_lua_block {
+            local ngx_pipe = require "ngx.pipe"
+            local proc, err = ngx_pipe.spawn({"sleep", 1}, {
+                wait_timeout = 100
+            })
+
+            local ok, err = proc:wait()
+            if not ok then
+                ngx.say(err)
+            else
+                ngx.say("ok")
+            end
+        }
+    }
+--- response_body
+timeout
+
+
+
+=== TEST 52: validate timeout options when spawning process
+--- config
+    location = /t {
+        content_by_lua_block {
+            local ngx_pipe = require "ngx.pipe"
+
+            local function spawn(opts)
+                local ok, err = pcall(ngx_pipe.spawn, {"sleep", "5s"}, opts)
+                if not ok then
+                    ngx.say(err)
+                else
+                    ngx.say("ok")
+                end
+            end
+
+            ngx.say("write_timeout:")
+            spawn({write_timeout = 2 ^ 32})
+            spawn({write_timeout = -1})
+
+            ngx.say("\nstdout_read_timeout:")
+            spawn({stdout_read_timeout = 2 ^ 32})
+            spawn({stdout_read_timeout = -1})
+
+            ngx.say("\nstderr_read_timeout:")
+            spawn({stderr_read_timeout = 2 ^ 32})
+            spawn({stderr_read_timeout = -1})
+
+            ngx.say("\nwait_timeout:")
+            spawn({wait_timeout = 2 ^ 32})
+            spawn({wait_timeout = -1})
+        }
+    }
+--- response_body
+write_timeout:
+bad write_timeout option
+bad write_timeout option
+
+stdout_read_timeout:
+bad stdout_read_timeout option
+bad stdout_read_timeout option
+
+stderr_read_timeout:
+bad stderr_read_timeout option
+bad stderr_read_timeout option
+
+wait_timeout:
+bad wait_timeout option
+bad wait_timeout option
+
+
+
+=== TEST 53: validate timeout options when spawning process
+--- config
+    location = /t {
+        content_by_lua_block {
+            local ngx_pipe = require "ngx.pipe"
+
+            local function spawn(opts)
+                local ok, err = pcall(ngx_pipe.spawn, {"sleep", "5s"}, opts)
+                if not ok then
+                    ngx.log(ngx.ERR, err)
+                end
+            end
+
+            spawn({write_timeout = -1})
+            spawn({stdout_read_timeout = -1})
+            spawn({stderr_read_timeout = -1})
+            spawn({wait_timeout = -1})
+        }
+    }
+--- ignore_response_body
+--- error_log eval
+[
+    qr/\[error\] .*? content_by_lua\(nginx\.conf:\d+\):\d+: .*? bad write_timeout option/,
+    qr/\[error\] .*? content_by_lua\(nginx\.conf:\d+\):\d+: .*? bad stdout_read_timeout option/,
+    qr/\[error\] .*? content_by_lua\(nginx\.conf:\d+\):\d+: .*? bad stderr_read_timeout option/,
+    qr/\[error\] .*? content_by_lua\(nginx\.conf:\d+\):\d+: .*? bad wait_timeout option/
+]
+--- no_error_log
+[crit]

@@ -6,7 +6,7 @@ use File::Basename;
 
 repeat_each(2);
 
-plan tests => repeat_each() * (blocks() * 3 + 5);
+plan tests => repeat_each() * (blocks() * 3 + 6);
 
 add_block_preprocessor(sub {
     my $block = shift;
@@ -976,5 +976,31 @@ end
 --- response_body
 stdout: ok
 stderr err: closed
+--- no_error_log
+[error]
+
+
+
+=== TEST 34: spawn process with stdout_read_timeout option
+--- config
+    location = /t {
+        content_by_lua_block {
+            local ngx_pipe = require "ngx.pipe"
+            local proc = ngx_pipe.spawn({"sleep", "10s"}, {
+                stdout_read_timeout = 100
+            })
+
+            local data, err = proc:stdout_read_line()
+            if not data then
+                ngx.say("stdout err: ", err)
+            else
+                ngx.say("stdout: ", data)
+            end
+        }
+    }
+--- response_body
+stdout err: timeout
+--- error_log
+lua pipe add timer for reading: 100(ms)
 --- no_error_log
 [error]

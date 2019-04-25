@@ -119,17 +119,15 @@ do
                 if timeout > MAX_TIMEOUT then
                     error("bad timeout value", 3)
                 end
-
                 proc[attr] = timeout
             end
         end
-
         set_timeout(...)
         ]]
 
         if write_timeout then
             if write_timeout < 0 or MAX_TIMEOUT < write_timeout then
-                error("bad timeout value", 2)
+                error("bad write_timeout option", 3)
             end
 
             proc.write_timeout = write_timeout
@@ -137,7 +135,7 @@ do
 
         if stdout_read_timeout then
             if stdout_read_timeout < 0 or MAX_TIMEOUT < stdout_read_timeout then
-                error("bad timeout value", 2)
+                error("bad stdout_read_timeout option", 3)
             end
 
             proc.stdout_read_timeout = stdout_read_timeout
@@ -145,7 +143,7 @@ do
 
         if stderr_read_timeout then
             if stderr_read_timeout < 0 or MAX_TIMEOUT < stderr_read_timeout then
-                error("bad timeout value", 2)
+                error("bad stderr_read_timeout option", 3)
             end
 
             proc.stderr_read_timeout = stderr_read_timeout
@@ -153,7 +151,7 @@ do
 
         if wait_timeout then
             if wait_timeout < 0 or MAX_TIMEOUT < wait_timeout then
-                error("bad timeout value", 2)
+                error("bad wait_timeout option", 3)
             end
 
             proc.wait_timeout = wait_timeout
@@ -418,7 +416,11 @@ local mt = {
             return proc._pid
         end,
 
-        set_timeouts = proc_set_timeouts,
+        set_timeouts = function (proc, write_timeout, stdout_read_timeout,
+                                 stderr_read_timeout, wait_timeout)
+            proc_set_timeouts(proc, write_timeout, stdout_read_timeout,
+                              stderr_read_timeout, wait_timeout)
+        end,
 
         stdout_read_all = function (proc)
             local data, err, partial = proc_read(proc, 0, PIPE_READ_ALL, 0)
@@ -510,6 +512,11 @@ do
     shell_args[1] = opt_c
     shell_args[3] = nil
 
+    local write_timeout = 10000
+    local stdout_read_timeout = 10000
+    local stderr_read_timeout = 10000
+    local wait_timeout = 10000
+
     -- reference shell cmd's constant strings here to prevent them from getting
     -- collected by the Lua GC.
     _M._gc_ref_c_opt = opt_c
@@ -554,6 +561,8 @@ do
 
         local merge_stderr = 0
         local buffer_size = 4096
+        local proc = Proc()
+
         if opts then
             merge_stderr = opts.merge_stderr and 1 or 0
 
@@ -596,9 +605,21 @@ do
                     proc_envs[nenv] = nil
                 end
             end
+
+            proc_set_timeouts(proc,
+                              opts.write_timeout or write_timeout,
+                              opts.stdout_read_timeout or stdout_read_timeout,
+                              opts.stderr_read_timeout or stderr_read_timeout,
+                              opts.wait_timeout or wait_timeout)
+
+        else
+            proc_set_timeouts(proc,
+                              write_timeout,
+                              stdout_read_timeout,
+                              stderr_read_timeout,
+                              wait_timeout)
         end
 
-        local proc = Proc()
         local errbuf = get_string_buf(ERR_BUF_SIZE)
         local errbuf_size = get_size_ptr()
         errbuf_size[0] = ERR_BUF_SIZE
