@@ -831,13 +831,27 @@ bad shutdown arg: 0
             local proc = ngx_pipe.spawn({"sleep", "10s"})
             proc:set_timeouts(100, 100, 100)
 
-            ngx.thread.spawn(function() proc:stdout_read_line() end)
+            ngx.thread.spawn(function()
+                local ok, err = proc:stdout_read_line()
+                if not ok then
+                    ngx.say("read stdout ", err)
+                else
+                    ngx.say("read stdout ok")
+                end
+            end)
             local ok, err = proc:shutdown('stdout')
             if not ok then
                 ngx.say(err)
             end
 
-            ngx.thread.spawn(function() proc:stderr_read_line() end)
+            ngx.thread.spawn(function()
+                local ok, err = proc:stderr_read_line()
+                if not ok then
+                    ngx.say("read stderr ", err)
+                else
+                    ngx.say("read stderr ok")
+                end
+            end)
             local ok, err = proc:shutdown('stderr')
             if not ok then
                 ngx.say(err)
@@ -860,7 +874,14 @@ bad shutdown arg: 0
                 end
             end
 
-            ngx.thread.spawn(function() proc:write(data) end)
+            ngx.thread.spawn(function()
+                local ok, err = proc:write(data)
+                if not ok then
+                    ngx.say("write stdin ", err)
+                else
+                    ngx.say("write stdin ok")
+                end
+            end)
             local ok, err = proc:shutdown('stdin')
             if not ok then
                 ngx.say(err)
@@ -868,10 +889,10 @@ bad shutdown arg: 0
         }
     }
 --- response_body
-pipe busy reading
-pipe busy reading
+read stdout aborted
+read stderr aborted
 timeout
-pipe busy writing
+write stdin aborted
 --- no_error_log
 [error]
 --- grep_error_log eval
