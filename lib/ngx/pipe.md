@@ -204,6 +204,18 @@ The following options are supported:
   to stdout in the spawned process. This is similar to doing `>&1` in a shell.
 * `buffer_size`: specifies the buffer size used by reading operations, in
   bytes. The default buffer size is `4096`.
+* `write_timeout`: specifies the write timeout threshold, in milliseconds.
+The default threshold is `10000`. If the threshold is `0`, the write operation
+will never time out.
+* `stdout_read_timeout`: specifies the stdout read timeout threshold, in
+milliseconds.  The default threshold is `10000`. If the threshold is `0`, the
+stdout read operation will never time out.
+* `stderr_read_timeout`: specifies the stderr read timeout threshold, in
+milliseconds.  The default threshold is `10000`. If the threshold is `0`, the
+stderr read operation will never time out.
+* `wait_timeout`: specifies the wait timeout threshold, in milliseconds.
+The default threshold is `10000`. If the threshold is `0`, the wait operation
+will never time out.
 
 [Back to TOC](#table-of-contents)
 

@@ -4,7 +4,7 @@ use t::TestCore;
 
 repeat_each(2);
 
-plan tests => repeat_each() * (blocks() * 3 + 8);
+plan tests => repeat_each() * (blocks() * 3 + 10);
 
 add_block_preprocessor(sub {
     my $block = shift;
@@ -450,3 +450,42 @@ payload
 bad data arg: string, number, or table expected, got boolean
 bad data arg: string, number, or table expected, got nil
 bad data arg: string, number, or table expected, got userdata
+
+
+
+=== TEST 11: spawn process with write timeout option
+--- config
+    location = /t {
+        content_by_lua_block {
+            local ngx_pipe = require "ngx.pipe"
+            local proc, err = ngx_pipe.spawn({"sleep", 1}, {write_timeout = 100})
+            if not proc then
+                ngx.say(err)
+                return
+            end
+
+            local data = ("1234"):rep(2048)
+            local total = 0
+            local step = #data
+
+            while true do
+                local data, err = proc:write(data)
+                if not data then
+                    ngx.say(err)
+                    break
+                end
+
+                total = total + step
+                if total > 64 * step then
+                    break
+                end
+            end
+        }
+    }
+--- response_body
+timeout
+--- no_error_log
+[error]
+--- error_log
+lua pipe add timer for writing: 100(ms)
+lua pipe write yielding

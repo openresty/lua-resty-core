@@ -1546,3 +1546,78 @@ exit
 0
 --- no_error_log
 [error]
+
+
+
+=== TEST 44: spawn process with wait timeout option
+--- config
+    location = /t {
+        content_by_lua_block {
+            local ngx_pipe = require "ngx.pipe"
+            local proc, err = ngx_pipe.spawn({"sleep", 1}, {wait_timeout = 100})
+            if not proc then
+                ngx.say(err)
+                return
+            end
+
+            local ok, err = proc:wait()
+            if not ok then
+                ngx.say(err)
+            else
+                ngx.say("ok")
+            end
+        }
+    }
+--- response_body
+timeout
+
+
+
+=== TEST 45: validate timeout options when spawning process
+--- config
+    location = /t {
+        content_by_lua_block {
+            local ngx_pipe = require "ngx.pipe"
+
+            local function spawn(opts)
+                local ok, err = pcall(ngx_pipe.spawn, {"sleep", "5s"}, opts)
+                if not ok then
+                    ngx.say(err)
+                else
+                    ngx.say("ok")
+                end
+            end
+
+            ngx.say("write_timeout:")
+            spawn({write_timeout = 2 ^ 32})
+            spawn({write_timeout = -1})
+
+            ngx.say("\nstdout_read_timeout:")
+            spawn({stdout_read_timeout = 2 ^ 32})
+            spawn({stdout_read_timeout = -1})
+
+            ngx.say("\nstderr_read_timeout:")
+            spawn({stderr_read_timeout = 2 ^ 32})
+            spawn({stderr_read_timeout = -1})
+
+            ngx.say("\nwait_timeout:")
+            spawn({wait_timeout = 2 ^ 32})
+            spawn({wait_timeout = -1})
+        }
+    }
+--- response_body
+write_timeout:
+bad timeout value
+bad timeout value
+
+stdout_read_timeout:
+bad timeout value
+bad timeout value
+
+stderr_read_timeout:
+bad timeout value
+bad timeout value
+
+wait_timeout:
+bad timeout value
+bad timeout value

@@ -106,7 +106,7 @@ do
     local MAX_TIMEOUT = 0xffffffff
 
     function proc_set_timeouts(proc, write_timeout, stdout_read_timeout,
-                               stderr_read_timeout, wait_timeout)
+                               stderr_read_timeout, wait_timeout, call_lv)
 
         -- the implementation below is straightforward but could not be JIT
         -- compiled by the latest LuaJIT. When called in loops, LuaJIT will try
@@ -118,17 +118,15 @@ do
                 if timeout > MAX_TIMEOUT then
                     error("bad timeout value", 3)
                 end
-
                 proc[attr] = timeout
             end
         end
-
         set_timeout(...)
         ]]
 
         if write_timeout then
             if write_timeout < 0 or MAX_TIMEOUT < write_timeout then
-                error("bad timeout value", 2)
+                error("bad timeout value", call_lv)
             end
 
             proc.write_timeout = write_timeout
@@ -136,7 +134,7 @@ do
 
         if stdout_read_timeout then
             if stdout_read_timeout < 0 or MAX_TIMEOUT < stdout_read_timeout then
-                error("bad timeout value", 2)
+                error("bad timeout value", call_lv)
             end
 
             proc.stdout_read_timeout = stdout_read_timeout
@@ -144,7 +142,7 @@ do
 
         if stderr_read_timeout then
             if stderr_read_timeout < 0 or MAX_TIMEOUT < stderr_read_timeout then
-                error("bad timeout value", 2)
+                error("bad timeout value", call_lv)
             end
 
             proc.stderr_read_timeout = stderr_read_timeout
@@ -152,7 +150,7 @@ do
 
         if wait_timeout then
             if wait_timeout < 0 or MAX_TIMEOUT < wait_timeout then
-                error("bad timeout value", 2)
+                error("bad timeout value", call_lv)
             end
 
             proc.wait_timeout = wait_timeout
@@ -417,7 +415,11 @@ local mt = {
             return proc._pid
         end,
 
-        set_timeouts = proc_set_timeouts,
+        set_timeouts = function (proc, write_timeout, stdout_read_timeout,
+                                 stderr_read_timeout, wait_timeout)
+            proc_set_timeouts(proc, write_timeout, stdout_read_timeout,
+                              stderr_read_timeout, wait_timeout, 3)
+        end,
 
         stdout_read_all = function (proc)
             local data, err, partial = proc_read(proc, 0, PIPE_READ_ALL, 0)
@@ -556,6 +558,12 @@ do
 
         local merge_stderr = 0
         local buffer_size = 4096
+        local write_timeout = 10000
+        local stdout_read_timeout = 10000
+        local stderr_read_timeout = 10000
+        local wait_timeout = 10000
+        local proc = Proc()
+
         if opts then
             merge_stderr = opts.merge_stderr and 1 or 0
 
@@ -566,9 +574,18 @@ do
                     error("bad buffer_size option", 2)
                 end
             end
+
+            proc_set_timeouts(proc,
+                              opts.write_timeout or write_timeout,
+                              opts.stdout_read_timeout or stdout_read_timeout,
+                              opts.stderr_read_timeout or stderr_read_timeout,
+                              opts.wait_timeout or wait_timeout, 3)
+
+        else
+            proc_set_timeouts(proc, write_timeout, stdout_read_timeout,
+                              stderr_read_timeout, wait_timeout, 3)
         end
 
-        local proc = Proc()
         local errbuf = get_string_buf(ERR_BUF_SIZE)
         local errbuf_size = get_size_ptr()
         errbuf_size[0] = ERR_BUF_SIZE
