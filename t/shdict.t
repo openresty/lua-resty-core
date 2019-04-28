@@ -295,13 +295,13 @@ qr/\[TRACE\s+\d+ content_by_lua\(nginx\.conf:\d+\):7 loop\]/
             local val, flags, stale
             local dogs = ngx.shared.dogs
             -- local cd = ffi.cast("void *", dogs)
-            local ok, err, forcible = dogs:set("foo", "bar", 0.001, 72)
+            local ok, err, forcible = dogs:set("foo", "bar", 0.01, 72)
             if not ok then
                 ngx.say("failed to set: ", err)
                 return
             end
             ngx.update_time()
-            ngx.sleep(0.002)
+            ngx.sleep(0.02)
             for i = 1, 30 do
                 val, flags, stale = dogs:get_stale("foo")
             end
@@ -1297,7 +1297,7 @@ not ok: bad init_ttl arg: number expected, got string
     location = /t {
         content_by_lua_block {
             local dogs = ngx.shared.dogs
-            local pok, err = pcall(dogs.incr, dogs, "foo", 1, nil, 0.001)
+            local pok, err = pcall(dogs.incr, dogs, "foo", 1, nil, 0.01)
             if not pok then
                 ngx.say("not ok: ", err)
                 return
@@ -1324,12 +1324,12 @@ not ok: must provide "init" when providing "init_ttl"
             local dogs = ngx.shared.dogs
             dogs:set("foo", 32)
 
-            local res, err = dogs:incr("foo", 10502, 0, 0.001)
+            local res, err = dogs:incr("foo", 10502, 0, 0.01)
             ngx.say("incr: ", res, " ", err)
             ngx.say("foo = ", dogs:get("foo"))
 
             ngx.update_time()
-            ngx.sleep(0.002)
+            ngx.sleep(0.02)
 
             ngx.say("foo after incr init_ttl = ", dogs:get("foo"))
         }
@@ -1354,12 +1354,12 @@ foo after incr init_ttl = 10534
             local dogs = ngx.shared.dogs
             dogs:flush_all()
 
-            local res, err = dogs:incr("foo", 10502, 1, 0.001)
+            local res, err = dogs:incr("foo", 10502, 1, 0.01)
             ngx.say("incr: ", res, " ", err)
             ngx.say("foo = ", dogs:get("foo"))
 
             ngx.update_time()
-            ngx.sleep(0.002)
+            ngx.sleep(0.02)
 
             ngx.say("foo after init_ttl = ", dogs:get("foo"))
         }
@@ -1384,12 +1384,12 @@ foo after init_ttl = nil
             local dogs = ngx.shared.dogs
             dogs:flush_all()
 
-            local res, err = dogs:incr("foo", 10502, 1, "0.001")
+            local res, err = dogs:incr("foo", 10502, 1, "0.01")
             ngx.say("incr: ", res, " ", err)
             ngx.say("foo = ", dogs:get("foo"))
 
             ngx.update_time()
-            ngx.sleep(0.002)
+            ngx.sleep(0.02)
 
             ngx.say("foo after init_ttl = ", dogs:get("foo"))
         }
@@ -1413,18 +1413,18 @@ foo after init_ttl = nil
         content_by_lua_block {
             local dogs = ngx.shared.dogs
             for i = 1, 20 do
-                dogs:set("bar" .. i, i, 0.002)
+                dogs:set("bar" .. i, i, 0.02)
             end
-            dogs:set("foo", 32, 0.002)
+            dogs:set("foo", 32, 0.02)
             ngx.update_time()
-            ngx.sleep(0.003)
+            ngx.sleep(0.03)
 
-            local res, err = dogs:incr("foo", 10502, 0, 0.001)
+            local res, err = dogs:incr("foo", 10502, 0, 0.01)
             ngx.say("incr: ", res, " ", err)
             ngx.say("foo = ", dogs:get("foo"))
 
             ngx.update_time()
-            ngx.sleep(0.002)
+            ngx.sleep(0.02)
 
             ngx.say("foo after init_ttl = ", dogs:get("foo"))
         }
@@ -1461,12 +1461,12 @@ foo after init_ttl = nil
             local res, err, forcible = dogs:incr(long_prefix .. "bar", 10502, 0)
             ngx.say("incr: ", res, " ", err, " ", forcible)
 
-            local res, err, forcible = dogs:incr(long_prefix .. "foo", 10502, 0, 0.001)
+            local res, err, forcible = dogs:incr(long_prefix .. "foo", 10502, 0, 0.01)
             ngx.say("incr: ", res, " ", err, " ", forcible)
             ngx.say("foo = ", dogs:get(long_prefix .. "foo"))
 
             ngx.update_time()
-            ngx.sleep(0.002)
+            ngx.sleep(0.02)
             ngx.say("foo after init_ttl = ", dogs:get("foo"))
         }
     }
