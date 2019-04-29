@@ -3,10 +3,18 @@ use t::TestCore;
 
 repeat_each(2);
 
-plan tests => repeat_each() * (blocks() * 5 + 2);
+plan tests => repeat_each() * (blocks() * 5 + 4);
 
 add_block_preprocessor(sub {
     my $block = shift;
+
+    my $http_config = $block->http_config || '';
+
+    $http_config .= <<_EOC_;
+    $t::TestCore::HttpConfig
+_EOC_
+
+    $block->set_value("http_config", $http_config);
 
     if (!defined $block->error_log) {
         my $no_error_log = <<_EOC_;
@@ -232,6 +240,22 @@ s = %20%3A
     location /t {
         content_by_lua_block {
             ngx.say(package.loaded.s)
+        }
+    }
+--- response_body
+%20%3A
+
+
+
+=== TEST 13: cache the function in init_worker_by_lua and call in other phases
+--- http_config
+    init_worker_by_lua_block {
+        package.loaded.set_escape_uri = ndk.set_var.set_escape_uri
+    }
+--- config
+    location /t {
+        content_by_lua_block {
+            ngx.say(package.loaded.set_escape_uri(" :"))
         }
     }
 --- response_body
