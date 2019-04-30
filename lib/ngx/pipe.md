@@ -314,7 +314,7 @@ a string describing the error.
 If the `merge_stderr` option is specified in [spawn](#spawn), closing the
 `stderr` direction will return `nil` and the error string `"merged to stdout"`.
 
-Shutting down a direction when there is a light thread waiting on it (like
+Shutting down a direction when a light thread is waiting on it (such as during
 reading or writing) will abort the light thread and return `true`.
 
 Shutting down directions of an exited process will return `nil` and the error
