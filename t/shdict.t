@@ -77,7 +77,7 @@ qr/\[TRACE\s+\d+ content_by_lua\(nginx\.conf:\d+\):11 loop\]/
             -- local cd = ffi.cast("void *", dogs)
             -- dogs:set("foo", "bar")
             for i = 1, 100 do
-                val, flags = dogs:get("foo")
+                val, flags = dogs:get("nonexistent")
             end
             ngx.say("value type: ", type(val))
             ngx.say("value: ", val)
@@ -230,6 +230,8 @@ qr/\[TRACE\s+\d+ content_by_lua\(nginx\.conf:\d+\):7 loop\]/
             local val, flags
             local dogs = ngx.shared.dogs
             -- local cd = ffi.cast("void *", dogs)
+            dogs:flush_all()
+            dogs:flush_expired()
             dogs:set("foo", string.rep("bbbb", 1024) .. "a", 0, 912)
             for i = 1, 100 do
                 val, flags = dogs:get("foo")
@@ -247,7 +249,7 @@ value: " . ("bbbb" x 1024) . "a
 flags: 912
 "
 --- error_log eval
-qr/\[TRACE\s+\d+ content_by_lua\(nginx\.conf:\d+\):7 loop\]/
+qr/\[TRACE\s+\d+ content_by_lua\(nginx\.conf:\d+\):9 loop\]/
 --- no_error_log
 [error]
  -- NYI:
@@ -593,6 +595,8 @@ qr/\[TRACE\s+\d+ content_by_lua\(nginx\.conf:\d+\):6 loop\]/
             local val, flags
             local dogs = ngx.shared.dogs
             -- local cd = ffi.cast("void *", dogs)
+            dogs:flush_all()
+            dogs:flush_expired()
             for i = 1, 100 do
                 dogs:safe_set("foo", 3.1415926, 0, 78)
             end
@@ -609,7 +613,7 @@ value type: number
 value: 3.1415926
 flags: 78
 --- error_log eval
-qr/\[TRACE\s+\d+ content_by_lua\(nginx\.conf:\d+\):6 loop\]/
+qr/\[TRACE\s+\d+ content_by_lua\(nginx\.conf:\d+\):8 loop\]/
 --- no_error_log
 [error]
  -- NYI:
@@ -662,6 +666,7 @@ qr/\[TRACE\s+\d+ content_by_lua\(nginx\.conf:\d+\):8 loop\]/
             local dogs = ngx.shared.dogs
             -- local cd = ffi.cast("void *", dogs)
             dogs:flush_all()
+            dogs:flush_expired()
             local ok, err, forcible
             for i = 1, 100 do
                 ok, err, forcible = dogs:safe_add("foo" .. i, "bar", 0, 72)
@@ -683,7 +688,7 @@ value type: string
 value: bar
 flags: 72
 --- error_log eval
-qr/\[TRACE\s+\d+ content_by_lua\(nginx\.conf:\d+\):8 loop\]/
+qr/\[TRACE\s+\d+ content_by_lua\(nginx\.conf:\d+\):9 loop\]/
 --- no_error_log
 [error]
  -- NYI:
