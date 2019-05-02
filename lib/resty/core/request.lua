@@ -16,7 +16,7 @@ local ffi_str = ffi.string
 local get_string_buf = base.get_string_buf
 local get_size_ptr = base.get_size_ptr
 local setmetatable = setmetatable
-local gsub = ngx.re.gsub
+local re = ngx.re
 local lower = string.lower
 local rawget = rawget
 local ngx = ngx
@@ -68,7 +68,7 @@ local truncated = ffi.new("int[1]")
 
 local req_headers_mt = {
     __index = function (tb, key)
-        return rawget(tb, (gsub(lower(key), '_', '-', "jo")))
+        return rawget(tb, (re.gsub(lower(key), '_', '-', "jo")))
     end
 }
 

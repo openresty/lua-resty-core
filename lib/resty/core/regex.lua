@@ -35,8 +35,32 @@ local ngx_log = ngx.log
 local ngx_NOTICE = ngx.NOTICE
 
 
+local _M = {
+    version = base.version
+}
+
+
 if not ngx.re then
     ngx.re = {}
+end
+
+
+ffi.cdef[[
+    const char *pcre_version(void);
+]]
+
+
+local pcre_ver
+
+if not pcall(function() pcre_ver = ffi_string(C.pcre_version()) end) then
+    setmetatable(ngx.re, {
+        __index = function(_, key)
+            error("no support for 'ngx.re." .. key .. "': OpenResty was " ..
+                  "compiled without PCRE support", 2)
+        end
+    })
+
+    return _M
 end
 
 
@@ -95,12 +119,6 @@ local ngx_lua_ffi_script_eval_data
 local no_jit_in_init
 
 if jit.os == "OSX" then
-    ffi.cdef[[
-        const char *pcre_version(void);
-    ]]
-
-    local pcre_ver = ffi_string(C.pcre_version())
-
     local maj, min = string.match(pcre_ver, "^(%d+)%.(%d+)")
     if maj and min then
         local pcre_ver_num = tonumber(maj .. min)
@@ -277,11 +295,6 @@ end
 local c_str_type = ffi.typeof("const char *")
 
 local cached_re_opts = new_tab(0, 4)
-
-local _M = {
-    version = base.version
-}
-
 
 local buf_grow_ratio = 2
 
