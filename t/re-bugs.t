@@ -29,7 +29,7 @@ run_tests();
 
 __DATA__
 
-=== TEST 1: PCRE MAP_JIT bug on macOS
+=== TEST 1: PCRE MAP_JIT workaround on macOS
 --- init_by_lua_block
     ngx.re.match("c", "test", "jo")
 --- config
@@ -45,9 +45,10 @@ GET /re
 c0
 c0
 --- grep_error_log eval
-qr/.+parse_regex_opts\(\): running regex in init phase under macOS,.+/
+qr/.+parse_regex_opts\(\): .*? disabled in init phase under macOS/
 --- grep_error_log_out eval
-qr/(:?.+parse_regex_opts\(\): running regex in init phase under macOS,.+){2}/s
+qr/parse_regex_opts\(\): regex compilation disabled in init phase under macOS
+.*?parse_regex_opts\(\): regex compilation cache disabled in init phase under macOS/s
 --- no_error_log
 [error]
 --- skip_eval
@@ -55,7 +56,45 @@ qr/(:?.+parse_regex_opts\(\): running regex in init phase under macOS,.+){2}/s
 
 
 
-=== TEST 2: PCRE MAP_JIT bug fix does not affect other OSes
+=== TEST 2: PCRE MAP_JIT workaround on macOS logs only once per flag
+--- init_by_lua_block
+    jit.off() -- must disable in this test or logs will be fuzzy
+
+    for i = 1, 2 do
+        ngx.re.match("c", "test", "j")
+    end
+
+    for i = 1, 2 do
+        ngx.re.match("c", "test", "o")
+    end
+
+    for i = 1, 2 do
+        ngx.re.match("c", "test", "jo")
+    end
+--- config
+    location /re {
+        content_by_lua_block {
+            ngx.say(ngx.re.sub("c", "a", "b", ""))
+            ngx.say(ngx.re.sub("c", "a", "b", "jo"))
+        }
+    }
+--- request
+GET /re
+--- response_body
+c0
+c0
+--- grep_error_log eval
+qr/parse_regex_opts\(\): .*? disabled in init phase under macOS/
+--- grep_error_log_out eval
+qr/\A(?:parse_regex_opts\(\): regex compilation (?:cache )?disabled in init phase under macOS\s*){4}\z/
+--- no_error_log
+[error]
+--- skip_eval
+4: $^O ne 'darwin'
+
+
+
+=== TEST 3: PCRE MAP_JIT workaround is reverted after init phase
 --- init_by_lua_block
     ngx.re.match("c", "test", "jo")
 --- config
@@ -72,6 +111,29 @@ c0
 c0
 --- no_error_log
 [error]
-running regex in init phase under macOS
+disabled in init phase under macOS, client:
+--- skip_eval
+4: $^O ne 'darwin'
+
+
+
+=== TEST 4: PCRE MAP_JIT workaround is not in effect under other OSs
+--- init_by_lua_block
+    ngx.re.match("c", "test", "jo")
+--- config
+    location /re {
+        content_by_lua_block {
+            ngx.say(ngx.re.sub("c", "a", "b", ""))
+            ngx.say(ngx.re.sub("c", "a", "b", "jo"))
+        }
+    }
+--- request
+GET /re
+--- response_body
+c0
+c0
+--- no_error_log
+[error]
+disabled in init phase under macOS
 --- skip_eval
 4: $^O ne 'linux'
