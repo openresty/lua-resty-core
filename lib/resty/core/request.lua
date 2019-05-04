@@ -3,6 +3,8 @@
 
 local ffi = require 'ffi'
 local base = require "resty.core.base"
+base.allows_subsystem("http")
+local utils = require "resty.core.utils"
 
 
 local FFI_BAD_CONTEXT = base.FFI_BAD_CONTEXT
@@ -16,7 +18,6 @@ local ffi_str = ffi.string
 local get_string_buf = base.get_string_buf
 local get_size_ptr = base.get_size_ptr
 local setmetatable = setmetatable
-local re = ngx.re
 local lower = string.lower
 local rawget = rawget
 local ngx = ngx
@@ -25,6 +26,7 @@ local type = type
 local error = error
 local tostring = tostring
 local tonumber = tonumber
+local str_replace_char = utils.str_replace_char
 
 
 ffi.cdef[[
@@ -68,7 +70,7 @@ local truncated = ffi.new("int[1]")
 
 local req_headers_mt = {
     __index = function (tb, key)
-        return rawget(tb, (re.gsub(lower(key), '_', '-', "jo")))
+        return rawget(tb, (str_replace_char(lower(key), '_', '-')))
     end
 }
 
