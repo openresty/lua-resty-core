@@ -188,7 +188,7 @@ do
     local _getenv = os.getenv
     local env_ptr = ffi_new("unsigned char *[1]")
 
-    os.getenv = function(name)
+    os.getenv = function (name)
         local r = get_request()
         if r then
             -- past init_by_lua* phase now
