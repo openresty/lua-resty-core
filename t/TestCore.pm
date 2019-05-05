@@ -8,7 +8,7 @@ $ENV{TEST_NGINX_MEMCACHED_PORT} ||= 11211;
 
 our $pwd = cwd();
 
-our $lua_package_path = './lib/?.lua;../lua-resty-lrucache/lib/?.lua;;';
+our $lua_package_path = './lib/?.lua;./t/lib/?.lua;../lua-resty-lrucache/lib/?.lua;;';
 
 our $init_by_lua_block = <<_EOC_;
     local verbose = false
