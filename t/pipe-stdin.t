@@ -31,6 +31,8 @@ _EOC_
     }
 });
 
+$ENV{TEST_NGINX_HTML_DIR} ||= html_dir();
+
 env_to_nginx("PATH");
 no_long_string();
 run_tests();
@@ -450,3 +452,74 @@ payload
 bad data arg: string, number, or table expected, got boolean
 bad data arg: string, number, or table expected, got nil
 bad data arg: string, number, or table expected, got userdata
+
+
+
+=== TEST 11: write process, aborted by uthread kill, with graceful shutdown
+--- user_files
+>>> a.lua
+local ngx_pipe = require "ngx.pipe"
+local proc = ngx_pipe.spawn({"bash"})
+
+-- make writers blocked later
+local data = ("1234"):rep(2048)
+proc:set_timeouts(100)
+local total = 0
+local step = #data
+while true do
+    local data, err = proc:write(data)
+    if not data then
+        ngx.say(err)
+        break
+    end
+
+    total = total + step
+    if total > 64 * step then
+        break
+    end
+end
+
+local function func()
+    proc:write("blah blah")
+end
+
+local th = ngx.thread.spawn(func)
+ngx.thread.kill(th)
+
+local data, err = proc:kill(9)
+if not data then
+    io.stdout:write("proc:kill(9) err: ", err)
+else
+    io.stdout:write("ok")
+end
+
+--- config
+    location = /t {
+        content_by_lua_block {
+            local helper = require "helper"
+            local spawn = helper.run_lua_with_graceful_shutdown
+            local f = io.open("$TEST_NGINX_HTML_DIR/a.lua")
+            local code = f:read("*a")
+            local proc = spawn("$TEST_NGINX_HTML_DIR", code)
+            proc:set_timeouts(nil, 1000, 1000)
+
+            local data, err = proc:stdout_read_all()
+            if not data then
+                ngx.say("stdout err: ", err)
+            else
+                ngx.say("stdout: ", data)
+            end
+
+            local data, err = proc:stderr_read_any(4096)
+            if not data then
+                ngx.say("stderr err: ", err)
+            else
+                ngx.say("stderr: ", data)
+            end
+        }
+    }
+--- response_body
+stdout: ok
+stderr err: closed
+--- no_error_log
+[error]
