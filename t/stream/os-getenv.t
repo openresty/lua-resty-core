@@ -2,7 +2,7 @@
 use lib '.';
 use t::TestCore::Stream;
 
-plan tests => repeat_each() * (blocks() * 2);
+plan tests => repeat_each() * (blocks() * 2 + 2);
 
 $ENV{TEST_NGINX_BAR} = 'world';
 $ENV{TEST_NGINX_LUA_PACKAGE_PATH} = "$t::TestCore::Stream::lua_package_path";
@@ -173,3 +173,90 @@ in content:\s+
 --- stream_response
 in init: false
 in content: true
+
+
+
+=== TEST 9: os.getenv() can be localized before loading resty.core
+--- main_config
+env FOO=hello;
+--- stream_config
+    lua_package_path "$TEST_NGINX_LUA_PACKAGE_PATH";
+    lua_load_resty_core off;
+
+    init_by_lua_block {
+        package.loaded.os_getenv = os.getenv
+        require "resty.core"
+
+        do
+            local getenv = os.getenv
+
+            package.loaded.f = function ()
+                ngx.log(ngx.NOTICE, "FOO: ", getenv("FOO"))
+            end
+        end
+
+        package.loaded.f()
+
+        package.loaded.is_os_getenv = os.getenv == package.loaded.os_getenv
+    }
+--- stream_server_config
+    content_by_lua_block {
+        package.loaded.f()
+        package.loaded.f()
+
+        ngx.say("in init: ", package.loaded.is_os_getenv, "\n",
+                "in content: ", os.getenv == package.loaded.os_getenv)
+    }
+--- stream_response
+in init: false
+in content: true
+--- grep_error_log eval
+qr/FOO: [a-z]+/
+--- grep_error_log_out
+FOO: hello
+FOO: hello
+FOO: hello
+
+
+
+=== TEST 10: os.getenv() can be localized after loading resty.core
+--- main_config
+env FOO=hello;
+--- stream_config
+    lua_package_path "$TEST_NGINX_LUA_PACKAGE_PATH";
+    lua_load_resty_core off;
+
+    init_by_lua_block {
+        package.loaded.os_getenv = os.getenv
+
+        do
+            local getenv = os.getenv
+
+            package.loaded.f = function ()
+                ngx.log(ngx.NOTICE, "FOO: ", getenv("FOO"))
+            end
+        end
+
+        require "resty.core"
+
+        package.loaded.f()
+
+        package.loaded.is_os_getenv = os.getenv == package.loaded.os_getenv
+    }
+--- stream_server_config
+    content_by_lua_block {
+        package.loaded.f()
+        package.loaded.f()
+
+        ngx.say("in init: ", package.loaded.is_os_getenv, "\n",
+                "in content: ", os.getenv == package.loaded.os_getenv)
+    }
+--- stream_response
+in init: false
+in content: false
+--- grep_error_log eval
+qr/FOO: [a-z]+/
+--- grep_error_log_out
+FOO: nil
+FOO: hello
+FOO: hello

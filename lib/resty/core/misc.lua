@@ -193,7 +193,6 @@ do
         if r then
             -- past init_by_lua* phase now
             os.getenv = _getenv
-            _getenv = nil
             env_ptr = nil
             return os.getenv(name)
         end
