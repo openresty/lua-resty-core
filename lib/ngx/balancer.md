@@ -108,10 +108,8 @@ stream {
         # this is the real entry point
         listen 10000;
 
-        location / {
-            # make use of the upstream named "backend" defined above:
-            proxy_pass backend;
-        }
+        # make use of the upstream named "backend" defined above:
+        proxy_pass backend;
     }
 
     server {
