@@ -1625,3 +1625,29 @@ bad "zone" argument
 [error]
 [alert]
 [crit]
+
+
+
+=== TEST 51: free_space, not supported in NGINX < 1.11.7
+--- skip_nginx: 5: >= 1.11.7
+--- config
+    location = /t {
+        content_by_lua_block {
+            local birds = ngx.shared.birds
+
+            local pok, perr = pcall(function ()
+                birds:free_space()
+            end)
+            if not pok then
+                ngx.say(perr)
+            end
+        }
+    }
+--- request
+GET /t
+--- response_body_like
+content_by_lua\(nginx\.conf:\d+\):\d+: 'shm:free_space\(\)' not supported in NGINX < 1.11.7
+--- no_error_log
+[error]
+[alert]
+[crit]

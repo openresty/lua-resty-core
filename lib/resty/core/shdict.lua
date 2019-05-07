@@ -81,7 +81,9 @@ size_t ngx_http_lua_ffi_shdict_free_space(void *zone);
         ]]
     end
 
-    ngx_lua_ffi_shdict_free_space = C.ngx_http_lua_ffi_shdict_free_space
+    pcall(function ()
+        ngx_lua_ffi_shdict_free_space = C.ngx_http_lua_ffi_shdict_free_space
+    end)
 
 elseif subsystem == 'stream' then
 
@@ -133,6 +135,8 @@ size_t ngx_stream_lua_ffi_shdict_free_space(void *zone);
         ]]
     end
 
+    -- ngx_stream_lua is only compatible with NGINX >= 1.13.6, meaning it
+    -- cannot lack support for ngx_stream_lua_ffi_shdict_free_space.
     ngx_lua_ffi_shdict_free_space = C.ngx_stream_lua_ffi_shdict_free_space
 
 else
@@ -581,10 +585,18 @@ local function shdict_capacity(zone)
 end
 
 
-local function shdict_free_space(zone)
-    zone = check_zone(zone)
+local shdict_free_space
+if ngx_lua_ffi_shdict_free_space then
+    shdict_free_space = function (zone)
+        zone = check_zone(zone)
 
-    return tonumber(ngx_lua_ffi_shdict_free_space(zone))
+        return tonumber(ngx_lua_ffi_shdict_free_space(zone))
+    end
+
+else
+    shdict_free_space = function ()
+        error("'shm:free_space()' not supported in NGINX < 1.11.7", 2)
+    end
 end
 
 
