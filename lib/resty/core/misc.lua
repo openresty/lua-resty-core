@@ -185,17 +185,22 @@ end
 
 
 do
+    local finished_wrapping_getenv = false
     local _getenv = os.getenv
     local env_ptr = ffi_new("unsigned char *[1]")
 
     os.getenv = function (name)
+        if finished_wrapping_getenv then
+            -- os.getenv is "unwrapped" but this function was called anyway
+            return _getenv(name)
+        end
         local r = get_request()
         if r then
             -- past init_by_lua* phase now
+            finished_wrapping_getenv = true
             os.getenv = _getenv
-            _getenv = nil
             env_ptr = nil
-            return os.getenv(name)
+            return _getenv(name)
         end
 
         local size = get_string_buf_size()
