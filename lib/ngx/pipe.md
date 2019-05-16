@@ -201,7 +201,7 @@ end
 The following options are supported:
 
 * `merge_stderr`: when set to `true`, the output to stderr will be redirected
-  to stdout in the spawned process. This is similar to doing `>&1` in a shell.
+  to stdout in the spawned process. This is similar to doing `2>&1` in a shell.
 * `buffer_size`: specifies the buffer size used by reading operations, in
   bytes. The default buffer size is `4096`.
 
