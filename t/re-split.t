@@ -1246,3 +1246,28 @@ GET /re
 qr/\[TRACE\s+\d+/
 --- no_error_log
 [error]
+
+
+
+=== TEST 40: cannot load ngx.re module when lacking PCRE support
+--- config
+    location /re {
+        content_by_lua_block {
+            package.loaded["ngx.re"] = nil
+
+            local core_regex = require "resty.core.regex"
+            core_regex.no_pcre = true
+
+            local pok, perr = pcall(require, "ngx.re")
+            if not pok then
+                ngx.say(perr)
+            end
+        }
+    }
+--- request
+GET /re
+--- response_body
+no support for 'ngx.re' module: OpenResty was compiled without PCRE support
+--- no_error_log
+[error]
+[crit]
