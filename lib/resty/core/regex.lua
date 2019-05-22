@@ -60,6 +60,8 @@ if not pcall(function() pcre_ver = ffi_string(C.pcre_version()) end) then
         end
     })
 
+    _M.no_pcre = true
+
     return _M
 end
 

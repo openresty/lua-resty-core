@@ -8,6 +8,12 @@ local bit = require "bit"
 local core_regex = require "resty.core.regex"
 
 
+if core_regex.no_pcre then
+    error("no support for 'ngx.re' module: OpenResty was " ..
+          "compiled without PCRE support", 2)
+end
+
+
 local C = ffi.C
 local ffi_str = ffi.string
 local sub = string.sub
