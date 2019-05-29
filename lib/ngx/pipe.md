@@ -225,7 +225,7 @@ milliseconds.
 
 The default threshold for each timeout is 10 seconds.
 
-If a specified timeout argument is `nil`, the corresponding timeout threshold
+If the specified timeout argument is `nil`, the corresponding timeout threshold
 will not be changed. For example:
 
 ```lua
@@ -238,7 +238,7 @@ proc:set_timeouts(nil, nil, nil, 100)
 proc:set_timeouts(100)
 ```
 
-If a specified timeout argument is `0`, the corresponding operation will
+If the specified timeout argument is `0`, the corresponding operation will
 never time out.
 
 [Back to TOC](#table-of-contents)
