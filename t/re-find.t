@@ -25,7 +25,7 @@ __DATA__
             local from, to, err
             local find = ngx.re.find
             local s = "a"
-            for i = 1, 100 do
+            for i = 1, $TEST_NGINX_HOTLOOP * 20 do
                 from, to, err = find(s, "a")
             end
             if err then
@@ -135,7 +135,7 @@ NYI
         content_by_lua_block {
             local s = "hello, 1234"
             local from, to, err
-            for i = 1, 100 do
+            for i = 1, $TEST_NGINX_HOTLOOP * 20 do
                 from, to, err = ngx.re.find(s, "([0-9])|(hello world)", "jo", nil, 2)
             end
             if from or to then
@@ -203,7 +203,7 @@ qr/\[TRACE\s+\d+ content_by_lua\(nginx\.conf:\d+\):4 loop\]/
         content_by_lua_block {
             local s = "hello, 1234"
             local from, to, err
-            for i = 1, 100 do
+            for i = 1, $TEST_NGINX_HOTLOOP * 20 do
                 from, to, err = ngx.re.find(s, "([0-9])([0-9]+)", "jo", nil, 2)
             end
             if from then
