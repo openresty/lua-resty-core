@@ -42,8 +42,9 @@ env:
     - LUACHECK_VER=0.21.1
     - OLD_OPENSSL_VER=0.9.8o
   matrix:
-    - NGINX_VERSION=1.15.8 OPENSSL_VER=1.0.2n OPENSSL_PATCH_VER=1.0.2h
-    - NGINX_VERSION=1.15.8 OPENSSL_VER=1.1.0h OPENSSL_PATCH_VER=1.1.0d
+    - NGINX_VERSION=1.15.8 OPENSSL_VER=1.0.2s OPENSSL_PATCH_VER=1.0.2h
+    - NGINX_VERSION=1.15.8 OPENSSL_VER=1.1.0k OPENSSL_PATCH_VER=1.1.0d
+    - NGINX_VERSION=1.15.8 OPENSSL_VER=1.1.1c OPENSSL_PATCH_VER=""
 
 services:
   - memcache
@@ -82,7 +83,7 @@ script:
   - cd lua-resty-lrucache && sudo make DESTDIR=$LUAJIT_PREFIX LUA_LIB_DIR=/share/lua/5.1 install && cd ..
   - tar zxf download-cache/openssl-$OPENSSL_VER.tar.gz
   - cd openssl-$OPENSSL_VER/
-  - patch -p1 < ../../openresty/patches/openssl-$OPENSSL_PATCH_VER-sess_set_get_cb_yield.patch
+  - if [ -n "$OPENSSL_PATCH_VER" ]; then patch -p1 < ../../openresty/patches/openssl-$OPENSSL_PATCH_VER-sess_set_get_cb_yield.patch; fi
   - ./config no-threads shared enable-ssl3 enable-ssl3-method -g --prefix=$OPENSSL_PREFIX -DPURIFY > build.log 2>&1 || (cat build.log && exit 1)
   - make -j$JOBS > build.log 2>&1 || (cat build.log && exit 1)
   - sudo make PATH=$PATH install_sw > build.log 2>&1 || (cat build.log && exit 1)
