@@ -41,11 +41,6 @@ local ffi_str_type = ffi.typeof("ngx_http_lua_ffi_str_t*")
 
 
 local function ndk_set_var_get(self, var)
-    local r = get_request()
-    if not r then
-        error("no request found")
-    end
-
     if type(var) ~= "string" then
         var = tostring(var)
     end
@@ -58,6 +53,11 @@ local function ndk_set_var_get(self, var)
     local func = func_p[0]
 
     return function (arg)
+        local r = get_request()
+        if not r then
+            error("no request found")
+        end
+
         if type(arg) ~= "string" then
             arg = tostring(arg)
         end

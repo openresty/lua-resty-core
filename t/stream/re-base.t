@@ -1,20 +1,10 @@
 # vim:set ft= ts=4 sw=4 et fdm=marker:
-use lib 'lib';
-use Test::Nginx::Socket::Lua::Stream;
-use Cwd qw(cwd);
+use lib '.';
+use t::TestCore::Stream;
 
 repeat_each(2);
 
 plan tests => repeat_each() * (blocks() * 3);
-
-my $pwd = cwd();
-
-our $StreamConfig = <<_EOC_;
-    lua_package_path "$pwd/lib/?.lua;../lua-resty-lrucache/lib/?.lua;;";
-    init_by_lua_block {
-        require "resty.core"
-    }
-_EOC_
 
 no_long_string();
 check_accum_error_log();
@@ -23,7 +13,6 @@ run_tests();
 __DATA__
 
 === TEST 1: bad pattern
---- stream_config eval: $::StreamConfig
 --- stream_server_config
     content_by_lua_block {
         local it, err = ngx.re.gmatch("hello\\nworld", "(abc")
@@ -41,7 +30,6 @@ error: pcre_compile() failed: missing ) in "(abc"
 
 
 === TEST 2: bad UTF-8
---- stream_config eval: $::StreamConfig
 --- stream_server_config
     content_by_lua_block {
         local target = "你好"
@@ -76,7 +64,6 @@ error: pcre_exec\(\) failed: -10
 
 
 === TEST 3: UTF-8 mode without UTF-8 sequence checks
---- stream_config eval: $::StreamConfig
 --- stream_server_config
     content_by_lua_block {
         local it = ngx.re.gmatch("你好", ".", "U")
@@ -108,7 +95,6 @@ exec opts: 2000
 
 
 === TEST 4: UTF-8 mode with UTF-8 sequence checks
---- stream_config eval: $::StreamConfig
 --- stream_server_config
     content_by_lua_block {
         local it = ngx.re.gmatch("你好", ".", "u")
@@ -140,7 +126,7 @@ exec opts: 0
 
 
 === TEST 5: just hit match limit
---- stream_config eval: "lua_regex_match_limit 5000;" . $::StreamConfig
+--- stream_config eval: "lua_regex_match_limit 5000;" . $t::TestCore::Stream::StreamConfig
 --- stream_server_config
     content_by_lua_file html/a.lua;
 
@@ -172,7 +158,7 @@ error: pcre_exec() failed: -8
 
 
 === TEST 6: just not hit match limit
---- stream_config eval: "lua_regex_match_limit 5100;" . $::StreamConfig
+--- stream_config eval: "lua_regex_match_limit 5100;" . $t::TestCore::Stream::StreamConfig
 --- stream_server_config
     content_by_lua_file html/a.lua;
 

@@ -4,9 +4,8 @@ BEGIN {
     undef $ENV{TEST_NGINX_USE_STAP};
 }
 
-use lib 'lib';
-use Test::Nginx::Socket::Lua;
-use Cwd qw(cwd);
+use lib '.';
+use t::TestCore;
 
 #worker_connections(1014);
 master_process_enabled(1);
@@ -16,22 +15,17 @@ repeat_each(2);
 
 plan tests => repeat_each() * (blocks() * 5 - 3);
 
-my $pwd = cwd();
+add_block_preprocessor(sub {
+    my $block = shift;
 
-our $HttpConfig = <<_EOC_;
+    my $http_config = $block->http_config || '';
+    my $init_by_lua_block = $block->init_by_lua_block || '';
 
-    lua_package_path "$pwd/lib/?.lua;../lua-resty-lrucache/lib/?.lua;;";
+    $http_config .= <<_EOC_;
+    lua_package_path '$t::TestCore::lua_package_path';
     init_by_lua_block {
-        local verbose = false
-        if verbose then
-            local dump = require "jit.dump"
-            dump.on("b", "$Test::Nginx::Util::ErrLogFile")
-        else
-            local v = require "jit.v"
-            v.on("$Test::Nginx::Util::ErrLogFile")
-        end
+        $t::TestCore::init_by_lua_block
 
-        require "resty.core"
         local process = require "ngx.process"
         local ok, err = process.enable_privileged_agent()
         if not ok then
@@ -53,6 +47,9 @@ our $HttpConfig = <<_EOC_;
     }
 _EOC_
 
+    $block->set_value("http_config", $http_config);
+});
+
 #no_diff();
 #no_long_string();
 check_accum_error_log();
@@ -61,7 +58,6 @@ run_tests();
 __DATA__
 
 === TEST 1: sanity
---- http_config eval: $::HttpConfig
 --- config
     location = /t {
         content_by_lua_block {
@@ -83,14 +79,14 @@ type: worker
 qr/\[TRACE\s+\d+ init_worker_by_lua:\d+ loop\]|\[TRACE\s+\d+ content_by_lua\(nginx\.conf:\d+\):\d+ loop\]|init_worker_by_lua:\d+: process type: \w+/
 --- grep_error_log_out eval
 [
-qr/\[TRACE\s+\d+ init_worker_by_lua:5 loop\]
-(?:\[TRACE\s+\d+ init_worker_by_lua:5 loop\]
-)?\[TRACE\s+\d+ content_by_lua\(nginx.conf:81\):5 loop\]
+qr/\[TRACE\s+\d+ init_worker_by_lua:\d+ loop\]
+(?:\[TRACE\s+\d+ init_worker_by_lua:\d+ loop\]
+)?\[TRACE\s+\d+ content_by_lua\(nginx.conf:\d+\):\d+ loop\]
 init_worker_by_lua:10: process type: privileged
 /,
-qr/\[TRACE\s+\d+ init_worker_by_lua:5 loop\]
-(?:\[TRACE\s+\d+ init_worker_by_lua:5 loop\]
-)?\[TRACE\s+\d+ content_by_lua\(nginx.conf:81\):5 loop\]
+qr/\[TRACE\s+\d+ init_worker_by_lua:\d+ loop\]
+(?:\[TRACE\s+\d+ init_worker_by_lua:\d+ loop\]
+)?\[TRACE\s+\d+ content_by_lua\(nginx.conf:\d+\):\d+ loop\]
 init_worker_by_lua:10: process type: privileged
 /
 ]
@@ -103,7 +99,6 @@ init_worker_by_lua:10: process type: privileged
 
 
 === TEST 2: `enable_privileged_agent` disabled
---- http_config eval: $::HttpConfig
 --- config
     location = /t {
         content_by_lua_block {
@@ -125,7 +120,6 @@ qr/\[error\] .*? API disabled in the current context/
 
 
 === TEST 3: `enable_privileged_agent` not patched
---- http_config eval: $::HttpConfig
 --- config
     location = /t {
         content_by_lua_block {

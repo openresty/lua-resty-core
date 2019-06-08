@@ -67,13 +67,13 @@ Splits the `subject` string using the Perl compatible regular expression
 `regex` with the optional `options`.
 
 This function returns a Lua (array) table (with integer keys) containing the
-splitted values.
+split values.
 
 In case of error, `nil` will be returned as well as a string describing the
 error.
 
 When `regex` contains a sub-match capturing group, and when such a match is
-found, the first submatch capture will be inserted in between each splitted
+found, the first submatch capture will be inserted in between each split
 value, like so:
 
 ```lua
@@ -242,8 +242,8 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 
 See Also
 ========
-* library [lua-resty-core](https://github.com/openresty/lua-resty-core)
+* the [lua-resty-core](https://github.com/openresty/lua-resty-core) library.
 * the ngx_lua module: https://github.com/openresty/lua-nginx-module
-* OpenResty: http://openresty.org
+* OpenResty: https://openresty.org
 
 [Back to TOC](#table-of-contents)

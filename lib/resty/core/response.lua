@@ -41,7 +41,7 @@ ffi.cdef[[
     int ngx_http_lua_ffi_get_resp_header(ngx_http_request_t *r,
         const unsigned char *key, size_t key_len,
         unsigned char *key_buf, ngx_http_lua_ffi_str_t *values,
-        int max_nvalues);
+        int max_nvalues, char **errmsg);
 ]]
 
 
@@ -109,11 +109,11 @@ local function set_resp_header(tb, key, value, no_override)
     end
 
     if rc == FFI_BAD_CONTEXT then
-        error("API disabled in the current context")
+        error("API disabled in the current context", 2)
     end
 
     -- rc == FFI_ERROR
-    error(ffi_str(errmsg[0]))
+    error(ffi_str(errmsg[0]), 2)
 end
 
 
@@ -135,12 +135,13 @@ local function get_resp_header(tb, key)
     local key_buf = get_string_buf(key_len + ffi_str_size * MAX_HEADER_VALUES)
     local values = ffi_cast(ffi_str_type, key_buf + key_len)
     local n = C.ngx_http_lua_ffi_get_resp_header(r, key, key_len, key_buf,
-                                                 values, MAX_HEADER_VALUES)
+                                                 values, MAX_HEADER_VALUES,
+                                                 errmsg)
 
     -- print("retval: ", n)
 
     if n == FFI_BAD_CONTEXT then
-        error("API disabled in the current context")
+        error("API disabled in the current context", 2)
     end
 
     if n == 0 then
@@ -162,7 +163,7 @@ local function get_resp_header(tb, key)
     end
 
     -- n == FFI_ERROR
-    error("no memory")
+    error(ffi_str(errmsg[0]), 2)
 end
 
 

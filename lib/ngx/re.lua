@@ -8,6 +8,12 @@ local bit = require "bit"
 local core_regex = require "resty.core.regex"
 
 
+if core_regex.no_pcre then
+    error("no support for 'ngx.re' module: OpenResty was " ..
+          "compiled without PCRE support", 2)
+end
+
+
 local C = ffi.C
 local ffi_str = ffi.string
 local sub = string.sub
@@ -289,7 +295,7 @@ function _M.opt(option, value)
     if option == "jit_stack_size" then
         if not is_regex_cache_empty() then
             error("changing jit stack size is not allowed when some " ..
-                  "regexs have already been compiled and cached")
+                  "regexs have already been compiled and cached", 2)
         end
 
         local errbuf = get_string_buf(MAX_ERR_MSG_LEN)
@@ -302,10 +308,10 @@ function _M.opt(option, value)
             return
         end
 
-        error(ffi_str(errbuf, sizep[0]))
+        error(ffi_str(errbuf, sizep[0]), 2)
     end
 
-    error("unrecognized option name")
+    error("unrecognized option name", 2)
 end
 
 

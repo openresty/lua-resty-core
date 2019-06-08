@@ -12,7 +12,8 @@ BEGIN {
     }
 }
 
-use Test::Nginx::Socket::Lua $SkipReason ? (skip_all => $SkipReason) : ();
+use lib '.';
+use t::TestCore $SkipReason ? (skip_all => $SkipReason) : ();
 use Cwd qw(cwd);
 
 #worker_connections(1014);
@@ -26,10 +27,10 @@ plan tests => repeat_each() * (blocks() * 4);
 my $pwd = cwd();
 
 our $HttpConfig = <<_EOC_;
-
-    lua_package_path "$pwd/lib/?.lua;../lua-resty-lrucache/lib/?.lua;;";
+    lua_package_path '$t::TestCore::lua_package_path';
     init_by_lua_block {
-        require "resty.core"
+        $t::TestCore::init_by_lua_block
+
         local process = require "ngx.process"
         local ok, err = process.enable_privileged_agent()
         if not ok then

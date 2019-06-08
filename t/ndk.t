@@ -1,39 +1,17 @@
-use lib 'lib';
-use Test::Nginx::Socket::Lua;
-use Cwd qw(cwd);
+use lib '.';
+use t::TestCore;
 
 repeat_each(2);
 
-plan tests => repeat_each() * (blocks() * 5 + 2);
-
-my $pwd = cwd();
-
-$ENV{TEST_NGINX_HOTLOOP} ||= 9;
+plan tests => repeat_each() * (blocks() * 5 + 4);
 
 add_block_preprocessor(sub {
     my $block = shift;
 
     my $http_config = $block->http_config || '';
-    my $init_by_lua_block = $block->init_by_lua_block || 'require "resty.core"';
 
     $http_config .= <<_EOC_;
-
-    lua_package_path "$pwd/lib/?.lua;../lua-resty-lrucache/lib/?.lua;;";
-    init_by_lua_block {
-        local verbose = false
-        if verbose then
-            local dump = require "jit.dump"
-            dump.on("b", "$Test::Nginx::Util::ErrLogFile")
-        else
-            local v = require "jit.v"
-            v.on("$Test::Nginx::Util::ErrLogFile")
-        end
-
-        $init_by_lua_block
-
-        local jit = require "jit"
-        jit.opt.start("hotloop=$ENV{TEST_NGINX_HOTLOOP}")
-    }
+    $t::TestCore::HttpConfig
 _EOC_
 
     $block->set_value("http_config", $http_config);
@@ -53,7 +31,6 @@ _EOC_
     if (!defined $block->request) {
         $block->set_value("request", "GET /t");
     }
-
 });
 
 check_accum_error_log();
@@ -76,11 +53,11 @@ __DATA__
             ngx.say(set_unescape_uri("a%20b"))
 
             local res
-            for i = 1, $TEST_NGINX_HOTLOOP + 2 do
+            for i = 1, $TEST_NGINX_HOTLOOP * 10 do
                 res = set_escape_uri(" :")
             end
 
-            for i = 1, $TEST_NGINX_HOTLOOP + 2 do
+            for i = 1, $TEST_NGINX_HOTLOOP * 10 do
                 res = set_unescape_uri("a%20b")
             end
         }
@@ -263,6 +240,22 @@ s = %20%3A
     location /t {
         content_by_lua_block {
             ngx.say(package.loaded.s)
+        }
+    }
+--- response_body
+%20%3A
+
+
+
+=== TEST 13: cache the function in init_worker_by_lua and call in other phases
+--- http_config
+    init_worker_by_lua_block {
+        package.loaded.set_escape_uri = ndk.set_var.set_escape_uri
+    }
+--- config
+    location /t {
+        content_by_lua_block {
+            ngx.say(package.loaded.set_escape_uri(" :"))
         }
     }
 --- response_body

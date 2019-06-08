@@ -1,35 +1,14 @@
 # vim:set ft= ts=4 sw=4 et fdm=marker:
-use lib 'lib';
-use Test::Nginx::Socket::Lua;
-use Cwd qw(cwd);
+use lib '.';
+use t::TestCore;
 
 repeat_each(2);
 
 plan tests => repeat_each() * blocks() * 4;
 
-my $pwd = cwd();
-
 our $HttpConfig = <<_EOC_;
-    lua_package_path "$pwd/lib/?.lua;../lua-resty-lrucache/lib/?.lua;;";
     lua_shared_dict dogs 1m;
-    init_by_lua_block {
-        -- local verbose = true
-        local verbose = false
-        local outfile = "$Test::Nginx::Util::ErrLogFile"
-        -- local outfile = "/tmp/v.log"
-        if verbose then
-            local dump = require "jit.dump"
-            dump.on(nil, outfile)
-        else
-            local v = require "jit.v"
-            v.on(outfile)
-        end
-
-        require "resty.core"
-        -- jit.opt.start("hotloop=1")
-        -- jit.opt.start("loopunroll=1000000")
-        -- jit.off()
-    }
+    $t::TestCore::HttpConfig
 _EOC_
 
 no_diff();
@@ -102,7 +81,7 @@ failed to get ttl: not found
 
 
 
-=== TEST 4 shared.ttl returns key ttl for non-default ttl
+=== TEST 4: shared.ttl returns key ttl for non-default (positive) ttl
 --- http_config eval: $::HttpConfig
 --- config
     location = /t {
@@ -117,7 +96,7 @@ failed to get ttl: not found
             ngx.say(ttl)
 
             ngx.say("sleep for 0.1s...")
-            ngx.sleep(0.11)
+            ngx.sleep(0.1)
 
             ttl, err = ngx.shared.dogs:ttl("key")
             if not ttl then
@@ -132,7 +111,7 @@ GET /t
 --- response_body_like chomp
 \A0.2
 sleep for 0.1s...
--?0.0\d*
+0.\d*
 \z
 --- no_error_log
 [error]
@@ -140,7 +119,45 @@ sleep for 0.1s...
 
 
 
-=== TEST 5 shared.ttl returns key ttl for default ttl (0_
+=== TEST 5: shared.ttl returns key ttl for non-default (negative) ttl
+--- http_config eval: $::HttpConfig
+--- config
+    location = /t {
+        content_by_lua_block {
+            local ok, err = ngx.shared.dogs:set("key", true, 0.1)
+
+            local ttl, err = ngx.shared.dogs:ttl("key")
+            if not ttl then
+                ngx.log(ngx.ERR, "failed to get ttl: ", err)
+            end
+
+            ngx.say(ttl)
+
+            ngx.say("sleep for 0.2s...")
+            ngx.sleep(0.2)
+
+            ttl, err = ngx.shared.dogs:ttl("key")
+            if not ttl then
+                ngx.log(ngx.ERR, "failed to get ttl: ", err)
+            end
+
+            ngx.say(ttl)
+        }
+    }
+--- request
+GET /t
+--- response_body_like chomp
+\A0.1
+sleep for 0.2s...
+-0.\d*
+\z
+--- no_error_log
+[error]
+[alert]
+
+
+
+=== TEST 6: shared.ttl returns key ttl for default ttl (0)
 --- http_config eval: $::HttpConfig
 --- config
     location = /t {
@@ -177,14 +194,14 @@ sleep for 0.1s...
 
 
 
-=== TEST 6 shared.ttl JIT compiles
+=== TEST 7: shared.ttl JIT compiles
 --- http_config eval: $::HttpConfig
 --- config
     location = /t {
         content_by_lua_block {
             local ok, err = ngx.shared.dogs:set("key", true)
 
-            for i = 1, 100 do
+            for i = 1, 30 do
                 local ttl, err = ngx.shared.dogs:ttl("key")
                 if not ttl then
                     ngx.log(ngx.ERR, "failed to get ttl: ", err)
@@ -203,7 +220,7 @@ qr/\[TRACE\s+\d+ content_by_lua\(nginx\.conf:\d+\):4 loop\]/
 
 
 
-=== TEST 7: shared.expire errors on invalid exptime
+=== TEST 8: shared.expire errors on invalid exptime
 --- http_config eval: $::HttpConfig
 --- config
     location = /t {
@@ -226,7 +243,7 @@ bad "exptime" argument
 
 
 
-=== TEST 8: shared.expire returns error on nil key
+=== TEST 9: shared.expire returns error on nil key
 --- http_config eval: $::HttpConfig
 --- config
     location = /t {
@@ -249,7 +266,7 @@ failed to set ttl: nil key
 
 
 
-=== TEST 9: shared.expire returns error on empty key
+=== TEST 10: shared.expire returns error on empty key
 --- http_config eval: $::HttpConfig
 --- config
     location = /t {
@@ -272,7 +289,7 @@ failed to set ttl: empty key
 
 
 
-=== TEST 10: shared.expire returns error on not found key
+=== TEST 11: shared.expire returns error on not found key
 --- http_config eval: $::HttpConfig
 --- config
     location = /t {
@@ -295,7 +312,7 @@ failed to set ttl: not found
 
 
 
-=== TEST 11: shared.expire updates ttl of key with non-default ttl
+=== TEST 12: shared.expire updates ttl of key with non-default ttl
 --- http_config eval: $::HttpConfig
 --- config
     location = /t {
@@ -342,7 +359,7 @@ after 0.4s: nil
 
 
 
-=== TEST 12: shared.expire updates ttl of key with default ttl (0)
+=== TEST 13: shared.expire updates ttl of key with default ttl (0)
 --- http_config eval: $::HttpConfig
 --- config
     location = /t {
@@ -387,7 +404,7 @@ after 0.4s: nil
 
 
 
-=== TEST 13: shared.expire JIT compiles
+=== TEST 14: shared.expire JIT compiles
 --- http_config eval: $::HttpConfig
 --- config
     location = /t {
@@ -399,7 +416,7 @@ after 0.4s: nil
                 ngx.log(ngx.ERR, "failed to set: ", err)
             end
 
-            for i = 1, 100 do
+            for i = 1, 30 do
                 local ok, err = dogs:expire("key", 0.3)
                 if not ok then
                     ngx.say("failed to set ttl: ", err)

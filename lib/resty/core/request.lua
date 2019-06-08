@@ -3,6 +3,8 @@
 
 local ffi = require 'ffi'
 local base = require "resty.core.base"
+base.allows_subsystem("http")
+local utils = require "resty.core.utils"
 
 
 local FFI_BAD_CONTEXT = base.FFI_BAD_CONTEXT
@@ -16,7 +18,6 @@ local ffi_str = ffi.string
 local get_string_buf = base.get_string_buf
 local get_size_ptr = base.get_size_ptr
 local setmetatable = setmetatable
-local gsub = ngx.re.gsub
 local lower = string.lower
 local rawget = rawget
 local ngx = ngx
@@ -25,6 +26,7 @@ local type = type
 local error = error
 local tostring = tostring
 local tonumber = tonumber
+local str_replace_char = utils.str_replace_char
 
 
 ffi.cdef[[
@@ -68,7 +70,7 @@ local truncated = ffi.new("int[1]")
 
 local req_headers_mt = {
     __index = function (tb, key)
-        return rawget(tb, (gsub(lower(key), '_', '-', "jo")))
+        return rawget(tb, (str_replace_char(lower(key), '_', '-')))
     end
 }
 
@@ -92,7 +94,7 @@ function ngx.req.get_headers(max_headers, raw)
     local n = C.ngx_http_lua_ffi_req_get_headers_count(r, max_headers,
                                                        truncated)
     if n == FFI_BAD_CONTEXT then
-        error("API disabled in the current context")
+        error("API disabled in the current context", 2)
     end
 
     if n == 0 then
@@ -154,7 +156,7 @@ function ngx.req.get_uri_args(max_args)
 
     local n = C.ngx_http_lua_ffi_req_get_uri_args_count(r, max_args, truncated)
     if n == FFI_BAD_CONTEXT then
-        error("API disabled in the current context")
+        error("API disabled in the current context", 2)
     end
 
     if n == 0 then
@@ -244,7 +246,7 @@ do
         do
             local id = C.ngx_http_lua_ffi_req_get_method(r)
             if id == FFI_BAD_CONTEXT then
-                error("API disabled in the current context")
+                error("API disabled in the current context", 2)
             end
 
             local method = methods[id]
@@ -280,11 +282,11 @@ function ngx.req.set_method(method)
     end
 
     if rc == FFI_BAD_CONTEXT then
-        error("API disabled in the current context")
+        error("API disabled in the current context", 2)
     end
 
     if rc == FFI_DECLINED then
-        error("unsupported HTTP method: " .. method)
+        error("unsupported HTTP method: " .. method, 2)
     end
 
     error("unknown error: " .. rc)
@@ -327,7 +329,7 @@ do
         end
 
         if rc == FFI_BAD_CONTEXT then
-            error("API disabled in the current context")
+            error("API disabled in the current context", 2)
         end
 
         error("error")
@@ -353,7 +355,7 @@ function ngx.req.clear_header(name)
     end
 
     if rc == FFI_BAD_CONTEXT then
-        error("API disabled in the current context")
+        error("API disabled in the current context", 2)
     end
 
     error("error")

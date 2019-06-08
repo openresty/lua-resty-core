@@ -25,7 +25,7 @@ Table of Contents
 Status
 ======
 
-This Lua module is currently considered experimental.
+This Lua module is production ready.
 
 Synopsis
 ========
@@ -176,7 +176,7 @@ get_serialized_session
 
 **context:** *ssl_session_store_by_lua&#42;*
 
-Returns the serialized form of the SSL sesson data of the current SSL connection, in a Lua string.
+Returns the serialized form of the SSL session data of the current SSL connection, in a Lua string.
 
 This session can be cached in [lua-resty-lrucache](https://github.com/openresty/lua-resty-lrucache), [lua_shared_dict](https://github.com/openresty/lua-nginx-module#lua_shared_dict),
 and/or external data storage services like `memcached` and `redis`. The SSL session ID returned
@@ -271,7 +271,7 @@ See Also
 * the ngx_lua module: https://github.com/openresty/lua-nginx-module
 * the [ssl_session_fetch_by_lua*](https://github.com/openresty/lua-nginx-module/#ssl_session_fetch_by_lua_block) directive.
 * the [ssl_session_store_by_lua*](https://github.com/openresty/lua-nginx-module/#ssl_session_store_by_lua_block) directive.
-* library [lua-resty-core](https://github.com/openresty/lua-resty-core)
+* the [lua-resty-core](https://github.com/openresty/lua-resty-core) library.
 * OpenResty: https://openresty.org
 
 [Back to TOC](#table-of-contents)

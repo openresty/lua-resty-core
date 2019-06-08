@@ -1,7 +1,6 @@
 # vim:set ft= ts=4 sw=4 et fdm=marker:
-use lib 'lib';
-use Test::Nginx::Socket::Lua;
-use Cwd qw(cwd);
+use lib '.';
+use t::TestCore;
 
 #worker_connections(1014);
 #master_process_enabled(1);
@@ -11,30 +10,6 @@ repeat_each(2);
 
 plan tests => repeat_each() * (blocks() * 6);
 
-my $pwd = cwd();
-
-our $HttpConfig = <<_EOC_;
-    lua_package_path "$pwd/lib/?.lua;../lua-resty-lrucache/lib/?.lua;;";
-    init_by_lua_block {
-        -- local verbose = true
-        local verbose = false
-        local outfile = "$Test::Nginx::Util::ErrLogFile"
-        -- local outfile = "/tmp/v.log"
-        if verbose then
-            local dump = require "jit.dump"
-            dump.on(nil, outfile)
-        else
-            local v = require "jit.v"
-            v.on(outfile)
-        end
-
-        require "resty.core"
-        -- jit.opt.start("hotloop=1")
-        -- jit.opt.start("loopunroll=1000000")
-        -- jit.off()
-    }
-_EOC_
-
 #no_diff();
 no_long_string();
 check_accum_error_log();
@@ -43,13 +18,12 @@ run_tests();
 __DATA__
 
 === TEST 1: ngx.now()
---- http_config eval: $::HttpConfig
 --- config
     location = /t {
         access_log off;
         content_by_lua_block {
             local t
-            for i = 1, 500 do
+            for i = 1, 30 do
                 t = ngx.now()
             end
             ngx.sleep(0.10)
@@ -77,13 +51,12 @@ stitch
 
 
 === TEST 2: ngx.time()
---- http_config eval: $::HttpConfig
 --- config
     location = /t {
         access_log off;
         content_by_lua_block {
             local t
-            for i = 1, 500 do
+            for i = 1, 30 do
                 t = ngx.time()
             end
             ngx.say(t > 1400960598)
@@ -107,7 +80,6 @@ stitch
 
 
 === TEST 3: ngx.update_time()
---- http_config eval: $::HttpConfig
 --- config
     location = /t {
         content_by_lua_block {
@@ -132,12 +104,11 @@ stitch
 
 
 === TEST 4: ngx.today()
---- http_config eval: $::HttpConfig
 --- config
     location = /t {
         content_by_lua_block {
             local t
-            for i = 1, 500 do
+            for i = 1, 30 do
                 t = ngx.today()
             end
             ngx.say(t)
@@ -156,12 +127,11 @@ stitch
 
 
 === TEST 5: ngx.localtime()
---- http_config eval: $::HttpConfig
 --- config
     location = /t {
         content_by_lua_block {
             local t
-            for i = 1, 500 do
+            for i = 1, 30 do
                 t = ngx.localtime()
             end
             ngx.say(t)
@@ -180,12 +150,11 @@ stitch
 
 
 === TEST 6: ngx.utctime()
---- http_config eval: $::HttpConfig
 --- config
     location = /t {
         content_by_lua_block {
             local t
-            for i = 1, 500 do
+            for i = 1, 30 do
                 t = ngx.utctime()
             end
             ngx.say(t)
@@ -204,12 +173,11 @@ stitch
 
 
 === TEST 7: ngx.cookie_time()
---- http_config eval: $::HttpConfig
 --- config
     location /t {
         content_by_lua_block {
             local t
-            for i = 1, 500 do
+            for i = 1, 30 do
                 t = ngx.cookie_time(1290079655)
             end
             ngx.say(t)
@@ -231,7 +199,6 @@ stitch
 
 
 === TEST 8: ngx.cookie_time() bad argument
---- http_config eval: $::HttpConfig
 --- config
     location /t {
         content_by_lua_block {
@@ -257,12 +224,11 @@ stitch
 
 
 === TEST 9: ngx.http_time()
---- http_config eval: $::HttpConfig
 --- config
     location /t {
         content_by_lua_block {
             local t
-            for i = 1, 500 do
+            for i = 1, 30 do
                 t = ngx.http_time(1290079655)
             end
             ngx.say(t)
@@ -282,7 +248,6 @@ stitch
 
 
 === TEST 10: ngx.http_time() bad argument
---- http_config eval: $::HttpConfig
 --- config
     location /t {
         content_by_lua_block {
@@ -310,12 +275,11 @@ stitch
 
 
 === TEST 11: ngx.parse_http_time()
---- http_config eval: $::HttpConfig
 --- config
     location /t {
         content_by_lua_block {
             local t
-            for i = 1, 500 do
+            for i = 1, 30 do
                 t = ngx.parse_http_time("Thu, 18 Nov 2010 11:27:35 GMT")
             end
             ngx.say(t)
@@ -337,7 +301,6 @@ stitch
 
 
 === TEST 12: ngx.parse_http_time() bad argument
---- http_config eval: $::HttpConfig
 --- config
     location /t {
         content_by_lua_block {

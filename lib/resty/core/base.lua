@@ -18,22 +18,22 @@ local FREE_LIST_REF = 0
 if subsystem == 'http' then
     if not ngx.config
        or not ngx.config.ngx_lua_version
-       or ngx.config.ngx_lua_version ~= 10014
+       or ngx.config.ngx_lua_version ~= 10015
     then
-        error("ngx_http_lua_module 0.10.14 required")
+        error("ngx_http_lua_module 0.10.15 required")
     end
 
 elseif subsystem == 'stream' then
     if not ngx.config
        or not ngx.config.ngx_lua_version
-       or ngx.config.ngx_lua_version ~= 6
+       or ngx.config.ngx_lua_version ~= 7
     then
-        error("ngx_stream_lua_module 0.0.6 required")
+        error("ngx_stream_lua_module 0.0.7 required")
     end
 
 else
-    error("ngx_http_lua_module 0.10.14 or "
-          .. "ngx_stream_lua_module 0.0.6 required")
+    error("ngx_http_lua_module 0.10.15 or "
+          .. "ngx_stream_lua_module 0.0.7 required")
 end
 
 
@@ -132,7 +132,7 @@ local c_buf_type = ffi.typeof("char[?]")
 local _M = new_tab(0, 18)
 
 
-_M.version = "0.1.16"
+_M.version = "0.1.17"
 _M.new_tab = new_tab
 _M.clear_tab = clear_tab
 
@@ -219,7 +219,7 @@ function _M.allows_subsystem(...)
         end
     end
 
-    error("unsupported subsystem: " .. subsystem)
+    error("unsupported subsystem: " .. subsystem, 2)
 end
 
 
@@ -227,6 +227,7 @@ _M.FFI_OK = 0
 _M.FFI_NO_REQ_CTX = -100
 _M.FFI_BAD_CONTEXT = -101
 _M.FFI_ERROR = -1
+_M.FFI_AGAIN = -2
 _M.FFI_BUSY = -3
 _M.FFI_DONE = -4
 _M.FFI_DECLINED = -5

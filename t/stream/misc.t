@@ -1,6 +1,6 @@
 # vim:set ft= ts=4 sw=4 et fdm=marker:
-
-use Test::Nginx::Socket::Lua::Stream;use Cwd qw(cwd);
+use lib '.';
+use t::TestCore::Stream;
 
 #worker_connections(1014);
 #master_on();
@@ -11,8 +11,6 @@ repeat_each(2);
 
 plan tests => repeat_each() * (blocks() * 5);
 
-$ENV{TEST_NGINX_CWD} = cwd();
-
 #worker_connections(1024);
 #no_diff();
 no_long_string();
@@ -21,8 +19,6 @@ run_tests();
 __DATA__
 
 === TEST 1: base.check_subsystem
---- stream_config
-    lua_package_path "$TEST_NGINX_CWD/lib/?.lua;;";
 --- stream_server_config
     content_by_lua_block {
         local base = require "resty.core.base"
@@ -41,8 +37,6 @@ ok
 
 
 === TEST 2: base.check_subsystem with non-stream subsystem
---- stream_config
-    lua_package_path "$TEST_NGINX_CWD/lib/?.lua;;";
 --- stream_server_config
     content_by_lua_block {
         local base = require "resty.core.base"

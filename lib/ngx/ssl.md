@@ -36,7 +36,7 @@ Table of Contents
 Status
 ======
 
-This Lua module is currently considered experimental.
+This Lua module is production ready.
 
 Synopsis
 ========
@@ -530,7 +530,7 @@ See Also
 * the ngx_lua module: https://github.com/openresty/lua-nginx-module
 * the [ngx.ocsp](ocsp.md) module.
 * the [ssl_certificate_by_lua*](https://github.com/openresty/lua-nginx-module/#ssl_certificate_by_lua_block) directive.
-* library [lua-resty-core](https://github.com/openresty/lua-resty-core)
-* OpenResty: http://openresty.org
+* the [lua-resty-core](https://github.com/openresty/lua-resty-core) library.
+* OpenResty: https://openresty.org
 
 [Back to TOC](#table-of-contents)

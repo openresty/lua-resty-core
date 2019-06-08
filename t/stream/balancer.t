@@ -1,6 +1,6 @@
 # vim:set ft= ts=4 sw=4 et fdm=marker:
-
-use Test::Nginx::Socket::Lua::Stream;use Cwd qw(cwd);
+use lib '.';
+use t::TestCore::Stream;
 
 #worker_connections(1014);
 #master_on();
@@ -11,7 +11,7 @@ repeat_each(2);
 
 plan tests => repeat_each() * (blocks() * 3 + 2);
 
-$ENV{TEST_NGINX_CWD} = cwd();
+$ENV{TEST_NGINX_LUA_PACKAGE_PATH} = "$t::TestCore::Stream::lua_package_path";
 
 #worker_connections(1024);
 #no_diff();
@@ -22,7 +22,7 @@ __DATA__
 
 === TEST 1: set current peer (separate addr and port)
 --- stream_config
-    lua_package_path "$TEST_NGINX_CWD/lib/?.lua;;";
+    lua_package_path "$TEST_NGINX_LUA_PACKAGE_PATH";
 
     upstream backend {
         server 0.0.0.1:1234;
@@ -47,7 +47,7 @@ qr{connect\(\) failed .*?, upstream: "127\.0\.0\.3:12345"},
 === TEST 2: set current peer & next upstream (3 tries)
 --- skip_nginx: 4: < 1.7.5
 --- stream_config
-    lua_package_path "$TEST_NGINX_CWD/lib/?.lua;;";
+    lua_package_path "$TEST_NGINX_LUA_PACKAGE_PATH";
 
     proxy_next_upstream on;
     proxy_next_upstream_tries 10;
@@ -86,7 +86,7 @@ qr#^(?:connect\(\) failed .*?, upstream: "127.0.0.3:12345"\n){3}$#
 === TEST 3: set current peer & next upstream (no retries)
 --- skip_nginx: 4: < 1.7.5
 --- stream_config
-    lua_package_path "$TEST_NGINX_CWD/lib/?.lua;;";
+    lua_package_path "$TEST_NGINX_LUA_PACKAGE_PATH";
 
     proxy_next_upstream on;
 
@@ -116,7 +116,7 @@ qr#^(?:connect\(\) failed .*?, upstream: "127.0.0.3:12345"\n){1}$#
 === TEST 4: set current peer & next upstream (3 tries exceeding the limit)
 --- skip_nginx: 4: < 1.7.5
 --- stream_config
-    lua_package_path "$TEST_NGINX_CWD/lib/?.lua;;";
+    lua_package_path "$TEST_NGINX_LUA_PACKAGE_PATH";
 
     proxy_next_upstream on;
     proxy_next_upstream_tries 2;
@@ -155,7 +155,7 @@ set more tries: reduced tries due to limit
 === TEST 5: get last peer failure status (connect failed)
 --- skip_nginx: 4: < 1.7.5
 --- stream_config
-    lua_package_path "$TEST_NGINX_CWD/lib/?.lua;;";
+    lua_package_path "$TEST_NGINX_LUA_PACKAGE_PATH";
 
     proxy_next_upstream on;
     proxy_next_upstream_tries 10;
@@ -199,7 +199,7 @@ last peer failure: failed 0
 
 === TEST 6: set current peer (port embedded in addr)
 --- stream_config
-    lua_package_path "$TEST_NGINX_CWD/lib/?.lua;;";
+    lua_package_path "$TEST_NGINX_LUA_PACKAGE_PATH";
 
     upstream backend {
         server 0.0.0.1:1234;

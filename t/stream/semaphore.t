@@ -1,7 +1,6 @@
 # vim:set ft= ts=4 sw=4 et fdm=marker:
-
-use lib 'lib';
-use Test::Nginx::Socket::Lua::Stream;use Cwd qw(cwd);
+use lib '.';
+use t::TestCore::Stream;
 
 #worker_connections(10140);
 #workers(1);
@@ -11,13 +10,11 @@ repeat_each(2);
 
 plan tests => repeat_each() * (blocks() * 3 + 2);
 
-my $pwd = cwd();
-
 no_long_string();
 #no_diff();
-$ENV{TEST_NGINX_LUA_PACKAGE_PATH} = "\"$pwd/lib/?.lua;;\"";
+$ENV{TEST_NGINX_LUA_PACKAGE_PATH} = "$t::TestCore::Stream::lua_package_path";
 our $HttpConfig = <<_EOC_;
-    lua_package_path "$pwd/lib/?.lua;;";
+    lua_package_path "$t::TestCore::Stream::lua_package_path";
 _EOC_
 
 run_tests();
@@ -191,7 +188,7 @@ main thread end
 
 === TEST 4: semaphore.new in init_by_lua* (w/o shdict)
 --- stream_config
-    lua_package_path $TEST_NGINX_LUA_PACKAGE_PATH;
+    lua_package_path "$TEST_NGINX_LUA_PACKAGE_PATH";
     init_by_lua_block {
         local semaphore = require "ngx.semaphore"
         local sem, err = semaphore.new(0)
@@ -231,7 +228,7 @@ qr/\[lua\] init_by_lua:\d+: sema created: table: 0x[a-f0-9]+/,
 === TEST 5: semaphore.new in init_by_lua* (with shdict)
 --- stream_config
     lua_shared_dict dogs 1m;
-    lua_package_path $TEST_NGINX_LUA_PACKAGE_PATH;
+    lua_package_path "$TEST_NGINX_LUA_PACKAGE_PATH";
     init_by_lua_block {
         local semaphore = require "ngx.semaphore"
         local sem, err = semaphore.new(0)
@@ -270,7 +267,7 @@ qr/\[lua\] init_by_lua:\d+: sema created: table: 0x[a-f0-9]+/,
 
 === TEST 6: semaphore in init_worker_by_lua (wait is not allowed)
 --- stream_config
-    lua_package_path $TEST_NGINX_LUA_PACKAGE_PATH;
+    lua_package_path "$TEST_NGINX_LUA_PACKAGE_PATH";
     init_worker_by_lua_block {
         local semaphore = require "ngx.semaphore"
         local sem, err = semaphore.new(0)
@@ -305,7 +302,7 @@ sem wait: API disabled in the context of init_worker_by_lua*,
 
 === TEST 7: semaphore in init_worker_by_lua (new and post)
 --- stream_config
-    lua_package_path $TEST_NGINX_LUA_PACKAGE_PATH;
+    lua_package_path "$TEST_NGINX_LUA_PACKAGE_PATH";
     init_worker_by_lua_block {
         local semaphore = require "ngx.semaphore"
         local sem, err = semaphore.new(0)
@@ -515,7 +512,7 @@ sem: 1,
 
 === TEST 12: semaphore post in all phase (in a request)
 --- stream_config
-    lua_package_path $TEST_NGINX_LUA_PACKAGE_PATH;
+    lua_package_path "$TEST_NGINX_LUA_PACKAGE_PATH";
     init_worker_by_lua_block {
         local semaphore = require "ngx.semaphore"
         local sem, err = semaphore.new(0)

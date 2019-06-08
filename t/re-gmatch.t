@@ -1,7 +1,6 @@
 # vim:set ft= ts=4 sw=4 et fdm=marker:
-use lib 'lib';
-use Test::Nginx::Socket::Lua;
-use Cwd qw(cwd);
+use lib '.';
+use t::TestCore;
 
 #worker_connections(1014);
 #master_process_enabled(1);
@@ -11,30 +10,6 @@ repeat_each(2);
 
 plan tests => repeat_each() * (blocks() * 3 + 9);
 
-my $pwd = cwd();
-
-our $HttpConfig = <<_EOC_;
-    lua_package_path "$pwd/lib/?.lua;../lua-resty-lrucache/lib/?.lua;;";
-    init_by_lua_block {
-        -- local verbose = true
-        local verbose = false
-        local outfile = "$Test::Nginx::Util::ErrLogFile"
-        -- local outfile = "/tmp/v.log"
-        if verbose then
-            local dump = require "jit.dump"
-            dump.on(nil, outfile)
-        else
-            local v = require "jit.v"
-            v.on(outfile)
-        end
-
-        require "resty.core"
-        -- jit.opt.start("hotloop=1")
-        -- jit.opt.start("loopunroll=1000000")
-        -- jit.off()
-    }
-_EOC_
-
 #no_diff();
 no_long_string();
 check_accum_error_log();
@@ -43,7 +18,6 @@ run_tests();
 __DATA__
 
 === TEST 1: matched, no submatch, no jit compile, no regex cache
---- http_config eval: $::HttpConfig
 --- config
     location = /re {
         content_by_lua_block {
@@ -71,7 +45,6 @@ qr/\[TRACE\s+\d+ content_by_lua\(nginx\.conf:\d+\):4 loop\]/
 
 
 === TEST 2: matched, no submatch, jit compile, regex cache
---- http_config eval: $::HttpConfig
 --- config
     location = /re {
         content_by_lua_block {
@@ -99,7 +72,6 @@ qr/\[TRACE\s+\d+ content_by_lua\(nginx\.conf:\d+\):4 loop\]/
 
 
 === TEST 3: not matched, no submatch, jit compile, regex cache
---- http_config eval: $::HttpConfig
 --- config
     location = /re {
         content_by_lua_block {
@@ -131,7 +103,6 @@ qr/\[TRACE\s+\d+ content_by_lua\(nginx\.conf:\d+\):4 loop\]/
 
 
 === TEST 4: not matched, no submatch, no jit compile, no regex cache
---- http_config eval: $::HttpConfig
 --- config
     location = /re {
         content_by_lua_block {
@@ -163,7 +134,6 @@ qr/\[TRACE\s+\d+ content_by_lua\(nginx\.conf:\d+\):4 loop\]/
 
 
 === TEST 5: submatches, matched, no regex cache
---- http_config eval: $::HttpConfig
 --- config
     location = /re {
         content_by_lua_block {
@@ -201,7 +171,6 @@ $3: nil
 
 
 === TEST 6: submatches, matched, with regex cache
---- http_config eval: $::HttpConfig
 --- config
     location = /re {
         content_by_lua_block {
@@ -241,7 +210,6 @@ qr/\[TRACE\s+\d+\s+/
 
 
 === TEST 7: named submatches
---- http_config eval: $::HttpConfig
 --- config
     location = /re {
         content_by_lua_block {
@@ -285,7 +253,6 @@ qr/\[TRACE\s+\d+\s+/
 
 
 === TEST 8: unmatched captures are false
---- http_config eval: $::HttpConfig
 --- config
     location = /re {
         content_by_lua_block {
@@ -324,7 +291,6 @@ qr/\[TRACE\s+\d+\s+/
 
 
 === TEST 9: unmatched trailing captures are false
---- http_config eval: $::HttpConfig
 --- config
     location = /re {
         content_by_lua_block {
@@ -358,7 +324,6 @@ qr/\[TRACE\s+\d+\s+/
 
 
 === TEST 10: unmatched named captures are false
---- http_config eval: $::HttpConfig
 --- config
     location = /re {
         content_by_lua_block {
@@ -407,7 +372,6 @@ qr/\[TRACE\s+\d+\s+/
 
 
 === TEST 11: subject is not a string type
---- http_config eval: $::HttpConfig
 --- config
     location /re {
         content_by_lua_block {
@@ -430,7 +394,6 @@ attempt to get length of local 'subj' (a number value)
 
 
 === TEST 12: an exhausted gmatch iterator should return nil
---- http_config eval: $::HttpConfig
 --- config
     location = /re {
         content_by_lua_block {
@@ -453,7 +416,6 @@ matched: nil
 
 
 === TEST 13: an error-ed out gmatch iterator should return nil
---- http_config eval: $::HttpConfig
 --- config
     location = /re {
         content_by_lua_block {
@@ -493,7 +455,6 @@ not matched
 
 
 === TEST 14: each gmatch iterator is separate
---- http_config eval: $::HttpConfig
 --- config
     location = /re {
         content_by_lua_block {
@@ -525,7 +486,6 @@ matched iter2 (2/2): 2
 
 
 === TEST 15: gmatch (empty matched string)
---- http_config eval: $::HttpConfig
 --- config
     location /re {
         content_by_lua_block {

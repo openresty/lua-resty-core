@@ -1,20 +1,10 @@
 # vim:set ft= ts=4 sw=4 et fdm=marker:
-use lib 'lib';
-use Test::Nginx::Socket::Lua;
-use Cwd qw(cwd);
+use lib '.';
+use t::TestCore;
 
 repeat_each(2);
 
 plan tests => repeat_each() * (blocks() * 3);
-
-my $pwd = cwd();
-
-our $HttpConfig = <<_EOC_;
-    lua_package_path "$pwd/lib/?.lua;../lua-resty-lrucache/lib/?.lua;;";
-    init_by_lua_block {
-        require "resty.core"
-    }
-_EOC_
 
 no_long_string();
 check_accum_error_log();
@@ -23,7 +13,6 @@ run_tests();
 __DATA__
 
 === TEST 1: bad pattern
---- http_config eval: $::HttpConfig
 --- config
     location /re {
         content_by_lua_block {
@@ -45,7 +34,6 @@ error: pcre_compile() failed: missing ) in "(abc"
 
 
 === TEST 2: bad UTF-8
---- http_config eval: $::HttpConfig
 --- config
     location = /t {
         content_by_lua_block {
@@ -84,7 +72,6 @@ error: pcre_exec\(\) failed: -10
 
 
 === TEST 3: UTF-8 mode without UTF-8 sequence checks
---- http_config eval: $::HttpConfig
 --- config
     location /re {
         content_by_lua_block {
@@ -120,7 +107,6 @@ exec opts: 2000
 
 
 === TEST 4: UTF-8 mode with UTF-8 sequence checks
---- http_config eval: $::HttpConfig
 --- config
     location /re {
         content_by_lua_block {
@@ -156,7 +142,7 @@ exec opts: 0
 
 
 === TEST 5: just hit match limit
---- http_config eval: "lua_regex_match_limit 5000;" . $::HttpConfig
+--- http_config eval: "lua_regex_match_limit 5000;" . $t::TestCore::HttpConfig
 --- config
     location /re {
         content_by_lua_file html/a.lua;
@@ -192,7 +178,7 @@ error: pcre_exec() failed: -8
 
 
 === TEST 6: just not hit match limit
---- http_config eval: "lua_regex_match_limit 5100;" . $::HttpConfig
+--- http_config eval: "lua_regex_match_limit 5100;" . $t::TestCore::HttpConfig
 --- config
     location /re {
         content_by_lua_file html/a.lua;

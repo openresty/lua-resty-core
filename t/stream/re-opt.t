@@ -1,7 +1,6 @@
 # vim:set ft= ts=4 sw=4 et fdm=marker:
-use lib 'lib';
-use Test::Nginx::Socket::Lua::Stream;
-use Cwd qw(cwd);
+use lib '.';
+use t::TestCore::Stream;
 
 #worker_connections(1014);
 #master_process_enabled(1);
@@ -11,30 +10,6 @@ repeat_each(2);
 
 plan tests => repeat_each() * blocks() * 3;
 
-our $pwd = cwd();
-
-our $StreamConfig = <<_EOC_;
-    lua_package_path "$pwd/lib/?.lua;../lua-resty-lrucache/lib/?.lua;;";
-    init_by_lua_block {
-        -- local verbose = true
-        local verbose = false
-        local outfile = "$Test::Nginx::Util::ErrLogFile"
-        -- local outfile = "/tmp/v.log"
-        if verbose then
-            local dump = require "jit.dump"
-            dump.on(nil, outfile)
-        else
-            local v = require "jit.v"
-            v.on(outfile)
-        end
-
-        require "resty.core"
-        -- jit.opt.start("hotloop=1")
-        -- jit.opt.start("loopunroll=1000000")
-        -- jit.off()
-    }
-_EOC_
-
 no_diff();
 no_long_string();
 check_accum_error_log();
@@ -43,7 +18,6 @@ run_tests();
 __DATA__
 
 === TEST 1: default jit_stack_size too small
---- stream_config eval: $::StreamConfig
 --- stream_server_config
     content_by_lua_block {
         -- regex is taken from https://github.com/JuliaLang/julia/issues/8278
@@ -72,24 +46,9 @@ error: pcre_exec() failed: -27
 === TEST 2: increase jit_stack_size
 --- stream_config eval
 qq{
-    lua_package_path "$::pwd/lib/?.lua;../lua-resty-lrucache/lib/?.lua;;";
+    lua_package_path "$t::TestCore::Stream::lua_package_path";
     init_by_lua_block {
-        -- local verbose = true
-        local verbose = false
-        local outfile = "$Test::Nginx::Util::ErrLogFile"
-        -- local outfile = "/tmp/v.log"
-        if verbose then
-            local dump = require "jit.dump"
-            dump.on(nil, outfile)
-        else
-            local v = require "jit.v"
-            v.on(outfile)
-        end
-
-        require "resty.core"
-        -- jit.opt.start("hotloop=1")
-        -- jit.opt.start("loopunroll=1000000")
-        -- jit.off()
+        $::TestCore::Stream::init_by_lua_block
 
         local ngx_re = require "ngx.re"
         ngx_re.opt("jit_stack_size", 128 * 1024)
@@ -122,7 +81,6 @@ to: 1563
 
 
 === TEST 3: jit_stack_size change disallowed once regex cache is populated
---- stream_config eval: $::StreamConfig
 --- stream_server_config
     content_by_lua_block {
         local ngx_re = require "ngx.re"
@@ -148,7 +106,6 @@ qr/changing jit stack size is not allowed when some regexs have already been com
 
 
 === TEST 4: passing unknown options to ngx_re.opt throws an error
---- stream_config eval: $::StreamConfig
 --- stream_server_config
     content_by_lua_block {
         local ngx_re = require "ngx.re"

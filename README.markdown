@@ -32,6 +32,7 @@ Table of Contents
     * [ngx.ssl.session](#ngxsslsession)
     * [ngx.re](#ngxre)
     * [ngx.resp](#ngxresp)
+    * [ngx.pipe](#ngxpipe)
     * [ngx.process](#ngxprocess)
     * [ngx.errlog](#ngxerrlog)
     * [ngx.base64](#ngxbase64)
@@ -93,10 +94,10 @@ Prerequisites
 
 **WARNING** This library is included with every OpenResty release. You should use the bundled version
 of this library in the particular OpenResty release you are using. Otherwise you may run
-into serious comaptibility issues.
+into serious compatibility issues.
 
 * LuaJIT 2.1 (for now, it is the v2.1 git branch in the official luajit-2.0 git repository: http://luajit.org/download.html )
-* [ngx_http_lua_module](https://github.com/openresty/lua-nginx-module) v0.10.14.
+* [ngx_http_lua_module](https://github.com/openresty/lua-nginx-module) v0.10.15.
 * [ngx_stream_lua_module](https://github.com/openresty/lua-nginx-module) v0.0.6.
 * [lua-resty-lrucache](https://github.com/openresty/lua-resty-lrucache)
 
@@ -286,6 +287,18 @@ See the [documentation](./lib/ngx/resp.md) for this Lua module for more details.
 
 [Back to TOC](#table-of-contents)
 
+## ngx.pipe
+
+This module provides a Lua API to spawn processes and communicate with them in
+a non-blocking fashion.
+
+See the [documentation](./lib/ngx/pipe.md) for this Lua module for more
+details.
+
+This module was first introduced in lua-resty-core v0.1.16.
+
+[Back to TOC](#table-of-contents)
+
 ## ngx.process
 
 This Lua module is used to manage the nginx process in Lua.
@@ -345,7 +358,7 @@ Copyright and License
 
 This module is licensed under the BSD license.
 
-Copyright (C) 2013-2018, by Yichun "agentzh" Zhang, OpenResty Inc.
+Copyright (C) 2013-2019, by Yichun "agentzh" Zhang, OpenResty Inc.
 
 All rights reserved.
 

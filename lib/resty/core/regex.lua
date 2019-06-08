@@ -30,10 +30,39 @@ local get_string_buf = base.get_string_buf
 local get_string_buf_size = base.get_string_buf_size
 local new_tab = base.new_tab
 local subsystem = ngx.config.subsystem
+local ngx_phase = ngx.get_phase
+local ngx_log = ngx.log
+local ngx_NOTICE = ngx.NOTICE
+
+
+local _M = {
+    version = base.version
+}
 
 
 if not ngx.re then
     ngx.re = {}
+end
+
+
+ffi.cdef[[
+    const char *pcre_version(void);
+]]
+
+
+local pcre_ver
+
+if not pcall(function() pcre_ver = ffi_string(C.pcre_version()) end) then
+    setmetatable(ngx.re, {
+        __index = function(_, key)
+            error("no support for 'ngx.re." .. key .. "': OpenResty was " ..
+                  "compiled without PCRE support", 2)
+        end
+    })
+
+    _M.no_pcre = true
+
+    return _M
 end
 
 
@@ -76,6 +105,35 @@ local ngx_lua_ffi_init_script_engine
 local ngx_lua_ffi_compile_replace_template
 local ngx_lua_ffi_script_eval_len
 local ngx_lua_ffi_script_eval_data
+
+-- PCRE 8.43 on macOS introduced the MAP_JIT option when creating the memory
+-- region used to store JIT compiled code, which does not survive across
+-- `fork()`, causing further usage of PCRE JIT compiler to segfault in worker
+-- processes.
+--
+-- This flag prevents any regex used in the init phase to be JIT compiled or
+-- cached when running under macOS, even if the user requests so. Caching is
+-- thus disabled to prevent further calls of same regex in worker to have poor
+-- performance.
+--
+-- TODO: improve this workaround when PCRE allows for unspecifying the MAP_JIT
+-- option.
+local no_jit_in_init
+
+if jit.os == "OSX" then
+    local maj, min = string.match(pcre_ver, "^(%d+)%.(%d+)")
+    if maj and min then
+        local pcre_ver_num = tonumber(maj .. min)
+
+        if pcre_ver_num >= 843 then
+            no_jit_in_init = true
+        end
+
+    else
+        -- assume this version is faulty as well
+        no_jit_in_init = true
+    end
+end
 
 
 if subsystem == 'http' then
@@ -240,11 +298,6 @@ local c_str_type = ffi.typeof("const char *")
 
 local cached_re_opts = new_tab(0, 4)
 
-local _M = {
-    version = base.version
-}
-
-
 local buf_grow_ratio = 2
 
 
@@ -276,7 +329,7 @@ local function lrucache_set_wrapper(...)
 end
 
 
-local function parse_regex_opts(opts)
+local parse_regex_opts = function (opts)
     local t = cached_re_opts[opts]
     if t then
         return t[1], t[2]
@@ -327,12 +380,86 @@ local function parse_regex_opts(opts)
             pcre_opts = bor(pcre_opts, PCRE_JAVASCRIPT_COMPAT)
 
         else
-            error(fmt('unknown flag "%s" (flags "%s")', sub(opts, i, i), opts))
+            error(fmt('unknown flag "%s" (flags "%s")', sub(opts, i, i), opts),
+                  3)
         end
     end
 
     cached_re_opts[opts] = {flags, pcre_opts}
     return flags, pcre_opts
+end
+
+
+if no_jit_in_init then
+    local parse_regex_opts_ = parse_regex_opts
+
+    parse_regex_opts = function (opts)
+        if ngx_phase() ~= "init" then
+            -- past init_by_lua* phase now
+            parse_regex_opts = parse_regex_opts_
+            return parse_regex_opts(opts)
+        end
+
+        local t = cached_re_opts[opts]
+        if t then
+            return t[1], t[2]
+        end
+
+        local flags = 0
+        local pcre_opts = 0
+        local len = #opts
+
+        for i = 1, len do
+            local opt = byte(opts, i)
+            if opt == byte("o") then
+                ngx_log(ngx_NOTICE, "regex compilation cache disabled in init ",
+                                    "phase under macOS")
+
+            elseif opt == byte("j") then
+                ngx_log(ngx_NOTICE, "regex compilation disabled in init ",
+                                    "phase under macOS")
+
+            elseif opt == byte("i") then
+                pcre_opts = bor(pcre_opts, PCRE_CASELESS)
+
+            elseif opt == byte("s") then
+                pcre_opts = bor(pcre_opts, PCRE_DOTALL)
+
+            elseif opt == byte("m") then
+                pcre_opts = bor(pcre_opts, PCRE_MULTILINE)
+
+            elseif opt == byte("u") then
+                pcre_opts = bor(pcre_opts, PCRE_UTF8)
+
+            elseif opt == byte("U") then
+                pcre_opts = bor(pcre_opts, PCRE_UTF8)
+                flags = bor(flags, FLAG_NO_UTF8_CHECK)
+
+            elseif opt == byte("x") then
+                pcre_opts = bor(pcre_opts, PCRE_EXTENDED)
+
+            elseif opt == byte("d") then
+                flags = bor(flags, FLAG_DFA)
+
+            elseif opt == byte("a") then
+                pcre_opts = bor(pcre_opts, PCRE_ANCHORED)
+
+            elseif opt == byte("D") then
+                pcre_opts = bor(pcre_opts, PCRE_DUPNAMES)
+                flags = bor(flags, FLAG_DUPNAMES)
+
+            elseif opt == byte("J") then
+                pcre_opts = bor(pcre_opts, PCRE_JAVASCRIPT_COMPAT)
+
+            else
+                error(fmt('unknown flag "%s" (flags "%s")', sub(opts, i, i),
+                          opts), 3)
+            end
+        end
+
+        cached_re_opts[opts] = {flags, pcre_opts}
+        return flags, pcre_opts
+    end
 end
 
 

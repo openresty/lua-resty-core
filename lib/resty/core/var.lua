@@ -70,7 +70,7 @@ local function var_get(self, name)
     end
 
     if rc == -1 then  -- NGX_ERROR
-        error(ffi_str(errmsg[0]))
+        error(ffi_str(errmsg[0]), 2)
     end
 end
 
@@ -111,7 +111,7 @@ local function var_set(self, name, value)
     end
 
     if rc == -1 then  -- NGX_ERROR
-        error(ffi_str(errbuf, errlen[0]))
+        error(ffi_str(errbuf, errlen[0]), 2)
     end
 end
 
