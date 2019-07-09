@@ -40,11 +40,9 @@ env:
     - TEST_NGINX_SLEEP=0.005
     - TEST_NGINX_RANDOMIZE=1
     - LUACHECK_VER=0.21.1
-    - OLD_OPENSSL_VER=0.9.8o
   matrix:
     - NGINX_VERSION=1.15.8 OPENSSL_VER=1.0.2s OPENSSL_PATCH_VER=1.0.2h
     - NGINX_VERSION=1.15.8 OPENSSL_VER=1.1.0k OPENSSL_PATCH_VER=1.1.0d
-    - NGINX_VERSION=1.15.8 OPENSSL_VER=1.1.1c OPENSSL_PATCH_VER=""
 
 services:
   - memcache
@@ -59,7 +57,6 @@ before_install:
 install:
   - if [ ! -d download-cache ]; then mkdir download-cache; fi
   - if [ ! -f download-cache/openssl-$OPENSSL_VER.tar.gz ]; then wget -O download-cache/openssl-$OPENSSL_VER.tar.gz https://www.openssl.org/source/openssl-$OPENSSL_VER.tar.gz; fi
-  - if [ ! -f download-cache/old-openssl-$OLD_OPENSSL_VER.tar.gz ]; then wget -O download-cache/old-openssl-$OLD_OPENSSL_VER.tar.gz https://www.openssl.org/source/openssl-$OLD_OPENSSL_VER.tar.gz; fi
   - if [ ! -f download-cache/pcre-$PCRE_VER.tar.gz ]; then wget -P download-cache http://ftp.cs.stanford.edu/pub/exim/pcre/pcre-$PCRE_VER.tar.gz; fi
   - git clone https://github.com/openresty/openresty.git ../openresty
   - git clone https://github.com/openresty/openresty-devel-utils.git
@@ -93,13 +90,6 @@ script:
   - ./configure --prefix=$PCRE_PREFIX --enable-jit --enable-utf --enable-unicode-properties > build.log 2>&1 || (cat build.log && exit 1)
   - make -j$JOBS > build.log 2>&1 || (cat build.log && exit 1)
   - sudo PATH=$PATH make install > build.log 2>&1 || (cat build.log && exit 1)
-  - cd ..
-  - tar zxf download-cache/old-openssl-$OLD_OPENSSL_VER.tar.gz
-  - cd openssl-$OLD_OPENSSL_VER/
-  - ./config no-asm > build.log 2>&1 || (cat build.log && exit 1)
-  - make -j$JOBS > build.log 2>&1 || (cat build.log && exit 1)
-  - export PATH=$PWD/apps:$PATH
-  - openssl version
   - cd ..
   - export PATH=$PWD/work/nginx/sbin:$PWD/openresty-devel-utils:$PATH
   - export LD_PRELOAD=$PWD/mockeagain/mockeagain.so
