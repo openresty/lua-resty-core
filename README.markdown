@@ -50,6 +50,16 @@ This library is production ready.
 Synopsis
 ========
 
+This library is automatically loaded by default in OpenResty 1.15.8.1. This
+behavior can be disabled via the
+[lua_load_resty_core](https://github.com/openresty/lua-nginx-module#lua_load_resty_core)
+directive, but note that the use of this library is vividly recommended, as its
+FFI implementation is both faster, safer, and more complete than the Lua C API
+of the ngx_lua module.
+
+If you are using an older version of OpenResty, you must load this library like
+so:
+
 ```nginx
     # nginx.conf
 
