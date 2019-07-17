@@ -1822,3 +1822,68 @@ qr/subject=\/?C(?<eq>\s?=\s?)US(?<sep>\/|,\s)ST\k<eq>California\k<sep>L\k<eq>San
 --- no_error_log
 [error]
 [alert]
+
+
+
+=== TEST 22: tls version - TLSv1.3
+--- skip_openssl: 6: < 1.1.1
+--- stream_config
+    lua_package_path "$TEST_NGINX_LUA_PACKAGE_PATH";
+
+    server {
+        listen unix:$TEST_NGINX_HTML_DIR/nginx.sock ssl;
+        ssl_certificate ../../cert/test.crt;
+        ssl_certificate_key ../../cert/test.key;
+        ssl_protocols TLSv1.3;
+
+        ssl_certificate_by_lua_block {
+            local ssl = require "ngx.ssl"
+
+            local ver, err = ssl.get_tls1_version_str(resp)
+            if not ver then
+                ngx.log(ngx.ERR, "failed to get TLS1 version: ", err)
+                return
+            end
+            ngx.log(ngx.WARN, "got TLS1 version: ", ver)
+        }
+
+        return 'it works!\n';
+    }
+--- stream_server_config
+    lua_ssl_trusted_certificate ../../cert/test.crt;
+    lua_ssl_verify_depth 3;
+    lua_ssl_protocols TLSv1.3;
+
+    content_by_lua_block {
+        do
+            local sock = ngx.socket.tcp()
+
+            sock:settimeout(3000)
+
+            local ok, err = sock:connect("unix:$TEST_NGINX_HTML_DIR/nginx.sock")
+            if not ok then
+                ngx.say("failed to connect: ", err)
+                return
+            end
+
+            ngx.say("connected: ", ok)
+
+            local sess, err = sock:sslhandshake(false, nil, true, false)
+            if not sess then
+                ngx.say("failed to do SSL handshake: ", err)
+                return
+            end
+
+            ngx.say("ssl handshake: ", type(sess))
+        end  -- do
+    }
+
+--- stream_response
+connected: 1
+ssl handshake: boolean
+--- error_log
+got TLS1 version: TLSv1.3,
+--- no_error_log
+[error]
+[alert]
+[emerg]
