@@ -400,7 +400,13 @@ do
         if not ver then
             return nil, err
         end
-        return map[ver]
+
+        local ver_str = map[ver]
+        if not ver_str then
+            return nil, "unknown version"
+        end
+
+        return ver_str
     end
 end
 
