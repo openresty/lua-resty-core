@@ -1816,7 +1816,7 @@ ok
 --- error_log eval
 [
 qr/content_by_lua\(nginx\.conf:\d+\):\d+: CONNECTED/,
-'subject=/C=US/ST=California/L=San Francisco/O=OpenResty/OU=OpenResty/CN=test.com/emailAddress=agentzh@gmail.com',
+qr/subject=\/?C(?<eq>\s?=\s?)US(?<sep>\/|,\s)ST\k<eq>California\k<sep>L\k<eq>San Francisco\k<sep>O\k<eq>OpenResty\k<sep>OU\k<eq>OpenResty\k<sep>CN\k<eq>test\.com\k<sep>emailAddress\k<eq>agentzh\@gmail\.com/,
 ]
 
 --- no_error_log
