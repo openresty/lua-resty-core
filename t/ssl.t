@@ -926,13 +926,13 @@ lua ssl server name: "test.com"
             local cert_data = f:read("*a")
             f:close()
 
-            cert_data, err = ssl.cert_pem_to_der(cert_data)
-            if not cert_data then
+            local cert, err = ssl.cert_pem_to_der(cert_data)
+            if not cert then
                 ngx.log(ngx.ERR, "failed to convert pem cert to der cert: ", err)
                 return
             end
 
-            local ok, err = ssl.set_der_cert(cert_data)
+            local ok, err = ssl.set_der_cert(cert)
             if not ok then
                 ngx.log(ngx.ERR, "failed to set DER cert: ", err)
                 return
@@ -1446,13 +1446,13 @@ ssl cert by lua done
             local cert_data = f:read("*a")
             f:close()
 
-            cert_data, err = ssl.cert_pem_to_der(cert_data)
-            if not cert_data then
+            local cert, err = ssl.cert_pem_to_der(cert_data)
+            if not cert then
                 ngx.log(ngx.ERR, "failed to convert pem cert to der cert: ", err)
                 return
             end
 
-            local ok, err = ssl.set_der_cert(cert_data)
+            local ok, err = ssl.set_der_cert(cert)
             if not ok then
                 ngx.log(ngx.ERR, "failed to set DER cert: ", err)
                 return
