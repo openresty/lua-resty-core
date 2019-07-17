@@ -368,6 +368,7 @@ Typical return values are
 * `0x0301`(TLSv1)
 * `0x0302`(TLSv1.1)
 * `0x0303`(TLSv1.2)
+* `0x0304`(TLSv1.3)
 
 This function can be called in whatever contexts where downstream https is used.
 
@@ -388,6 +389,7 @@ Typical return values are
 * `TLSv1`
 * `TLSv1.1`
 * `TLSv1.2`
+* `TLSv1.3`
 
 This function can be called in whatever contexts where downstream https is used.
 
