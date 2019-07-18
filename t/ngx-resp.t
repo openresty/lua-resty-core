@@ -119,4 +119,4 @@ Date: now
         }
     }
 --- response_body
-invalid header value
+Foo: aaa
