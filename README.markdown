@@ -163,6 +163,8 @@ API Implemented
 * [ngx.shared.DICT.incr](https://github.com/openresty/lua-nginx-module#ngxshareddictincr)
 * [ngx.shared.DICT.set](https://github.com/openresty/lua-nginx-module#ngxshareddictset)
 * [ngx.shared.DICT.safe_set](https://github.com/openresty/lua-nginx-module#ngxshareddictsafe_set)
+* [ngx.shared.DICT.set_when](https://github.com/openresty/lua-nginx-module#ngxshareddictset_when)
+* [ngx.shared.DICT.safe_set_when](https://github.com/openresty/lua-nginx-module#ngxshareddictsafe_set_when)
 * [ngx.shared.DICT.add](https://github.com/openresty/lua-nginx-module#ngxshareddictadd)
 * [ngx.shared.DICT.safe_add](https://github.com/openresty/lua-nginx-module#ngxshareddictsafe_add)
 * [ngx.shared.DICT.replace](https://github.com/openresty/lua-nginx-module#ngxshareddictreplace)
