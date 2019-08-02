@@ -13,7 +13,7 @@ local FFI_BAD_CONTEXT = base.FFI_BAD_CONTEXT
 local FFI_NO_REQ_CTX = base.FFI_NO_REQ_CTX
 local FFI_DECLINED = base.FFI_DECLINED
 local get_string_buf = base.get_string_buf
-local getmetatable = getmetatable
+local setmetatable = setmetatable
 local type = type
 local tostring = tostring
 local get_request = base.get_request
@@ -172,9 +172,11 @@ end
 
 
 do
-    local mt = getmetatable(ngx.header)
+    local mt = new_tab(0, 2)
     mt.__newindex = set_resp_header
     mt.__index = get_resp_header
+
+    ngx.header = setmetatable(new_tab(0, 0), mt)
 end
 
 

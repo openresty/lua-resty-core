@@ -11,12 +11,15 @@ local type = type
 local get_request = base.get_request
 local get_string_buf = base.get_string_buf
 local get_size_ptr = base.get_size_ptr
+local new_tab = base.new_tab
 local error = error
 local tostring = tostring
-local ngx_var = ngx.var
-local getmetatable = getmetatable
+local setmetatable = setmetatable
 
 local ERR_BUF_SIZE = 256
+
+
+ngx.var = new_tab(0, 0)
 
 
 ffi.cdef[[
@@ -116,12 +119,12 @@ local function var_set(self, name, value)
 end
 
 
-if ngx_var then
-    local mt = getmetatable(ngx_var)
-    if mt then
-        mt.__index = var_get
-        mt.__newindex = var_set
-    end
+do
+    local mt = new_tab(0, 2)
+    mt.__index = var_get
+    mt.__newindex = var_set
+
+    setmetatable(ngx.var, mt)
 end
 
 

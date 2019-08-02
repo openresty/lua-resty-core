@@ -4,6 +4,17 @@
 local ffi = require 'ffi'
 local base = require "resty.core.base"
 
+
+local _M = {
+    version = base.version
+}
+
+local ngx_shared = ngx.shared
+if not ngx_shared then
+    return _M
+end
+
+
 local ffi_new = ffi.new
 local ffi_str = ffi.string
 local C = ffi.C
@@ -15,7 +26,6 @@ local tostring = tostring
 local next = next
 local type = type
 local error = error
-local ngx_shared = ngx.shared
 local getmetatable = getmetatable
 local FFI_DECLINED = base.FFI_DECLINED
 local subsystem = ngx.config.subsystem
@@ -600,33 +610,29 @@ else
 end
 
 
-if ngx_shared then
-    local _, dict = next(ngx_shared, nil)
-    if dict then
-        local mt = getmetatable(dict)
+local _, dict = next(ngx_shared, nil)
+if dict then
+    local mt = getmetatable(dict)
+    if mt then
+        mt = mt.__index
         if mt then
-            mt = mt.__index
-            if mt then
-                mt.get = shdict_get
-                mt.get_stale = shdict_get_stale
-                mt.incr = shdict_incr
-                mt.set = shdict_set
-                mt.safe_set = shdict_safe_set
-                mt.add = shdict_add
-                mt.safe_add = shdict_safe_add
-                mt.replace = shdict_replace
-                mt.delete = shdict_delete
-                mt.flush_all = shdict_flush_all
-                mt.ttl = shdict_ttl
-                mt.expire = shdict_expire
-                mt.capacity = shdict_capacity
-                mt.free_space = shdict_free_space
-            end
+            mt.get = shdict_get
+            mt.get_stale = shdict_get_stale
+            mt.incr = shdict_incr
+            mt.set = shdict_set
+            mt.safe_set = shdict_safe_set
+            mt.add = shdict_add
+            mt.safe_add = shdict_safe_add
+            mt.replace = shdict_replace
+            mt.delete = shdict_delete
+            mt.flush_all = shdict_flush_all
+            mt.ttl = shdict_ttl
+            mt.expire = shdict_expire
+            mt.capacity = shdict_capacity
+            mt.free_space = shdict_free_space
         end
     end
 end
 
 
-return {
-    version = base.version
-}
+return _M

@@ -2,7 +2,7 @@
 use lib '.';
 use t::TestCore;
 
-plan tests => repeat_each() * (blocks() * 3 + 2);
+plan tests => repeat_each() * (blocks() * 3 + 1);
 
 add_block_preprocessor(sub {
     my $block = shift;
@@ -180,85 +180,40 @@ in content:\s+
 
 
 === TEST 8: os.getenv() overwrite is reverted in worker phases
---- http_config
-    lua_package_path "$TEST_NGINX_LUA_PACKAGE_PATH";
-    lua_load_resty_core off;
-
-    init_by_lua_block {
-        package.loaded.os_getenv = os.getenv
-        require "resty.core"
-        package.loaded.is_os_getenv = os.getenv == package.loaded.os_getenv
-    }
---- config
-location /t {
-    content_by_lua_block {
-        os.getenv("")
-
-        ngx.say("in init: ", package.loaded.is_os_getenv, "\n",
-                "in content: ", os.getenv == package.loaded.os_getenv)
-    }
-}
---- response_body
-in init: false
-in content: true
-
-
-
-=== TEST 9: os.getenv() can be localized before loading resty.core
 --- main_config
 env FOO=hello;
 --- http_config
     lua_package_path "$TEST_NGINX_LUA_PACKAGE_PATH";
-    lua_load_resty_core off;
 
     init_by_lua_block {
-        package.loaded.os_getenv = os.getenv
-        require "resty.core"
+        package.loaded.init_os_getenv = os.getenv
+    }
+--- config
+location /t {
+    content_by_lua_block {
+        ngx.say("FOO=", os.getenv("FOO"))
 
-        do
-            local getenv = os.getenv
+        if os.getenv ~= package.loaded.init_os_getenv then
+            ngx.say("os.getenv() overwrite was reverted")
 
-            package.loaded.f = function ()
-                ngx.log(ngx.NOTICE, "FOO: ", getenv("FOO"))
-            end
+        else
+            ngx.say("os.getenv() overwrite was not reverted")
         end
-
-        package.loaded.f()
-
-        package.loaded.is_os_getenv = os.getenv == package.loaded.os_getenv
-    }
---- config
-location /t {
-    content_by_lua_block {
-        package.loaded.f()
-        package.loaded.f()
-
-        ngx.say("in init: ", package.loaded.is_os_getenv, "\n",
-                "in content: ", os.getenv == package.loaded.os_getenv)
     }
 }
 --- response_body
-in init: false
-in content: true
---- grep_error_log eval
-qr/FOO: [a-z]+/
---- grep_error_log_out
-FOO: hello
-FOO: hello
-FOO: hello
+FOO=hello
+os.getenv() overwrite was reverted
 
 
 
-=== TEST 10: os.getenv() can be localized after loading resty.core
+=== TEST 9: os.getenv() can be localized after loading resty.core
 --- main_config
 env FOO=hello;
 --- http_config
     lua_package_path "$TEST_NGINX_LUA_PACKAGE_PATH";
-    lua_load_resty_core off;
 
     init_by_lua_block {
-        package.loaded.os_getenv = os.getenv
-
         do
             local getenv = os.getenv
 
@@ -279,16 +234,19 @@ location /t {
         package.loaded.f()
         package.loaded.f()
 
-        ngx.say("in init: ", package.loaded.is_os_getenv, "\n",
-                "in content: ", os.getenv == package.loaded.os_getenv)
+        if os.getenv ~= package.loaded.init_os_getenv then
+            ngx.say("os.getenv() overwrite was reverted")
+
+        else
+            ngx.say("os.getenv() overwrite was not reverted")
+        end
     }
 }
 --- response_body
-in init: false
-in content: false
+os.getenv() overwrite was reverted
 --- grep_error_log eval
 qr/FOO: [a-z]+/
 --- grep_error_log_out
-FOO: nil
+FOO: hello
 FOO: hello
 FOO: hello

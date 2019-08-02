@@ -16,7 +16,9 @@ local new_tab = base.new_tab
 local C = ffi.C
 local ffi_new = ffi.new
 local ffi_str = ffi.string
-local getmetatable = getmetatable
+local setmetatable = setmetatable
+local rawget = rawget
+local rawset = rawset
 local ngx = ngx
 local get_request = base.get_request
 local type = type
@@ -49,27 +51,28 @@ if subsystem == 'http' then
     _M.register_ngx_magic_key_setter = register_setter
 
 
-    local mt = getmetatable(ngx)
+    local mt = new_tab(0, 2)
 
 
-    local old_index = mt.__index
     mt.__index = function (tb, key)
         local f = ngx_magic_key_getters[key]
         if f then
             return f()
         end
-        return old_index(tb, key)
+        return rawget(tb, key)
     end
 
 
-    local old_newindex = mt.__newindex
     mt.__newindex = function (tb, key, ctx)
         local f = ngx_magic_key_setters[key]
         if f then
             return f(ctx)
         end
-        return old_newindex(tb, key, ctx)
+        return rawset(tb, key, ctx)
     end
+
+
+    setmetatable(ngx, mt)
 
 
     ffi.cdef[[

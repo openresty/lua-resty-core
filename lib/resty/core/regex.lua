@@ -40,9 +40,7 @@ local _M = {
 }
 
 
-if not ngx.re then
-    ngx.re = {}
-end
+ngx.re = new_tab(0, 5)
 
 
 ffi.cdef[[

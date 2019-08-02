@@ -6,6 +6,10 @@ local base = require "resty.core.base"
 
 
 local C = ffi.C
+local new_tab = base.new_tab
+
+
+ngx.worker = new_tab(0, 4)
 
 
 ffi.cdef[[
