@@ -150,24 +150,15 @@ API disabled in the context of log_by_lua
         content_by_lua_block {
             local ngx_pipe = require "ngx.pipe"
             local proc, err = ngx_pipe.spawn({"sleep", 0.1})
-            if not proc then
-                ngx.say(err)
-                return
-            end
-
-            local ok, err = pcall(function()
-                local ok, reason, status = proc.wait()
-            end)
-
-            if not ok then
-                ngx.say(err)
-            else
-                ngx.say("ok")
-            end
+            proc.wait()
         }
     }
---- response_body_like
-not a process instance
+--- error_code: 500
+--- ignore_response_body
+--- error_log eval
+qr/\[error\] .*? runtime error: content_by_lua\(nginx\.conf\:\d+\):\d+: not a process instance/
+--- no_error_log
+[crit]
 
 
 

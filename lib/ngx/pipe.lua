@@ -162,7 +162,7 @@ end
 
 local function check_proc_instance(proc)
     if type(proc) ~= "cdata" then
-        error("not a process instance", 2)
+        error("not a process instance", 3)
     end
 end
 
