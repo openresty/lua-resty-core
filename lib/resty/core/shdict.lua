@@ -282,7 +282,7 @@ end
 
 
 local function shdict_store_when(zone, op, key, old_value, value, exptime,
-	                         flags)
+                                 flags)
     zone = check_zone(zone)
 
     if not exptime then
