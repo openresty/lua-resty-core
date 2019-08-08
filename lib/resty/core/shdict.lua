@@ -401,7 +401,8 @@ end
 
 
 local function shdict_safe_set_when(zone, key, old_value, value, exptime, flags)
-    return shdict_store_when(zone, 0x0004, key, old_value, value, exptime, flags)
+    return shdict_store_when(zone, 0x0004, key, old_value, value, exptime,
+                             flags)
 end
 
 
