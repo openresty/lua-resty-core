@@ -1,22 +1,40 @@
 -- Copyright (C) Yichun Zhang (agentzh)
 
 
-local ffi = require 'ffi'
-local ffi_string = ffi.string
+local ffi = require "ffi"
+local base = require "resty.core.base"
+
+
 local C = ffi.C
+local ffi_string = ffi.string
 local ngx = ngx
 local error = error
-local base = require "resty.core.base"
 local get_string_buf = base.get_string_buf
 local get_size_ptr = base.get_size_ptr
 local get_request = base.get_request
 local co_yield = coroutine._yield
+local subsystem = ngx.config.subsystem
 
 
-ffi.cdef[[
+local ngx_lua_ffi_exit
+
+
+if subsystem == "http" then
+    ffi.cdef[[
     int ngx_http_lua_ffi_exit(ngx_http_request_t *r, int status,
                                unsigned char *err, size_t *errlen);
-]]
+    ]]
+
+    ngx_lua_ffi_exit = C.ngx_http_lua_ffi_exit
+
+elseif subsystem == "stream" then
+    ffi.cdef[[
+    int ngx_stream_lua_ffi_exit(ngx_stream_lua_request_t *r, int status,
+                                unsigned char *err, size_t *errlen);
+    ]]
+
+    ngx_lua_ffi_exit = C.ngx_stream_lua_ffi_exit
+end
 
 
 local ERR_BUF_SIZE = 128
@@ -31,7 +49,7 @@ ngx.exit = function (rc)
         error("no request found")
     end
     errlen[0] = ERR_BUF_SIZE
-    rc = C.ngx_http_lua_ffi_exit(r, rc, err, errlen)
+    rc = ngx_lua_ffi_exit(r, rc, err, errlen)
     if rc == 0 then
         -- print("yielding...")
         return co_yield()

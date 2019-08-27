@@ -9,11 +9,11 @@ require "resty.core.time"
 require "resty.core.misc"
 require "resty.core.hash"
 require "resty.core.uri"
+require "resty.core.exit"
 
 
 if subsystem == 'http' then
     require "resty.core.base64"
-    require "resty.core.exit"
     require "resty.core.var"
     require "resty.core.ctx"
     require "resty.core.request"
