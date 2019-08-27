@@ -1,18 +1,27 @@
 -- Copyright (C) Yichun Zhang (agentzh)
 
 
-local ffi = require 'ffi'
-local ffi_string = ffi.string
-local ffi_new = ffi.new
-local C = ffi.C
-local ngx = ngx
-local type = type
-local tostring = tostring
-local error = error
+local ffi = require "ffi"
 local base = require "resty.core.base"
 
 
-ffi.cdef[[
+local C = ffi.C
+local ffi_new = ffi.new
+local ffi_string = ffi.string
+local ngx = ngx
+local type = type
+local error = error
+local tostring = tostring
+local subsystem = ngx.config.subsystem
+
+
+local ngx_lua_ffi_md5
+local ngx_lua_ffi_md5_bin
+local ngx_lua_ffi_sha1_bin
+
+
+if subsystem == "http" then
+    ffi.cdef[[
     void ngx_http_lua_ffi_md5_bin(const unsigned char *src, size_t len,
                                   unsigned char *dst);
 
@@ -21,7 +30,28 @@ ffi.cdef[[
 
     int ngx_http_lua_ffi_sha1_bin(const unsigned char *src, size_t len,
                                   unsigned char *dst);
-]]
+    ]]
+
+    ngx_lua_ffi_md5 = C.ngx_http_lua_ffi_md5
+    ngx_lua_ffi_md5_bin = C.ngx_http_lua_ffi_md5_bin
+    ngx_lua_ffi_sha1_bin = C.ngx_http_lua_ffi_sha1_bin
+
+elseif subsystem == "stream" then
+    ffi.cdef[[
+    void ngx_stream_lua_ffi_md5_bin(const unsigned char *src, size_t len,
+                                    unsigned char *dst);
+
+    void ngx_stream_lua_ffi_md5(const unsigned char *src, size_t len,
+                                unsigned char *dst);
+
+    int ngx_stream_lua_ffi_sha1_bin(const unsigned char *src, size_t len,
+                                    unsigned char *dst);
+    ]]
+
+    ngx_lua_ffi_md5 = C.ngx_stream_lua_ffi_md5
+    ngx_lua_ffi_md5_bin = C.ngx_stream_lua_ffi_md5_bin
+    ngx_lua_ffi_sha1_bin = C.ngx_stream_lua_ffi_sha1_bin
+end
 
 
 local MD5_DIGEST_LEN = 16
@@ -35,7 +65,7 @@ ngx.md5_bin = function (s)
             s = tostring(s)
         end
     end
-    C.ngx_http_lua_ffi_md5_bin(s, #s, md5_buf)
+    ngx_lua_ffi_md5_bin(s, #s, md5_buf)
     return ffi_string(md5_buf, MD5_DIGEST_LEN)
 end
 
@@ -51,7 +81,7 @@ ngx.md5 = function (s)
             s = tostring(s)
         end
     end
-    C.ngx_http_lua_ffi_md5(s, #s, md5_hex_buf)
+    ngx_lua_ffi_md5(s, #s, md5_hex_buf)
     return ffi_string(md5_hex_buf, MD5_HEX_DIGEST_LEN)
 end
 
@@ -67,7 +97,7 @@ ngx.sha1_bin = function (s)
             s = tostring(s)
         end
     end
-    local ok = C.ngx_http_lua_ffi_sha1_bin(s, #s, sha_buf)
+    local ok = ngx_lua_ffi_sha1_bin(s, #s, sha_buf)
     if ok == 0 then
         error("SHA-1 support missing in Nginx")
     end

@@ -7,11 +7,11 @@ require "resty.core.regex"
 require "resty.core.shdict"
 require "resty.core.time"
 require "resty.core.misc"
+require "resty.core.hash"
 
 
 if subsystem == 'http' then
     require "resty.core.uri"
-    require "resty.core.hash"
     require "resty.core.base64"
     require "resty.core.exit"
     require "resty.core.var"
