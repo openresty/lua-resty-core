@@ -10,7 +10,7 @@ local core_regex = require "resty.core.regex"
 
 if core_regex.no_pcre then
     error("no support for 'ngx.re' module: OpenResty was " ..
-          "compiled without PCRE support", 2)
+          "compiled without PCRE support", 3)
 end
 
 
