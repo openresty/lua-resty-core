@@ -62,7 +62,7 @@ int ngx_http_lua_ffi_shdict_store(void *zone, int op,
 int ngx_http_lua_ffi_shdict_flush_all(void *zone);
 
 long ngx_http_lua_ffi_shdict_get_ttl(void *zone,
-     const unsigned char *key, size_t key_len);
+    const unsigned char *key, size_t key_len);
 
 int ngx_http_lua_ffi_shdict_set_expire(void *zone,
     const unsigned char *key, size_t key_len, long exptime);
