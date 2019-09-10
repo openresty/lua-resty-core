@@ -18,6 +18,8 @@ local subsystem = ngx.config.subsystem
 local ngx_lua_ffi_md5
 local ngx_lua_ffi_md5_bin
 local ngx_lua_ffi_sha1_bin
+local ngx_lua_ffi_crc32_long
+local ngx_lua_ffi_crc32_short
 
 
 if subsystem == "http" then
@@ -30,11 +32,19 @@ if subsystem == "http" then
 
     int ngx_http_lua_ffi_sha1_bin(const unsigned char *src, size_t len,
                                   unsigned char *dst);
+
+    unsigned int ngx_http_lua_ffi_crc32_long(const unsigned char *src,
+                                             size_t len);
+
+    unsigned int ngx_http_lua_ffi_crc32_short(const unsigned char *src,
+                                              size_t len);
     ]]
 
     ngx_lua_ffi_md5 = C.ngx_http_lua_ffi_md5
     ngx_lua_ffi_md5_bin = C.ngx_http_lua_ffi_md5_bin
     ngx_lua_ffi_sha1_bin = C.ngx_http_lua_ffi_sha1_bin
+    ngx_lua_ffi_crc32_short = C.ngx_http_lua_ffi_crc32_short
+    ngx_lua_ffi_crc32_long = C.ngx_http_lua_ffi_crc32_long
 
 elseif subsystem == "stream" then
     ffi.cdef[[
@@ -46,11 +56,19 @@ elseif subsystem == "stream" then
 
     int ngx_stream_lua_ffi_sha1_bin(const unsigned char *src, size_t len,
                                     unsigned char *dst);
+
+    unsigned int ngx_stream_lua_ffi_crc32_long(const unsigned char *src,
+                                               size_t len);
+
+    unsigned int ngx_stream_lua_ffi_crc32_short(const unsigned char *src,
+                                                size_t len);
     ]]
 
     ngx_lua_ffi_md5 = C.ngx_stream_lua_ffi_md5
     ngx_lua_ffi_md5_bin = C.ngx_stream_lua_ffi_md5_bin
     ngx_lua_ffi_sha1_bin = C.ngx_stream_lua_ffi_sha1_bin
+    ngx_lua_ffi_crc32_short = C.ngx_stream_lua_ffi_crc32_short
+    ngx_lua_ffi_crc32_long = C.ngx_stream_lua_ffi_crc32_long
 end
 
 
@@ -102,6 +120,32 @@ ngx.sha1_bin = function (s)
         error("SHA-1 support missing in Nginx")
     end
     return ffi_string(sha_buf, SHA_DIGEST_LEN)
+end
+
+
+ngx.crc32_short = function (s)
+    if type(s) ~= "string" then
+        if not s then
+            s = ""
+        else
+            s = tostring(s)
+        end
+    end
+
+    return ngx_lua_ffi_crc32_short(s, #s)
+end
+
+
+ngx.crc32_long = function (s)
+    if type(s) ~= "string" then
+        if not s then
+            s = ""
+        else
+            s = tostring(s)
+        end
+    end
+
+    return ngx_lua_ffi_crc32_long(s, #s)
 end
 
 
