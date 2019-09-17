@@ -15,6 +15,7 @@ Table of Contents
     * [set_more_tries](#set_more_tries)
     * [get_last_failure](#get_last_failure)
     * [set_timeouts](#set_timeouts)
+    * [enable_keepalive](#enable_keepalive)
 * [Community](#community)
     * [English Mailing List](#english-mailing-list)
     * [Chinese Mailing List](#chinese-mailing-list)
@@ -144,7 +145,7 @@ to call these methods.
 
 set_current_peer
 ----------------
-**syntax:** *ok, err = balancer.set_current_peer(host, port)*
+**syntax:** *ok, err = balancer.set_current_peer(host, port, opts?)*
 
 **context:** *balancer_by_lua&#42;*
 
@@ -155,6 +156,26 @@ Domain names in `host` do not make sense. You need to use OpenResty libraries li
 all the domain names before entering the `balancer_by_lua*` handler (for example,
 you can perform DNS lookups in an earlier phase like [access_by_lua*](https://github.com/openresty/lua-nginx-module#access_by_lua)
 and pass the results to the `balancer_by_lua*` handler via [ngx.ctx](https://github.com/openresty/lua-nginx-module#ngxctx).
+
+In the `http` subsystem a third argument `opts` is supported since the
+`v0.1.18` release of this library, and can contain the following options:
+
+* `pool` specify a custom name for the connection pool to use. If omitted, then
+  the connection pool name will be generated from the string template
+  `"<host>:<port>"`. Note that the connection will not be kept-alive unless
+  [enable_keepalive](#enable_keepalive) is called.
+
+* `pool_size` specify the size of the connection pool. If omitted, the default
+  size will be `30`. The connection pool holds up to `pool_size` keepalive
+  connections ready to be reused by subsequent upstream requests. Note that
+  there is no upper limit to the total number of opened connections outside of
+  the pool. When the connection pool would exceed its size limit, the least
+  recently used (kept-alive) connection will be closed to make room for the
+  current connection. Note that each NGINX worker process maintains upstream
+  connection pools. Finally, note that the size of the connection pool cannot
+  be changed once it has been created.
+
+The `opts` argument is not yet supported in the `stream` subsystem.
 
 [Back to TOC](#table-of-contents)
 
@@ -234,6 +255,186 @@ This only affects the current downstream request. It is not a global change.
 For the best performance, you should use the [OpenResty](https://openresty.org/) bundle.
 
 This function was first added in the `0.1.7` version of this library.
+
+[Back to TOC](#table-of-contents)
+
+enable_keepalive
+----------------
+**syntax:** `ok, err = balancer.enable_keepalive(idle_timeout?, max_requests?)`
+
+**context:** *balancer_by_lua&#42;*
+
+Instructs the current upstream connection to be kept-alive once the current
+request succeeds. The connection will be inserted in the pool specified by the
+`pool` option of the [set_current_peer](#set_current_peer) function (if
+unspecified, the default pool name will be `"<host>:<port>"`).
+
+The keepalive capabilities offered via this function are similar to that of the
+[keepalive](http://nginx.org/en/docs/http/ngx_http_upstream_module.html#keepalive)
+directive of the ngx_http_upstream_module, with more dynamic capabilities
+addressing a wide range of use-cases.
+
+The first optional argument `idle_timeout` may be a number used to specify the
+maximum amount of time the connection may remain unused in the pool. The value
+is to be specified in seconds, with floating point numbers allowing for
+millisecond precision. If omitted, the default value is `60` (60 seconds).
+When the idle timeout threshold is reached and the connection hasn't been
+reused, it will be closed. A value of `0` will keep the connection in the pool
+indefinitely (it may still be eventually closed by the remote peer).
+This argument is identical to the
+[keepalive_timeout](http://nginx.org/en/docs/http/ngx_http_upstream_module.html#keepalive_timeout)
+directive of the ngx_http_upstream_module, but can be set dynamically for each
+upstream connection.
+
+The second optional argument `max_requests` may be a number used to specify the
+amount of upstream requests a given connection should be reused for before
+being closed. If omitted, the default value is `100`.
+When the connection has been reused as many times as the `max_requests` value,
+it will be closed instead of being inserted back into the connection pool. A
+value of `0` will allow for the connection to be reused for any number of
+upstream requests.
+This argument is identical to the
+[keepalive_requests](http://nginx.org/en/docs/http/ngx_http_upstream_module.html#keepalive_requests)
+directive of the ngx_http_upstream_module, but can be set dynamically for each
+upstream connection.
+
+This function returns `true` upon success, or `nil` and a string describing the
+error otherwise.
+
+Below is a standard example usage:
+
+```nginx
+http {
+    upstream backend {
+        server 0.0.0.1;    # placeholder
+
+        balancer_by_lua_block {
+            local balancer = require "ngx.balancer"
+
+            local ok, err = balancer.set_current_peer("127.0.0.2", 8080)
+            if not ok then
+                ngx.log(ngx.ERR, "failed to set current peer: ", err)
+                return
+            end
+
+            -- default pool will be "host:port"
+            -- default pool_size will be 30
+            ok, err = balancer.enable_keepalive()
+            if not ok then
+                ngx.log(ngx.ERR, "failed to set keepalive: ", err)
+                return
+            end
+        }
+    }
+
+    server {
+        listen 80;
+
+        location / {
+            proxy_pass http://backend/;
+        }
+    }
+}
+```
+
+A more advanced usage of this API can be made to overcome specific limitations
+of NGINX's upstream keepalive pooling behavior. One of such limitations is the
+lack of consideration for TLS attributes in the connection reuse logic: within
+a given `upstream {}` block, NGINX's connection reuse logic only considers the
+IP and port attributes of a connection, and fails to consider the SNI
+extension (among others), which could result in requests being sent over the
+wrong TLS connection. NGINX's official stance on this limitation is to use
+different `upstream {}` blocks (e.g. one for each SNI), which would not only be
+wasteful but also defeat the purpose of the dynamic capabilities offered by
+OpenResty.
+
+Below is an example of how to overcome this limitation and pool connections by
+IP, port, and SNI:
+
+```nginx
+http {
+    upstream backend {
+        server 0.0.0.1;    # placeholder
+
+        balancer_by_lua_block {
+            local balancer = require "ngx.balancer"
+
+            local sni = "example.org"
+            local ip = "127.0.0.2"
+            local port = 8080
+
+            local ok, err = balancer.set_current_peer("127.0.0.2", 8080, {
+                pool = ip .. port .. sni,
+                pool_size = 60,
+            })
+            if not ok then
+                ngx.log(ngx.ERR, "failed to set current peer: ", err)
+                return
+            end
+
+            ok, err = balancer.enable_keepalive(60, 100)
+            if not ok then
+                ngx.log(ngx.ERR, "failed to set keepalive: ", err)
+                return
+            end
+        }
+    }
+
+    ...
+}
+```
+
+When defined alongside other upstream keepalive modules, whichever module is
+defined last will supersede the other and be responsible for the connection
+pooling:
+
+```nginx
+http {
+    upstream backend_ngx_keepalive {
+        server 0.0.0.1;    # placeholder
+
+        balancer_by_lua_block {
+            local balancer = require "ngx.balancer"
+
+            balancer.set_current_peer("127.0.0.2", 8080, {
+                pool_size = 60,
+            })
+            balancer.enable_keepalive(60, 100)
+        }
+
+        # The below ngx_http_upstream_module keepalive pooling will be in
+        # effect over the above Lua keepalive pooling.
+        keepalive 60;
+        keepalive_timeout 60s;
+        keepalive_requests 100;
+    }
+
+    upstream backend_lua_keepalive {
+        server 0.0.0.1;    # placeholder
+
+        keepalive 60;
+        keepalive_timeout 60s;
+        keepalive_requests 100;
+
+        balancer_by_lua_block {
+            local balancer = require "ngx.balancer"
+
+            balancer.set_current_peer("127.0.0.2", 8080, {
+                pool_size = 60,
+            })
+
+            # The Lua keepalive pooling will be in effect over the above
+            # ngx_http_upstream_module keepalive pooling.
+            balancer.enable_keepalive(60, 100)
+        }
+    }
+
+    ...
+}
+```
+
+This function was first added to the `http` subsystem in the `v0.1.18` release
+of this library. It is not yet supported in the `stream` subsystem.
 
 [Back to TOC](#table-of-contents)
 
