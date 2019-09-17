@@ -834,3 +834,55 @@ GET /t
 [lua] log_by_lua(nginx.conf:59):2: ngx.var.upstream_addr is 127.0.0.3:12345, 127.0.0.3:12346
 --- no_error_log
 [alert]
+
+
+
+=== TEST 19: no 'server' directive
+--- http_config
+    upstream backend {
+        balancer_by_lua_block {
+            print("hello from balancer by lua!")
+        }
+    }
+--- config
+    location = /t {
+        proxy_pass http://backend;
+    }
+--- request
+GET /t
+--- error_code: 500
+--- ignore_response_body
+--- error_log eval
+[
+'[lua] balancer_by_lua:2: hello from balancer by lua! while connecting to upstream,',
+qr/\[error\] .*? lua balancer: no peer set/,
+]
+--- no_error_log
+[warn]
+
+
+
+=== TEST 20: set current peer: no 'server' directive
+--- http_config
+    upstream backend {
+        balancer_by_lua_block {
+            print("hello from balancer by lua!")
+            local b = require "ngx.balancer"
+            assert(b.set_current_peer("127.0.0.3", 12345))
+        }
+    }
+--- config
+    location = /t {
+        proxy_pass http://backend;
+    }
+--- request
+GET /t
+--- error_code: 502
+--- ignore_response_body
+--- error_log eval
+[
+'[lua] balancer_by_lua:2: hello from balancer by lua! while connecting to upstream,',
+qr{connect\(\) failed .*?, upstream: "http://127\.0\.0\.3:12345/t"},
+]
+--- no_error_log
+[warn]
