@@ -62,7 +62,7 @@ install:
   - git clone https://github.com/openresty/openresty.git ../openresty
   - git clone https://github.com/openresty/openresty-devel-utils.git
   - git clone https://github.com/simpl/ngx_devel_kit.git ../ndk-nginx-module
-  - git clone https://github.com/openresty/lua-nginx-module.git ../lua-nginx-module
+  - git clone -b feat/upstream-keepalive https://github.com/thibaultcha/lua-nginx-module.git ../lua-nginx-module
   - git clone https://github.com/openresty/no-pool-nginx.git ../no-pool-nginx
   - git clone https://github.com/openresty/echo-nginx-module.git ../echo-nginx-module
   - git clone https://github.com/openresty/lua-resty-lrucache.git
