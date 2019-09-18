@@ -89,7 +89,7 @@ __DATA__
 GET /t
 --- response_body
 connected: 1
-ssl handshake: userdata
+ssl handshake: cdata
 close: 1 nil
 
 --- grep_error_log eval
@@ -176,7 +176,7 @@ qr/ssl_session_fetch_by_lua\(nginx.conf:\d+\):4: session id: [a-fA-f\d]+/s,
 GET /t
 --- response_body
 connected: 1
-ssl handshake: userdata
+ssl handshake: cdata
 close: 1 nil
 
 --- grep_error_log eval
@@ -279,7 +279,7 @@ In practice, never store session in plaintext on persistent storage.
 GET /t
 --- response_body
 connected: 1
-ssl handshake: userdata
+ssl handshake: cdata
 close: 1 nil
 
 --- grep_error_log eval
@@ -375,7 +375,7 @@ able to carry on and negotiate a new session.
 GET /t
 --- response_body
 connected: 1
-ssl handshake: userdata
+ssl handshake: cdata
 close: 1 nil
 
 --- grep_error_log eval
@@ -582,7 +582,7 @@ $/s,
 GET /t
 --- response_body
 connected: 1
-ssl handshake: userdata
+ssl handshake: cdata
 close: 1 nil
 --- no_error_log
 [alert]
