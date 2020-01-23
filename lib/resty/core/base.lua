@@ -132,7 +132,7 @@ local c_buf_type = ffi.typeof("char[?]")
 local _M = new_tab(0, 18)
 
 
-_M.version = "0.1.17"
+_M.version = "0.1.18"
 _M.new_tab = new_tab
 _M.clear_tab = clear_tab
 
