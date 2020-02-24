@@ -389,14 +389,7 @@ do
     _M.set_req_header = set_req_header
 
 
-    local orig_func = ngx.req.set_header
-
-
     function ngx.req.set_header(name, value)
-        if type(value) == "table" then
-            return orig_func(name, value)
-        end
-
         set_req_header(name, value, true) -- override
     end
 end  -- do
