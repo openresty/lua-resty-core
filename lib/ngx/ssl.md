@@ -475,6 +475,28 @@ This function was first added in version `0.1.7`.
 
 [Back to TOC](#table-of-contents)
 
+verify_client
+------------
+**syntax:** *ok, err = ssl.verify_client(depth, ca_certs)*
+
+**context:** *ssl_certificate_by_lua&#42;*
+
+Requires a client certificate during TLS handshake.
+
+The `depth` is the verification depth in the client certificates chain.
+
+The `ca_certs` is the CA certificate chain opaque pointer returned by the
+[parse_pem_cert](#parse_pem_cert) function for the current SSL connection.
+
+Returns `true` on success, or a `nil` value and a string describing the error otherwise.
+
+Note that TLS is not terminated when verification fails. You need to examine Nginx variable `$ssl_client_verify`
+later to determine next steps.
+
+This function was first added in version `0.1.18`.
+
+[Back to TOC](#table-of-contents)
+
 Community
 =========
 
