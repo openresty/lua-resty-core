@@ -35,7 +35,6 @@ local tonumber = tonumber
 local get_string_buf = base.get_string_buf
 local get_string_buf_size = base.get_string_buf_size
 local new_tab = base.new_tab
-local subsystem = ngx.config.subsystem
 local ngx_phase = ngx.get_phase
 local ngx_log = ngx.log
 local ngx_NOTICE = ngx.NOTICE
