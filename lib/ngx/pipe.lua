@@ -5,6 +5,8 @@ local base = require "resty.core.base"
 base.allows_subsystem("http")
 
 
+require "resty.core.phase"  -- for ngx.get_phase
+
 local assert = assert
 local error = error
 local ipairs = ipairs

@@ -6,6 +6,8 @@ base.allows_subsystem('http')
 
 
 local ffi = require 'ffi'
+require "resty.core.phase"  -- for ngx.get_phase
+
 local errmsg = base.get_errmsg_ptr()
 local FFI_ERROR = base.FFI_ERROR
 local ffi_str = ffi.string
