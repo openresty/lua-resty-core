@@ -4,8 +4,13 @@
 local ffi = require 'ffi'
 local base = require "resty.core.base"
 local bit = require "bit"
+local subsystem = ngx.config.subsystem
 require "resty.core.time"  -- for ngx.now used by resty.lrucache
-require "resty.core.phase"  -- for ngx.get_phase
+
+if subsystem == 'http' then
+    require "resty.core.phase"  -- for ngx.get_phase
+end
+
 local lrucache = require "resty.lrucache"
 
 local lrucache_get = lrucache.get
