@@ -10,6 +10,7 @@ local subsystem = ngx.config.subsystem
 local FFI_BAD_CONTEXT = base.FFI_BAD_CONTEXT
 local FFI_DECLINED = base.FFI_DECLINED
 local FFI_OK = base.FFI_OK
+local clear_tab = base.clear_tab
 local new_tab = base.new_tab
 local C = ffi.C
 local ffi_cast = ffi.cast
@@ -200,6 +201,10 @@ function ngx.req.get_uri_args(max_args, tab)
 
     if not max_args then
         max_args = -1
+    end
+
+    if tab then
+        clear_tab(tab)
     end
 
     local n = C.ngx_http_lua_ffi_req_get_uri_args_count(r, max_args, truncated)
