@@ -2330,3 +2330,176 @@ got TLS1 version: TLSv1.3,
 [error]
 [alert]
 [emerg]
+
+
+
+=== TEST 23: verify client with CA certificates
+--- http_config
+    lua_package_path "$TEST_NGINX_LUA_PACKAGE_PATH";
+
+    server {
+        listen unix:$TEST_NGINX_HTML_DIR/nginx.sock ssl;
+        server_name   test.com;
+        ssl_certificate_by_lua_block {
+            local ssl = require "ngx.ssl"
+
+            local f = assert(io.open("t/cert/test.crt"))
+            local cert_data = f:read("*a")
+            f:close()
+
+            local cert, err = ssl.parse_pem_cert(cert_data)
+            if not cert then
+                ngx.log(ngx.ERR, "failed to parse pem cert: ", err)
+                return
+            end
+
+            local ok, err = ssl.verify_client(1, cert)
+            if not ok then
+                ngx.log(ngx.ERR, "failed to verify client: ", err)
+                return
+            end
+        }
+
+        ssl_certificate ../../cert/test.crt;
+        ssl_certificate_key ../../cert/test.key;
+
+        server_tokens off;
+        location / {
+            default_type 'text/plain';
+            content_by_lua_block {
+                print('client certificate subject: ', ngx.var.ssl_client_s_dn)
+                ngx.say(ngx.var.ssl_client_verify)
+            }
+            more_clear_headers Date;
+        }
+    }
+--- config
+    server_tokens off;
+    lua_ssl_trusted_certificate ../../cert/test.crt;
+
+    location /t {
+        proxy_pass                  https://unix:$TEST_NGINX_HTML_DIR/nginx.sock;
+        proxy_ssl_certificate       ../../cert/test.crt;
+        proxy_ssl_certificate_key   ../../cert/test.key;
+    }
+
+--- request
+GET /t
+--- response_body
+SUCCESS
+
+--- error_log
+client certificate subject: emailAddress=agentzh@gmail.com,CN=test.com
+
+--- no_error_log
+[error]
+[alert]
+[emerg]
+
+
+
+=== TEST 24: verify client without CA certificates
+--- http_config
+    lua_package_path "$TEST_NGINX_LUA_PACKAGE_PATH";
+
+    server {
+        listen unix:$TEST_NGINX_HTML_DIR/nginx.sock ssl;
+        server_name   test.com;
+        ssl_certificate_by_lua_block {
+            local ssl = require "ngx.ssl"
+
+            local ok, err = ssl.verify_client(1, nil)
+            if not ok then
+                ngx.log(ngx.ERR, "failed to verify client: ", err)
+                return
+            end
+        }
+
+        ssl_certificate ../../cert/test.crt;
+        ssl_certificate_key ../../cert/test.key;
+
+        server_tokens off;
+        location / {
+            default_type 'text/plain';
+            content_by_lua_block {
+                print('client certificate subject: ', ngx.var.ssl_client_s_dn)
+                ngx.say(ngx.var.ssl_client_verify)
+            }
+            more_clear_headers Date;
+        }
+    }
+--- config
+    server_tokens off;
+    lua_ssl_trusted_certificate ../../cert/test.crt;
+
+    location /t {
+        proxy_pass                  https://unix:$TEST_NGINX_HTML_DIR/nginx.sock;
+        proxy_ssl_certificate       ../../cert/test.crt;
+        proxy_ssl_certificate_key   ../../cert/test.key;
+    }
+
+--- request
+GET /t
+--- response_body
+FAILED:self signed certificate
+
+--- error_log
+client certificate subject: emailAddress=agentzh@gmail.com,CN=test.com
+
+--- no_error_log
+[error]
+[alert]
+[emerg]
+
+
+
+=== TEST 25: verify client but client provides no certificate
+--- http_config
+    lua_package_path "$TEST_NGINX_LUA_PACKAGE_PATH";
+
+    server {
+        listen unix:$TEST_NGINX_HTML_DIR/nginx.sock ssl;
+        server_name   test.com;
+        ssl_certificate_by_lua_block {
+            local ssl = require "ngx.ssl"
+
+            local ok, err = ssl.verify_client(1, nil)
+            if not ok then
+                ngx.log(ngx.ERR, "failed to verify client: ", err)
+                return
+            end
+        }
+
+        ssl_certificate ../../cert/test.crt;
+        ssl_certificate_key ../../cert/test.key;
+
+        server_tokens off;
+        location / {
+            default_type 'text/plain';
+            content_by_lua_block {
+                print('client certificate subject: ', ngx.var.ssl_client_s_dn)
+                ngx.say(ngx.var.ssl_client_verify)
+            }
+            more_clear_headers Date;
+        }
+    }
+--- config
+    server_tokens off;
+    lua_ssl_trusted_certificate ../../cert/test.crt;
+
+    location /t {
+        proxy_pass                  https://unix:$TEST_NGINX_HTML_DIR/nginx.sock;
+    }
+
+--- request
+GET /t
+--- response_body
+NONE
+
+--- error_log
+client certificate subject: nil
+
+--- no_error_log
+[error]
+[alert]
+[emerg]

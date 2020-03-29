@@ -1887,3 +1887,143 @@ got TLS1 version: TLSv1.3,
 [error]
 [alert]
 [emerg]
+
+
+
+=== TEST 23: verify client with CA certificates
+--- stream_config
+    server {
+        listen unix:$TEST_NGINX_HTML_DIR/nginx.sock ssl;
+
+        ssl_certificate ../../cert/test2.crt;
+        ssl_certificate_key ../../cert/test2.key;
+
+        ssl_certificate_by_lua_block {
+            local ssl = require "ngx.ssl"
+
+            local f = assert(io.open("t/cert/test.crt", "rb"))
+            local cert_data = f:read("*all")
+            f:close()
+
+            local cert = ssl.parse_pem_cert(cert_data)
+            if not cert then
+                ngx.log(ngx.ERR, "failed to parse pem cert: ", err)
+                return
+            end
+
+            local ok, err = ssl.verify_client(1, cert)
+            if not ok then
+                ngx.log(ngx.ERR, "failed to verify client: ", err)
+                return
+            end
+        }
+
+        content_by_lua_block {
+            print('client certificate subject: ', ngx.var.ssl_client_s_dn)
+            ngx.say(ngx.var.ssl_client_verify)
+        }
+    }
+--- stream_server_config
+    lua_ssl_trusted_certificate ../../cert/test.crt;
+
+    proxy_pass                  unix:$TEST_NGINX_HTML_DIR/nginx.sock;
+    proxy_ssl                   on;
+    proxy_ssl_certificate       ../../cert/test.crt;
+    proxy_ssl_certificate_key   ../../cert/test.key;
+
+--- stream_response
+SUCCESS
+
+--- error_log
+client certificate subject: emailAddress=agentzh@gmail.com,CN=test.com
+
+--- no_error_log
+[error]
+[alert]
+[emerg]
+
+
+
+=== TEST 24: verify client without CA certificates
+--- stream_config
+    server {
+        listen unix:$TEST_NGINX_HTML_DIR/nginx.sock ssl;
+
+        ssl_certificate ../../cert/test2.crt;
+        ssl_certificate_key ../../cert/test2.key;
+
+        ssl_certificate_by_lua_block {
+            local ssl = require "ngx.ssl"
+
+            local ok, err = ssl.verify_client(1, nil)
+            if not ok then
+                ngx.log(ngx.ERR, "failed to verify client: ", err)
+                return
+            end
+        }
+
+        content_by_lua_block {
+            print('client certificate subject: ', ngx.var.ssl_client_s_dn)
+            ngx.say(ngx.var.ssl_client_verify)
+        }
+    }
+--- stream_server_config
+    lua_ssl_trusted_certificate ../../cert/test.crt;
+
+    proxy_pass                  unix:$TEST_NGINX_HTML_DIR/nginx.sock;
+    proxy_ssl                   on;
+    proxy_ssl_certificate       ../../cert/test.crt;
+    proxy_ssl_certificate_key   ../../cert/test.key;
+
+--- stream_response
+FAILED:self signed certificate
+
+--- error_log
+client certificate subject: emailAddress=agentzh@gmail.com,CN=test.com
+
+--- no_error_log
+[error]
+[alert]
+[emerg]
+
+
+
+=== TEST 25: verify client but client provides no certificate
+--- stream_config
+    server {
+        listen unix:$TEST_NGINX_HTML_DIR/nginx.sock ssl;
+
+        ssl_certificate ../../cert/test2.crt;
+        ssl_certificate_key ../../cert/test2.key;
+
+        ssl_certificate_by_lua_block {
+            local ssl = require "ngx.ssl"
+
+            local ok, err = ssl.verify_client(1, nil)
+            if not ok then
+                ngx.log(ngx.ERR, "failed to verify client: ", err)
+                return
+            end
+        }
+
+        content_by_lua_block {
+            print('client certificate subject: ', ngx.var.ssl_client_s_dn)
+            ngx.say(ngx.var.ssl_client_verify)
+        }
+    }
+--- stream_server_config
+    lua_ssl_trusted_certificate ../../cert/test.crt;
+
+    proxy_pass                  unix:$TEST_NGINX_HTML_DIR/nginx.sock;
+    proxy_ssl                   on;
+
+--- stream_response
+NONE
+
+--- error_log
+client certificate subject: nil
+
+--- no_error_log
+[error]
+[alert]
+[emerg]
