@@ -8,7 +8,7 @@ use t::TestCore;
 
 repeat_each(2);
 
-plan tests => repeat_each() * (blocks() * 5 + 10);
+plan tests => repeat_each() * (blocks() * 5 + 8);
 
 #no_diff();
 #no_long_string();
@@ -533,3 +533,23 @@ qr/\[TRACE\s+\d+ content_by_lua\(nginx\.conf:\d+\):4 loop\]/
 [error]
 bad argument type
 stitch
+
+
+
+=== TEST 17: ngx.req.set_header (multiple values)
+--- config
+    location = /t {
+        content_by_lua_block {
+            ngx.req.set_header("Foo", { "baz", 123 })
+
+            ngx.say("Foo: ", table.concat(ngx.req.get_headers()["Foo"], ", "))
+        }
+    }
+--- request
+GET /t
+--- more_headers
+Foo: bar
+--- response_body
+Foo: baz, 123
+--- no_error_log
+[error]
