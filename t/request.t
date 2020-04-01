@@ -8,7 +8,7 @@ use t::TestCore;
 
 repeat_each(2);
 
-plan tests => repeat_each() * (blocks() * 5 + 8);
+plan tests => repeat_each() * (blocks() * 5 + 5);
 
 #no_diff();
 #no_long_string();
@@ -553,3 +553,21 @@ Foo: bar
 Foo: baz, 123
 --- no_error_log
 [error]
+
+
+
+=== TEST 18: ngx.req.get_header (metatable is nil)
+--- config
+    location = /t {
+        content_by_lua_block {
+            local headers = ngx.req.get_headers()
+
+            ngx.say(string.format("%s,%s",type(headers), type(getmetatable(headers))))
+        }
+    }
+
+--- raw_request eval
+"GET /t \r\n"
+--- http09
+--- response_body
+table,table
