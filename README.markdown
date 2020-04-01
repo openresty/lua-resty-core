@@ -194,7 +194,7 @@ API Implemented
 * [ngx.req.start_time](https://github.com/openresty/lua-nginx-module#ngxreqstart_time)
 * [ngx.req.get_method](https://github.com/openresty/lua-nginx-module#ngxreqget_method)
 * [ngx.req.set_method](https://github.com/openresty/lua-nginx-module#ngxreqset_method)
-* [ngx.req.set_header](https://github.com/openresty/lua-nginx-module#ngxreqset_header)  (partial: table-typed header values not supported yet)
+* [ngx.req.set_header](https://github.com/openresty/lua-nginx-module#ngxreqset_header)
 * [ngx.req.clear_header](https://github.com/openresty/lua-nginx-module#ngxreqclear_header)
 
 [Back to TOC](#table-of-contents)
