@@ -109,7 +109,12 @@ function ngx.req.get_headers(max_headers, raw)
     end
 
     if n == 0 then
-        return {}
+        local headers = {}
+        if raw == 0 then
+            headers = setmetatable(headers, req_headers_mt)
+        end
+
+        return headers
     end
 
     local raw_buf = get_string_buf(n * table_elt_size)
