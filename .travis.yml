@@ -43,7 +43,7 @@ env:
   matrix:
     - NGINX_VERSION=1.17.8 OPENSSL_VER=1.0.2u OPENSSL_PATCH_VER=1.0.2h
     - NGINX_VERSION=1.17.8 OPENSSL_VER=1.1.0l OPENSSL_PATCH_VER=1.1.0d
-    - NGINX_VERSION=1.17.8 OPENSSL_VER=1.1.1d OPENSSL_PATCH_VER=1.1.1c
+    - NGINX_VERSION=1.17.8 OPENSSL_VER=1.1.1f OPENSSL_PATCH_VER=1.1.1f
 
 services:
   - memcache
@@ -57,7 +57,7 @@ before_install:
 
 install:
   - if [ ! -d download-cache ]; then mkdir download-cache; fi
-  - if [ ! -f download-cache/openssl-$OPENSSL_VER.tar.gz ]; then wget -O download-cache/openssl-$OPENSSL_VER.tar.gz https://www.openssl.org/source/openssl-$OPENSSL_VER.tar.gz; fi
+  - if [ ! -f download-cache/openssl-$OPENSSL_VER.tar.gz ]; then wget -P download-cache https://www.openssl.org/source/openssl-$OPENSSL_VER.tar.gz || wget -P download-cache https://www.openssl.org/source/old/${OPENSSL_VER//[a-z]/}/openssl-$OPENSSL_VER.tar.gz; fi
   - if [ ! -f download-cache/pcre-$PCRE_VER.tar.gz ]; then wget -P download-cache http://ftp.cs.stanford.edu/pub/exim/pcre/pcre-$PCRE_VER.tar.gz; fi
   - git clone https://github.com/openresty/openresty.git ../openresty
   - git clone https://github.com/openresty/openresty-devel-utils.git
