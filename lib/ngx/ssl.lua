@@ -22,6 +22,9 @@ local FFI_OK = base.FFI_OK
 local subsystem = ngx.config.subsystem
 
 
+local ngx_http_lua_ffi_ssl_client_server_name
+local ngx_http_lua_ffi_ssl_set_protocols
+local ngx_http_lua_ffi_ssl_set_ciphers
 local ngx_lua_ffi_ssl_set_der_certificate
 local ngx_lua_ffi_ssl_clear_certs
 local ngx_lua_ffi_ssl_set_der_private_key
