@@ -9,7 +9,7 @@ use t::TestCore;
 
 repeat_each(2);
 
-plan tests => repeat_each() * (blocks() * 4 + 5);
+plan tests => repeat_each() * (blocks() * 4 + 6);
 
 $ENV{TEST_NGINX_LUA_PACKAGE_PATH} = "$t::TestCore::lua_package_path";
 
@@ -834,3 +834,86 @@ GET /t
 [lua] log_by_lua(nginx.conf:59):2: ngx.var.upstream_addr is 127.0.0.3:12345, 127.0.0.3:12346
 --- no_error_log
 [alert]
+
+
+
+=== TEST 18: proxy https disable_ssl
+--- http_config
+    lua_package_path "$TEST_NGINX_LUA_PACKAGE_PATH";
+
+    upstream backend {
+        server 0.0.0.1;
+        balancer_by_lua_block {
+            local b = require "ngx.balancer"
+            print("hello from balancer by lua!")
+            assert(b.set_current_peer("127.0.0.1", 1234))
+            assert(b.disable_ssl())
+        }
+    }
+
+    server {
+        listen 1234;
+
+        server_tokens off;
+        location = /back {
+            return 200 "ok";
+        }
+    }
+--- config
+    location /t {
+        proxy_pass https://backend/back;
+        proxy_http_version 1.1;
+        proxy_set_header Connection "";
+    }
+
+--- request
+GET /t
+--- no_error_log
+[alert]
+[error]
+--- response_body chomp
+ok
+--- grep_error_log eval: qr{hello from balancer by lua!}
+--- grep_error_log_out
+hello from balancer by lua!
+--- no_check_leak
+
+
+=== TEST 19: proxy https have no disable_ssl
+--- http_config
+    lua_package_path "$TEST_NGINX_LUA_PACKAGE_PATH";
+
+    upstream backend {
+        server 0.0.0.1;
+        balancer_by_lua_block {
+            local b = require "ngx.balancer"
+            print("hello from balancer by lua!")
+            assert(b.set_current_peer("127.0.0.1", 1234))
+        }
+    }
+
+    server {
+        listen 1234;
+
+        server_tokens off;
+        location = /back {
+            return 200 "ok";
+        }
+    }
+--- config
+    location /t {
+        proxy_pass https://backend/back;
+        proxy_http_version 1.1;
+        proxy_set_header Connection "";
+    }
+
+--- request
+GET /t
+--- error_log
+SSL_do_handshake() failed
+--- error_code: 502
+--- response_body_like: 502 Bad Gateway
+--- grep_error_log eval: qr{hello from balancer by lua!}
+--- grep_error_log_out
+hello from balancer by lua!
+--- no_check_leak
