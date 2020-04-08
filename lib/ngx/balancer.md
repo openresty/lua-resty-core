@@ -15,6 +15,7 @@ Table of Contents
     * [set_more_tries](#set_more_tries)
     * [get_last_failure](#get_last_failure)
     * [set_timeouts](#set_timeouts)
+    * [disable_ssl](#disable_ssl)
 * [Community](#community)
     * [English Mailing List](#english-mailing-list)
     * [Chinese Mailing List](#chinese-mailing-list)
@@ -234,6 +235,16 @@ This only affects the current downstream request. It is not a global change.
 For the best performance, you should use the [OpenResty](https://openresty.org/) bundle.
 
 This function was first added in the `0.1.7` version of this library.
+
+[Back to TOC](#table-of-contents)
+
+disable_ssl
+-----------
+**syntax:** `ok, err = balancer.disable_ssl()`
+
+**context:** *balancer_by_lua&#42;*
+
+Disable SSL for the current and any subsequent backend requests (which might be a retry), using the plaintext protocol.
 
 [Back to TOC](#table-of-contents)
 
