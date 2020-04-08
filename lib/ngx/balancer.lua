@@ -38,6 +38,9 @@ if subsystem == 'http' then
     int ngx_http_lua_ffi_balancer_set_timeouts(ngx_http_request_t *r,
         long connect_timeout, long send_timeout,
         long read_timeout, char **err);
+
+    int ngx_http_lus_ffi_balancer_disable_ssl(ngx_http_request_t *r,
+        char **err);
     ]]
 
     ngx_lua_ffi_balancer_set_current_peer =
@@ -51,6 +54,9 @@ if subsystem == 'http' then
 
     ngx_lua_ffi_balancer_set_timeouts =
         C.ngx_http_lua_ffi_balancer_set_timeouts
+
+    ngx_lua_ffi_balancer_disable_ssl =
+        C.ngx_http_lus_ffi_balancer_disable_ssl
 
 elseif subsystem == 'stream' then
     ffi.cdef[[
@@ -206,5 +212,21 @@ function _M.set_timeouts(connect_timeout, send_timeout, read_timeout)
     return false, ffi_str(errmsg[0])
 end
 
+
+function _M.disable_ssl()
+    local r = getfenv(0).__ngx_req
+    if not r then
+        return error("no request found")
+    end
+
+    local rc
+
+    rc = ngx_lua_ffi_balancer_disable_ssl(r, errmsg);
+    if rc == FFI_OK then
+        return true
+    end
+
+    return false, ffi_str(errmsg[0])
+end
 
 return _M
