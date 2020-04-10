@@ -22,6 +22,7 @@ local ngx_lua_ffi_balancer_set_current_peer
 local ngx_lua_ffi_balancer_set_more_tries
 local ngx_lua_ffi_balancer_get_last_failure
 local ngx_lua_ffi_balancer_set_timeouts -- used by both stream and http
+local ngx_lua_ffi_balancer_disable_ssl
 
 
 if subsystem == 'http' then
