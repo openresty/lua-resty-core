@@ -42,6 +42,12 @@ ffi.cdef[[
         const unsigned char *key, size_t key_len,
         unsigned char *key_buf, ngx_http_lua_ffi_str_t *values,
         int max_nvalues, char **errmsg);
+
+    unsigned int 
+        ngx_http_lua_ffi_bytes_sent(ngx_http_request_t *r);
+
+    unsigned int 
+        ngx_http_lua_ffi_bytes_buffered(ngx_http_request_t *r);
 ]]
 
 
@@ -119,6 +125,23 @@ end
 
 _M.set_resp_header = set_resp_header
 
+function _M.bytes_sent()
+    local r = get_request()
+    if not r then
+        error("no request found")
+    end
+
+    return C.ngx_http_lua_ffi_bytes_sent(r)
+end
+
+function _M.bytes_buffered()
+    local r = get_request()
+    if not r then
+        error("no request found")
+    end
+
+    return C.ngx_http_lua_ffi_bytes_buffered(r)
+end
 
 local function get_resp_header(tb, key)
     local r = get_request()
