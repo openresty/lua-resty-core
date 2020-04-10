@@ -214,7 +214,7 @@ end
 
 
 function _M.disable_ssl()
-    local r = getfenv(0).__ngx_req
+    local r = get_request()
     if not r then
         return error("no request found")
     end
