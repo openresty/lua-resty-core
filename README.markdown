@@ -108,7 +108,7 @@ into serious compatibility issues.
 
 * LuaJIT 2.1 (for now, it is the v2.1 git branch in the official luajit-2.0 git repository: http://luajit.org/download.html )
 * [ngx_http_lua_module](https://github.com/openresty/lua-nginx-module) v0.10.16.
-* [ngx_stream_lua_module](https://github.com/openresty/lua-nginx-module) v0.0.8.
+* [ngx_stream_lua_module](https://github.com/openresty/stream-lua-nginx-module) v0.0.8.
 * [lua-resty-lrucache](https://github.com/openresty/lua-resty-lrucache)
 
 [Back to TOC](#table-of-contents)
