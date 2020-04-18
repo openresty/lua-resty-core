@@ -113,8 +113,10 @@ function _M.validate_ocsp_response(resp, chain, max_errmsg_len)
     local sizep = get_size_ptr()
     sizep[0] = errbuf_size
 
-    local rc = C.ngx_http_lua_ffi_ssl_validate_ocsp_response(
-                        resp, #resp, chain, #chain, errbuf, sizep, next_update_p)
+    local rc = C.ngx_http_lua_ffi_ssl_validate_ocsp_response(resp, #resp,
+                                                             chain, #chain,
+                                                             errbuf, sizep,
+                                                             next_update_p)
 
     if rc == FFI_OK then
         local next_update = tonumber(next_update_p[0])

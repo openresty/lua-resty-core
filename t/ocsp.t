@@ -8,7 +8,7 @@ use t::TestCore;
 
 repeat_each(2);
 
-plan tests => repeat_each() * (blocks() * 6 + 14);
+plan tests => repeat_each() * (blocks() * 6 + 15);
 
 no_long_string();
 #no_diff();
@@ -869,13 +869,13 @@ failed to create OCSP request: no issuer certificate in chain
             local resp = f:read("*a")
             f:close()
 
-            local ok, _, err = ocsp.validate_ocsp_response(resp, cert_data)
+            local ok, next_update, err = ocsp.validate_ocsp_response(resp, cert_data)
             if not ok then
                 ngx.log(ngx.ERR, "failed to validate OCSP response: ", err)
                 return
             end
 
-            ngx.log(ngx.WARN, "OCSP response validation ok")
+            ngx.log(ngx.WARN, "OCSP response validation ok, next_update: ", next_update)
         }
         ssl_certificate ../../cert/test.crt;
         ssl_certificate_key ../../cert/test.key;
@@ -926,7 +926,7 @@ ssl handshake: cdata
 
 --- error_log
 lua ssl server name: "test.com"
-OCSP response validation ok
+OCSP response validation ok, next_update: nil
 
 --- no_error_log
 [error]
@@ -1567,7 +1567,7 @@ ocsp status resp set ok: no status req,
 
 
 
-=== TEST 18: valid OCSP response without nextUpdate attribute
+=== TEST 18: good OCSP response with nextUpdate present
 --- http_config
     lua_package_path "$TEST_NGINX_LUA_PACKAGE_PATH";
 
@@ -1578,7 +1578,7 @@ ocsp status resp set ok: no status req,
             local ssl = require "ngx.ssl"
             local ocsp = require "ngx.ocsp"
 
-            local f = assert(io.open("t/cert/ocsp/chain.pem"))
+            local f = assert(io.open("t/cert/ocsp/cfssl/leaf-bundle.pem"))
             local cert_data = f:read("*a")
             f:close()
 
@@ -1589,7 +1589,7 @@ ocsp status resp set ok: no status req,
                 return
             end
 
-            local f = assert(io.open("t/cert/ocsp/ocsp-resp.der"))
+            local f = assert(io.open("t/cert/ocsp/cfssl/ocsp-response-good-response.der"))
             local resp = f:read("*a")
             f:close()
 
@@ -1599,10 +1599,10 @@ ocsp status resp set ok: no status req,
                 return
             end
 
-            ngx.log(ngx.WARN, "OCSP response validation ok: ", next_update)
+            ngx.log(ngx.WARN, "OCSP response validation ok, next_update: ", next_update)
         }
-        ssl_certificate ../../cert/test.crt;
-        ssl_certificate_key ../../cert/test.key;
+        ssl_certificate ../../cert/ocsp/cfssl/leaf-bundle.pem;
+        ssl_certificate_key ../../cert/ocsp/cfssl/leaf-key.pem;
 
         server_tokens off;
         location /foo {
@@ -1613,7 +1613,7 @@ ocsp status resp set ok: no status req,
     }
 --- config
     server_tokens off;
-    lua_ssl_trusted_certificate ../../cert/test.crt;
+    lua_ssl_trusted_certificate ../../cert/ocsp/cfssl/leaf-bundle.pem;
     lua_ssl_verify_depth 3;
 
     location /t {
@@ -1650,9 +1650,101 @@ ssl handshake: userdata
 
 --- error_log
 lua ssl server name: "test.com"
-OCSP response validation ok: nil
+OCSP response validation ok, next_update: 1587585600
 
 --- no_error_log
 [error]
+[alert]
+[emerg]
+
+
+
+=== TEST 19: revoked OCSP response with nextUpdate present
+--- http_config
+    lua_package_path "$TEST_NGINX_LUA_PACKAGE_PATH";
+
+    server {
+        listen unix:$TEST_NGINX_HTML_DIR/nginx.sock ssl;
+        server_name   test.com;
+        ssl_certificate_by_lua_block {
+            local ssl = require "ngx.ssl"
+            local ocsp = require "ngx.ocsp"
+
+            local f = assert(io.open("t/cert/ocsp/cfssl/leaf-bundle.pem"))
+            local cert_data = f:read("*a")
+            f:close()
+
+            local err
+            cert_data, err = ssl.cert_pem_to_der(cert_data)
+            if not cert_data then
+                ngx.log(ngx.ERR, "failed to convert pem cert to der cert: ", err)
+                return
+            end
+
+            local f = assert(io.open("t/cert/ocsp/cfssl/ocsp-response-revoked-response.der"))
+            local resp = f:read("*a")
+            f:close()
+
+            local ok, next_update, err = ocsp.validate_ocsp_response(resp, cert_data)
+            if not ok then
+                ngx.log(ngx.ERR, "failed to validate OCSP response: ", err, ". next_update: ", next_update)
+                return
+            end
+
+            ngx.log(ngx.WARN, "OCSP response validation ok")
+        }
+        ssl_certificate ../../cert/ocsp/cfssl/leaf-bundle.pem;
+        ssl_certificate_key ../../cert/ocsp/cfssl/leaf-key.pem;
+
+        server_tokens off;
+        location /foo {
+            default_type 'text/plain';
+            content_by_lua_block {ngx.status = 201 ngx.say("foo") ngx.exit(201)}
+            more_clear_headers Date;
+        }
+    }
+--- config
+    server_tokens off;
+    lua_ssl_trusted_certificate ../../cert/ocsp/cfssl/leaf-bundle.pem;
+    lua_ssl_verify_depth 3;
+
+    location /t {
+        content_by_lua_block {
+            do
+                local sock = ngx.socket.tcp()
+
+                sock:settimeout(3000)
+
+                local ok, err = sock:connect("unix:$TEST_NGINX_HTML_DIR/nginx.sock")
+                if not ok then
+                    ngx.say("failed to connect: ", err)
+                    return
+                end
+
+                ngx.say("connected: ", ok)
+
+                local sess, err = sock:sslhandshake(nil, "test.com", true)
+                if not sess then
+                    ngx.say("failed to do SSL handshake: ", err)
+                    return
+                end
+
+                ngx.say("ssl handshake: ", type(sess))
+            end  -- do
+        }
+    }
+
+--- request
+GET /t
+--- response_body
+connected: 1
+ssl handshake: userdata
+
+--- error_log
+lua ssl server name: "test.com"
+failed to validate OCSP response: certificate status "revoked" in the OCSP response. next_update: nil
+
+--- no_error_log
+OCSP response validation ok
 [alert]
 [emerg]
