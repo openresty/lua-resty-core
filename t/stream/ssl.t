@@ -1911,7 +1911,7 @@ got TLS1 version: TLSv1.3,
                 return
             end
 
-            local ok, err = ssl.verify_client(1, cert)
+            local ok, err = ssl.verify_client(cert, 1)
             if not ok then
                 ngx.log(ngx.ERR, "failed to verify client: ", err)
                 return
@@ -1955,7 +1955,7 @@ client certificate subject: emailAddress=agentzh@gmail.com,CN=test.com
         ssl_certificate_by_lua_block {
             local ssl = require "ngx.ssl"
 
-            local ok, err = ssl.verify_client(1, nil)
+            local ok, err = ssl.verify_client()
             if not ok then
                 ngx.log(ngx.ERR, "failed to verify client: ", err)
                 return
@@ -1999,7 +1999,7 @@ client certificate subject: emailAddress=agentzh@gmail.com,CN=test.com
         ssl_certificate_by_lua_block {
             local ssl = require "ngx.ssl"
 
-            local ok, err = ssl.verify_client(1, nil)
+            local ok, err = ssl.verify_client()
             if not ok then
                 ngx.log(ngx.ERR, "failed to verify client: ", err)
                 return

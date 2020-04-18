@@ -477,16 +477,19 @@ This function was first added in version `0.1.7`.
 
 verify_client
 ------------
-**syntax:** *ok, err = ssl.verify_client(depth, ca_certs)*
+**syntax:** *ok, err = ssl.verify_client(ca_certs?, depth?)*
 
 **context:** *ssl_certificate_by_lua&#42;*
 
 Requires a client certificate during TLS handshake.
 
-The `depth` is the verification depth in the client certificates chain.
-
 The `ca_certs` is the CA certificate chain opaque pointer returned by the
 [parse_pem_cert](#parse_pem_cert) function for the current SSL connection.
+The list of certificates will be sent to clients. Also, they will be added to trusted store.
+If omitted, will not send any CA certificate to clients.
+
+The `depth` is the verification depth in the client certificates chain.
+If omitted, will use the value specified by `ssl_verify_depth`.
 
 Returns `true` on success, or a `nil` value and a string describing the error otherwise.
 
