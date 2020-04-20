@@ -1924,7 +1924,7 @@ got TLS1 version: TLSv1.3,
         }
     }
 --- stream_server_config
-    lua_ssl_trusted_certificate ../../cert/test.crt;
+    lua_ssl_trusted_certificate ../../cert/test2.crt;
 
     proxy_pass                  unix:$TEST_NGINX_HTML_DIR/nginx.sock;
     proxy_ssl                   on;
@@ -1968,7 +1968,7 @@ client certificate subject: emailAddress=agentzh@gmail.com,CN=test.com
         }
     }
 --- stream_server_config
-    lua_ssl_trusted_certificate ../../cert/test.crt;
+    lua_ssl_trusted_certificate ../../cert/test2.crt;
 
     proxy_pass                  unix:$TEST_NGINX_HTML_DIR/nginx.sock;
     proxy_ssl                   on;
@@ -2012,7 +2012,7 @@ client certificate subject: emailAddress=agentzh@gmail.com,CN=test.com
         }
     }
 --- stream_server_config
-    lua_ssl_trusted_certificate ../../cert/test.crt;
+    lua_ssl_trusted_certificate ../../cert/test2.crt;
 
     proxy_pass                  unix:$TEST_NGINX_HTML_DIR/nginx.sock;
     proxy_ssl                   on;
