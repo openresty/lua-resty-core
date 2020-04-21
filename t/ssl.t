@@ -2363,7 +2363,6 @@ got TLS1 version: TLSv1.3,
         ssl_certificate ../../cert/test2.crt;
         ssl_certificate_key ../../cert/test2.key;
 
-        server_tokens off;
         location / {
             default_type 'text/plain';
             content_by_lua_block {
@@ -2374,9 +2373,6 @@ got TLS1 version: TLSv1.3,
         }
     }
 --- config
-    server_tokens off;
-    lua_ssl_trusted_certificate ../../cert/test2.crt;
-
     location /t {
         proxy_pass                  https://unix:$TEST_NGINX_HTML_DIR/nginx.sock;
         proxy_ssl_certificate       ../../cert/test.crt;
@@ -2418,7 +2414,6 @@ client certificate subject: emailAddress=agentzh@gmail.com,CN=test.com
         ssl_certificate ../../cert/test2.crt;
         ssl_certificate_key ../../cert/test2.key;
 
-        server_tokens off;
         location / {
             default_type 'text/plain';
             content_by_lua_block {
@@ -2429,9 +2424,6 @@ client certificate subject: emailAddress=agentzh@gmail.com,CN=test.com
         }
     }
 --- config
-    server_tokens off;
-    lua_ssl_trusted_certificate ../../cert/test2.crt;
-
     location /t {
         proxy_pass                  https://unix:$TEST_NGINX_HTML_DIR/nginx.sock;
         proxy_ssl_certificate       ../../cert/test.crt;
@@ -2463,7 +2455,17 @@ client certificate subject: emailAddress=agentzh@gmail.com,CN=test.com
         ssl_certificate_by_lua_block {
             local ssl = require "ngx.ssl"
 
-            local ok, err = ssl.verify_client()
+            local f = assert(io.open("t/cert/test.crt"))
+            local cert_data = f:read("*a")
+            f:close()
+
+            local cert, err = ssl.parse_pem_cert(cert_data)
+            if not cert then
+                ngx.log(ngx.ERR, "failed to parse pem cert: ", err)
+                return
+            end
+
+            local ok, err = ssl.verify_client(cert, 1)
             if not ok then
                 ngx.log(ngx.ERR, "failed to verify client: ", err)
                 return
@@ -2473,7 +2475,6 @@ client certificate subject: emailAddress=agentzh@gmail.com,CN=test.com
         ssl_certificate ../../cert/test2.crt;
         ssl_certificate_key ../../cert/test2.key;
 
-        server_tokens off;
         location / {
             default_type 'text/plain';
             content_by_lua_block {
@@ -2484,9 +2485,6 @@ client certificate subject: emailAddress=agentzh@gmail.com,CN=test.com
         }
     }
 --- config
-    server_tokens off;
-    lua_ssl_trusted_certificate ../../cert/test2.crt;
-
     location /t {
         proxy_pass                  https://unix:$TEST_NGINX_HTML_DIR/nginx.sock;
     }

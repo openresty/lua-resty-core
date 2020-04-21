@@ -1924,8 +1924,6 @@ got TLS1 version: TLSv1.3,
         }
     }
 --- stream_server_config
-    lua_ssl_trusted_certificate ../../cert/test2.crt;
-
     proxy_pass                  unix:$TEST_NGINX_HTML_DIR/nginx.sock;
     proxy_ssl                   on;
     proxy_ssl_certificate       ../../cert/test.crt;
@@ -1968,8 +1966,6 @@ client certificate subject: emailAddress=agentzh@gmail.com,CN=test.com
         }
     }
 --- stream_server_config
-    lua_ssl_trusted_certificate ../../cert/test2.crt;
-
     proxy_pass                  unix:$TEST_NGINX_HTML_DIR/nginx.sock;
     proxy_ssl                   on;
     proxy_ssl_certificate       ../../cert/test.crt;
@@ -1999,7 +1995,17 @@ client certificate subject: emailAddress=agentzh@gmail.com,CN=test.com
         ssl_certificate_by_lua_block {
             local ssl = require "ngx.ssl"
 
-            local ok, err = ssl.verify_client()
+            local f = assert(io.open("t/cert/test.crt", "rb"))
+            local cert_data = f:read("*all")
+            f:close()
+
+            local cert = ssl.parse_pem_cert(cert_data)
+            if not cert then
+                ngx.log(ngx.ERR, "failed to parse pem cert: ", err)
+                return
+            end
+
+            local ok, err = ssl.verify_client(cert, 1)
             if not ok then
                 ngx.log(ngx.ERR, "failed to verify client: ", err)
                 return
@@ -2012,8 +2018,6 @@ client certificate subject: emailAddress=agentzh@gmail.com,CN=test.com
         }
     }
 --- stream_server_config
-    lua_ssl_trusted_certificate ../../cert/test2.crt;
-
     proxy_pass                  unix:$TEST_NGINX_HTML_DIR/nginx.sock;
     proxy_ssl                   on;
 
