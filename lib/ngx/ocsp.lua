@@ -22,8 +22,6 @@ local FFI_BUSY = base.FFI_BUSY
 
 
 ffi.cdef[[
-typedef long time_t;
-
 int ngx_http_lua_ffi_ssl_get_ocsp_responder_from_der_chain(
     const char *chain_data, size_t chain_len, char *out, size_t *out_size,
     char **err);
@@ -33,7 +31,7 @@ int ngx_http_lua_ffi_ssl_create_ocsp_request(const char *chain_data,
 
 int ngx_http_lua_ffi_ssl_validate_ocsp_response(const unsigned char *resp,
     size_t resp_len, const char *chain_data, size_t chain_len,
-    unsigned char *errbuf, size_t *errbuf_size, time_t *valid);
+    unsigned char *errbuf, size_t *errbuf_size, long *valid);
 
 int ngx_http_lua_ffi_ssl_set_ocsp_status_resp(ngx_http_request_t *r,
     const unsigned char *resp, size_t resp_len, char **err);
@@ -101,7 +99,7 @@ function _M.create_ocsp_request(certs, maxlen)
 end
 
 
-local next_update_p = ffi_new("time_t[1]")
+local next_update_p = ffi_new("long[1]")
 
 function _M.validate_ocsp_response(resp, chain, max_errmsg_len)
     local errbuf_size = max_errmsg_len
@@ -128,7 +126,7 @@ function _M.validate_ocsp_response(resp, chain, max_errmsg_len)
 
     -- rc == FFI_ERROR
 
-    return nil, nil, ffi_str(errbuf, sizep[0])
+    return nil, ffi_str(errbuf, sizep[0])
 end
 
 

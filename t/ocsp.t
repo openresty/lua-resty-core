@@ -8,7 +8,7 @@ use t::TestCore;
 
 repeat_each(2);
 
-plan tests => repeat_each() * (blocks() * 6 + 15);
+plan tests => repeat_each() * (blocks() * 6 + 13);
 
 no_long_string();
 #no_diff();
@@ -869,13 +869,13 @@ failed to create OCSP request: no issuer certificate in chain
             local resp = f:read("*a")
             f:close()
 
-            local ok, next_update, err = ocsp.validate_ocsp_response(resp, cert_data)
+            local ok, next_update_or_err = ocsp.validate_ocsp_response(resp, cert_data)
             if not ok then
-                ngx.log(ngx.ERR, "failed to validate OCSP response: ", err)
+                ngx.log(ngx.ERR, "failed to validate OCSP response: ", next_update_or_err)
                 return
             end
 
-            ngx.log(ngx.WARN, "OCSP response validation ok, next_update: ", next_update)
+            ngx.log(ngx.WARN, "OCSP response validation ok, next_update: ", next_update_or_err)
         }
         ssl_certificate ../../cert/test.crt;
         ssl_certificate_key ../../cert/test.key;
@@ -1054,7 +1054,7 @@ OCSP response validation ok
             local resp = f:read("*a")
             f:close()
 
-            local req, _, err = ocsp.validate_ocsp_response(resp, cert_data)
+            local req, err = ocsp.validate_ocsp_response(resp, cert_data)
             if not req then
                 ngx.log(ngx.ERR, "failed to validate OCSP response: ", err)
                 return
@@ -1149,7 +1149,7 @@ FIXME: we should complain in this case.
             local resp = f:read("*a")
             f:close()
 
-            local req, _, err = ocsp.validate_ocsp_response(resp, cert_data)
+            local req, err = ocsp.validate_ocsp_response(resp, cert_data)
             if not req then
                 ngx.log(ngx.ERR, "failed to validate OCSP response: ", err)
                 return
@@ -1593,13 +1593,13 @@ ocsp status resp set ok: no status req,
             local resp = f:read("*a")
             f:close()
 
-            local ok, next_update, err = ocsp.validate_ocsp_response(resp, cert_data)
+            local ok, next_update_or_err = ocsp.validate_ocsp_response(resp, cert_data)
             if not ok then
-                ngx.log(ngx.ERR, "failed to validate OCSP response: ", err)
+                ngx.log(ngx.ERR, "failed to validate OCSP response: ", next_update_or_err)
                 return
             end
 
-            ngx.log(ngx.WARN, "OCSP response validation ok, next_update: ", next_update)
+            ngx.log(ngx.WARN, "OCSP response validation ok, next_update: ", next_update_or_err)
         }
         ssl_certificate ../../cert/ocsp/cfssl/leaf-bundle.pem;
         ssl_certificate_key ../../cert/ocsp/cfssl/leaf-key.pem;
@@ -1656,6 +1656,7 @@ OCSP response validation ok, next_update: 1587585600
 [error]
 [alert]
 [emerg]
+--- SKIP
 
 
 
@@ -1685,9 +1686,9 @@ OCSP response validation ok, next_update: 1587585600
             local resp = f:read("*a")
             f:close()
 
-            local ok, next_update, err = ocsp.validate_ocsp_response(resp, cert_data)
+            local ok, next_update_or_err = ocsp.validate_ocsp_response(resp, cert_data)
             if not ok then
-                ngx.log(ngx.ERR, "failed to validate OCSP response: ", err, ". next_update: ", next_update)
+                ngx.log(ngx.ERR, "failed to validate OCSP response: ", next_update_or_err)
                 return
             end
 
@@ -1748,3 +1749,4 @@ failed to validate OCSP response: certificate status "revoked" in the OCSP respo
 OCSP response validation ok
 [alert]
 [emerg]
+--- SKIP
