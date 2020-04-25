@@ -464,6 +464,10 @@ end
 
 
 function _M.set_cert(cert)
+    if cert == nil then
+        return nil, "certificate invalid"
+    end
+
     local r = get_request()
     if not r then
         error("no request found")
@@ -479,6 +483,10 @@ end
 
 
 function _M.set_priv_key(priv_key)
+    if priv_key == nil then
+        return nil, "private key invalid"
+    end
+    
     local r = get_request()
     if not r then
         error("no request found")
