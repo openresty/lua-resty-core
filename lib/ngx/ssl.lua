@@ -21,7 +21,9 @@ local FFI_DECLINED = base.FFI_DECLINED
 local FFI_OK = base.FFI_OK
 local subsystem = ngx.config.subsystem
 
-
+local ngx_lua_ffi_ssl_client_server_name
+local ngx_lua_ffi_ssl_set_ciphers
+local ngx_lua_ffi_ssl_set_protocols
 local ngx_http_lua_ffi_ssl_client_server_name
 local ngx_http_lua_ffi_ssl_set_protocols
 local ngx_http_lua_ffi_ssl_set_ciphers
