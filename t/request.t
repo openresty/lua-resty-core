@@ -559,19 +559,13 @@ Foo: baz, 123
     location = /t {
         content_by_lua_block {
             local headers = ngx.req.get_headers()
-            for k, v in pairs(headers) do
-                ngx.log(ngx.ERR, "headers: ", k, v)
-            end
-            ngx.log(ngx.ERR, "headers type:", type(headers))
-            ngx.log(ngx.ERR, "headers metatable type:", type(getmetatable(headers)))
+
             ngx.say(string.format("%s,%s",type(headers), type(getmetatable(headers))))
         }
     }
 
 --- raw_request eval
-"GET /t\r\n"
+"GET /t \r\n"
+--- http09
 --- response_body
 table,table
---- http09
---- error_code
-200
