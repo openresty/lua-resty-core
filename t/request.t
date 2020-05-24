@@ -573,7 +573,7 @@ Foo: baz, 123
 "GET /t\r\n"
 --- response_body
 table
-talbe
+table
 --- http09
 --- error_code
 200
