@@ -8,7 +8,7 @@ use t::TestCore;
 
 repeat_each(2);
 
-plan tests => repeat_each() * (blocks() * 5 + 8);
+plan tests => repeat_each() * (blocks() * 5 + 4);
 
 #no_diff();
 #no_long_string();
