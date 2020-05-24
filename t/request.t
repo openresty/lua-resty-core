@@ -212,7 +212,7 @@ GET /t?a=3%200&foo%20bar=&a=hello&blah
 --- response_body
 a: 3 0, hello
 blah: true
-foo bar:
+foo bar: 
 --- error_log eval
 qr/\[TRACE\s+\d+ .*? -> \d+\]/
 --- no_error_log
