@@ -212,7 +212,7 @@ GET /t?a=3%200&foo%20bar=&a=hello&blah
 --- response_body
 a: 3 0, hello
 blah: true
-foo bar: 
+foo bar:
 --- error_log eval
 qr/\[TRACE\s+\d+ .*? -> \d+\]/
 --- no_error_log
@@ -553,3 +553,27 @@ Foo: bar
 Foo: baz, 123
 --- no_error_log
 [error]
+
+=== TEST 18: ngx.req.get_header (metatable is nil)
+--- config
+    location = /t {
+        content_by_lua_block {
+            local headers = ngx.req.get_headers()
+            for k, v in pairs(headers) do
+                ngx.log(ngx.ERR, "headers: ", k, v)
+            end
+            ngx.log(ngx.ERR, "headers type:", type(headers))
+            ngx.log(ngx.ERR, "headers metatable type:", type(getmetatable(headers)))
+            ngx.say(type(headers))
+            ngx.say(type(getmetatable(headers)))
+        }
+    }
+
+--- raw_request eval
+"GET /metatable\r\n"
+--- response_body
+table
+talbe
+--- http09
+--- error_code
+200
