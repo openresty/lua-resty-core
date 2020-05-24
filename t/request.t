@@ -570,7 +570,7 @@ Foo: baz, 123
     }
 
 --- raw_request eval
-"GET /metatable\r\n"
+"GET /t\r\n"
 --- response_body
 table
 talbe
