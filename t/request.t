@@ -564,16 +564,14 @@ Foo: baz, 123
             end
             ngx.log(ngx.ERR, "headers type:", type(headers))
             ngx.log(ngx.ERR, "headers metatable type:", type(getmetatable(headers)))
-            ngx.say(type(headers))
-            ngx.say(type(getmetatable(headers)))
+            ngx.say(string.format("%s,%s",type(headers), type(getmetatable(headers))))
         }
     }
 
 --- raw_request eval
 "GET /t\r\n"
 --- response_body
-table
-table
+table,table
 --- http09
 --- error_code
 200
