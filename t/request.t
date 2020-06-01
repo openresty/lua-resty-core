@@ -571,3 +571,5 @@ Foo: baz, 123
 --- http09
 --- response_body
 table,table
+
+--- no_error_log
