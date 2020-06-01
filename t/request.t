@@ -554,6 +554,8 @@ Foo: baz, 123
 --- no_error_log
 [error]
 
+
+
 === TEST 18: ngx.req.get_header (metatable is nil)
 --- config
     location = /t {
