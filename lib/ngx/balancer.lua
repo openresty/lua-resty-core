@@ -38,6 +38,10 @@ if subsystem == 'http' then
     int ngx_http_lua_ffi_balancer_set_timeouts(ngx_http_request_t *r,
         long connect_timeout, long send_timeout,
         long read_timeout, char **err);
+
+    int
+    ngx_http_lua_ffi_balancer_recreate_request(ngx_http_request_t *r,
+        char **err);
     ]]
 
     ngx_lua_ffi_balancer_set_current_peer =
@@ -204,6 +208,27 @@ function _M.set_timeouts(connect_timeout, send_timeout, read_timeout)
     end
 
     return false, ffi_str(errmsg[0])
+end
+
+
+if subsystem == 'http' then
+    function _M.recreate_request()
+        local r = get_request()
+        if not r then
+            error("no request found")
+        end
+
+        local rc = C.ngx_http_lua_ffi_balancer_recreate_request(r, errmsg)
+        if rc == FFI_OK then
+            return true
+        end
+
+        if errmsg[0] ~= nil then
+            return nil, ffi_str(errmsg[0])
+        end
+
+        return nil, "failed to recreate the upstream request"
+    end
 end
 
 

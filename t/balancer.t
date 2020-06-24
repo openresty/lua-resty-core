@@ -9,7 +9,7 @@ use t::TestCore;
 
 repeat_each(2);
 
-plan tests => repeat_each() * (blocks() * 4 + 5);
+plan tests => repeat_each() * (blocks() * 4 + 6);
 
 $ENV{TEST_NGINX_LUA_PACKAGE_PATH} = "$t::TestCore::lua_package_path";
 
@@ -834,3 +834,51 @@ GET /t
 [lua] log_by_lua(nginx.conf:59):2: ngx.var.upstream_addr is 127.0.0.3:12345, 127.0.0.3:12346
 --- no_error_log
 [alert]
+
+
+
+=== TEST 19: recreate upstream module requests with header change
+--- http_config
+    lua_package_path "$TEST_NGINX_LUA_PACKAGE_PATH";
+
+    upstream backend {
+        server 0.0.0.1;
+
+        balancer_by_lua_block {
+            print("here")
+            local b = require "ngx.balancer"
+
+            if ngx.ctx.balancer_ran then
+                assert(b.set_current_peer("127.0.0.1", tonumber(ngx.var.server_port)))
+                ngx.var.test = "second"
+                assert(b.recreate_request())
+
+            else
+                ngx.ctx.balancer_ran = true
+                assert(b.set_current_peer("127.0.0.3", 12345))
+                assert(b.set_more_tries(1))
+            end
+        }
+    }
+--- config
+    location = /t {
+        proxy_next_upstream error timeout invalid_header http_500 http_502 http_503 http_504 http_403 http_404;
+        proxy_next_upstream_tries 2;
+
+        set $test "first";
+
+        proxy_set_header X-Test $test;
+        proxy_pass http://backend/upstream;
+    }
+
+    location = /upstream {
+        return 200 "value is: $http_x_test";
+    }
+--- request
+GET /t
+--- response_body: value is: second
+--- error_log
+connect() failed (111: Connection refused) while connecting to upstream, client: 127.0.0.1
+--- no_error_log
+[warn]
+[crit]
