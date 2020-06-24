@@ -9,12 +9,15 @@ Table of Contents
 * [Name](#name)
 * [Status](#status)
 * [Synopsis](#synopsis)
+    * [http subsystem](#http-subsystem)
+    * [stream subsystem](#stream-subsystem)
 * [Description](#description)
 * [Methods](#methods)
     * [set_current_peer](#set_current_peer)
     * [set_more_tries](#set_more_tries)
     * [get_last_failure](#get_last_failure)
     * [set_timeouts](#set_timeouts)
+    * [recreate_request](#recreate_request)
 * [Community](#community)
     * [English Mailing List](#english-mailing-list)
     * [Chinese Mailing List](#chinese-mailing-list)
@@ -79,6 +82,8 @@ http {
 }
 ```
 
+[Back to TOC](#table-of-contents)
+
 stream subsystem
 ----------------
 
@@ -120,6 +125,8 @@ stream {
     }
 }
 ```
+
+[Back to TOC](#table-of-contents)
 
 Description
 ===========
@@ -234,6 +241,32 @@ This only affects the current downstream request. It is not a global change.
 For the best performance, you should use the [OpenResty](https://openresty.org/) bundle.
 
 This function was first added in the `0.1.7` version of this library.
+
+[Back to TOC](#table-of-contents)
+
+recreate_request
+----------------
+**syntax:** `ok, err = balancer.recreate_request()`
+
+**context:** *balancer_by_lua&#42;*
+
+Recreates the request buffer for sending to the upstream server. This is useful, for example
+if you want to change a request header field to the new upstream server on balancer retries.
+
+Normally this does not work because the request buffer is created once during upstream module
+initialization and won't be regenerated for subsequent retries. However you can use
+`proxy_set_header My-Header $my_header` and set the `ngx.var.my_header` variable inside the
+balancer phase. Calling `balancer.recreate_request()` after updating a header field will
+cause the request buffer to be re-generated and the `My-Header` header will thus contain
+the new value.
+
+**Warning:** because the request buffer has to be recreated and such allocation occurs on the
+request memory pool, the old buffer has to be thrown away and will only be freed after the request
+finishes. Do not call this function too often or memory leaks may be noticeable. Even so, a call
+to this function should be made **only** if you know the request buffer must be regenerated,
+instead of unconditionally in each balancer retries.
+
+This function was first added in the `0.1.20` version of this library.
 
 [Back to TOC](#table-of-contents)
 
