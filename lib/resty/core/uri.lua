@@ -22,10 +22,10 @@ local ngx_lua_ffi_uri_escaped_length
 if subsystem == "http" then
     ffi.cdef[[
     size_t ngx_http_lua_ffi_uri_escaped_length(const unsigned char *src,
-                                               size_t len);
+                                               size_t len, int type);
 
     void ngx_http_lua_ffi_escape_uri(const unsigned char *src, size_t len,
-                                     unsigned char *dst);
+                                     unsigned char *dst, int type);
 
     size_t ngx_http_lua_ffi_unescape_uri(const unsigned char *src,
                                          size_t len, unsigned char *dst);
@@ -38,10 +38,10 @@ if subsystem == "http" then
 elseif subsystem == "stream" then
     ffi.cdef[[
     size_t ngx_stream_lua_ffi_uri_escaped_length(const unsigned char *src,
-                                                 size_t len);
+                                                 size_t len, int type);
 
     void ngx_stream_lua_ffi_escape_uri(const unsigned char *src, size_t len,
-                                       unsigned char *dst);
+                                       unsigned char *dst, int type);
 
     size_t ngx_stream_lua_ffi_unescape_uri(const unsigned char *src,
                                            size_t len, unsigned char *dst);
@@ -53,7 +53,7 @@ elseif subsystem == "stream" then
 end
 
 
-ngx.escape_uri = function (s)
+ngx.escape_uri = function (s, esc_type)
     if type(s) ~= 'string' then
         if not s then
             s = ''
@@ -61,14 +61,26 @@ ngx.escape_uri = function (s)
             s = tostring(s)
         end
     end
+
+    if esc_type == nil then
+        esc_type = ngx.ESCAPE_URI_COMPONENT
+    else
+        if type(esc_type) ~= 'number' then
+            error("\"esc_type\" is not number", 3)
+        end
+        if esc_type < ngx.ESCAPE_URI or esc_type > ngx.ESCAPE_MAIL_AUTH then
+            error("\"esc_type\" " .. esc_type .. " out of range", 3)
+        end
+    end
+
     local slen = #s
-    local dlen = ngx_lua_ffi_uri_escaped_length(s, slen)
+    local dlen = ngx_lua_ffi_uri_escaped_length(s, slen, esc_type)
     -- print("dlen: ", tonumber(dlen))
     if dlen == slen then
         return s
     end
     local dst = get_string_buf(dlen)
-    ngx_lua_ffi_escape_uri(s, slen, dst)
+    ngx_lua_ffi_escape_uri(s, slen, dst, esc_type)
     return ffi_string(dst, dlen)
 end
 
