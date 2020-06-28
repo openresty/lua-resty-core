@@ -80,9 +80,6 @@ ngx.escape_uri = function (s, esc_type)
 
     local slen = #s
     local dlen = ngx_lua_ffi_uri_escaped_length(s, slen, esc_type)
-    if dlen == -1 then
-        error("escaped length error", 3)
-    end
 
     -- print("dlen: ", tonumber(dlen))
     if dlen == slen then
