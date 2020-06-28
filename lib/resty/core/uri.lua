@@ -17,7 +17,9 @@ local subsystem = ngx.config.subsystem
 local ngx_lua_ffi_escape_uri
 local ngx_lua_ffi_unescape_uri
 local ngx_lua_ffi_uri_escaped_length
-
+local NGX_ESCAPE_URI = 0
+local NGX_ESCAPE_URI_COMPONENT = 2
+local NGX_ESCAPE_MAIL_AUTH = 6
 
 if subsystem == "http" then
     ffi.cdef[[
@@ -57,24 +59,31 @@ ngx.escape_uri = function (s, esc_type)
     if type(s) ~= 'string' then
         if not s then
             s = ''
+
         else
             s = tostring(s)
         end
     end
 
     if esc_type == nil then
-        esc_type = ngx.ESCAPE_URI_COMPONENT
+        esc_type = NGX_ESCAPE_URI_COMPONENT
+
     else
         if type(esc_type) ~= 'number' then
-            error("\"esc_type\" is not number", 3)
+            error("\"type\" is not number", 3)
         end
-        if esc_type < ngx.ESCAPE_URI or esc_type > ngx.ESCAPE_MAIL_AUTH then
-            error("\"esc_type\" " .. esc_type .. " out of range", 3)
+
+        if esc_type < NGX_ESCAPE_URI or esc_type > NGX_ESCAPE_MAIL_AUTH then
+            error("\"type\" " .. esc_type .. " out of range", 3)
         end
     end
 
     local slen = #s
     local dlen = ngx_lua_ffi_uri_escaped_length(s, slen, esc_type)
+    if dlen == -1 then
+        error("escaped length error", 3)
+    end
+
     -- print("dlen: ", tonumber(dlen))
     if dlen == slen then
         return s
