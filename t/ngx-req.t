@@ -235,3 +235,83 @@ ok
 bad 'value' argument: string or table expected, got nil
 bad 'value' argument: string or table expected, got nil
 bad 'value' argument: non-empty table expected
+
+
+
+=== TEST 12: ngx_req.add_header (header name with control characters)
+--- config
+    location /bar {
+        access_by_lua_block {
+            local ngx_req = require "ngx.req"
+            ngx_req.add_header("header\r\nabc", "value")
+        }
+        proxy_pass http://127.0.0.1:$server_port/foo;
+    }
+
+    location = /foo {
+        echo $echo_client_request_headers;
+    }
+--- request
+GET /bar
+--- response_body_like chomp
+\bheader%0D%0Aabc: value\r\n
+
+
+
+=== TEST 13: ngx_req.add_header (header value with control characters)
+--- config
+    location /bar {
+        access_by_lua_block {
+            local ngx_req = require "ngx.req"
+            ngx_req.add_header("header", "value\r\nabc")
+        }
+        proxy_pass http://127.0.0.1:$server_port/foo;
+    }
+
+    location = /foo {
+        echo $echo_client_request_headers;
+    }
+--- request
+GET /bar
+--- response_body_like chomp
+\bheader: value%0D%0Aabc\r\n
+
+
+
+=== TEST 14: ngx_req.add_header (header name with Chinese characters)
+--- config
+    location /bar {
+        access_by_lua_block {
+            local ngx_req = require "ngx.req"
+            ngx_req.add_header("header中文", "value")
+        }
+        proxy_pass http://127.0.0.1:$server_port/foo;
+    }
+
+    location = /foo {
+        echo $echo_client_request_headers;
+    }
+--- request
+GET /bar
+--- response_body_like chomp
+\bheader%E4%B8%AD%E6%96%87: value
+
+
+
+=== TEST 15: ngx_req.add_header (header value with Chinese characters)
+--- config
+    location /bar {
+        access_by_lua_block {
+            local ngx_req = require "ngx.req"
+            ngx_req.add_header("header", "value中文")
+        }
+        proxy_pass http://127.0.0.1:$server_port/foo;
+    }
+
+    location = /foo {
+        echo $echo_client_request_headers;
+    }
+--- request
+GET /bar
+--- response_body_like chomp
+\bheader: value中文
