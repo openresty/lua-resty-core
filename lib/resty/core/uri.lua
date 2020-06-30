@@ -73,7 +73,7 @@ ngx.escape_uri = function (s, esc_type)
 
     else
         if type(esc_type) ~= 'number' then
-            error("\"type\" is not number", 3)
+            error("\"type\" is not a number", 3)
         end
 
         if esc_type < NGX_ESCAPE_URI or esc_type > NGX_ESCAPE_MAIL_AUTH then
