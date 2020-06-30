@@ -9,6 +9,7 @@ local C = ffi.C
 local ffi_string = ffi.string
 local ngx = ngx
 local type = type
+local error = error
 local tostring = tostring
 local get_string_buf = base.get_string_buf
 local subsystem = ngx.config.subsystem
