@@ -6,9 +6,11 @@ base.allows_subsystem('http', 'stream')
 
 
 local ffi = require "ffi"
+local bit = require "bit"
 local C = ffi.C
 local ffi_str = ffi.string
 local ffi_gc = ffi.gc
+local bor = bit.bor
 local get_request = base.get_request
 local error = error
 local tonumber = tonumber
@@ -19,7 +21,12 @@ local FFI_DECLINED = base.FFI_DECLINED
 local FFI_OK = base.FFI_OK
 local subsystem = ngx.config.subsystem
 
-
+local ngx_lua_ffi_ssl_client_server_name
+local ngx_lua_ffi_ssl_set_ciphers
+local ngx_lua_ffi_ssl_set_protocols
+local ngx_http_lua_ffi_ssl_client_server_name
+local ngx_http_lua_ffi_ssl_set_protocols
+local ngx_http_lua_ffi_ssl_set_ciphers
 local ngx_lua_ffi_ssl_set_der_certificate
 local ngx_lua_ffi_ssl_clear_certs
 local ngx_lua_ffi_ssl_set_der_private_key
@@ -39,6 +46,15 @@ local ngx_lua_ffi_free_priv_key
 
 if subsystem == 'http' then
     ffi.cdef[[
+    int ngx_http_lua_ffi_ssl_client_server_name(ngx_http_request_t *r,
+        char **name, size_t *namelen, char **err);
+
+    int ngx_http_lua_ffi_ssl_set_protocols(ngx_http_request_t *r,
+        int protocols, char **err);
+
+    int ngx_http_lua_ffi_ssl_set_ciphers(void *r,
+        const unsigned char *cdata, char **err);
+
     int ngx_http_lua_ffi_ssl_set_der_certificate(ngx_http_request_t *r,
         const char *data, size_t len, char **err);
 
@@ -80,6 +96,10 @@ if subsystem == 'http' then
     void ngx_http_lua_ffi_free_priv_key(void *cdata);
     ]]
 
+    ngx_lua_ffi_ssl_client_server_name =
+        C.ngx_http_lua_ffi_ssl_client_server_name
+    ngx_lua_ffi_ssl_set_ciphers = C.ngx_http_lua_ffi_ssl_set_ciphers
+    ngx_lua_ffi_ssl_set_protocols = C.ngx_http_lua_ffi_ssl_set_protocols
     ngx_lua_ffi_ssl_set_der_certificate =
         C.ngx_http_lua_ffi_ssl_set_der_certificate
     ngx_lua_ffi_ssl_clear_certs = C.ngx_http_lua_ffi_ssl_clear_certs
@@ -169,6 +189,80 @@ local charpp = ffi.new("char*[1]")
 local intp = ffi.new("int[1]")
 
 
+function _M.client_server_name()
+    if subsystem ~= 'http' then
+        error("no support stream")
+    end
+
+    local r = get_request()
+    if not r then
+        error("no request found")
+    end
+
+    local sizep = get_size_ptr()
+
+    local rc = ngx_lua_ffi_ssl_client_server_name(r, charpp, sizep, errmsg)
+    if rc == FFI_OK then
+        return ffi_str(charpp[0], sizep[0])
+    end
+
+    return nil, ffi_str(errmsg[0])
+end
+
+do
+    local protocal_flags = {
+        ["SSLv2"]   = 0x0002,
+        ["SSLv3"]   = 0x0004,
+        ["TLSv1"]   = 0x0008,
+        ["TLSv1.1"] = 0x0010,
+        ["TLSv1.2"] = 0x0020,
+        ["TLSv1.3"] = 0x0040,
+    };
+
+    function _M.set_protocols(ops)
+        if subsystem ~= 'http' then
+            error("no support stream")
+        end
+
+        local r = get_request()
+        if not r then
+            error("no request found")
+        end
+
+        local protocols = 0
+        for _, op in ipairs(ops) do
+            protocols = bor(protocols, protocal_flags[op])
+        end
+
+        local rc = ngx_lua_ffi_ssl_set_protocols(r, protocols, errmsg)
+        if rc == FFI_OK then
+            return true
+        end
+
+        return nil, ffi_str(errmsg[0])
+    end
+end
+
+
+function _M.set_ciphers(ciphers)
+    if subsystem ~= 'http' then
+        error("no support stream")
+    end
+
+    local r = get_request()
+    if not r then
+        error("no request found")
+    end
+
+    local rc = ngx_lua_ffi_ssl_set_ciphers(r, ciphers, errmsg)
+    if rc == FFI_OK then
+        return true
+    end
+
+    return nil, ffi_str(errmsg[0])
+end
+
+
 function _M.clear_certs()
     local r = get_request()
     if not r then
@@ -230,6 +324,27 @@ function _M.raw_server_addr()
     local sizep = get_size_ptr()
 
     local rc = ngx_lua_ffi_ssl_raw_server_addr(r, charpp, sizep, intp, errmsg)
+    if rc == FFI_OK then
+        local typ = addr_types[intp[0]]
+        if not typ then
+            return nil, nil, "unknown address type: " .. intp[0]
+        end
+        return ffi_str(charpp[0], sizep[0]), typ
+    end
+
+    return nil, nil, ffi_str(errmsg[0])
+end
+
+function _M.raw_client_addr()
+    local r = getfenv(0).__ngx_req
+    if not r then
+        return error("no request found")
+    end
+
+    local sizep = get_size_ptr()
+
+    local rc = C.ngx_http_lua_ffi_ssl_raw_client_addr(r, charpp, sizep,
+                                                      intp, errmsg)
     if rc == FFI_OK then
         local typ = addr_types[intp[0]]
         if not typ then
@@ -351,6 +466,10 @@ end
 
 
 function _M.set_cert(cert)
+    if cert == nil then
+        return nil, "certificate invalid"
+    end
+
     local r = get_request()
     if not r then
         error("no request found")
@@ -366,6 +485,10 @@ end
 
 
 function _M.set_priv_key(priv_key)
+    if priv_key == nil then
+        return nil, "private key invalid"
+    end
+    
     local r = get_request()
     if not r then
         error("no request found")

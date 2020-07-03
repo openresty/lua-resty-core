@@ -890,6 +890,21 @@ stitch
 
 
 
+<<<<<<< HEAD
+
+=== TEST 27: incr key expire
+--- http_config eval: $::HttpConfig
+--- config
+    location = /t {
+        content_by_lua '
+            local val, flags
+            local dogs = ngx.shared.dogs
+            local value, err = dogs:incr(nil, 32, 10)
+            if not ok then
+                ngx.say("failed to incr: ", err)
+            end
+        ';
+=======
 === TEST 28: incr, value is not number
 --- config
     location = /t {
@@ -927,7 +942,7 @@ cannot convert 'nil' to 'double'
                 ngx.say("failed to incr: ", err)
             end
 
-            local value, err, forcible = dogs:incr("foo", 10, 10)
+            local value, err, forcible = dogs:incr("foo", 10, nil, 10)
             if not value then
                 ngx.say("failed to incr: ", err)
                 return
@@ -939,6 +954,13 @@ cannot convert 'nil' to 'double'
 --- request
 GET /t
 --- response_body
+<<<<<<< HEAD
+failed to incr: nil key
+--- no_error_log
+[error]
+[alert]
+[crit]
+=======
 failed to incr: not found
 incr ok, value: 20, forcible: false
 --- no_error_log
@@ -954,7 +976,7 @@ incr ok, value: 20, forcible: false
         content_by_lua_block {
             local val, flags
             local dogs = ngx.shared.dogs
-            local value, err = dogs:incr("foo", 10, "bar")
+            local value, err = dogs:incr("foo", 10, nil, "bar")
             if not ok then
                 ngx.say("failed to incr: ", err)
             end
