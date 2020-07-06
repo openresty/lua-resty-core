@@ -8,6 +8,7 @@ local base = require("resty.core.base")
 local ffi_str = ffi.string
 local type = type
 local C = ffi.C
+local ffi_new = ffi.new
 local NGX_ERROR = ngx.ERROR
 
 
@@ -25,8 +26,8 @@ ngx_int_t ngx_decode_base64url(ngx_str_t *dst, ngx_str_t *src);
 local get_string_buf = base.get_string_buf
 
 
-local dst_str_t = ffi.new("ngx_str_t[1]")
-local src_str_t = ffi.new("ngx_str_t[1]")
+local dst_str_t = ffi_new("ngx_str_t[1]")
+local src_str_t = ffi_new("ngx_str_t[1]")
 
 
 local function base64_encoded_length(len)
