@@ -7,6 +7,7 @@ base.allows_subsystem('http', 'stream')
 
 local ffi = require "ffi"
 local C = ffi.C
+local ffi_new = ffi.new
 local ffi_str = ffi.string
 local ffi_gc = ffi.gc
 local get_request = base.get_request
@@ -165,8 +166,8 @@ end
 local _M = { version = base.version }
 
 
-local charpp = ffi.new("char*[1]")
-local intp = ffi.new("int[1]")
+local charpp = ffi_new("char*[1]")
+local intp = ffi_new("int[1]")
 
 
 function _M.clear_certs()
