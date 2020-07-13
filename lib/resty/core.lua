@@ -12,10 +12,10 @@ require "resty.core.hash"
 require "resty.core.uri"
 require "resty.core.exit"
 require "resty.core.base64"
+require "resty.core.request"
 
 
 if subsystem == 'http' then
-    require "resty.core.request"
     require "resty.core.response"
     require "resty.core.phase"
     require "resty.core.ndk"
