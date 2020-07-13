@@ -3,10 +3,10 @@
 
 local ffi = require 'ffi'
 local base = require "resty.core.base"
-base.allows_subsystem("http")
 local utils = require "resty.core.utils"
 
 
+local subsystem = ngx.config.subsystem
 local FFI_BAD_CONTEXT = base.FFI_BAD_CONTEXT
 local FFI_DECLINED = base.FFI_DECLINED
 local FFI_OK = base.FFI_OK
@@ -34,6 +34,40 @@ local _M = {
 }
 
 
+local ngx_lua_ffi_req_start_time
+
+
+if subsystem == "stream" then
+    ffi.cdef[[
+    double ngx_stream_lua_ffi_req_start_time(ngx_stream_lua_request_t *r);
+    ]]
+
+    ngx_lua_ffi_req_start_time = C.ngx_stream_lua_ffi_req_start_time
+
+elseif subsystem == "http" then
+    ffi.cdef[[
+    double ngx_http_lua_ffi_req_start_time(ngx_http_request_t *r);
+    ]]
+
+    ngx_lua_ffi_req_start_time = C.ngx_http_lua_ffi_req_start_time
+end
+
+
+function ngx.req.start_time()
+    local r = get_request()
+    if not r then
+        error("no request found")
+    end
+
+    return tonumber(ngx_lua_ffi_req_start_time(r))
+end
+
+
+if subsystem == "stream" then
+    return _M
+end
+
+
 local errmsg = base.get_errmsg_ptr()
 local ffi_str_type = ffi.typeof("ngx_http_lua_ffi_str_t*")
 local ffi_str_size = ffi.sizeof("ngx_http_lua_ffi_str_t")
@@ -58,8 +92,6 @@ ffi.cdef[[
 
     int ngx_http_lua_ffi_req_get_uri_args(ngx_http_request_t *r,
         unsigned char *buf, ngx_http_lua_ffi_table_elt_t *out, int count);
-
-    double ngx_http_lua_ffi_req_start_time(ngx_http_request_t *r);
 
     int ngx_http_lua_ffi_req_get_method(ngx_http_request_t *r);
 
@@ -219,16 +251,6 @@ function ngx.req.get_uri_args(max_args)
     end
 
     return args
-end
-
-
-function ngx.req.start_time()
-    local r = get_request()
-    if not r then
-        error("no request found")
-    end
-
-    return tonumber(C.ngx_http_lua_ffi_req_start_time(r))
 end
 
 
