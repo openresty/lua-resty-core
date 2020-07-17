@@ -39,8 +39,7 @@ if subsystem == 'http' then
         long connect_timeout, long send_timeout,
         long read_timeout, char **err);
 
-    int
-    ngx_http_lua_ffi_balancer_recreate_request(ngx_http_request_t *r,
+    int ngx_http_lua_ffi_balancer_recreate_request(ngx_http_request_t *r,
         char **err);
     ]]
 
