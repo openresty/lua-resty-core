@@ -848,13 +848,13 @@ GET /t
             print("here")
             local b = require "ngx.balancer"
 
-            if ngx.ctx.balancer_ran then
+            if ngx.ctx.balancer_run then
                 assert(b.set_current_peer("127.0.0.1", tonumber(ngx.var.server_port)))
                 ngx.var.test = "second"
                 assert(b.recreate_request())
 
             else
-                ngx.ctx.balancer_ran = true
+                ngx.ctx.balancer_run = true
                 assert(b.set_current_peer("127.0.0.3", 12345))
                 assert(b.set_more_tries(1))
             end

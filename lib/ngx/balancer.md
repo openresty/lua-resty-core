@@ -266,7 +266,7 @@ finishes. Do not call this function too often or memory leaks may be noticeable.
 to this function should be made **only** if you know the request buffer must be regenerated,
 instead of unconditionally in each balancer retries.
 
-This function was first added in the `0.1.19` version of this library.
+This function was first added in the `0.1.20` version of this library.
 
 [Back to TOC](#table-of-contents)
 
