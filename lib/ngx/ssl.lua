@@ -24,6 +24,7 @@ local ngx_lua_ffi_ssl_set_der_certificate
 local ngx_lua_ffi_ssl_clear_certs
 local ngx_lua_ffi_ssl_set_der_private_key
 local ngx_lua_ffi_ssl_raw_server_addr
+local ngx_lua_ffi_ssl_server_port
 local ngx_lua_ffi_ssl_server_name
 local ngx_lua_ffi_ssl_raw_client_addr
 local ngx_lua_ffi_cert_pem_to_der
@@ -50,6 +51,9 @@ if subsystem == 'http' then
 
     int ngx_http_lua_ffi_ssl_raw_server_addr(ngx_http_request_t *r, char **addr,
         size_t *addrlen, int *addrtype, char **err);
+
+    int ngx_http_lua_ffi_ssl_server_port(ngx_http_request_t *r,
+        unsigned short *server_port, char **err);
 
     int ngx_http_lua_ffi_ssl_server_name(ngx_http_request_t *r, char **name,
         size_t *namelen, char **err);
@@ -90,6 +94,7 @@ if subsystem == 'http' then
     ngx_lua_ffi_ssl_set_der_private_key =
         C.ngx_http_lua_ffi_ssl_set_der_private_key
     ngx_lua_ffi_ssl_raw_server_addr = C.ngx_http_lua_ffi_ssl_raw_server_addr
+    ngx_lua_ffi_ssl_server_port = C.ngx_http_lua_ffi_ssl_server_port
     ngx_lua_ffi_ssl_server_name = C.ngx_http_lua_ffi_ssl_server_name
     ngx_lua_ffi_ssl_raw_client_addr = C.ngx_http_lua_ffi_ssl_raw_client_addr
     ngx_lua_ffi_cert_pem_to_der = C.ngx_http_lua_ffi_cert_pem_to_der
@@ -116,6 +121,9 @@ elseif subsystem == 'stream' then
 
     int ngx_stream_lua_ffi_ssl_raw_server_addr(ngx_stream_lua_request_t *r,
         char **addr, size_t *addrlen, int *addrtype, char **err);
+
+    int ngx_stream_lua_ffi_ssl_server_port(ngx_stream_lua_request_t *r,
+        unsigned short *server_port, char **err);
 
     int ngx_stream_lua_ffi_ssl_server_name(ngx_stream_lua_request_t *r,
         char **name, size_t *namelen, char **err);
@@ -156,6 +164,7 @@ elseif subsystem == 'stream' then
     ngx_lua_ffi_ssl_set_der_private_key =
         C.ngx_stream_lua_ffi_ssl_set_der_private_key
     ngx_lua_ffi_ssl_raw_server_addr = C.ngx_stream_lua_ffi_ssl_raw_server_addr
+    ngx_lua_ffi_ssl_server_port = C.ngx_stream_lua_ffi_ssl_server_port
     ngx_lua_ffi_ssl_server_name = C.ngx_stream_lua_ffi_ssl_server_name
     ngx_lua_ffi_ssl_raw_client_addr = C.ngx_stream_lua_ffi_ssl_raw_client_addr
     ngx_lua_ffi_cert_pem_to_der = C.ngx_stream_lua_ffi_cert_pem_to_der
@@ -176,6 +185,7 @@ local _M = { version = base.version }
 
 local charpp = ffi.new("char*[1]")
 local intp = ffi.new("int[1]")
+local ushortp = ffi.new("unsigned short[1]")
 
 
 function _M.clear_certs()
@@ -248,6 +258,21 @@ function _M.raw_server_addr()
     end
 
     return nil, nil, ffi_str(errmsg[0])
+end
+
+
+function _M.server_port()
+    local r = get_request()
+    if not r then
+        error("no request found")
+    end
+
+    local rc = ngx_lua_ffi_ssl_server_port(r, ushortp, errmsg)
+    if rc == FFI_OK then
+        return ushortp[0]
+    end
+
+    return nil, ffi_str(errmsg[0])
 end
 
 

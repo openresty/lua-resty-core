@@ -17,6 +17,7 @@ Table of Contents
     * [priv_key_pem_to_der](#priv_key_pem_to_der)
     * [set_der_priv_key](#set_der_priv_key)
     * [server_name](#server_name)
+    * [server_port](#server_port)
     * [raw_server_addr](#raw_server_addr)
     * [raw_client_addr](#raw_client_addr)
     * [get_tls1_version](#get_tls1_version)
@@ -246,6 +247,21 @@ Please note that not all https clients set the SNI name, so when the SNI name is
 missing from the client handshake request, we use the server IP address accessed
 by the client to identify the site. See the [raw_server_addr](#raw_server_addr) method
 for more details.
+
+This function can be called in any context where downstream https is used.
+
+[Back to TOC](#table-of-contents)
+
+server_port
+-----------
+**syntax:** port, err = ssl.server_port()
+
+**context:** *any*
+
+Returns the server port. Returns `nil`
+when server dont have a port.
+
+In case of failures, it returns `nil` *and* a string describing the error.
 
 This function can be called in any context where downstream https is used.
 
