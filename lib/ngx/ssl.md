@@ -496,7 +496,7 @@ Returns `true` on success, or a `nil` value and a string describing the error ot
 Note that TLS is not terminated when verification fails. You need to examine Nginx variable `$ssl_client_verify`
 later to determine next steps.
 
-This function was first added in version `0.1.18`.
+This function was first added in version `0.1.20`.
 
 [Back to TOC](#table-of-contents)
 

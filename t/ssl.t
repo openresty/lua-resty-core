@@ -2377,6 +2377,7 @@ got TLS1 version: TLSv1.3,
         proxy_pass                  https://unix:$TEST_NGINX_HTML_DIR/nginx.sock;
         proxy_ssl_certificate       ../../cert/test.crt;
         proxy_ssl_certificate_key   ../../cert/test.key;
+        proxy_ssl_session_reuse     off;
     }
 
 --- request
@@ -2428,6 +2429,7 @@ client certificate subject: emailAddress=agentzh@gmail.com,CN=test.com
         proxy_pass                  https://unix:$TEST_NGINX_HTML_DIR/nginx.sock;
         proxy_ssl_certificate       ../../cert/test.crt;
         proxy_ssl_certificate_key   ../../cert/test.key;
+        proxy_ssl_session_reuse     off;
     }
 
 --- request
@@ -2487,6 +2489,7 @@ client certificate subject: emailAddress=agentzh@gmail.com,CN=test.com
 --- config
     location /t {
         proxy_pass                  https://unix:$TEST_NGINX_HTML_DIR/nginx.sock;
+        proxy_ssl_session_reuse     off;
     }
 
 --- request
