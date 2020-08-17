@@ -53,7 +53,7 @@ if subsystem == 'http' then
         size_t *addrlen, int *addrtype, char **err);
 
     int ngx_http_lua_ffi_ssl_server_port(ngx_http_request_t *r,
-        unsigned int *port, char **err);
+        unsigned short *server_port, char **err);
 
     int ngx_http_lua_ffi_ssl_server_name(ngx_http_request_t *r, char **name,
         size_t *namelen, char **err);
@@ -123,7 +123,7 @@ elseif subsystem == 'stream' then
         char **addr, size_t *addrlen, int *addrtype, char **err);
 
     int ngx_stream_lua_ffi_ssl_server_port(ngx_stream_lua_request_t *r,
-        unsigned int *port, char **err);
+        unsigned short *server_port, char **err);
 
     int ngx_stream_lua_ffi_ssl_server_name(ngx_stream_lua_request_t *r,
         char **name, size_t *namelen, char **err);
@@ -185,7 +185,7 @@ local _M = { version = base.version }
 
 local charpp = ffi.new("char*[1]")
 local intp = ffi.new("int[1]")
-local uintp = ffi.new("unsigned int[1]")
+local ushortp = ffi.new("unsigned short[1]")
 
 
 function _M.clear_certs()
@@ -267,9 +267,9 @@ function _M.server_port()
         error("no request found")
     end
 
-    local rc = ngx_lua_ffi_ssl_server_port(r, uintp, errmsg)
+    local rc = ngx_lua_ffi_ssl_server_port(r, ushortp, errmsg)
     if rc == FFI_OK then
-        return uintp[0]
+        return ushortp[0]
     end
 
     return nil, ffi_str(errmsg[0])
