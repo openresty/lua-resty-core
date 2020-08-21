@@ -17,6 +17,7 @@ local get_request = base.get_request
 local FFI_NO_REQ_CTX = base.FFI_NO_REQ_CTX
 local FFI_OK = base.FFI_OK
 local error = error
+local setmetatable = setmetatable
 local subsystem = ngx.config.subsystem
 
 
@@ -26,7 +27,8 @@ local ngx_lua_ffi_set_ctx_ref
 
 if subsystem == "http" then
     ffi.cdef[[
-    int ngx_http_lua_ffi_get_ctx_ref(ngx_http_request_t *r);
+    int ngx_http_lua_ffi_get_ctx_ref(ngx_http_request_t *r, int *in_ssl_phase,
+        int *ssl_ctx_ref);
     int ngx_http_lua_ffi_set_ctx_ref(ngx_http_request_t *r, int ref);
     ]]
 
@@ -35,7 +37,8 @@ if subsystem == "http" then
 
 elseif subsystem == "stream" then
     ffi.cdef[[
-    int ngx_stream_lua_ffi_get_ctx_ref(ngx_stream_lua_request_t *r);
+    int ngx_stream_lua_ffi_get_ctx_ref(ngx_stream_lua_request_t *r,
+        int *in_ssl_phase, int *ssl_ctx_ref);
     int ngx_stream_lua_ffi_set_ctx_ref(ngx_stream_lua_request_t *r, int ref);
     ]]
 
@@ -49,28 +52,56 @@ local _M = {
 }
 
 
-local function get_ctx_table()
-    local r = get_request()
+local get_ctx_table
+do
+    local in_ssl_phase = ffi.new("int[1]")
+    local ssl_ctx_ref = ffi.new("int[1]")
 
-    if not r then
-        error("no request found")
-    end
+    function get_ctx_table()
+        local r = get_request()
 
-    local ctx_ref = ngx_lua_ffi_get_ctx_ref(r)
-    if ctx_ref == FFI_NO_REQ_CTX then
-        error("no request ctx found")
-    end
-
-    local ctxs = registry.ngx_lua_ctx_tables
-    if ctx_ref < 0 then
-        local ctx = new_tab(0, 4)
-        ctx_ref = ref_in_table(ctxs, ctx)
-        if ngx_lua_ffi_set_ctx_ref(r, ctx_ref) ~= FFI_OK then
-            return nil
+        if not r then
+            error("no request found")
         end
-        return ctx
+
+        local ctx_ref = ngx_lua_ffi_get_ctx_ref(r, in_ssl_phase, ssl_ctx_ref)
+        if ctx_ref == FFI_NO_REQ_CTX then
+            error("no request ctx found")
+        end
+
+        local ctxs = registry.ngx_lua_ctx_tables
+        if ctx_ref < 0 then
+            local ctx
+
+            ctx_ref = ssl_ctx_ref[0]
+            if ctx_ref > 0 and ctxs[ctx_ref] then
+                if in_ssl_phase[0] ~= 0 then
+                    return ctxs[ctx_ref]
+                end
+
+                ctx = new_tab(0, 4)
+                ctx = setmetatable(ctx, ctxs[ctx_ref])
+
+            else
+                if in_ssl_phase[0] ~= 0 then
+                    ctx = new_tab(1, 4)
+                    -- to avoid creating another table, we assume the users
+                    -- won't overwrite the `__index` key
+                    ctx.__index = ctx
+
+                else
+                    ctx = new_tab(0, 4)
+                end
+            end
+
+            ctx_ref = ref_in_table(ctxs, ctx)
+            if ngx_lua_ffi_set_ctx_ref(r, ctx_ref) ~= FFI_OK then
+                return nil
+            end
+            return ctx
+        end
+        return ctxs[ctx_ref]
     end
-    return ctxs[ctx_ref]
 end
 register_getter("ctx", get_ctx_table)
 
@@ -82,7 +113,7 @@ local function set_ctx_table(ctx)
         error("no request found")
     end
 
-    local ctx_ref = ngx_lua_ffi_get_ctx_ref(r)
+    local ctx_ref = ngx_lua_ffi_get_ctx_ref(r, nil, nil)
     if ctx_ref == FFI_NO_REQ_CTX then
         error("no request ctx found")
     end
