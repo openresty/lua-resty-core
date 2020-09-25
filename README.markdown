@@ -27,6 +27,7 @@ Table of Contents
     * [resty.core.worker](#restycoreworker)
     * [resty.core.phase](#restycorephase)
     * [resty.core.ndk](#restycorendk)
+    * [resty.core.socket](#restycoresocket)
     * [ngx.semaphore](#ngxsemaphore)
     * [ngx.balancer](#ngxbalancer)
     * [ngx.ssl](#ngxssl)
@@ -245,6 +246,12 @@ API Implemented
 ## resty.core.ndk
 
 * [ndk.set_var](https://github.com/openresty/lua-nginx-module#ndkset_vardirective)
+
+[Back to TOC](#table-of-contents)
+
+## resty.core.socket
+
+* [socket.setoption](https://github.com/openresty/lua-nginx-module#tcpsocksetoption)
 
 [Back to TOC](#table-of-contents)
 
