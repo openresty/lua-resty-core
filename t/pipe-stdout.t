@@ -746,7 +746,8 @@ lua pipe proc read stdout cleanup
         content_by_lua_block {
             local ngx_pipe = require "ngx.pipe"
             package.loaded.proc = ngx_pipe.spawn({"sh", "-c", "sleep 0.01 && echo hello world && exit 2"})
-            local res1, res2 = ngx.location.capture_multi{{"/req1"}, {"/req2"}}
+            local res1 = ngx.location.capture("/req1")
+            local res2 = ngx.location.capture("/req2")
             ngx.print(res1.body)
             ngx.print(res2.body)
         }
