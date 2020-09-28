@@ -49,7 +49,7 @@ host: localhost
 Foo: foo
 Bar: bar
 Baz: baz
---- wait 0.1
+--- wait: 0.2
 --- error_log eval
 qr/\[TRACE\s+\d+ .*? -> \d+\]/
 --- no_error_log eval
@@ -92,7 +92,7 @@ Host: localhost
 Foo: foo
 Bar: bar
 Baz: baz
---- wait 0.1
+--- wait: 0.2
 --- error_log eval
 qr/\[TRACE\s+\d+ .*? -> \d+\]/
 --- no_error_log
