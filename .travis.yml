@@ -41,9 +41,9 @@ env:
     - TEST_NGINX_RANDOMIZE=1
     - LUACHECK_VER=0.21.1
   matrix:
-    - NGINX_VERSION=1.17.8 OPENSSL_VER=1.0.2u OPENSSL_PATCH_VER=1.0.2h
-    - NGINX_VERSION=1.17.8 OPENSSL_VER=1.1.0l OPENSSL_PATCH_VER=1.1.0d
-    - NGINX_VERSION=1.17.8 OPENSSL_VER=1.1.1g OPENSSL_PATCH_VER=1.1.1f
+    - NGINX_VERSION=1.19.2 OPENSSL_VER=1.0.2u OPENSSL_PATCH_VER=1.0.2h
+    - NGINX_VERSION=1.19.2 OPENSSL_VER=1.1.0l OPENSSL_PATCH_VER=1.1.0d
+    - NGINX_VERSION=1.19.2 OPENSSL_VER=1.1.1g OPENSSL_PATCH_VER=1.1.1f
 
 services:
   - memcache
@@ -63,7 +63,7 @@ install:
   - git clone https://github.com/openresty/openresty-devel-utils.git
   - git clone https://github.com/simpl/ngx_devel_kit.git ../ndk-nginx-module
   - git clone https://github.com/openresty/lua-nginx-module.git ../lua-nginx-module
-  - git clone https://github.com/openresty/no-pool-nginx.git ../no-pool-nginx
+  - git clone -b 1.19.2.x https://github.com/xiaocang/no-pool-nginx.git ../no-pool-nginx
   - git clone https://github.com/openresty/echo-nginx-module.git ../echo-nginx-module
   - git clone https://github.com/openresty/lua-resty-lrucache.git
   - git clone https://github.com/openresty/headers-more-nginx-module.git ../headers-more-nginx-module
