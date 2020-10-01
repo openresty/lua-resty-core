@@ -130,6 +130,7 @@ Host: localhost
 Foo: foo
 Bar: bar
 Baz: baz
+--- wait: 0.2
 --- error_log eval
 qr/\[TRACE\s+\d+ content_by_lua\(nginx\.conf:\d+\):4 loop\]/
 --- no_error_log
@@ -171,6 +172,7 @@ host: localhost
 --- more_headers
 Foo-Bar: foo
 Baz: baz
+--- wait: 0.2
 --- error_log eval
 qr/\[TRACE\s+\d+ .*? -> \d+\]/
 --- no_error_log eval
@@ -215,6 +217,7 @@ GET /t?a=3%200&foo%20bar=&a=hello&blah
 a: 3 0, hello
 blah: true
 foo bar: 
+--- wait: 0.2
 --- error_log eval
 qr/\[TRACE\s+\d+ .*? -> \d+\]/
 --- no_error_log
@@ -257,6 +260,7 @@ qr/\[TRACE\s+\d+ .*? -> \d+\]/
 GET /t?
 --- response_body
 --- error_log eval
+--- wait: 0.2
 qr/\[TRACE\s+\d+ content_by_lua\(nginx\.conf:\d+\):4 loop\]/
 --- no_error_log
 [error]
@@ -288,6 +292,7 @@ true
 >= 0.099: true
 < 0.11: true
 
+--- wait: 0.2
 --- error_log eval
 qr/\[TRACE\s+\d+ content_by_lua\(nginx\.conf:\d+\):3 loop\]/
 --- no_error_log
@@ -314,6 +319,7 @@ GET /t
 --- response_body
 method: GET
 
+--- wait: 0.2
 --- error_log eval
 qr/\[TRACE\s+\d+ content_by_lua\(nginx\.conf:\d+\):3 loop\]/
 --- no_error_log
@@ -340,6 +346,7 @@ OPTIONS /t
 --- response_body
 method: OPTIONS
 
+--- wait: 0.2
 --- error_log eval
 qr/\[TRACE\s+\d+ content_by_lua\(nginx\.conf:\d+\):3 loop\]/
 --- no_error_log
@@ -368,6 +375,7 @@ hello
 --- response_body
 method: POST
 
+--- wait: 0.2
 --- error_log eval
 qr/\[TRACE\s+\d+ content_by_lua\(nginx\.conf:\d+\):3 loop\]/
 --- no_error_log
@@ -396,6 +404,7 @@ hello
 --- response_body
 method: BLAH
 
+--- wait: 0.2
 --- error_log eval
 qr/\[TRACE\s+\d+ content_by_lua\(nginx\.conf:\d+\):3 loop\]/
 --- no_error_log
@@ -424,6 +433,7 @@ hello
 --- response_body
 method: CONNECT
 
+--- wait: 0.2
 --- error_log eval
 qr/\[TRACE\s+\d+ content_by_lua\(nginx\.conf:\d+\):3 loop\]/
 --- no_error_log
@@ -450,6 +460,7 @@ GET /t
 --- response_body
 method: PUT
 
+--- wait: 0.2
 --- error_log eval
 qr/\[TRACE\s+\d+ content_by_lua\(nginx\.conf:\d+\):3 loop\]/
 --- no_error_log
@@ -476,6 +487,7 @@ GET /t
 --- response_body
 header foo: 500
 
+--- wait: 0.2
 --- error_log eval
 qr/\[TRACE\s+\d+ content_by_lua\(nginx\.conf:\d+\):3 loop\]/
 --- no_error_log
@@ -502,6 +514,7 @@ GET /t
 --- response_body
 header foo: nil
 
+--- wait: 0.2
 --- error_log eval
 qr/\[TRACE\s+\d+ content_by_lua\(nginx\.conf:\d+\):3 loop\]/
 --- no_error_log
@@ -529,6 +542,7 @@ GET /t
 --- response_body
 header foo: nil
 
+--- wait: 0.2
 --- error_log eval
 qr/\[TRACE\s+\d+ content_by_lua\(nginx\.conf:\d+\):4 loop\]/
 --- no_error_log
