@@ -217,7 +217,6 @@ GET /t?a=3%200&foo%20bar=&a=hello&blah
 a: 3 0, hello
 blah: true
 foo bar: 
---- wait: 0.2
 --- error_log eval
 qr/\[TRACE\s+\d+ .*? -> \d+\]/
 --- no_error_log
@@ -259,8 +258,8 @@ qr/\[TRACE\s+\d+ .*? -> \d+\]/
 --- request
 GET /t?
 --- response_body
---- error_log eval
 --- wait: 0.2
+--- error_log eval
 qr/\[TRACE\s+\d+ content_by_lua\(nginx\.conf:\d+\):4 loop\]/
 --- no_error_log
 [error]
