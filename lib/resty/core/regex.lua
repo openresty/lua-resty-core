@@ -48,14 +48,27 @@ local _M = {
 ngx.re = new_tab(0, 5)
 
 
-ffi.cdef[[
-    const char *pcre_version(void);
-]]
+local pcre_ver_fn
 
+if subsystem == 'http' then
+    ffi.cdef[[
+        const char *ngx_http_lua_ffi_pcre_version(void);
+    ]]
+    pcre_ver_fn = C.ngx_http_lua_ffi_pcre_version
+
+elseif subsystem == 'stream' then
+    ffi.cdef[[
+        const char *ngx_stream_lua_ffi_pcre_version(void);
+    ]]
+    pcre_ver_fn = C.ngx_stream_lua_ffi_pcre_version
+
+else
+    error("unsupported subsystem: " .. tostring(subsystem))
+end
 
 local pcre_ver
 
-if not pcall(function() pcre_ver = ffi_string(C.pcre_version()) end) then
+if not pcall(function() pcre_ver = ffi_string(pcre_ver_fn()) end) then
     setmetatable(ngx.re, {
         __index = function(_, key)
             error("no support for 'ngx.re." .. key .. "': OpenResty was " ..
