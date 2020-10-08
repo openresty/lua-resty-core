@@ -19,22 +19,22 @@ if subsystem == 'http' then
     local ngx_lua_v = ngx.config.ngx_lua_version
     if not ngx.config
        or not ngx.config.ngx_lua_version
-       or (ngx_lua_v ~= 10016 and ngx_lua_v ~= 10017)
+       or (ngx_lua_v ~= 10018)
     then
-        error("ngx_http_lua_module 0.10.16 or 0.10.17 required")
+        error("ngx_http_lua_module 0.10.18 required")
     end
 
 elseif subsystem == 'stream' then
     if not ngx.config
        or not ngx.config.ngx_lua_version
-       or ngx.config.ngx_lua_version ~= 8
+       or ngx.config.ngx_lua_version ~= 9
     then
-        error("ngx_stream_lua_module 0.0.8 required")
+        error("ngx_stream_lua_module 0.0.9 required")
     end
 
 else
-    error("ngx_http_lua_module 0.10.16 or "
-          .. "ngx_stream_lua_module 0.0.8 required")
+    error("ngx_http_lua_module 0.10.18 or "
+          .. "ngx_stream_lua_module 0.0.9 required")
 end
 
 
