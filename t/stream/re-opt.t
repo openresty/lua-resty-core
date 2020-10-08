@@ -1,4 +1,5 @@
 # vim:set ft= ts=4 sw=4 et fdm=marker:
+
 use lib '.';
 use t::TestCore::Stream;
 
@@ -48,7 +49,7 @@ error: pcre_exec() failed: -27
 qq{
     lua_package_path "$t::TestCore::Stream::lua_package_path";
     init_by_lua_block {
-        $::TestCore::Stream::init_by_lua_block
+        $t::TestCore::Stream::init_by_lua_block
 
         local ngx_re = require "ngx.re"
         ngx_re.opt("jit_stack_size", 128 * 1024)
