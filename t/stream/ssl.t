@@ -19,8 +19,6 @@ $ENV{TEST_NGINX_HTML_DIR} ||= html_dir();
 $ENV{TEST_NGINX_SERVER_SSL_PORT} ||= 4443;
 
 add_block_preprocessor(sub {
-    my $block = shift;
-
     if ($Test::Nginx::Util::Randomize) {
         $ENV{TEST_NGINX_SERVER_SSL_PORT} = gen_random_port;
     }

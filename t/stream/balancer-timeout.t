@@ -36,8 +36,6 @@ $ENV{TEST_NGINX_LUA_PACKAGE_PATH} = "$t::TestCore::Stream::lua_package_path";
 $ENV{TEST_NGINX_SERVER_STREAM_PORT} ||= 4443;
 
 add_block_preprocessor(sub {
-    my $block = shift;
-
     if ($Test::Nginx::Util::Randomize) {
         $ENV{TEST_NGINX_SERVER_STREAM_PORT} = gen_random_port;
     }
