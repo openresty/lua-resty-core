@@ -58,7 +58,7 @@ sub gen_random_port (@) {
     push @unavailable_port_list, $ENV{TEST_NGINX_SERVER_PORT};
 
     my %unavailable_ports;
-    for my $port (@unavailable_ports) {
+    for my $port (@unavailable_port_list) {
         $unavailable_ports{$port} = 1;
     }
 
