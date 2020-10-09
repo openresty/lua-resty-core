@@ -16,6 +16,16 @@ no_long_string();
 $ENV{TEST_NGINX_LUA_PACKAGE_PATH} = "$t::TestCore::lua_package_path";
 $ENV{TEST_NGINX_HTML_DIR} ||= html_dir();
 
+$ENV{TEST_NGINX_SERVER_SSL_PORT} ||= 4443;
+
+add_block_preprocessor(sub {
+    my $block = shift;
+
+    if ($Test::Nginx::Util::Randomize) {
+        $ENV{TEST_NGINX_SERVER_SSL_PORT} = gen_random_port;
+    }
+});
+
 run_tests();
 
 __DATA__
@@ -1403,7 +1413,7 @@ FIXME: check the OCSP staple actually received by the ssl client
     lua_package_path "$TEST_NGINX_LUA_PACKAGE_PATH";
 
     server {
-        listen 127.0.0.2:23456 ssl;
+        listen 127.0.0.2:$TEST_NGINX_SERVER_SSL_PORT ssl;
         server_name test.com;
         ssl_certificate_by_lua_block {
             local ssl = require "ngx.ssl"
@@ -1444,7 +1454,7 @@ FIXME: check the OCSP staple actually received by the ssl client
 
                 sock:settimeout(3000)
 
-                local ok, err = sock:connect("127.0.0.2", 23456)
+                local ok, err = sock:connect("127.0.0.2", $TEST_NGINX_SERVER_SSL_PORT)
                 if not ok then
                     ngx.say("failed to connect: ", err)
                     return
@@ -1485,7 +1495,7 @@ ocsp status resp set ok: nil,
     lua_package_path "$TEST_NGINX_LUA_PACKAGE_PATH";
 
     server {
-        listen 127.0.0.2:23456 ssl;
+        listen 127.0.0.2:$TEST_NGINX_SERVER_SSL_PORT ssl;
         server_name test.com;
         ssl_certificate_by_lua_block {
             local ssl = require "ngx.ssl"
@@ -1526,7 +1536,7 @@ ocsp status resp set ok: nil,
 
                 sock:settimeout(3000)
 
-                local ok, err = sock:connect("127.0.0.2", 23456)
+                local ok, err = sock:connect("127.0.0.2", $TEST_NGINX_SERVER_SSL_PORT)
                 if not ok then
                     ngx.say("failed to connect: ", err)
                     return
