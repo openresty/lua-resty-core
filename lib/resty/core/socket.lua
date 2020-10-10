@@ -33,7 +33,7 @@ ngx_http_lua_ffi_socket_tcp_setoption(ngx_http_lua_socket_tcp_upstream_t *u,
     int opt, int val, char **err_msg);
 ]]
 
-
+-- int is safe here since the maximum is 2^31-1
 local output_value_buf = ffi_new("int[1]")
 local err_msg = base.get_errmsg_ptr()
 local FFI_OK = base.FFI_OK
