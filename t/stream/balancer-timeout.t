@@ -46,7 +46,7 @@ __DATA__
     lua_package_path "$TEST_NGINX_LUA_PACKAGE_PATH";
 
     server {
-        listen 23456;
+        listen $TEST_NGINX_RAND_PORT_1;
         return "fake origin\n";
     }
 
@@ -55,7 +55,7 @@ __DATA__
         balancer_by_lua_block {
             local b = require "ngx.balancer"
             assert(b.set_timeouts(1.234, 5.678, 7.689))
-            assert(b.set_current_peer("127.0.0.1", tonumber(23456)))
+            assert(b.set_current_peer("127.0.0.1", tonumber($TEST_NGINX_RAND_PORT_1)))
         }
     }
 --- stream_server_config
@@ -78,7 +78,7 @@ event timer add: \d+: 7689:
     proxy_connect_timeout 1234ms;
 
     server {
-        listen 23456;
+        listen $TEST_NGINX_RAND_PORT_1;
         return "fake origin\n";
     }
 
@@ -87,7 +87,7 @@ event timer add: \d+: 7689:
         balancer_by_lua_block {
             local b = require "ngx.balancer"
             assert(b.set_timeouts(nil, 5.678, 7.689))
-            assert(b.set_current_peer("127.0.0.1", tonumber(23456)))
+            assert(b.set_current_peer("127.0.0.1", tonumber($TEST_NGINX_RAND_PORT_1)))
         }
     }
 --- stream_server_config
@@ -110,7 +110,7 @@ event timer add: \d+: 7689:
     proxy_timeout 5678ms;
 
     server {
-        listen 23456;
+        listen $TEST_NGINX_RAND_PORT_1;
         return "fake origin\n";
     }
 
@@ -119,7 +119,7 @@ event timer add: \d+: 7689:
         balancer_by_lua_block {
             local b = require "ngx.balancer"
             assert(b.set_timeouts(1.234, nil, 7.689))
-            assert(b.set_current_peer("127.0.0.1", tonumber(23456)))
+            assert(b.set_current_peer("127.0.0.1", tonumber($TEST_NGINX_RAND_PORT_1)))
         }
     }
 --- stream_server_config
@@ -142,7 +142,7 @@ event timer add: \d+: 7689:
     proxy_timeout 7689ms;
 
     server {
-        listen 23456;
+        listen $TEST_NGINX_RAND_PORT_1;
         return "fake origin\n";
     }
 
@@ -151,7 +151,7 @@ event timer add: \d+: 7689:
         balancer_by_lua_block {
             local b = require "ngx.balancer"
             assert(b.set_timeouts(1.234, 5.678, nil))
-            assert(b.set_current_peer("127.0.0.1", tonumber(23456)))
+            assert(b.set_current_peer("127.0.0.1", tonumber($TEST_NGINX_RAND_PORT_1)))
         }
     }
 --- stream_server_config
@@ -177,7 +177,7 @@ event timer add: \d+: 5678:
         balancer_by_lua_block {
             local b = require "ngx.balancer"
             assert(b.set_timeouts(0, 1.234, 5.678))
-            assert(b.set_current_peer("127.0.0.1", tonumber(23456)))
+            assert(b.set_current_peer("127.0.0.1", tonumber($TEST_NGINX_RAND_PORT_1)))
         }
     }
 --- stream_server_config
@@ -198,7 +198,7 @@ qr/\[error\] .*? balancer_by_lua:3: bad connect timeout/
         balancer_by_lua_block {
             local b = require "ngx.balancer"
             assert(b.set_timeouts(-1, 1.234, 5.678))
-            assert(b.set_current_peer("127.0.0.1", tonumber(23456)))
+            assert(b.set_current_peer("127.0.0.1", tonumber($TEST_NGINX_RAND_PORT_1)))
         }
     }
 --- stream_server_config
@@ -219,7 +219,7 @@ qr/\[error\] .*? balancer_by_lua:3: bad connect timeout/
         balancer_by_lua_block {
             local b = require "ngx.balancer"
             assert(b.set_timeouts(1.234, 0, 5.678))
-            assert(b.set_current_peer("127.0.0.1", tonumber(23456)))
+            assert(b.set_current_peer("127.0.0.1", tonumber($TEST_NGINX_RAND_PORT_1)))
         }
     }
 --- stream_server_config
@@ -240,7 +240,7 @@ qr/\[error\] .*? balancer_by_lua:3: bad send timeout/
         balancer_by_lua_block {
             local b = require "ngx.balancer"
             assert(b.set_timeouts(1.234, -1, 5.678))
-            assert(b.set_current_peer("127.0.0.1", tonumber(23456)))
+            assert(b.set_current_peer("127.0.0.1", tonumber($TEST_NGINX_RAND_PORT_1)))
         }
     }
 --- stream_server_config
@@ -261,7 +261,7 @@ qr/\[error\] .*? balancer_by_lua:3: bad send timeout/
         balancer_by_lua_block {
             local b = require "ngx.balancer"
             assert(b.set_timeouts(1.234, 4.567, 0))
-            assert(b.set_current_peer("127.0.0.1", tonumber(23456)))
+            assert(b.set_current_peer("127.0.0.1", tonumber($TEST_NGINX_RAND_PORT_1)))
         }
     }
 --- stream_server_config
@@ -282,7 +282,7 @@ qr/\[error\] .*? balancer_by_lua:3: bad read timeout/
         balancer_by_lua_block {
             local b = require "ngx.balancer"
             assert(b.set_timeouts(1.234, 4.567, -1))
-            assert(b.set_current_peer("127.0.0.1", tonumber(23456)))
+            assert(b.set_current_peer("127.0.0.1", tonumber($TEST_NGINX_RAND_PORT_1)))
         }
     }
 --- stream_server_config
