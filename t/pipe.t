@@ -1127,6 +1127,7 @@ hello
 --- config
     location = /t {
         content_by_lua_block {
+            collectgarbage()
             local ngx_pipe = require "ngx.pipe"
             local proc = ngx_pipe.spawn("echo 'hello' && >&2 echo 'world'")
 
