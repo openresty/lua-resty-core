@@ -9,6 +9,8 @@ local registry = debug.getregistry()
 local ffi_new = ffi.new
 local ffi_string = ffi.string
 local C = ffi.C
+local get_string_buf = base.get_string_buf
+local get_size_ptr = base.get_size_ptr
 
 
 local option_index = {
@@ -26,18 +28,20 @@ typedef struct ngx_http_lua_socket_tcp_upstream_s
 
 int
 ngx_http_lua_ffi_socket_tcp_getoption(ngx_http_lua_socket_tcp_upstream_t *u,
-    int opt, int *val, char **err_msg);
+    int opt, int *val, unsigned char *err, size_t *errlen);
 
 int
 ngx_http_lua_ffi_socket_tcp_setoption(ngx_http_lua_socket_tcp_upstream_t *u,
-    int opt, int val, char **err_msg);
+    int opt, int val, unsigned char *err, size_t *errlen);
 ]]
+
 
 -- int is safe here since the maximum is 2^31-1
 local output_value_buf = ffi_new("int[1]")
 local err_msg = base.get_errmsg_ptr()
 local FFI_OK = base.FFI_OK
 local SOCKET_CTX_INDEX = 1
+local ERR_BUF_SIZE = 128
 
 
 local function get_tcp_socket(cosocket)
@@ -61,12 +65,17 @@ local function getoption(cosocket, option)
         return nil, "unsupported option " .. tostring(option)
     end
 
+    local err = get_string_buf(ERR_BUF_SIZE)
+    local errlen = get_size_ptr()
+    errlen[0] = ERR_BUF_SIZE
+
     local rc = C.ngx_http_lua_ffi_socket_tcp_getoption(tcp_socket,
                                                        option_index[option],
                                                        output_value_buf,
-                                                       err_msg)
+                                                       err,
+                                                       errlen)
     if rc ~= FFI_OK then
-        return nil, ffi_string(err_msg[0])
+        return nil, ffi_string(err, errlen[0])
     end
 
     return tonumber(output_value_buf[0])
@@ -88,12 +97,17 @@ local function setoption(cosocket, option, value)
         return nil, "unsupported option " .. tostring(option)
     end
 
+    local err = get_string_buf(ERR_BUF_SIZE)
+    local errlen = get_size_ptr()
+    errlen[0] = ERR_BUF_SIZE
+
     local rc = C.ngx_http_lua_ffi_socket_tcp_setoption(tcp_socket,
                                                        option_index[option],
                                                        value,
-                                                       err_msg)
+                                                       err,
+                                                       errlen)
     if rc ~= FFI_OK then
-        return nil, ffi_string(err_msg[0])
+        return nil, ffi_string(err, errlen[0])
     end
 
     return true
