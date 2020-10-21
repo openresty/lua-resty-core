@@ -97,9 +97,9 @@ setoption abc failed: unsupported option abc
             require "resty.core.socket"
 
             local sock = ngx.socket.tcp()
-            local sndbuf, err = sock:setoption("so_sndbuf", 4000)
+            local sndbuf, err = sock:setoption("sndbuf", 4000)
             if not sndbuf then
-                ngx.say("getoption so_sndbuf failed: ", err)
+                ngx.say("getoption sndbuf failed: ", err)
                 return
             end
 
@@ -110,7 +110,7 @@ setoption abc failed: unsupported option abc
 GET /t
 --- error_code: 500
 --- error_log
-bad tcp socket
+socket is never created nor connected
 
 
 
@@ -137,7 +137,7 @@ bad tcp socket
 
             ok, err = sock:setoption("keepalive", 1)
             if not ok then
-                ngx.say("enable keepalive failed: ", err)
+                ngx.say("enabling keepalive failed: ", err)
                 return
             end
             local v2, err = sock:getoption("keepalive")
@@ -145,7 +145,7 @@ bad tcp socket
                 ngx.say("get enabled keepalive failed: ", err)
                 return
             end
-            ngx.say("keepalive change from ", v1, " to ", v2)
+            ngx.say("keepalive changes from ", v1, " to ", v2)
 
             ok, err = sock:setoption("keepalive", 0)
             if not ok then
@@ -157,7 +157,7 @@ bad tcp socket
                 ngx.say("get disabled keepalive failed: ", err)
                 return
             end
-            ngx.say("keepalive change from ", v2, " to ", v3)
+            ngx.say("keepalive changes from ", v2, " to ", v3)
 
             sock:close()
         }
@@ -165,8 +165,8 @@ bad tcp socket
 --- request
 GET /t
 --- response_body
-keepalive change from 0 to 1
-keepalive change from 1 to 0
+keepalive changes from 0 to 1
+keepalive changes from 1 to 0
 --- no_error_log
 [error]
 
@@ -195,7 +195,7 @@ keepalive change from 1 to 0
 
             ok, err = sock:setoption("keepalive", true)
             if not ok then
-                ngx.say("enable keepalive failed: ", err)
+                ngx.say("enabling keepalive failed: ", err)
                 return
             end
             local v2, err = sock:getoption("keepalive")
@@ -203,7 +203,7 @@ keepalive change from 1 to 0
                 ngx.say("get enabled keepalive failed: ", err)
                 return
             end
-            ngx.say("keepalive change from ", v1, " to ", v2)
+            ngx.say("keepalive changes from ", v1, " to ", v2)
 
             ok, err = sock:setoption("keepalive", false)
             if not ok then
@@ -215,7 +215,7 @@ keepalive change from 1 to 0
                 ngx.say("get disabled keepalive failed: ", err)
                 return
             end
-            ngx.say("keepalive change from ", v2, " to ", v3)
+            ngx.say("keepalive changes from ", v2, " to ", v3)
 
             sock:close()
         }
@@ -223,8 +223,8 @@ keepalive change from 1 to 0
 --- request
 GET /t
 --- response_body
-keepalive change from 0 to 1
-keepalive change from 1 to 0
+keepalive changes from 0 to 1
+keepalive changes from 1 to 0
 --- no_error_log
 [error]
 
@@ -253,7 +253,7 @@ keepalive change from 1 to 0
 
             ok, err = sock:setoption("keepalive", 10)
             if not ok then
-                ngx.say("enable keepalive failed: ", err)
+                ngx.say("enabling keepalive failed: ", err)
                 return
             end
             local v2, err = sock:getoption("keepalive")
@@ -261,7 +261,7 @@ keepalive change from 1 to 0
                 ngx.say("get enabled keepalive failed: ", err)
                 return
             end
-            ngx.say("keepalive change from ", v1, " to ", v2)
+            ngx.say("keepalive changes from ", v1, " to ", v2)
 
             ok, err = sock:setoption("keepalive", 0)
             if not ok then
@@ -273,7 +273,7 @@ keepalive change from 1 to 0
                 ngx.say("get disabled keepalive failed: ", err)
                 return
             end
-            ngx.say("keepalive change from ", v2, " to ", v3)
+            ngx.say("keepalive changes from ", v2, " to ", v3)
 
             sock:close()
         }
@@ -281,8 +281,8 @@ keepalive change from 1 to 0
 --- request
 GET /t
 --- response_body
-keepalive change from 0 to 1
-keepalive change from 1 to 0
+keepalive changes from 0 to 1
+keepalive changes from 1 to 0
 --- no_error_log
 [error]
 
@@ -311,7 +311,7 @@ keepalive change from 1 to 0
 
             ok, err = sock:setoption("reuseaddr", 1)
             if not ok then
-                ngx.say("enable reuseaddr failed: ", err)
+                ngx.say("enabling reuseaddr failed: ", err)
                 return
             end
             local v2, err = sock:getoption("reuseaddr")
@@ -319,7 +319,7 @@ keepalive change from 1 to 0
                 ngx.say("get enabled reuseaddr failed: ", err)
                 return
             end
-            ngx.say("reuseaddr change from ", v1, " to ", v2)
+            ngx.say("reuseaddr changes from ", v1, " to ", v2)
 
             ok, err = sock:setoption("reuseaddr", 0)
             if not ok then
@@ -331,7 +331,7 @@ keepalive change from 1 to 0
                 ngx.say("get disabled reuseaddr failed: ", err)
                 return
             end
-            ngx.say("reuseaddr change from ", v2, " to ", v3)
+            ngx.say("reuseaddr changes from ", v2, " to ", v3)
 
             sock:close()
         }
@@ -339,8 +339,8 @@ keepalive change from 1 to 0
 --- request
 GET /t
 --- response_body
-reuseaddr change from 0 to 1
-reuseaddr change from 1 to 0
+reuseaddr changes from 0 to 1
+reuseaddr changes from 1 to 0
 --- no_error_log
 [error]
 
@@ -369,7 +369,7 @@ reuseaddr change from 1 to 0
 
             ok, err = sock:setoption("reuseaddr", true)
             if not ok then
-                ngx.say("enable reuseaddr failed: ", err)
+                ngx.say("enabling reuseaddr failed: ", err)
                 return
             end
             local v2, err = sock:getoption("reuseaddr")
@@ -377,7 +377,7 @@ reuseaddr change from 1 to 0
                 ngx.say("get enabled reuseaddr failed: ", err)
                 return
             end
-            ngx.say("reuseaddr change from ", v1, " to ", v2)
+            ngx.say("reuseaddr changes from ", v1, " to ", v2)
 
             ok, err = sock:setoption("reuseaddr", false)
             if not ok then
@@ -389,7 +389,7 @@ reuseaddr change from 1 to 0
                 ngx.say("get disabled reuseaddr failed: ", err)
                 return
             end
-            ngx.say("reuseaddr change from ", v2, " to ", v3)
+            ngx.say("reuseaddr changes from ", v2, " to ", v3)
 
             sock:close()
         }
@@ -397,8 +397,8 @@ reuseaddr change from 1 to 0
 --- request
 GET /t
 --- response_body
-reuseaddr change from 0 to 1
-reuseaddr change from 1 to 0
+reuseaddr changes from 0 to 1
+reuseaddr changes from 1 to 0
 --- no_error_log
 [error]
 
@@ -427,7 +427,7 @@ reuseaddr change from 1 to 0
 
             ok, err = sock:setoption("reuseaddr", 10)
             if not ok then
-                ngx.say("enable reuseaddr failed: ", err)
+                ngx.say("enabling reuseaddr failed: ", err)
                 return
             end
             local v2, err = sock:getoption("reuseaddr")
@@ -435,7 +435,7 @@ reuseaddr change from 1 to 0
                 ngx.say("get enabled reuseaddr failed: ", err)
                 return
             end
-            ngx.say("reuseaddr change from ", v1, " to ", v2)
+            ngx.say("reuseaddr changes from ", v1, " to ", v2)
 
             ok, err = sock:setoption("reuseaddr", 0)
             if not ok then
@@ -447,7 +447,7 @@ reuseaddr change from 1 to 0
                 ngx.say("get disabled reuseaddr failed: ", err)
                 return
             end
-            ngx.say("reuseaddr change from ", v2, " to ", v3)
+            ngx.say("reuseaddr changes from ", v2, " to ", v3)
 
             sock:close()
         }
@@ -455,8 +455,8 @@ reuseaddr change from 1 to 0
 --- request
 GET /t
 --- response_body
-reuseaddr change from 0 to 1
-reuseaddr change from 1 to 0
+reuseaddr changes from 0 to 1
+reuseaddr changes from 1 to 0
 --- no_error_log
 [error]
 
@@ -485,7 +485,7 @@ reuseaddr change from 1 to 0
 
             ok, err = sock:setoption("tcp-nodelay", 1)
             if not ok then
-                ngx.say("enable tcp-nodelay failed: ", err)
+                ngx.say("enabling tcp-nodelay failed: ", err)
                 return
             end
             local v2, err = sock:getoption("tcp-nodelay")
@@ -493,7 +493,7 @@ reuseaddr change from 1 to 0
                 ngx.say("get enabled tcp-nodelay failed: ", err)
                 return
             end
-            ngx.say("tcp-nodelay change from ", v1, " to ", v2)
+            ngx.say("tcp-nodelay changes from ", v1, " to ", v2)
 
             ok, err = sock:setoption("tcp-nodelay", 0)
             if not ok then
@@ -505,7 +505,7 @@ reuseaddr change from 1 to 0
                 ngx.say("get disabled tcp-nodelay failed: ", err)
                 return
             end
-            ngx.say("tcp-nodelay change from ", v2, " to ", v3)
+            ngx.say("tcp-nodelay changes from ", v2, " to ", v3)
 
             sock:close()
         }
@@ -513,8 +513,8 @@ reuseaddr change from 1 to 0
 --- request
 GET /t
 --- response_body
-tcp-nodelay change from 0 to 1
-tcp-nodelay change from 1 to 0
+tcp-nodelay changes from 0 to 1
+tcp-nodelay changes from 1 to 0
 --- no_error_log
 [error]
 
@@ -543,7 +543,7 @@ tcp-nodelay change from 1 to 0
 
             ok, err = sock:setoption("tcp-nodelay", true)
             if not ok then
-                ngx.say("enable tcp-nodelay failed: ", err)
+                ngx.say("enabling tcp-nodelay failed: ", err)
                 return
             end
             local v2, err = sock:getoption("tcp-nodelay")
@@ -551,7 +551,7 @@ tcp-nodelay change from 1 to 0
                 ngx.say("get enabled tcp-nodelay failed: ", err)
                 return
             end
-            ngx.say("tcp-nodelay change from ", v1, " to ", v2)
+            ngx.say("tcp-nodelay changes from ", v1, " to ", v2)
 
             ok, err = sock:setoption("tcp-nodelay", false)
             if not ok then
@@ -563,7 +563,7 @@ tcp-nodelay change from 1 to 0
                 ngx.say("get disabled tcp-nodelay failed: ", err)
                 return
             end
-            ngx.say("tcp-nodelay change from ", v2, " to ", v3)
+            ngx.say("tcp-nodelay changes from ", v2, " to ", v3)
 
             sock:close()
         }
@@ -571,8 +571,8 @@ tcp-nodelay change from 1 to 0
 --- request
 GET /t
 --- response_body
-tcp-nodelay change from 0 to 1
-tcp-nodelay change from 1 to 0
+tcp-nodelay changes from 0 to 1
+tcp-nodelay changes from 1 to 0
 --- no_error_log
 [error]
 
@@ -601,7 +601,7 @@ tcp-nodelay change from 1 to 0
 
             ok, err = sock:setoption("tcp-nodelay", 10)
             if not ok then
-                ngx.say("enable tcp-nodelay failed: ", err)
+                ngx.say("enabling tcp-nodelay failed: ", err)
                 return
             end
             local v2, err = sock:getoption("tcp-nodelay")
@@ -609,7 +609,7 @@ tcp-nodelay change from 1 to 0
                 ngx.say("get enabled tcp-nodelay failed: ", err)
                 return
             end
-            ngx.say("tcp-nodelay change from ", v1, " to ", v2)
+            ngx.say("tcp-nodelay changes from ", v1, " to ", v2)
 
             ok, err = sock:setoption("tcp-nodelay", 0)
             if not ok then
@@ -621,7 +621,7 @@ tcp-nodelay change from 1 to 0
                 ngx.say("get disabled tcp-nodelay failed: ", err)
                 return
             end
-            ngx.say("tcp-nodelay change from ", v2, " to ", v3)
+            ngx.say("tcp-nodelay changes from ", v2, " to ", v3)
 
             sock:close()
         }
@@ -629,8 +629,8 @@ tcp-nodelay change from 1 to 0
 --- request
 GET /t
 --- response_body
-tcp-nodelay change from 0 to 1
-tcp-nodelay change from 1 to 0
+tcp-nodelay changes from 0 to 1
+tcp-nodelay changes from 1 to 0
 --- no_error_log
 [error]
 
@@ -659,7 +659,7 @@ tcp-nodelay change from 1 to 0
 
             ok, err = sock:setoption("sndbuf", 4096)
             if not ok then
-                ngx.say("enable sndbuf failed: ", err)
+                ngx.say("enabling sndbuf failed: ", err)
                 return
             end
             local v2, err = sock:getoption("sndbuf")
@@ -667,7 +667,7 @@ tcp-nodelay change from 1 to 0
                 ngx.say("get enabled sndbuf failed: ", err)
                 return
             end
-            ngx.say("sndbuf change from ", v1, " to ", v2)
+            ngx.say("sndbuf changes from ", v1, " to ", v2)
 
             sock:close()
         }
@@ -675,7 +675,7 @@ tcp-nodelay change from 1 to 0
 --- request
 GET /t
 --- response_body_like eval
-qr/sndbuf change from \d+ to \d+/
+qr/\Asndbuf changes from \d+ to \d+\n\z/
 --- no_error_log
 [error]
 
@@ -704,7 +704,7 @@ qr/sndbuf change from \d+ to \d+/
 
             ok, err = sock:setoption("rcvbuf", 4096)
             if not ok then
-                ngx.say("enable rcvbuf failed: ", err)
+                ngx.say("enabling rcvbuf failed: ", err)
                 return
             end
             local v2, err = sock:getoption("rcvbuf")
@@ -712,7 +712,7 @@ qr/sndbuf change from \d+ to \d+/
                 ngx.say("get enabled rcvbuf failed: ", err)
                 return
             end
-            ngx.say("rcvbuf change from ", v1, " to ", v2)
+            ngx.say("rcvbuf changes from ", v1, " to ", v2)
 
             sock:close()
         }
@@ -720,6 +720,6 @@ qr/sndbuf change from \d+ to \d+/
 --- request
 GET /t
 --- response_body_like eval
-qr/rcvbuf change from \d+ to \d+/
+qr/\Arcvbuf changes from \d+ to \d+\n\z/
 --- no_error_log
 [error]

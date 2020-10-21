@@ -105,7 +105,7 @@ getoption abc failed: unsupported option abc
 GET /t
 --- error_code: 500
 --- error_log
-bad tcp socket
+socket is never created nor connected
 
 
 

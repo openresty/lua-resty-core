@@ -41,13 +41,13 @@ ngx_http_lua_ffi_socket_tcp_setoption(ngx_http_lua_socket_tcp_upstream_t *u,
 local output_value_buf = ffi_new("int[1]")
 local FFI_OK = base.FFI_OK
 local SOCKET_CTX_INDEX = 1
-local ERR_BUF_SIZE = 128
+local ERR_BUF_SIZE = 4096
 
 
 local function get_tcp_socket(cosocket)
     local tcp_socket = cosocket[SOCKET_CTX_INDEX]
     if not tcp_socket then
-        error("bad tcp socket")
+        error("socket is never created nor connected")
     end
 
     return tcp_socket
