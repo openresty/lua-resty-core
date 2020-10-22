@@ -37,7 +37,6 @@ ngx_http_lua_ffi_socket_tcp_setoption(ngx_http_lua_socket_tcp_upstream_t *u,
 ]]
 
 
--- int is safe here since the maximum is 2^31-1
 local output_value_buf = ffi_new("int[1]")
 local FFI_OK = base.FFI_OK
 local SOCKET_CTX_INDEX = 1

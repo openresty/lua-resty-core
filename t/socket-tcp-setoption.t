@@ -5,7 +5,7 @@ use t::TestCore;
 
 repeat_each(2);
 
-plan tests => repeat_each() * (blocks() * 3) - 2;
+plan tests => repeat_each() * (blocks() * 3 - 1);
 
 #worker_connections(1024);
 #no_diff();
