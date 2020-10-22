@@ -23,7 +23,6 @@ $ENV{TEST_NGINX_HTML_DIR} ||= html_dir();
 $ENV{TEST_NGINX_MEMCACHED_PORT} ||= 11211;
 $ENV{TEST_NGINX_RESOLVER} ||= '8.8.8.8';
 $ENV{TEST_NGINX_CERT_DIR} ||= dirname(realpath(abs_path(__FILE__)));
-$ENV{TEST_NGINX_SERVER_SSL_PORT} ||= 4443;
 
 run_tests();
 
@@ -429,7 +428,7 @@ $/s,
     }
 
     server {
-        listen $TEST_NGINX_SERVER_SSL_PORT ssl;
+        listen $TEST_NGINX_RAND_PORT_1 ssl;
         server_name test.com;
         ssl_session_tickets off;
         ssl_certificate $TEST_NGINX_CERT_DIR/cert/test.crt;
@@ -446,7 +445,7 @@ $/s,
 
     location /t {
         set $sess_file $TEST_NGINX_HTML_DIR/sess;
-        set $addr 127.0.0.1:$TEST_NGINX_SERVER_SSL_PORT;
+        set $addr 127.0.0.1:$TEST_NGINX_RAND_PORT_1;
         content_by_lua_block {
             ngx.shared.done:delete("handshake")
             local addr = ngx.var.addr;
