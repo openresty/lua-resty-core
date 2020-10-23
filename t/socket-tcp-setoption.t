@@ -723,3 +723,35 @@ GET /t
 qr/\Arcvbuf changes from \d+ to \d+\n\z/
 --- no_error_log
 [error]
+
+
+
+=== TEST 15: strerr.
+--- config
+    location /t {
+        content_by_lua '
+            local ffi = require "ffi"
+            local base = require "resty.core.base"
+
+            ffi.cdef[[
+            int ngx_http_lua_ffi_socket_tcp_test_strerr(unsigned char *err,
+                    size_t *errlen);
+            ]]
+
+            local err = base.get_string_buf(4096)
+            local errlen = base.get_size_ptr()
+            errlen[0] = 4096
+            local rc = ffi.C.ngx_http_lua_ffi_socket_tcp_test_strerr(err,
+                                errlen)
+
+            if rc ~= base.FFI_OK then
+                ngx.say("socket strerr: ", ffi.string(err, errlen[0]))
+            end
+        ';
+    }
+--- request
+GET /t
+--- response_body_like eval
+qr/\Asocket strerr: [\/\s\w]+\n\z/
+--- no_error_log
+[error]
