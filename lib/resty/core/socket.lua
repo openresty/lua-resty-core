@@ -1,4 +1,5 @@
 local base = require "resty.core.base"
+base.allows_subsystem('http')
 local debug = require 'debug'
 local ffi = require 'ffi'
 

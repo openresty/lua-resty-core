@@ -92,9 +92,9 @@ getoption abc failed: unsupported option abc
             require "resty.core.socket"
 
             local sock = ngx.socket.tcp()
-            local sndbuf, err = sock:getoption("so_sndbuf")
+            local sndbuf, err = sock:getoption("sndbuf")
             if not sndbuf then
-                ngx.say("getoption so_sndbuf failed: ", err)
+                ngx.say("getoption sndbuf failed: ", err)
                 return
             end
 
