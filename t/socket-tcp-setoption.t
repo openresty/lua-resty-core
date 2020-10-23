@@ -758,9 +758,12 @@ qr/\Arcvbuf changes from \d+ to \d+\n\z/
             errlen[0] = 4096
             local SOCKET_CTX_INDEX = 1
             local tcpsock = sock[SOCKET_CTX_INDEX]
-            local rc = ffi.C.ngx_http_lua_ffi_socket_tcp_hack_fd(tcpsock,
-                                12345, errstr, errlen)
-            if rc == -1 then
+
+            -- hack the fd of the socket
+            local bad_fd = 12345
+            local realfd = ffi.C.ngx_http_lua_ffi_socket_tcp_hack_fd(tcpsock,
+                                    bad_fd, errstr, errlen)
+            if realfd == -1 then
                 ngx.say("hack fd failed: ", ffi.string(err, errlen[0]))
                 return
             end
@@ -768,12 +771,12 @@ qr/\Arcvbuf changes from \d+ to \d+\n\z/
             ok, err = sock:setoption("rcvbuf", 4096)
             if not ok then
                 ngx.say("enabling rcvbuf failed: ", err)
+
+                -- restore the fd of the socket
                 ffi.C.ngx_http_lua_ffi_socket_tcp_hack_fd(tcpsock,
-                                rc, errstr, errlen)
+                                realfd, errstr, errlen)
                 return
             end
-
-
         }
     }
 --- request
