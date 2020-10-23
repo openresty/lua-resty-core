@@ -728,30 +728,57 @@ qr/\Arcvbuf changes from \d+ to \d+\n\z/
 
 === TEST 15: strerr.
 --- config
+    set $port $TEST_NGINX_SERVER_PORT;
+
     location /t {
-        content_by_lua '
+        content_by_lua_block {
+            require "resty.core.socket"
             local ffi = require "ffi"
             local base = require "resty.core.base"
 
             ffi.cdef[[
-            int ngx_http_lua_ffi_socket_tcp_test_strerr(unsigned char *err,
-                    size_t *errlen);
+            typedef struct ngx_http_lua_socket_tcp_upstream_s
+                ngx_http_lua_socket_tcp_upstream_t;
+
+            int ngx_http_lua_ffi_socket_tcp_hack_fd(
+                    ngx_http_lua_socket_tcp_upstream_t *u, int fd,
+                    unsigned char *errstr, size_t *errlen);
             ]]
 
-            local err = base.get_string_buf(4096)
+            local port = ngx.var.port
+            local sock = ngx.socket.tcp()
+            local ok, err = sock:connect("127.0.0.1", port)
+            if not ok then
+                ngx.say("failed to connect: ", err)
+                return
+            end
+
+            local errstr = base.get_string_buf(4096)
             local errlen = base.get_size_ptr()
             errlen[0] = 4096
-            local rc = ffi.C.ngx_http_lua_ffi_socket_tcp_test_strerr(err,
-                                errlen)
-
-            if rc ~= base.FFI_OK then
-                ngx.say("socket strerr: ", ffi.string(err, errlen[0]))
+            local SOCKET_CTX_INDEX = 1
+            local tcpsock = sock[SOCKET_CTX_INDEX]
+            local rc = ffi.C.ngx_http_lua_ffi_socket_tcp_hack_fd(tcpsock,
+                                12345, errstr, errlen)
+            if rc == -1 then
+                ngx.say("hack fd failed: ", ffi.string(err, errlen[0]))
+                return
             end
-        ';
+
+            ok, err = sock:setoption("rcvbuf", 4096)
+            if not ok then
+                ngx.say("enabling rcvbuf failed: ", err)
+                ffi.C.ngx_http_lua_ffi_socket_tcp_hack_fd(tcpsock,
+                                rc, errstr, errlen)
+                return
+            end
+
+
+        }
     }
 --- request
 GET /t
 --- response_body_like eval
-qr/\Asocket strerr: [\/\s\w]+\n\z/
+qr/\Aenabling rcvbuf failed: [\/\s\w]+\n\z/
 --- no_error_log
 [error]
