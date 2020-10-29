@@ -469,7 +469,7 @@ local step = #data
 while true do
     local data, err = proc:write(data)
     if not data then
-        ngx.say(err)
+        ngx.log(ngx.ERR, err)
         break
     end
 
