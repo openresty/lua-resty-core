@@ -33,7 +33,7 @@ if subsystem == "http" then
 
         local len = #str
         local buf = get_string_buf(len)
-        ffi_copy(buf, str)
+        ffi_copy(buf, str, len)
 
         C.ngx_http_lua_ffi_str_replace_char(buf, len, byte(find),
                                             byte(replace))
