@@ -463,7 +463,7 @@ local proc = ngx_pipe.spawn({"bash"})
 
 -- make writers blocked later
 local data = ("1234"):rep(2048)
-proc:set_timeouts(100)
+proc:set_timeouts(300)
 local total = 0
 local step = #data
 while true do
