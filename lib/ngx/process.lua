@@ -37,7 +37,7 @@ local ngx_lua_ffi_master_pid
 
 if subsystem == 'http' then
     ffi.cdef[[
-        int ngx_http_lua_ffi_enable_privileged_agent(char **err);
+        int ngx_http_lua_ffi_enable_privileged_agent(char **err, unsigned int connections);
         int ngx_http_lua_ffi_get_process_type(void);
         void ngx_http_lua_ffi_process_signal_graceful_exit(void);
         int ngx_http_lua_ffi_master_pid(void);
@@ -52,7 +52,7 @@ if subsystem == 'http' then
 
 else
     ffi.cdef[[
-        int ngx_stream_lua_ffi_enable_privileged_agent(char **err);
+        int ngx_stream_lua_ffi_enable_privileged_agent(char **err, unsigned int connections);
         int ngx_stream_lua_ffi_get_process_type(void);
         void ngx_stream_lua_ffi_process_signal_graceful_exit(void);
         int ngx_stream_lua_ffi_master_pid(void);
@@ -73,12 +73,18 @@ function _M.type()
 end
 
 
-function _M.enable_privileged_agent()
+function _M.enable_privileged_agent(connections)
     if ngx_phase() ~= "init" then
         return nil, "API disabled in the current context"
     end
 
-    local rc = ngx_lua_ffi_enable_privileged_agent(errmsg)
+    connections = connections or 512
+
+    if type(connections) ~= "number" or connections < 0 then
+        return nil, "invaild connections"
+    end
+
+    local rc = C.ngx_http_lua_ffi_enable_privileged_agent(errmsg, connections)
 
     if rc == FFI_ERROR then
         return nil, ffi_str(errmsg[0])
