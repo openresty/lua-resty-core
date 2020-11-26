@@ -195,7 +195,7 @@ GET /t
 --- response_body
 type: worker
 --- error_log
-enable_privileged_agent failed: Invaild connections
+enable_privileged_agent failed: invaild connections
 --- no_error_log
 connect ok
 connect not ok
@@ -259,7 +259,7 @@ GET /t
 --- response_body
 type: worker
 --- error_log
-enable_privileged_agent failed: Invaild connections
+enable_privileged_agent failed: invaild connections
 --- no_error_log
 connect ok
 connect not ok
