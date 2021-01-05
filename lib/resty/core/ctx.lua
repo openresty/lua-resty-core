@@ -18,6 +18,7 @@ local FFI_NO_REQ_CTX = base.FFI_NO_REQ_CTX
 local FFI_OK = base.FFI_OK
 local error = error
 local setmetatable = setmetatable
+local type = type
 local subsystem = ngx.config.subsystem
 
 
@@ -107,6 +108,11 @@ register_getter("ctx", get_ctx_table)
 
 
 local function set_ctx_table(ctx)
+    local ctx_type = type(ctx)
+    if ctx_type ~= "table" then
+        error("expected ctx to be table, got " .. ctx_type)
+    end
+
     local r = get_request()
 
     if not r then

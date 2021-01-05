@@ -10,7 +10,7 @@ log_level('debug');
 #repeat_each(120);
 repeat_each(2);
 
-plan tests => repeat_each() * (blocks() * 4);
+plan tests => repeat_each() * (blocks() * 3 + 11);
 
 #no_diff();
 #no_long_string();
@@ -880,3 +880,24 @@ GET /t
 --- response_body
 received: 0
 received: 0
+
+
+
+=== TEST 12: prohibit setting ngx.ctx to non-table value
+--- config
+    location = /t {
+        content_by_lua_block {
+            local ok, err = pcall(function()
+                ngx.ctx = nil
+            end)
+            if not ok then
+                ngx.say(err)
+            end
+        }
+    }
+--- request
+GET /t
+--- response_body_like
+expected ctx to be table, got nil
+--- no_error_log
+[error]
