@@ -110,7 +110,7 @@ register_getter("ctx", get_ctx_table)
 local function set_ctx_table(ctx)
     local ctx_type = type(ctx)
     if ctx_type ~= "table" then
-        error("expected ctx to be table, got " .. ctx_type)
+        error("ctx should be a table while getting a " .. ctx_type)
     end
 
     local r = get_request()

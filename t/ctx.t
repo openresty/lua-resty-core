@@ -898,6 +898,6 @@ received: 0
 --- request
 GET /t
 --- response_body_like
-expected ctx to be table, got nil
+ctx should be a table while getting a nil
 --- no_error_log
 [error]
