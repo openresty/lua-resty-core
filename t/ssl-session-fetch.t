@@ -402,6 +402,7 @@ $/s,
 
 
 === TEST 5: yield during doing handshake with client which uses low version OpenSSL
+--- ONLY
 --- no_check_leak
 --- http_config
     lua_shared_dict done 16k;
@@ -492,7 +493,6 @@ qr/content_by_lua\(nginx\.conf:\d+\):\d+: CONNECTED/
 qr/failed to resume session: failed to de-serialize session|ssl_session_(fetch|store)_by_lua_block:\d+: session id: [a-fA-F\d]+/s
 --- grep_error_log_out eval
 [
-qr/^ssl_session_store_by_lua_block:\d+: session id: [a-fA-F\d]+$/s,
 qr/^ssl_session_fetch_by_lua_block:\d+: session id: [a-fA-F\d]+
 failed to resume session: failed to de-serialize session
 ssl_session_store_by_lua_block:\d+: session id: [a-fA-F\d]+
