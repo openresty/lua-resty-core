@@ -112,4 +112,22 @@
    fun:ngx_write_channel
    fun:ngx_pass_open_channel
    fun:ngx_start_privileged_agent_processes
+   Memcheck:Leak
+   match-leak-kinds: definite
+   fun:malloc
+   fun:CRYPTO_zalloc
+   fun:SSL_SESSION_new
+   fun:ssl_get_new_session
+   fun:tls_construct_client_hello
+   fun:write_state_machine
+   fun:state_machine.part.5
+   fun:SSL_do_handshake
+   fun:ngx_ssl_handshake
+   fun:ngx_http_upstream_ssl_init_connection
+   fun:ngx_http_upstream_send_request_handler
+   fun:ngx_http_upstream_handler
+   fun:ngx_epoll_process_events
+   fun:ngx_process_events_and_timers
+   fun:ngx_single_process_cycle
+   fun:main
 }

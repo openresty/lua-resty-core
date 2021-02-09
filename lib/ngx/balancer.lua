@@ -19,6 +19,7 @@ local tonumber = tonumber
 local max = math.max
 local subsystem = ngx.config.subsystem
 local ngx_lua_ffi_balancer_set_current_peer
+local ngx_lua_ffi_balancer_enable_keepalive
 local ngx_lua_ffi_balancer_set_more_tries
 local ngx_lua_ffi_balancer_get_last_failure
 local ngx_lua_ffi_balancer_set_timeouts -- used by both stream and http
@@ -28,7 +29,12 @@ local ngx_lua_ffi_balancer_set_upstream_tls
 if subsystem == 'http' then
     ffi.cdef[[
     int ngx_http_lua_ffi_balancer_set_current_peer(ngx_http_request_t *r,
-        const unsigned char *addr, size_t addr_len, int port, char **err);
+        const unsigned char *addr, size_t addr_len, int port,
+        const unsigned char *host, ssize_t host_len,
+        char **err);
+
+    int ngx_http_lua_ffi_balancer_enable_keepalive(ngx_http_request_t *r,
+        unsigned long timeout, unsigned int max_requests, char **err);
 
     int ngx_http_lua_ffi_balancer_set_more_tries(ngx_http_request_t *r,
         int count, char **err);
@@ -48,6 +54,9 @@ if subsystem == 'http' then
 
     ngx_lua_ffi_balancer_set_current_peer =
         C.ngx_http_lua_ffi_balancer_set_current_peer
+
+    ngx_lua_ffi_balancer_enable_keepalive =
+        C.ngx_http_lua_ffi_balancer_enable_keepalive
 
     ngx_lua_ffi_balancer_set_more_tries =
         C.ngx_http_lua_ffi_balancer_set_more_tries
@@ -101,6 +110,8 @@ else
     error("unknown subsystem: " .. subsystem)
 end
 
+local DEFAULT_KEEPALIVE_IDLE_TIMEOUT = 60000
+local DEFAULT_KEEPALIVE_MAX_REQUESTS = 100
 
 local peer_state_names = {
     [1] = "keepalive",
@@ -111,28 +122,111 @@ local peer_state_names = {
 
 local _M = { version = base.version }
 
+if subsystem == "http" then
+    function _M.set_current_peer(addr, port, host)
+        local r = get_request()
+        if not r then
+            error("no request found")
+        end
 
-function _M.set_current_peer(addr, port)
-    local r = get_request()
-    if not r then
-        error("no request found")
+        if not port then
+            port = 0
+        elseif type(port) ~= "number" then
+            port = tonumber(port)
+        end
+
+        if host ~= nil and type(host) ~= "string" then
+            error("bad argument #3 to 'set_current_peer' "
+                  .. "(string expected, got " .. type(host) .. ")")
+        end
+
+        local rc = ngx_lua_ffi_balancer_set_current_peer(r, addr, #addr,
+                                                         port,
+                                                         host,
+                                                         host and #host or 0,
+                                                         errmsg)
+        if rc == FFI_OK then
+            return true
+        end
+
+        return nil, ffi_str(errmsg[0])
     end
+else
+    function _M.set_current_peer(addr, port, host)
+        local r = get_request()
+        if not r then
+            error("no request found")
+        end
 
-    if not port then
-        port = 0
-    elseif type(port) ~= "number" then
-        port = tonumber(port)
+        if not port then
+            port = 0
+        elseif type(port) ~= "number" then
+            port = tonumber(port)
+        end
+
+        if host ~= nil then
+            error("bad argument #3 to 'set_current_peer' ('host' not yet " ..
+                  "implemented in " .. subsystem .. " subsystem)", 2)
+        end
+
+        local rc = ngx_lua_ffi_balancer_set_current_peer(r, addr, #addr,
+                                                         port,
+                                                         errmsg)
+        if rc == FFI_OK then
+            return true
+        end
+
+        return nil, ffi_str(errmsg[0])
     end
-
-    local rc = ngx_lua_ffi_balancer_set_current_peer(r, addr, #addr,
-                                                     port, errmsg)
-    if rc == FFI_OK then
-        return true
-    end
-
-    return nil, ffi_str(errmsg[0])
 end
 
+if subsystem == "http" then
+    function _M.enable_keepalive(idle_timeout, max_requests)
+        local r = get_request()
+        if not r then
+            error("no request found")
+        end
+
+        if not idle_timeout then
+            idle_timeout = DEFAULT_KEEPALIVE_IDLE_TIMEOUT
+
+        elseif type(idle_timeout) ~= "number" then
+            error("bad argument #1 to 'enable_keepalive' " ..
+                  "(number expected, got " .. type(idle_timeout) .. ")", 2)
+
+        elseif idle_timeout < 0 then
+            error("bad argument #1 to 'enable_keepalive' (expected >= 0)", 2)
+
+        else
+            idle_timeout = idle_timeout * 1000
+        end
+
+        if not max_requests then
+            max_requests = DEFAULT_KEEPALIVE_MAX_REQUESTS
+
+        elseif type(max_requests) ~= "number" then
+            error("bad argument #2 to 'enable_keepalive' " ..
+                  "(number expected, got " .. type(max_requests) .. ")", 2)
+
+        elseif max_requests < 0 then
+            error("bad argument #2 to 'enable_keepalive' (expected >= 0)", 2)
+        end
+
+        local rc = ngx_lua_ffi_balancer_enable_keepalive(r, idle_timeout,
+                                                         max_requests, errmsg)
+        if rc == FFI_OK then
+            return true
+        end
+
+        return nil, ffi_str(errmsg[0])
+    end
+
+else
+    function _M.enable_keepalive()
+        error("'enable_keepalive' not yet implemented in " .. subsystem ..
+              " subsystem", 2)
+    end
+end
 
 function _M.set_more_tries(count)
     local r = get_request()
