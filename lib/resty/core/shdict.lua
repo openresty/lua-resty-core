@@ -322,7 +322,7 @@ local function shdict_get(zone, key)
                                       num_value, user_flags, 0,
                                       is_stale, errmsg)
     if rc ~= 0 then
-        if errmsg[0] then
+        if errmsg[0] ~= nil then
             return nil, ffi_str(errmsg[0])
         end
 
@@ -397,7 +397,7 @@ local function shdict_get_stale(zone, key)
                                       num_value, user_flags, 1,
                                       is_stale, errmsg)
     if rc ~= 0 then
-        if errmsg[0] then
+        if errmsg[0] ~= nil then
             return nil, ffi_str(errmsg[0])
         end
 
