@@ -26,6 +26,7 @@ Table of Contents
     * [parse_pem_priv_key](#parse_pem_priv_key)
     * [set_cert](#set_cert)
     * [set_priv_key](#set_priv_key)
+    * [verify_client](#verify_client)
 * [Community](#community)
     * [English Mailing List](#english-mailing-list)
     * [Chinese Mailing List](#chinese-mailing-list)
@@ -492,7 +493,7 @@ This function was first added in version `0.1.7`.
 [Back to TOC](#table-of-contents)
 
 verify_client
-------------
+-------------
 **syntax:** *ok, err = ssl.verify_client(ca_certs?, depth?)*
 
 **context:** *ssl_certificate_by_lua&#42;*
