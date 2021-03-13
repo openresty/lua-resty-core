@@ -37,7 +37,7 @@ Capturing nginx error logs with specified log filtering level
 -------------------------------------------------------------
 
 ```nginx
-error logs/error.log info;
+error_log logs/error.log info;
 
 http {
     # enable capturing error logs
