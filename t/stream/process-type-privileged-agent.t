@@ -87,7 +87,6 @@ init_worker_by_lua:10: process type: privileged
 
 
 
-
 === TEST 2: `enable_privileged_agent` disabled
 --- stream_server_config
     content_by_lua_block {
