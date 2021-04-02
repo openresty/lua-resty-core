@@ -40,6 +40,7 @@ env:
     - TEST_NGINX_SLEEP=0.005
     - TEST_NGINX_RANDOMIZE=1
     - LUACHECK_VER=0.21.1
+    - LUAJIT_DBG_XFLAGS="-DLUAJIT_SECURITY_STRID=0 -DLUAJIT_SECURITY_STRHASH=0 -DLUAJIT_SECURITY_PRNG=0 -DLUAJIT_SECURITY_MCODE=0"
   matrix:
     - NGINX_VERSION=1.19.9 OPENSSL_VER=1.0.2u OPENSSL_PATCH_VER=1.0.2h
     - NGINX_VERSION=1.19.9 OPENSSL_VER=1.1.0l OPENSSL_PATCH_VER=1.1.0d
@@ -76,7 +77,7 @@ install:
 
 script:
   - cd luajit2/
-  - make -j$JOBS CCDEBUG=-g Q= PREFIX=$LUAJIT_PREFIX CC=$CC XCFLAGS='-DLUA_USE_APICHECK -DLUA_USE_ASSERT -msse4.2' > build.log 2>&1 || (cat build.log && exit 1)
+  - make -j$JOBS CCDEBUG=-g Q= PREFIX=$LUAJIT_PREFIX CC=$CC XCFLAGS="-DLUA_USE_APICHECK -DLUA_USE_ASSERT -msse4.2 $LUAJIT_DBG_XFLAGS" > build.log 2>&1 || (cat build.log && exit 1)
   - sudo make install PREFIX=$LUAJIT_PREFIX > build.log 2>&1 || (cat build.log && exit 1)
   - cd ..
   - cd lua-resty-lrucache && sudo make DESTDIR=$LUAJIT_PREFIX LUA_LIB_DIR=/share/lua/5.1 install && cd ..
