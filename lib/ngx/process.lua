@@ -43,9 +43,11 @@ if subsystem == 'http' then
         int ngx_http_lua_ffi_master_pid(void);
     ]]
 
-    ngx_lua_ffi_enable_privileged_agent = C.ngx_http_lua_ffi_enable_privileged_agent
+    ngx_lua_ffi_enable_privileged_agent =
+        C.ngx_http_lua_ffi_enable_privileged_agent
     ngx_lua_ffi_get_process_type = C.ngx_http_lua_ffi_get_process_type
-    ngx_lua_ffi_process_signal_graceful_exit = C.ngx_http_lua_ffi_process_signal_graceful_exit
+    ngx_lua_ffi_process_signal_graceful_exit =
+        C.ngx_http_lua_ffi_process_signal_graceful_exit
     ngx_lua_ffi_master_pid = C.ngx_http_lua_ffi_master_pid
 
 else
@@ -56,9 +58,11 @@ else
         int ngx_stream_lua_ffi_master_pid(void);
     ]]
 
-    ngx_lua_ffi_enable_privileged_agent = C.ngx_stream_lua_ffi_enable_privileged_agent
+    ngx_lua_ffi_enable_privileged_agent =
+        C.ngx_stream_lua_ffi_enable_privileged_agent
     ngx_lua_ffi_get_process_type = C.ngx_stream_lua_ffi_get_process_type
-    ngx_lua_ffi_process_signal_graceful_exit = C.ngx_stream_lua_ffi_process_signal_graceful_exit
+    ngx_lua_ffi_process_signal_graceful_exit =
+        C.ngx_stream_lua_ffi_process_signal_graceful_exit
     ngx_lua_ffi_master_pid = C.ngx_stream_lua_ffi_master_pid
 end
 
