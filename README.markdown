@@ -20,6 +20,7 @@ Table of Contents
     * [resty.core.shdict](#restycoreshdict)
     * [resty.core.var](#restycorevar)
     * [resty.core.ctx](#restycorectx)
+    * [get_ctx_table](#get_ctx_table)
     * [resty.core.request](#restycorerequest)
     * [resty.core.response](#restycoreresponse)
     * [resty.core.misc](#restycoremisc)
@@ -186,6 +187,16 @@ API Implemented
 ## resty.core.ctx
 
 * [ngx.ctx](https://github.com/openresty/lua-nginx-module#ngxctx)
+
+[Back to TOC](#table-of-contents)
+
+## get_ctx_table
+
+**syntax:** *ctx = get_ctx_table(ctx?)*
+
+Similar to [ngx.ctx](#restycorectx) but it accept an optional `ctx` argument.
+It will use the `ctx` from caller instead of creating a new table
+when the ctx table is not existing.
 
 [Back to TOC](#table-of-contents)
 
