@@ -192,11 +192,16 @@ API Implemented
 
 ## get_ctx_table
 
-**syntax:** *ctx = get_ctx_table(ctx?)*
+**syntax:** *ctx = resty.core.ctx.get_ctx_table(ctx?)*
 
-Similar to [ngx.ctx](#restycorectx) but it accept an optional `ctx` argument.
+Similar to [ngx.ctx](#restycorectx) but it accepts an optional `ctx` argument.
 It will use the `ctx` from caller instead of creating a new table
-when the ctx table is not existing.
+when the `ctx` table does not exist.
+
+Notice: the `ctx` table will be used in the current request's whole life cycle.
+Please be very careful when you try to reuse the `ctx` table.
+You need to make sure there is no Lua code using or going to use the `ctx` table
+in the current request before you reusing the `ctx` table in some other place.
 
 [Back to TOC](#table-of-contents)
 
