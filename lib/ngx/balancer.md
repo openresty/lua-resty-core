@@ -196,7 +196,7 @@ that attempt's state name, as well as an integer describing the status code of t
 
 Possible state names are as follows:
 * `"next"`
-    Failures due to bad status codes sent from the backend server. The origin's response is sane though, which means the backend connection
+    Failures due to bad status codes sent from the backend server. The origin's response is same though, which means the backend connection
 can still be reused for future requests.
 * `"failed"`
     Fatal errors while communicating to the backend server (like connection timeouts, connection resets, and etc). In this case,
