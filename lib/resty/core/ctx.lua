@@ -58,7 +58,7 @@ do
     local in_ssl_phase = ffi.new("int[1]")
     local ssl_ctx_ref = ffi.new("int[1]")
 
-    function get_ctx_table()
+    function get_ctx_table(ctx)
         local r = get_request()
 
         if not r then
@@ -72,25 +72,29 @@ do
 
         local ctxs = registry.ngx_lua_ctx_tables
         if ctx_ref < 0 then
-            local ctx
-
             ctx_ref = ssl_ctx_ref[0]
             if ctx_ref > 0 and ctxs[ctx_ref] then
                 if in_ssl_phase[0] ~= 0 then
                     return ctxs[ctx_ref]
                 end
 
-                ctx = new_tab(0, 4)
+                if not ctx then
+                    ctx = new_tab(0, 4)
+                end
+
                 ctx = setmetatable(ctx, ctxs[ctx_ref])
 
             else
                 if in_ssl_phase[0] ~= 0 then
-                    ctx = new_tab(1, 4)
+                    if not ctx then
+                        ctx = new_tab(1, 4)
+                    end
+
                     -- to avoid creating another table, we assume the users
                     -- won't overwrite the `__index` key
                     ctx.__index = ctx
 
-                else
+                elseif not ctx then
                     ctx = new_tab(0, 4)
                 end
             end
@@ -105,6 +109,7 @@ do
     end
 end
 register_getter("ctx", get_ctx_table)
+_M.get_ctx_table = get_ctx_table
 
 
 local function set_ctx_table(ctx)

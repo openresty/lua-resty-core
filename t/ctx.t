@@ -901,3 +901,31 @@ GET /t
 ctx should be a table while getting a nil
 --- no_error_log
 [error]
+
+
+
+=== TEST 13: get_ctx_table
+--- config
+    location = /t {
+        content_by_lua_block {
+            local get_ctx_table = require "resty.core.ctx" .get_ctx_table
+
+            local reused_ctx = {}
+            local ctx = get_ctx_table(reused_ctx)
+            if ctx == reused_ctx then
+                ngx.say("reused")
+            end
+
+            local ctx2 = get_ctx_table()
+            if ctx2 == reused_ctx then
+                ngx.say("reused again")
+            end
+        }
+    }
+--- request
+GET /t
+--- response_body
+reused
+reused again
+--- no_error_log
+[error]
