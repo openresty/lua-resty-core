@@ -28,36 +28,36 @@ if subsystem == 'http' then
         const char **name, size_t *namelen, char **err);
 
     int ngx_http_lua_ffi_ssl_get_client_hello_ext(ngx_http_request_t *r,
-        unsigned int type, const unsigned char **out, size_t *outlen, 
+        unsigned int type, const unsigned char **out, size_t *outlen,
         char **err);
 
     int ngx_http_lua_ffi_ssl_set_protocols(ngx_http_request_t *r,
         int protocols, char **err);
     ]]
 
-    ngx_lua_ffi_ssl_get_client_hello_server_name = 
+    ngx_lua_ffi_ssl_get_client_hello_server_name =
         C.ngx_http_lua_ffi_ssl_get_client_hello_server_name
-    ngx_lua_ffi_ssl_get_client_hello_ext = 
+    ngx_lua_ffi_ssl_get_client_hello_ext =
         C.ngx_http_lua_ffi_ssl_get_client_hello_ext
     ngx_lua_ffi_ssl_set_protocols = C.ngx_http_lua_ffi_ssl_set_protocols
 
 elseif subsystem == 'stream' then
     ffi.cdef[[
     int ngx_stream_lua_ffi_ssl_get_client_hello_server_name(
-        ngx_stream_lua_request_t *r, const char **name, size_t *namelen, 
+        ngx_stream_lua_request_t *r, const char **name, size_t *namelen,
         char **err);
 
     int ngx_stream_lua_ffi_ssl_get_client_hello_ext(
-        ngx_stream_lua_request_t *r, unsigned int type, 
+        ngx_stream_lua_request_t *r, unsigned int type,
         const unsigned char **out, size_t *outlen, char **err);
 
     int ngx_stream_lua_ffi_ssl_set_protocols(ngx_stream_lua_request_t *r,
         int protocols, char **err);
     ]]
 
-    ngx_lua_ffi_ssl_get_client_hello_server_name = 
+    ngx_lua_ffi_ssl_get_client_hello_server_name =
         C.ngx_stream_lua_ffi_ssl_get_client_hello_server_name
-    ngx_lua_ffi_ssl_get_client_hello_ext = 
+    ngx_lua_ffi_ssl_get_client_hello_ext =
         C.ngx_stream_lua_ffi_ssl_get_client_hello_ext
     ngx_lua_ffi_ssl_set_protocols = C.ngx_stream_lua_ffi_ssl_set_protocols
 end
