@@ -229,7 +229,7 @@ read SNI name from Lua: nil, type: nil
 [alert]
 [emerg]
 
---- timeout: 4
+--- timeout: 10
 
 
 
@@ -463,7 +463,7 @@ read SNI name from Lua: nil, type: nil
 [alert]
 [emerg]
 
---- timeout: 4
+--- timeout: 10
 
 
 
