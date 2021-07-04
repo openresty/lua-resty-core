@@ -229,6 +229,8 @@ read SNI name from Lua: nil, type: nil
 [alert]
 [emerg]
 
+--- timeout: 2
+
 
 
 === TEST 3: read SNI name via ssl.clienthello.get_client_hello_ext()
@@ -460,6 +462,8 @@ read SNI name from Lua: nil, type: nil
 [error]
 [alert]
 [emerg]
+
+--- timeout: 2
 
 
 
