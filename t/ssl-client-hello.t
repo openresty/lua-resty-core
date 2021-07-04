@@ -136,7 +136,7 @@ read SNI name from Lua: test.com
     lua_package_path "$TEST_NGINX_LUA_PACKAGE_PATH";
 
     server {
-        listen unix:$TEST_NGINX_HTML_DIR/nginx.sock ssl;
+        listen 127.0.0.2:$TEST_NGINX_RAND_PORT_1 ssl;
         server_name   test.com;
         ssl_client_hello_by_lua_block {
             local ssl_clt = require "ngx.ssl.clienthello"
@@ -164,7 +164,7 @@ read SNI name from Lua: test.com
 
                 sock:settimeout(3000)
 
-                local ok, err = sock:connect("unix:$TEST_NGINX_HTML_DIR/nginx.sock")
+                local ok, err = sock:connect("127.0.0.2", $TEST_NGINX_RAND_PORT_1)
                 if not ok then
                     ngx.say("failed to connect: ", err)
                     return
@@ -228,8 +228,6 @@ read SNI name from Lua: nil, type: nil
 [error]
 [alert]
 [emerg]
-
---- timeout: 10
 
 
 
@@ -370,7 +368,7 @@ read SNI name from Lua: test.com
     lua_package_path "$TEST_NGINX_LUA_PACKAGE_PATH";
 
     server {
-        listen unix:$TEST_NGINX_HTML_DIR/nginx.sock ssl;
+        listen 127.0.0.2:$TEST_NGINX_RAND_PORT_1 ssl;
         server_name   test.com;
         ssl_client_hello_by_lua_block {
             local ssl_clt = require "ngx.ssl.clienthello"
@@ -398,7 +396,7 @@ read SNI name from Lua: test.com
 
                 sock:settimeout(3000)
 
-                local ok, err = sock:connect("unix:$TEST_NGINX_HTML_DIR/nginx.sock")
+                local ok, err = sock:connect("127.0.0.2", $TEST_NGINX_RAND_PORT_1)
                 if not ok then
                     ngx.say("failed to connect: ", err)
                     return
@@ -462,8 +460,6 @@ read SNI name from Lua: nil, type: nil
 [error]
 [alert]
 [emerg]
-
---- timeout: 10
 
 
 
