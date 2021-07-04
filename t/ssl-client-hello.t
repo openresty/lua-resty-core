@@ -763,7 +763,7 @@ connected: 1
 failed to do SSL handshake: handshake failed
 
 --- error_log eval
-[qr/SSL_do_handshake\(\) failed .*?tls_post_process_client_hello:no shared cipher/]
+[qr/SSL_do_handshake\(\) failed .*?tls_early_post_process_client_hello:unsupported protocol/]
 
 --- no_error_log
 [alert]
@@ -859,7 +859,7 @@ connected: 1
 failed to do SSL handshake: handshake failed
 
 --- error_log eval
-[qr/SSL_do_handshake\(\) failed .*?tls_post_process_client_hello:no shared cipher/]
+[qr/SSL_do_handshake\(\) failed .*?tls_early_post_process_client_hello:unsupported protocol/]
 
 --- no_error_log
 [alert]
