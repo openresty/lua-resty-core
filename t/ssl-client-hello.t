@@ -29,7 +29,6 @@ run_tests();
 
 __DATA__
 
-
 === TEST 1: read SNI name via ssl.clienthello.get_client_hello_server_name()
 --- skip_nginx: 6: < 1.19.9
 --- http_config
@@ -864,5 +863,3 @@ failed to do SSL handshake: handshake failed
 --- no_error_log
 [alert]
 [emerg]
-
-
