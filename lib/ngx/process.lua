@@ -84,7 +84,7 @@ function _M.enable_privileged_agent(connections)
         return nil, "invaild connections"
     end
 
-    local rc = C.ngx_http_lua_ffi_enable_privileged_agent(errmsg, connections)
+    local rc = ngx_lua_ffi_enable_privileged_agent(errmsg, connections)
 
     if rc == FFI_ERROR then
         return nil, ffi_str(errmsg[0])
