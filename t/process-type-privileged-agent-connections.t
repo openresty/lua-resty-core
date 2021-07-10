@@ -30,22 +30,18 @@ __DATA__
 
     init_worker_by_lua_block {
         local base = require "resty.core.base"
-        local v
-        local typ = (require "ngx.process").type
-        for i = 1, 400 do
-            v = typ()
-        end
+        local typ = (require "ngx.process").type()
 
-        if v == "privileged agent" then
-            ngx.log(ngx.WARN, "process type: ", v)
-            ngx.timer.at(0, function() 
+        if typ == "privileged agent" then
+            ngx.log(ngx.WARN, "process type: ", typ)
+            ngx.timer.at(0, function()
                 local tcpsock = ngx.socket.tcp()
                 local ok, err = tcpsock:connect("127.0.0.1", 1984)
-    
+
                 if ok then
                     ngx.log(ngx.INFO, "connect ok ")
                 else
-                    ngx.log(ngx.INFO, "connect not ok " .. tostring(err)) 
+                    ngx.log(ngx.INFO, "connect not ok " .. tostring(err))
                 end
             end)
         end
@@ -54,13 +50,8 @@ __DATA__
     location = /t {
         content_by_lua_block {
             ngx.sleep(0.1)
-            local v
-            local typ = require "ngx.process".type
-            for i = 1, 200 do
-                v = typ()
-            end
-
-            ngx.say("type: ", v)
+            local typ = require "ngx.process".type()
+            ngx.say("type: ", typ)
         }
     }
 --- request
@@ -74,6 +65,7 @@ connect not ok
 enable_privileged_agent failed
 --- skip_nginx: 5: < 1.11.2
 --- wait: 0.2
+
 
 
 === TEST 2: connections exceed limit
@@ -90,24 +82,20 @@ enable_privileged_agent failed
 
     init_worker_by_lua_block {
         local base = require "resty.core.base"
-        local v
-        local typ = (require "ngx.process").type
-        for i = 1, 400 do
-            v = typ()
-        end
+        local typ = (require "ngx.process").type()
 
-        if v == "privileged agent" then
-            ngx.log(ngx.WARN, "process type: ", v)
-            ngx.timer.at(0, function() 
+        if typ == "privileged agent" then
+            ngx.log(ngx.WARN, "process type: ", typ)
+            ngx.timer.at(0, function()
 
                 for i = 1, 10 do
                     local tcpsock = ngx.socket.tcp()
                     local ok, err = tcpsock:connect("127.0.0.1", 1984)
-    
+
                     if ok then
                         ngx.log(ngx.INFO, "connect ok ")
                     else
-                        ngx.log(ngx.INFO, "connect not ok " .. tostring(err)) 
+                        ngx.log(ngx.INFO, "connect not ok " .. tostring(err))
                     end
                 end
             end)
@@ -117,13 +105,8 @@ enable_privileged_agent failed
     location = /t {
         content_by_lua_block {
             ngx.sleep(0.1)
-            local v
-            local typ = require "ngx.process".type
-            for i = 1, 200 do
-                v = typ()
-            end
-
-            ngx.say("type: ", v)
+            local typ = require "ngx.process".type()
+            ngx.say("type: ", typ)
         }
     }
 --- request
@@ -137,6 +120,7 @@ worker_connections are not enough
 enable_privileged_agent failed
 --- skip_nginx: 5: < 1.11.2
 --- wait: 0.2
+
 
 
 === TEST 3: enable_privileged_agent with bad connections
@@ -154,24 +138,20 @@ connections < 0
 
     init_worker_by_lua_block {
         local base = require "resty.core.base"
-        local v
-        local typ = (require "ngx.process").type
-        for i = 1, 400 do
-            v = typ()
-        end
+        local typ = (require "ngx.process").type()
 
-        if v == "privileged agent" then
-            ngx.log(ngx.WARN, "process type: ", v)
-            ngx.timer.at(0, function() 
+        if typ == "privileged agent" then
+            ngx.log(ngx.WARN, "process type: ", typ)
+            ngx.timer.at(0, function()
 
                 for i = 1, 10 do
                     local tcpsock = ngx.socket.tcp()
                     local ok, err = tcpsock:connect("127.0.0.1", 1984)
-    
+
                     if ok then
                         ngx.log(ngx.INFO, "connect ok ")
                     else
-                        ngx.log(ngx.INFO, "connect not ok " .. tostring(err)) 
+                        ngx.log(ngx.INFO, "connect not ok " .. tostring(err))
                     end
                 end
             end)
@@ -181,13 +161,8 @@ connections < 0
     location = /t {
         content_by_lua_block {
             ngx.sleep(0.1)
-            local v
-            local typ = require "ngx.process".type
-            for i = 1, 200 do
-                v = typ()
-            end
-
-            ngx.say("type: ", v)
+            local typ = require "ngx.process".type()
+            ngx.say("type: ", typ)
         }
     }
 --- request
@@ -201,6 +176,7 @@ connect ok
 connect not ok
 --- skip_nginx: 5: < 1.11.2
 --- wait: 0.2
+
 
 
 === TEST 4: enable_privileged_agent with bad connections
@@ -218,14 +194,10 @@ connections is not a number
 
     init_worker_by_lua_block {
         local base = require "resty.core.base"
-        local v
-        local typ = (require "ngx.process").type
-        for i = 1, 400 do
-            v = typ()
-        end
+        local typ = (require "ngx.process").type()
 
         if v == "privileged agent" then
-            ngx.log(ngx.WARN, "process type: ", v)
+            ngx.log(ngx.WARN, "process type: ", typ)
             ngx.timer.at(0, function() 
 
                 for i = 1, 10 do
@@ -245,13 +217,8 @@ connections is not a number
     location = /t {
         content_by_lua_block {
             ngx.sleep(0.1)
-            local v
-            local typ = require "ngx.process".type
-            for i = 1, 200 do
-                v = typ()
-            end
-
-            ngx.say("type: ", v)
+            local typ = require "ngx.process".type()
+            ngx.say("type: ", typ)
         }
     }
 --- request
@@ -265,6 +232,7 @@ connect ok
 connect not ok
 --- skip_nginx: 5: < 1.11.2
 --- wait: 0.2
+
 
 
 === TEST 5: enable_privileged_agent with bad connections
@@ -282,24 +250,20 @@ connections = 0
 
     init_worker_by_lua_block {
         local base = require "resty.core.base"
-        local v
-        local typ = (require "ngx.process").type
-        for i = 1, 400 do
-            v = typ()
-        end
+        local typ = (require "ngx.process").type()
 
         if v == "privileged agent" then
-            ngx.log(ngx.WARN, "process type: ", v)
+            ngx.log(ngx.WARN, "process type: ", typ)
             ngx.timer.at(0, function() 
 
                 for i = 1, 10 do
                     local tcpsock = ngx.socket.tcp()
                     local ok, err = tcpsock:connect("127.0.0.1", 1984)
-    
+
                     if ok then
                         ngx.log(ngx.INFO, "connect ok ")
                     else
-                        ngx.log(ngx.INFO, "connect not ok " .. tostring(err)) 
+                        ngx.log(ngx.INFO, "connect not ok " .. tostring(err))
                     end
                 end
             end)
@@ -309,13 +273,8 @@ connections = 0
     location = /t {
         content_by_lua_block {
             ngx.sleep(0.1)
-            local v
-            local typ = require "ngx.process".type
-            for i = 1, 200 do
-                v = typ()
-            end
-
-            ngx.say("type: ", v)
+            local typ = require "ngx.process".type()
+            ngx.say("type: ", typ)
         }
     }
 --- request
