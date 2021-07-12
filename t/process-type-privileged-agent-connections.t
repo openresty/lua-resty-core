@@ -41,7 +41,7 @@ __DATA__
                 if ok then
                     ngx.log(ngx.INFO, "connect ok ")
                 else
-                    ngx.log(ngx.INFO, "connect not ok " .. tostring(err))
+                    ngx.log(ngx.INFO, "connect failed " .. tostring(err))
                 end
             end)
         end
@@ -61,7 +61,7 @@ type: worker
 --- error_log
 connect ok
 --- no_error_log
-connect not ok
+connect failed
 enable_privileged_agent failed
 --- skip_nginx: 5: < 1.11.2
 --- wait: 0.2
@@ -89,6 +89,7 @@ enable_privileged_agent failed
 
             ngx.timer.at(0, function()
 
+                -- the real connections you can create is always less than you set.
                 for i = 1, 10 do
                     local tcpsock = ngx.socket.tcp()
                     local ok, err = tcpsock:connect("127.0.0.1", 1984)
@@ -177,7 +178,7 @@ type: worker
 enable_privileged_agent failed: invaild connections
 --- no_error_log
 connect ok
-connect not ok
+connect failed
 --- skip_nginx: 5: < 1.11.2
 --- wait: 0.2
 
@@ -235,7 +236,7 @@ type: worker
 enable_privileged_agent failed: invaild connections
 --- no_error_log
 connect ok
-connect not ok
+connect failed
 --- skip_nginx: 5: < 1.11.2
 --- wait: 0.2
 
