@@ -86,6 +86,7 @@ enable_privileged_agent failed
 
         if typ == "privileged agent" then
             ngx.log(ngx.WARN, "process type: ", typ)
+
             ngx.timer.at(0, function()
 
                 for i = 1, 10 do
@@ -95,9 +96,10 @@ enable_privileged_agent failed
                     if ok then
                         ngx.log(ngx.INFO, "connect ok ")
                     else
-                        ngx.log(ngx.INFO, "connect not ok " .. tostring(err))
+                        ngx.log(ngx.INFO, "connect failed " .. tostring(err))
                     end
                 end
+
             end)
         end
     }
@@ -114,7 +116,7 @@ GET /t
 --- response_body
 type: worker
 --- error_log
-connect not ok
+connect failed
 worker_connections are not enough
 --- no_error_log
 enable_privileged_agent failed
@@ -142,6 +144,7 @@ connections < 0
 
         if typ == "privileged agent" then
             ngx.log(ngx.WARN, "process type: ", typ)
+
             ngx.timer.at(0, function()
 
                 for i = 1, 10 do
@@ -151,9 +154,10 @@ connections < 0
                     if ok then
                         ngx.log(ngx.INFO, "connect ok ")
                     else
-                        ngx.log(ngx.INFO, "connect not ok " .. tostring(err))
+                        ngx.log(ngx.INFO, "connect failed " .. tostring(err))
                     end
                 end
+
             end)
         end
     }
@@ -196,20 +200,22 @@ connections is not a number
         local base = require "resty.core.base"
         local typ = (require "ngx.process").type()
 
-        if v == "privileged agent" then
+        if typ == "privileged agent" then
             ngx.log(ngx.WARN, "process type: ", typ)
-            ngx.timer.at(0, function() 
+
+            ngx.timer.at(0, function()
 
                 for i = 1, 10 do
                     local tcpsock = ngx.socket.tcp()
                     local ok, err = tcpsock:connect("127.0.0.1", 1984)
-    
+
                     if ok then
                         ngx.log(ngx.INFO, "connect ok ")
                     else
-                        ngx.log(ngx.INFO, "connect not ok " .. tostring(err)) 
+                        ngx.log(ngx.INFO, "connect failed " .. tostring(err))
                     end
                 end
+
             end)
         end
     }
@@ -252,9 +258,10 @@ connections = 0
         local base = require "resty.core.base"
         local typ = (require "ngx.process").type()
 
-        if v == "privileged agent" then
+        if typ == "privileged agent" then
             ngx.log(ngx.WARN, "process type: ", typ)
-            ngx.timer.at(0, function() 
+
+            ngx.timer.at(0, function()
 
                 for i = 1, 10 do
                     local tcpsock = ngx.socket.tcp()
@@ -263,9 +270,10 @@ connections = 0
                     if ok then
                         ngx.log(ngx.INFO, "connect ok ")
                     else
-                        ngx.log(ngx.INFO, "connect not ok " .. tostring(err))
+                        ngx.log(ngx.INFO, "connect failed " .. tostring(err))
                     end
                 end
+
             end)
         end
     }
