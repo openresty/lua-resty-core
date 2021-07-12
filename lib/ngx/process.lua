@@ -37,7 +37,8 @@ local ngx_lua_ffi_master_pid
 
 if subsystem == 'http' then
     ffi.cdef[[
-        int ngx_http_lua_ffi_enable_privileged_agent(char **err, unsigned int connections);
+        int ngx_http_lua_ffi_enable_privileged_agent(char **err,
+            unsigned int connections);
         int ngx_http_lua_ffi_get_process_type(void);
         void ngx_http_lua_ffi_process_signal_graceful_exit(void);
         int ngx_http_lua_ffi_master_pid(void);
@@ -52,7 +53,8 @@ if subsystem == 'http' then
 
 else
     ffi.cdef[[
-        int ngx_stream_lua_ffi_enable_privileged_agent(char **err, unsigned int connections);
+        int ngx_stream_lua_ffi_enable_privileged_agent(char **err,
+            unsigned int connections);
         int ngx_stream_lua_ffi_get_process_type(void);
         void ngx_stream_lua_ffi_process_signal_graceful_exit(void);
         int ngx_stream_lua_ffi_master_pid(void);
