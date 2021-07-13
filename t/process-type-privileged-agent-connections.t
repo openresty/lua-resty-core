@@ -70,6 +70,8 @@ enable_privileged_agent failed
 
 
 === TEST 2: connections exceed limit
+--- XX: the real connections you can create is always less than you set.
+--- XX: timer will take fake connections.
 --- http_config
     lua_package_path "$TEST_NGINX_LUA_PACKAGE_PATH";
 
@@ -90,7 +92,6 @@ enable_privileged_agent failed
 
             ngx.timer.at(0, function()
 
-                -- the real connections you can create is always less than you set.
                 for i = 1, 10 do
                     local tcpsock = ngx.socket.tcp()
                     local ok, err = tcpsock:connect("127.0.0.1", $TEST_NGINX_RANDOM_PORT)
@@ -124,6 +125,7 @@ worker_connections are not enough
 enable_privileged_agent failed
 --- skip_nginx: 5: < 1.11.2
 --- wait: 0.2
+--- ONLY
 
 
 
