@@ -131,8 +131,6 @@ agent.
 
 The argument connections sets the maximum number of simultaneous connections that can be opened by privileged agent process.
 
-Note that the actual connections you can create is always less then you set.
-
 In case of failures, returns `nil` and a string describing the error.
 
 [Back to TOC](#table-of-contents)
