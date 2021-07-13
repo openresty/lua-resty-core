@@ -177,7 +177,7 @@ GET /t
 --- response_body
 type: worker
 --- error_log
-enable_privileged_agent failed: invaild connections
+enable_privileged_agent failed: bad 'connections' argument
 --- no_error_log
 connect ok
 connect failed
@@ -235,7 +235,7 @@ GET /t
 --- response_body
 type: worker
 --- error_log
-enable_privileged_agent failed: invaild connections
+enable_privileged_agent failed: bad 'connections' argument
 --- no_error_log
 connect ok
 connect failed
