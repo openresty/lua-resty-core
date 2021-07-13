@@ -83,7 +83,7 @@ function _M.enable_privileged_agent(connections)
     connections = connections or 512
 
     if type(connections) ~= "number" or connections < 0 then
-        return nil, "invaild connections"
+        return nil, "bad 'connections' argument: number expect and greater than 0"
     end
 
     local rc = ngx_lua_ffi_enable_privileged_agent(errmsg, connections)
