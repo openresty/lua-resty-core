@@ -11,6 +11,7 @@ plan tests => repeat_each() * (blocks() * 5);
 
 
 $ENV{TEST_NGINX_LUA_PACKAGE_PATH} = $t::TestCore::lua_package_path;
+$ENV{TEST_NGINX_RANDOM_PORT} = Test::Nginx::Util::server_port();
 
 run_tests();
 
@@ -36,7 +37,7 @@ __DATA__
             ngx.log(ngx.WARN, "process type: ", typ)
             ngx.timer.at(0, function()
                 local tcpsock = ngx.socket.tcp()
-                local ok, err = tcpsock:connect("127.0.0.1", 1984)
+                local ok, err = tcpsock:connect("127.0.0.1", $TEST_NGINX_RANDOM_PORT)
 
                 if ok then
                     ngx.log(ngx.INFO, "connect ok ")
@@ -92,7 +93,7 @@ enable_privileged_agent failed
                 -- the real connections you can create is always less than you set.
                 for i = 1, 10 do
                     local tcpsock = ngx.socket.tcp()
-                    local ok, err = tcpsock:connect("127.0.0.1", 1984)
+                    local ok, err = tcpsock:connect("127.0.0.1", $TEST_NGINX_RANDOM_PORT)
 
                     if ok then
                         ngx.log(ngx.INFO, "connect ok ")
@@ -150,7 +151,7 @@ connections < 0
 
                 for i = 1, 10 do
                     local tcpsock = ngx.socket.tcp()
-                    local ok, err = tcpsock:connect("127.0.0.1", 1984)
+                    local ok, err = tcpsock:connect("127.0.0.1", $TEST_NGINX_RANDOM_PORT)
 
                     if ok then
                         ngx.log(ngx.INFO, "connect ok ")
@@ -208,7 +209,7 @@ connections is not a number
 
                 for i = 1, 10 do
                     local tcpsock = ngx.socket.tcp()
-                    local ok, err = tcpsock:connect("127.0.0.1", 1984)
+                    local ok, err = tcpsock:connect("127.0.0.1", $TEST_NGINX_RANDOM_PORT)
 
                     if ok then
                         ngx.log(ngx.INFO, "connect ok ")
@@ -266,7 +267,7 @@ connections = 0
 
                 for i = 1, 10 do
                     local tcpsock = ngx.socket.tcp()
-                    local ok, err = tcpsock:connect("127.0.0.1", 1984)
+                    local ok, err = tcpsock:connect("127.0.0.1", $TEST_NGINX_RANDOM_PORT)
 
                     if ok then
                         ngx.log(ngx.INFO, "connect ok ")

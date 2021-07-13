@@ -7,6 +7,8 @@ BEGIN {
 use lib '.';
 use t::TestCore;
 
+$ENV{TEST_NGINX_RANDOM_PORT} = Test::Nginx::Util::server_port();
+
 #worker_connections(1014);
 master_process_enabled(1);
 #log_level('error');
@@ -48,7 +50,7 @@ add_block_preprocessor(sub {
    
                 for i = 1, 4 do 
                     local tcpsock = ngx.socket.tcp()
-    	            local ok, err = tcpsock:connect("127.0.0.1", 1984)
+    	            local ok, err = tcpsock:connect("127.0.0.1", $ENV{TEST_NGINX_RANDOM_PORT})
     
     	            if ok then
                         ngx.log(ngx.INFO, "connect ok ")
