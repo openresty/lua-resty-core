@@ -70,8 +70,8 @@ enable_privileged_agent failed
 
 
 === TEST 2: connections exceed limit
---- XX: the real connections you can create is always less than you set.
---- XX: timer will take fake connections.
+the real connections you can create is always less than you set.
+timer will take fake connections.
 --- http_config
     lua_package_path "$TEST_NGINX_LUA_PACKAGE_PATH";
 
