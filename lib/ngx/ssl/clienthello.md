@@ -67,7 +67,7 @@ server {
 Description
 ===========
 
-This Lua module provides API functions for post-processing SSL client hello message for NGINX downstream connections. 
+This Lua module provides API functions for post-processing SSL client hello message for NGINX downstream connections.
 
 It must to be used in the contexts [ssl_client_hello_by_lua*](https://github.com/openresty/lua-nginx-module/#ssl_client_hello_by_lua_block).
 
@@ -75,7 +75,7 @@ This Lua API is particularly useful for dynamically setting the SSL protocols ac
 
 It is also useful to do some custom operations according to the per-connection information in the client hello message.
 
-For example, one can parse custom client hello extension and do the corresponding handling in pure Lua.
+For example, one can parse the custom client hello extension and do the corresponding handling in pure Lua.
 
 To load the `ngx.ssl.clienthello` module in Lua, just write
 
@@ -94,13 +94,13 @@ get_client_hello_server_name
 
 **context:** *ssl_client_hello_by_lua&#42;*
 
-Returns the TLS SNI (Server Name Indication) name set by the client. 
+Returns the TLS SNI (Server Name Indication) name set by the client.
 
 Return `nil` when then the extension does not exist.
 
 In case of errors, it returns `nil` and a string describing the error.
 
-Note that the SNI name is gotten from the raw extensions of client hello message associated with the current downstream SSL connection.
+Note that the SNI name is gotten from the raw extensions of the client hello message associated with the current downstream SSL connection.
 
 So this function can only be called in the context of [ssl_client_hello_by_lua*](https://github.com/openresty/lua-nginx-module/#ssl_client_hello_by_lua_block).
 
@@ -112,13 +112,13 @@ get_client_hello_ext
 
 **context:** *ssl_client_hello_by_lua&#42;*
 
-Returns raw data of arbitrary SSL client hello extension including custom extensions. 
+Returns raw data of arbitrary SSL client hello extension including custom extensions.
 
 Returns `nil` if the specified extension type does not exist.
 
 In case of errors, it returns `nil` and a string describing the error.
 
-Note that the ext is gotten from the raw extensions of client hello message associated with the current downstream SSL connection.
+Note that the ext is gotten from the raw extensions of the client hello message associated with the current downstream SSL connection.
 
 So this function can only be called in the context of [ssl_client_hello_by_lua*](https://github.com/openresty/lua-nginx-module/#ssl_client_hello_by_lua_block).
 
@@ -179,11 +179,11 @@ set_protocols
 
 **context:** *ssl_client_hello_by_lua&#42;*
 
-Sets the SSL protocols supported by the current downstream SSL connection. 
+Sets the SSL protocols supported by the current downstream SSL connection.
 
-Returns `true` on success, or a `nil` value and a string describing the error otherwise. 
+Returns `true` on success, or a `nil` value and a string describing the error otherwise.
 
-Considering it is meaningless to set ssl protocols after the protocol is determined, 
+Considering it is meaningless to set ssl protocols after the protocol is determined,
 so this function may only be called in the context of [ssl_client_hello_by_lua*](https://github.com/openresty/lua-nginx-module/#ssl_client_hello_by_lua_block).
 
 Example: `ssl_clt.set_protocols({"TLSv1.1", "TLSv1.2", "TLSv1.3"})`

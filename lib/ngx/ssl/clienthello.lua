@@ -15,6 +15,7 @@ local errmsg = base.get_errmsg_ptr()
 local get_size_ptr = base.get_size_ptr
 local FFI_OK = base.FFI_OK
 local subsystem = ngx.config.subsystem
+local ngx_phase = ngx.get_phase
 
 
 local ngx_lua_ffi_ssl_get_client_hello_server_name
@@ -77,12 +78,21 @@ function _M.get_client_hello_server_name()
         error("no request found")
     end
 
+    if ngx_phase() ~= "ssl_client_hello" then
+        error("API disabled in the current context", 2)
+    end
+
     local sizep = get_size_ptr()
 
     local rc = ngx_lua_ffi_ssl_get_client_hello_server_name(r, ccharpp, sizep,
                 errmsg)
     if rc == FFI_OK then
         return ffi_str(ccharpp[0], sizep[0])
+    end
+
+    -- NGX_DECLINED: no sni extension
+    if rc == -5 then
+        return nil
     end
 
     return nil, ffi_str(errmsg[0])
@@ -96,12 +106,21 @@ function _M.get_client_hello_ext(ext_type)
         error("no request found")
     end
 
+    if ngx_phase() ~= "ssl_client_hello" then
+        error("API disabled in the current context", 2)
+    end
+
     local sizep = get_size_ptr()
 
     local rc = ngx_lua_ffi_ssl_get_client_hello_ext(r, ext_type, cucharpp,
-                sizep, errmsg)
+                                                    sizep, errmsg)
     if rc == FFI_OK then
         return ffi_str(cucharpp[0], sizep[0])
+    end
+
+    -- NGX_DECLINED: no extension
+    if rc == -5 then
+        return nil
     end
 
     return nil, ffi_str(errmsg[0])
@@ -123,6 +142,10 @@ function _M.set_protocols(protocols)
     local r = get_request()
     if not r then
         error("no request found")
+    end
+
+    if ngx_phase() ~= "ssl_client_hello" then
+        error("API disabled in the current context" .. ngx_phase(), 2)
     end
 
     local prots = 0

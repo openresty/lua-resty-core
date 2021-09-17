@@ -374,6 +374,7 @@ read SNI name from Lua: test.com
             local ext = ssl_clt.get_client_hello_ext(0)
             print("read SNI name from Lua: ", ext, ", type: ", type(ext))
         }
+
         ssl_certificate ../../cert/test.crt;
         ssl_certificate_key ../../cert/test.key;
 
