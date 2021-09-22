@@ -47,7 +47,7 @@ if subsystem == 'http' then
 int ngx_http_lua_ffi_shdict_get(void *zone, const unsigned char *key,
     size_t key_len, int *value_type, unsigned char **str_value_buf,
     size_t *str_value_len, double *num_value, int *user_flags,
-    int get_stale, int *is_stale, char **errmsg);
+    int *user_flags_neq, int get_stale, int *is_stale, char **errmsg);
 
 int ngx_http_lua_ffi_shdict_incr(void *zone, const unsigned char *key,
     size_t key_len, double *value, char **err, int has_init,
@@ -101,7 +101,7 @@ elseif subsystem == 'stream' then
 int ngx_stream_lua_ffi_shdict_get(void *zone, const unsigned char *key,
     size_t key_len, int *value_type, unsigned char **str_value_buf,
     size_t *str_value_len, double *num_value, int *user_flags,
-    int get_stale, int *is_stale, char **errmsg);
+    int *user_flags_neq, int get_stale, int *is_stale, char **errmsg);
 
 int ngx_stream_lua_ffi_shdict_incr(void *zone, const unsigned char *key,
     size_t key_len, double *value, char **err, int has_init,
@@ -162,6 +162,7 @@ end
 
 local value_type = ffi_new("int[1]")
 local user_flags = ffi_new("int[1]")
+local user_flags_neq = ffi_new("int[1]")
 local num_value = ffi_new("double[1]")
 local is_stale = ffi_new("int[1]")
 local forcible = ffi_new("int[1]")
@@ -292,11 +293,18 @@ local function shdict_delete(zone, key)
 end
 
 
-local function shdict_get(zone, key)
+local function shdict_get(zone, key, flags)
     zone = check_zone(zone)
 
     if key == nil then
         return nil, "nil key"
+    end
+
+    if flags ~= nil then
+        user_flags_neq[0] = 1
+        user_flags[0] = flags
+    else
+        user_flags_neq[0] = 0
     end
 
     if type(key) ~= "string" then
@@ -319,8 +327,9 @@ local function shdict_get(zone, key)
 
     local rc = ngx_lua_ffi_shdict_get(zone, key, key_len, value_type,
                                       str_value_buf, value_len,
-                                      num_value, user_flags, 0,
-                                      is_stale, errmsg)
+                                      num_value, user_flags,
+                                      user_flags_neq, 0, is_stale,
+                                      errmsg)
     if rc ~= 0 then
         if errmsg[0] ~= nil then
             return nil, ffi_str(errmsg[0])
@@ -332,10 +341,13 @@ local function shdict_get(zone, key)
     local typ = value_type[0]
 
     if typ == 0 then -- LUA_TNIL
+        if flags ~= nil and user_flags_neq[0] == 0 then -- user_flegs are equal
+            return nil, nil, true
+        end
         return nil
     end
 
-    local flags = tonumber(user_flags[0])
+    local flags_ret = tonumber(user_flags[0])
 
     local val
 
@@ -359,19 +371,26 @@ local function shdict_get(zone, key)
         error("unknown value type: " .. typ)
     end
 
-    if flags ~= 0 then
-        return val, flags
+    if flags_ret ~= 0 then
+        return val, flags_ret
     end
 
     return val
 end
 
 
-local function shdict_get_stale(zone, key)
+local function shdict_get_stale(zone, key, flags)
     zone = check_zone(zone)
 
     if key == nil then
         return nil, "nil key"
+    end
+
+    if flags ~= nil then
+        user_flags_neq[0] = 1
+        user_flags[0] = flags
+    else
+        user_flags_neq[0] = 0
     end
 
     if type(key) ~= "string" then
@@ -394,8 +413,9 @@ local function shdict_get_stale(zone, key)
 
     local rc = ngx_lua_ffi_shdict_get(zone, key, key_len, value_type,
                                       str_value_buf, value_len,
-                                      num_value, user_flags, 1,
-                                      is_stale, errmsg)
+                                      num_value, user_flags,
+                                      user_flags_neq, 1, is_stale,
+                                      errmsg)
     if rc ~= 0 then
         if errmsg[0] ~= nil then
             return nil, ffi_str(errmsg[0])
@@ -407,10 +427,13 @@ local function shdict_get_stale(zone, key)
     local typ = value_type[0]
 
     if typ == 0 then -- LUA_TNIL
+        if flags ~= nil and user_flags_neq[0] == 0 then -- user_flegs are equal
+            return nil, nil, is_stale[0] == 1, true
+        end
         return nil
     end
 
-    local flags = tonumber(user_flags[0])
+    local flags_ret = tonumber(user_flags[0])
     local val
 
     if typ == 4 then -- LUA_TSTRING
@@ -433,8 +456,8 @@ local function shdict_get_stale(zone, key)
         error("unknown value type: " .. typ)
     end
 
-    if flags ~= 0 then
-        return val, flags, is_stale[0] == 1
+    if flags_ret ~= 0 then
+        return val, flags_ret, is_stale[0] == 1
     end
 
     return val, nil, is_stale[0] == 1
