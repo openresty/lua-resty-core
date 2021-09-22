@@ -9,7 +9,7 @@ use t::TestCore;
 
 repeat_each(2);
 
-plan tests => repeat_each() * (blocks() * 4 + 6);
+plan tests => repeat_each() * (blocks() * 4 + 5);
 
 $ENV{TEST_NGINX_LUA_PACKAGE_PATH} = "$t::TestCore::lua_package_path";
 
@@ -837,48 +837,52 @@ GET /t
 
 
 
-=== TEST 19: recreate upstream module requests with header change
+=== TEST 19: no 'server' directive
 --- http_config
-    lua_package_path "$TEST_NGINX_LUA_PACKAGE_PATH";
-
     upstream backend {
-        server 0.0.0.1;
-
         balancer_by_lua_block {
-            print("here")
-            local b = require "ngx.balancer"
-
-            if ngx.ctx.balancer_run then
-                assert(b.set_current_peer("127.0.0.1", tonumber(ngx.var.server_port)))
-                ngx.var.test = "second"
-                assert(b.recreate_request())
-
-            else
-                ngx.ctx.balancer_run = true
-                assert(b.set_current_peer("127.0.0.3", 12345))
-                assert(b.set_more_tries(1))
-            end
+            print("hello from balancer by lua!")
         }
     }
 --- config
     location = /t {
-        proxy_next_upstream error timeout invalid_header http_500 http_502 http_503 http_504 http_403 http_404;
-        proxy_next_upstream_tries 2;
-
-        set $test "first";
-
-        proxy_set_header X-Test $test;
-        proxy_pass http://backend/upstream;
-    }
-
-    location = /upstream {
-        return 200 "value is: $http_x_test";
+        proxy_pass http://backend;
     }
 --- request
 GET /t
---- response_body: value is: second
---- error_log
-connect() failed (111: Connection refused) while connecting to upstream, client: 127.0.0.1
+--- error_code: 500
+--- ignore_response_body
+--- error_log eval
+[
+'[lua] balancer_by_lua:2: hello from balancer by lua! while connecting to upstream,',
+qr/\[error\] .*? lua balancer: no peer set/,
+]
 --- no_error_log
 [warn]
-[crit]
+
+
+
+=== TEST 20: set current peer: no 'server' directive
+--- http_config
+    upstream backend {
+        balancer_by_lua_block {
+            print("hello from balancer by lua!")
+            local b = require "ngx.balancer"
+            assert(b.set_current_peer("127.0.0.3", 12345))
+        }
+    }
+--- config
+    location = /t {
+        proxy_pass http://backend;
+    }
+--- request
+GET /t
+--- error_code: 502
+--- ignore_response_body
+--- error_log eval
+[
+'[lua] balancer_by_lua:2: hello from balancer by lua! while connecting to upstream,',
+qr{connect\(\) failed .*?, upstream: "http://127\.0\.0\.3:12345/t"},
+]
+--- no_error_log
+[warn]

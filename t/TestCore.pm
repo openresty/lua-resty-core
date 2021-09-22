@@ -1,10 +1,13 @@
 package t::TestCore;
 
 use Test::Nginx::Socket::Lua -Base;
-use Cwd qw(cwd);
+use Cwd qw(cwd realpath abs_path);
+use File::Basename;
 
 $ENV{TEST_NGINX_HOTLOOP} ||= 10;
 $ENV{TEST_NGINX_MEMCACHED_PORT} ||= 11211;
+$ENV{TEST_NGINX_SERVER_SSL_PORT} ||= 23456;
+$ENV{TEST_NGINX_CERT_DIR} ||= dirname(realpath(abs_path(__FILE__)));
 
 our $pwd = cwd();
 
