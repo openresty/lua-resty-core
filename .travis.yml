@@ -1,6 +1,10 @@
 sudo: required
 dist: trusty
 
+branches:
+  only:
+    - "master"
+
 os: linux
 
 language: c
