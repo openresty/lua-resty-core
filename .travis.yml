@@ -1,6 +1,10 @@
 sudo: required
 dist: trusty
 
+branches:
+  only:
+    - "master"
+
 os: linux
 
 language: c
@@ -40,7 +44,6 @@ env:
     - TEST_NGINX_RANDOMIZE=1
     - LUACHECK_VER=0.21.1
   matrix:
-    - NGINX_VERSION=1.19.9 OPENSSL_VER=1.1.0l OPENSSL_PATCH_VER=1.1.0d
     - NGINX_VERSION=1.19.9 OPENSSL_VER=1.1.1l OPENSSL_PATCH_VER=1.1.1f
 
 services:
