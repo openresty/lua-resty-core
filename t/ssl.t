@@ -16,6 +16,8 @@ no_long_string();
 env_to_nginx("PATH=" . $ENV{'PATH'});
 $ENV{TEST_NGINX_LUA_PACKAGE_PATH} = "$t::TestCore::lua_package_path";
 $ENV{TEST_NGINX_HTML_DIR} ||= html_dir();
+my $NginxBinary = $ENV{'TEST_NGINX_BINARY'} || 'nginx';
+$ENV{TEST_NGINX_OPENSSL_VER} = eval { `$NginxBinary -V 2>&1 | grep OpenSSL` };
 
 run_tests();
 
@@ -108,6 +110,7 @@ sslv3 alert handshake failure
 --- no_error_log
 [alert]
 [emerg]
+--- skip_eval: 6: $ENV{TEST_NGINX_OPENSSL_VER} =~ m/BoringSSL/
 
 
 
@@ -1109,6 +1112,7 @@ got TLS1 version: SSLv3,
 [error]
 [alert]
 [emerg]
+--- skip_eval: 6: $ENV{TEST_NGINX_OPENSSL_VER} =~ m/BoringSSL/
 
 
 

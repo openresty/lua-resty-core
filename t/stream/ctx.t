@@ -7,6 +7,9 @@ repeat_each(2);
 plan tests => repeat_each() * (blocks() * 3 + 4);
 
 $ENV{TEST_NGINX_HTML_DIR} ||= html_dir();
+my $NginxBinary = $ENV{'TEST_NGINX_BINARY'} || 'nginx';
+$ENV{TEST_NGINX_OPENSSL_VER} = eval { `$NginxBinary -V 2>&1 | grep OpenSSL` };
+
 no_long_string();
 check_accum_error_log();
 run_tests();
@@ -280,3 +283,4 @@ lua release ngx.ctx at ref 1
 "]
 --- no_error_log
 [error]
+--- skip_eval: 5: $ENV{TEST_NGINX_OPENSSL_VER} =~ m/BoringSSL/

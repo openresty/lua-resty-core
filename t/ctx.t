@@ -46,6 +46,8 @@ _EOC_
 check_accum_error_log();
 
 $ENV{TEST_NGINX_HTML_DIR} ||= html_dir();
+my $NginxBinary = $ENV{'TEST_NGINX_BINARY'} || 'nginx';
+$ENV{TEST_NGINX_OPENSSL_VER} = eval { `$NginxBinary -V 2>&1 | grep OpenSSL` };
 
 run_tests();
 
@@ -1038,3 +1040,4 @@ lua release ngx.ctx at ref 1
 "]
 --- no_error_log
 [error]
+--- skip_eval: 5: $ENV{TEST_NGINX_OPENSSL_VER} =~ m/BoringSSL/
