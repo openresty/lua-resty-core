@@ -495,15 +495,15 @@ qr/failed to resume session: failed to de-serialize session|ssl_session_(fetch|s
 qr/^ssl_session_fetch_by_lua_block:\d+: session id: [a-fA-F\d]+
 failed to resume session: failed to de-serialize session
 ssl_session_store_by_lua_block:\d+: session id: [a-fA-F\d]+
-$/,
+$/s,
 qr/^ssl_session_fetch_by_lua_block:\d+: session id: [a-fA-F\d]+
 failed to resume session: failed to de-serialize session
 ssl_session_store_by_lua_block:\d+: session id: [a-fA-F\d]+
-$/,
+$/s,
 qr/^ssl_session_fetch_by_lua_block:\d+: session id: [a-fA-F\d]+
 failed to resume session: failed to de-serialize session
 ssl_session_store_by_lua_block:\d+: session id: [a-fA-F\d]+
-$/,
+$/s,
 ]
 
 --- no_error_log
