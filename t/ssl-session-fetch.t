@@ -507,6 +507,7 @@ ssl_session_store_by_lua_block:\d+: session id: [a-fA-F\d]+';
 [alert]
 [emerg]
 [error]
+--- timeout: 5
 
 
 
