@@ -489,18 +489,18 @@ ok
 --- error_log eval
 qr/content_by_lua\(nginx\.conf:\d+\):\d+: CONNECTED/
 --- grep_error_log eval
-qr/failed to resume session: failed to de-serialize session|ssl_session_(fetch|store)_by_lua_block:\d+: session id: [a-fA-F\d]+/s
+qr/failed to resume session: failed to de-serialize session|ssl_session_(fetch|store)_by_lua_block:\d+: session id: [a-fA-F\d]+|cannot yield in sess get cb: missing async sess get cb support in OpenSSL while fetching SSL session by lua/s
 --- grep_error_log_out eval
+my $old_openssl_pattern = 'cannot yield in sess get cb: missing async sess get cb support in OpenSSL while fetching SSL session by lua
+ssl_session_store_by_lua_block:\d+: session id: [a-fA-F\d]+';
+my $openssl_pattern = 'ssl_session_fetch_by_lua_block:\d+: session id: [a-fA-F\d]+
+failed to resume session: failed to de-serialize session
+ssl_session_store_by_lua_block:\d+: session id: [a-fA-F\d]+';
+
 [
-qr/^ssl_session_store_by_lua_block:\d+: session id: [a-fA-F\d]+$/s,
-qr/^ssl_session_fetch_by_lua_block:\d+: session id: [a-fA-F\d]+
-failed to resume session: failed to de-serialize session
-ssl_session_store_by_lua_block:\d+: session id: [a-fA-F\d]+
-$/s,
-qr/ssl_session_fetch_by_lua_block:\d+: session id: [a-fA-F\d]+
-failed to resume session: failed to de-serialize session
-ssl_session_store_by_lua_block:\d+: session id: [a-fA-F\d]+
-$/s,
+    qr/^$old_openssl_pattern|$openssl_pattern$/,
+    qr/^$old_openssl_pattern|$openssl_pattern$/,
+    qr/^$old_openssl_pattern|$openssl_pattern$/,
 ]
 
 --- no_error_log
