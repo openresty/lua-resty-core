@@ -45,6 +45,7 @@ env:
     - LUACHECK_VER=0.21.1
   matrix:
     - NGINX_VERSION=1.19.9 OPENSSL_VER=1.1.1l OPENSSL_PATCH_VER=1.1.1f
+    - NGINX_VERSION=1.21.3 OPENSSL_VER=1.1.1l OPENSSL_PATCH_VER=1.1.1f
 
 services:
   - memcache
@@ -63,7 +64,7 @@ install:
   - git clone https://github.com/openresty/openresty.git ../openresty
   - git clone https://github.com/openresty/openresty-devel-utils.git
   - git clone https://github.com/simpl/ngx_devel_kit.git ../ndk-nginx-module
-  - git clone https://github.com/openresty/lua-nginx-module.git ../lua-nginx-module
+  - git clone -b 0.10.21rc1 https://github.com/xiaocang/lua-nginx-module.git ../lua-nginx-module
   - git clone https://github.com/openresty/no-pool-nginx.git ../no-pool-nginx
   - git clone https://github.com/openresty/echo-nginx-module.git ../echo-nginx-module
   - git clone https://github.com/openresty/lua-resty-lrucache.git
@@ -72,7 +73,7 @@ install:
   - git clone https://github.com/openresty/set-misc-nginx-module.git ../set-misc-nginx-module
   - git clone https://github.com/openresty/mockeagain.git
   - git clone https://github.com/openresty/test-nginx.git
-  - git clone https://github.com/openresty/stream-lua-nginx-module.git ../stream-lua-nginx-module
+  - git clone -b 0.0.11rc1 https://github.com/xiaocang/stream-lua-nginx-module.git ../stream-lua-nginx-module
 
 script:
   - cd luajit2/
