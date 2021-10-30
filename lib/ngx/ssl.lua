@@ -37,7 +37,7 @@ local ngx_lua_ffi_set_priv_key
 local ngx_lua_ffi_free_cert
 local ngx_lua_ffi_free_priv_key
 local ngx_lua_ffi_ssl_verify_client
-
+local ngx_lua_ffi_ssl_ciphers
 
 if subsystem == 'http' then
     ffi.cdef[[
@@ -86,6 +86,9 @@ if subsystem == 'http' then
 
     int ngx_http_lua_ffi_ssl_verify_client(void *r,
         void *cdata, int depth, char **err);
+
+    int ngx_http_lua_ffi_ssl_ciphers(ngx_http_request_t *r, char **pciphers,
+        size_t *cipherslen, char **err);
     ]]
 
     ngx_lua_ffi_ssl_set_der_certificate =
@@ -107,6 +110,7 @@ if subsystem == 'http' then
     ngx_lua_ffi_free_cert = C.ngx_http_lua_ffi_free_cert
     ngx_lua_ffi_free_priv_key = C.ngx_http_lua_ffi_free_priv_key
     ngx_lua_ffi_ssl_verify_client = C.ngx_http_lua_ffi_ssl_verify_client
+    ngx_lua_ffi_ssl_ciphers = C.ngx_http_lua_ffi_ssl_ciphers
 
 elseif subsystem == 'stream' then
     ffi.cdef[[
@@ -156,6 +160,8 @@ elseif subsystem == 'stream' then
 
     int ngx_stream_lua_ffi_ssl_verify_client(void *r,
         void *cdata, int depth, char **err);
+    int ngx_stream_lua_ffi_ssl_ciphers(ngx_stream_lua_request_t *r,
+        char **pciphers, size_t *cipherslen, char **err);
     ]]
 
     ngx_lua_ffi_ssl_set_der_certificate =
@@ -177,6 +183,7 @@ elseif subsystem == 'stream' then
     ngx_lua_ffi_free_cert = C.ngx_stream_lua_ffi_free_cert
     ngx_lua_ffi_free_priv_key = C.ngx_stream_lua_ffi_free_priv_key
     ngx_lua_ffi_ssl_verify_client = C.ngx_stream_lua_ffi_ssl_verify_client
+    ngx_lua_ffi_ssl_ciphers = C.ngx_stream_lua_ffi_ssl_ciphers
 end
 
 
@@ -315,6 +322,23 @@ function _M.raw_client_addr()
     end
 
     return nil, nil, ffi_str(errmsg[0])
+end
+
+
+function _M.ciphers()
+    local r = get_request()
+    if not r then
+        error("no request found")
+    end
+
+    local sizep = get_size_ptr()
+
+    local rc = ngx_lua_ffi_ssl_ciphers(r, charpp, sizep, errmsg)
+    if rc == FFI_OK then
+        return ffi_str(charpp[0], sizep[0])
+    end
+
+    return nil, ffi_str(errmsg[0])
 end
 
 

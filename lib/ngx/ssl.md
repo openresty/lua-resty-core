@@ -11,6 +11,7 @@ Table of Contents
 * [Synopsis](#synopsis)
 * [Description](#description)
 * [Methods](#methods)
+    * [ciphers](#ciphers)
     * [clear_certs](#clear_certs)
     * [cert_pem_to_der](#cert_pem_to_der)
     * [set_der_cert](#set_der_cert)
@@ -133,6 +134,38 @@ local ssl = require "ngx.ssl"
 
 Methods
 =======
+ciphers
+---------------
+**syntax:** *ciphers, err = ssl.ciphers()*
+
+**context:** *any*
+
+returns the list of ciphers supported by the client. Known ciphers are listed
+by names, unknown are shown in hexadecimal, for example:
+ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384
+
+The variable is fully supported only when using OpenSSL version 1.0.2 or higher.
+With older versions, the variable is available only for new sessions and lists only known ciphers.
+
+The following code snippet shows how to print out the ciphers supported by the client:
+
+```lua
+local ssl = require "ngx.ssl"
+
+local ciphers, err = ssl.ciphers()
+if not ciphers then
+    ngx.log(ngx.ERR, "failed to fetch ciphers: ", err)
+    return
+end
+
+print("ciphers: ", ciphers)
+```
+
+This function can be called in any context where downstream https is used.
+
+This function was first introduced in lua-resty-core v0.1.22.4.
+
+[Back to TOC](#table-of-contents)
 
 clear_certs
 -----------
