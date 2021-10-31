@@ -46,20 +46,18 @@ add_block_preprocessor(sub {
         if v == "privileged agent" then
             ngx.log(ngx.WARN, "process type: ", v)
 
-            ngx.timer.at(0, function() 
-   
-                for i = 1, 4 do 
+            ngx.timer.at(0, function()
+                for i = 1, 4 do
                     local tcpsock = ngx.socket.tcp()
-    	            local ok, err = tcpsock:connect("127.0.0.1", $ENV{TEST_NGINX_RANDOM_PORT})
-    
-    	            if ok then
+                    local ok, err = tcpsock:connect("127.0.0.1", $ENV{TEST_NGINX_RANDOM_PORT})
+
+                    if ok then
                         ngx.log(ngx.INFO, "connect ok ")
                     else
-		        ngx.log(ngx.INFO, "connect not ok " .. tostring(err)) 
-    	            end
-		end
+                        ngx.log(ngx.INFO, "connect not ok " .. tostring(err))
+                    end
+                end
             end)
-
         end
     }
 _EOC_
