@@ -163,7 +163,7 @@ print("ciphers: ", ciphers)
 
 This function can be called in any context where downstream https is used.
 
-This function was first introduced in lua-resty-core v0.1.22.4.
+This function was first introduced in lua-resty-core v0.1.23.
 
 [Back to TOC](#table-of-contents)
 
