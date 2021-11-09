@@ -292,10 +292,8 @@ connections = 0
 GET /t
 --- response_body
 type: worker
---- grep_error_log eval
-qr/privileged agent process \d+ exited with fatal code 2 and cannot be respawned/
---- grep_error_log_out eval
-qr/privileged agent process \d+ exited with fatal code 2 and cannot be respawned/
+--- error_log
+0 worker_connection is not enough, privileged agent process cannot be spawned
 --- no_error_log
 process type: privileged agent
 connect ok
