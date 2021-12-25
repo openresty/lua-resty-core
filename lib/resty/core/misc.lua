@@ -115,8 +115,6 @@ if subsystem == "http" then
         if rc == FFI_BAD_CONTEXT then
             error("API disabled in the current context", 2)
         end
-
-        return
     end
     register_setter("status", set_status)
 
