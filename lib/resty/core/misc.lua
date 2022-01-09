@@ -165,6 +165,25 @@ if subsystem == "http" then
     end
     register_getter("headers_sent", headers_sent)
 
+
+    -- ngx.req.is_internal
+
+
+    function ngx.req.is_internal()
+        local r = get_request()
+        if not r then
+            error("no request found")
+        end
+
+        local rc = C.ngx_http_lua_ffi_req_is_internal(r)
+
+        if rc == FFI_BAD_CONTEXT then
+            error("API disabled in the current context")
+        end
+
+        return rc == 1
+    end
+
 elseif subsystem == "stream" then
     ffi.cdef[[
     int ngx_stream_lua_ffi_get_resp_status(ngx_stream_lua_request_t *r);
@@ -234,24 +253,6 @@ end
 
 
 _M._VERSION = base.version
-
-
--- ngx.req.is_internal
-
-function ngx.req.is_internal()
-    local r = get_request()
-    if not r then
-        error("no request found")
-    end
-
-    local rc = C.ngx_http_lua_ffi_req_is_internal(r)
-
-    if rc == FFI_BAD_CONTEXT then
-        error("API disabled in the current context")
-    end
-
-    return rc == 1
-end
 
 
 return _M
