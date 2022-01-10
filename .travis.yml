@@ -18,6 +18,7 @@ addons:
     - cpanminus
     - axel
     - luarocks
+    - daemonize
 
 cache:
   directories:
