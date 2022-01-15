@@ -2705,3 +2705,135 @@ read server port from Lua: nilunix domain has no port
 [error]
 [alert]
 [emerg]
+
+
+
+=== TEST 28: PEM key protected by passphrase
+--- http_config
+    lua_package_path "$TEST_NGINX_LUA_PACKAGE_PATH";
+
+    server {
+        listen unix:$TEST_NGINX_HTML_DIR/nginx.sock ssl;
+        server_name   test.com;
+        ssl_certificate_by_lua_block {
+            local ssl = require "ngx.ssl"
+
+            ssl.clear_certs()
+
+            local f = assert(io.open("t/cert/test_passphrase.crt"))
+            local cert_data = f:read("*a")
+            f:close()
+
+            local cert, err = ssl.cert_pem_to_der(cert_data)
+            if not cert then
+                ngx.log(ngx.ERR, "failed to convert pem cert to der cert: ", err)
+                return
+            end
+
+            local ok, err = ssl.set_der_cert(cert)
+            if not ok then
+                ngx.log(ngx.ERR, "failed to set DER cert: ", err)
+                return
+            end
+
+            local f = assert(io.open("t/cert/test_passphrase.key"))
+            local pkey_data = f:read("*a")
+            f:close()
+
+            pkey_data, err = ssl.priv_key_pem_to_der(pkey_data, "123456")
+            if not pkey_data then
+                ngx.log(ngx.ERR, "failed to convert pem key to der key: ", err)
+                return
+            end
+            local ok, err = ssl.set_der_priv_key(pkey_data)
+            if not ok then
+                ngx.log(ngx.ERR, "failed to set private key: ", err)
+                return
+            end
+        }
+        ssl_certificate ../../cert/test2.crt;
+        ssl_certificate_key ../../cert/test2.key;
+
+        server_tokens off;
+        location /foo {
+            default_type 'text/plain';
+            content_by_lua_block { ngx.status = 201 ngx.say("foo") ngx.exit(201) }
+            more_clear_headers Date;
+        }
+    }
+--- config
+    server_tokens off;
+    lua_ssl_trusted_certificate ../../cert/chain/root-ca.crt;
+    lua_ssl_verify_depth 3;
+
+    location /t {
+        content_by_lua_block {
+            do
+                local sock = ngx.socket.tcp()
+
+                sock:settimeout(3000)
+
+                local ok, err = sock:connect("unix:$TEST_NGINX_HTML_DIR/nginx.sock")
+                if not ok then
+                    ngx.say("failed to connect: ", err)
+                    return
+                end
+
+                ngx.say("connected: ", ok)
+
+                local sess, err = sock:sslhandshake(nil, "test.com", false)
+                if not sess then
+                    ngx.say("failed to do SSL handshake: ", err)
+                    return
+                end
+
+                ngx.say("ssl handshake: ", type(sess))
+
+                local req = "GET /foo HTTP/1.0\r\nHost: test.com\r\nConnection: close\r\n\r\n"
+                local bytes, err = sock:send(req)
+                if not bytes then
+                    ngx.say("failed to send http request: ", err)
+                    return
+                end
+
+                ngx.say("sent http request: ", bytes, " bytes.")
+
+                while true do
+                    local line, err = sock:receive()
+                    if not line then
+                        -- ngx.say("failed to receive response status line: ", err)
+                        break
+                    end
+
+                    ngx.say("received: ", line)
+                end
+
+                local ok, err = sock:close()
+                ngx.say("close: ", ok, " ", err)
+            end  -- do
+            -- collectgarbage()
+        }
+    }
+
+--- request
+GET /t
+--- response_body
+connected: 1
+ssl handshake: userdata
+sent http request: 56 bytes.
+received: HTTP/1.1 201 Created
+received: Server: nginx
+received: Content-Type: text/plain
+received: Content-Length: 4
+received: Connection: close
+received: 
+received: foo
+close: 1 nil
+
+--- error_log
+lua ssl server name: "test.com"
+
+--- no_error_log
+[error]
+[alert]
+[emerg]
