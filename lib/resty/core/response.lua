@@ -95,6 +95,10 @@ local function set_resp_header(tb, key, value, no_override)
             end
             sval_len = #sval
 
+            if sval_len == 0 then
+                return
+            end
+
             mvals_len = 0
         end
 
