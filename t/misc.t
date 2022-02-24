@@ -39,7 +39,7 @@ GET /t
  bad argument
 --- error_log eval
 ["is subrequest: false,",
-qr/\[TRACE\s+\d+\s+header_filter_by_lua:3 loop\]/
+qr/\[TRACE\s+\d+\s+header_filter_by_lua\(nginx.conf:58\):3 loop\]/
 ]
 
 

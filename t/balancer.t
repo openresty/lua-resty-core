@@ -42,7 +42,7 @@ __DATA__
 --- error_code: 502
 --- error_log eval
 [
-'[lua] balancer_by_lua:2: hello from balancer by lua! while connecting to upstream,',
+'[lua] balancer_by_lua(nginx.conf:29):2: hello from balancer by lua! while connecting to upstream,',
 qr{connect\(\) failed .*?, upstream: "http://127\.0\.0\.3:12345/t"},
 ]
 --- no_error_log
@@ -419,7 +419,7 @@ last peer failure: failed 502
 --- error_code: 502
 --- error_log eval
 [
-'[lua] balancer_by_lua:2: hello from balancer by lua! while connecting to upstream,',
+'[lua] balancer_by_lua(nginx.conf:29):2: hello from balancer by lua! while connecting to upstream,',
 qr{connect\(\) failed .*?, upstream: "http://127\.0\.0\.3:12345/t"},
 ]
 --- no_error_log
@@ -457,7 +457,7 @@ qr{connect\(\) failed .*?, upstream: "http://127\.0\.0\.3:12345/t"},
 --- error_code: 502
 --- error_log eval
 [
-'[lua] balancer_by_lua:2: hello from balancer by lua! while connecting to upstream,',
+'[lua] balancer_by_lua(nginx.conf:30):2: hello from balancer by lua! while connecting to upstream,',
 qr{connect\(\) failed .*?, upstream: "http://127\.0\.0\.3:12345/t"},
 ]
 --- no_error_log
