@@ -7,6 +7,7 @@ base.allows_subsystem('http', 'stream')
 
 local ffi = require "ffi"
 local bit  = require "bit"
+local bor = bit.bor
 local C = ffi.C
 local ffi_str = ffi.string
 local get_request = base.get_request
@@ -153,7 +154,7 @@ function _M.set_protocols(protocols)
         if not prot_map[v] then
             return nil, "invalid protocols failed"
         end
-        prots = bit.bor(prots, prot_map[v])
+        prots = bor(prots, prot_map[v])
     end
 
     local rc = ngx_lua_ffi_ssl_set_protocols(r, prots, errmsg)
