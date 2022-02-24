@@ -53,7 +53,7 @@ services:
 
 before_install:
   - sudo luarocks install luacheck $LUACHECK_VER
-  - luacheck -q .
+  - luacheck --globals coroutine -q .
   - '! grep -n -P ''(?<=.{80}).+'' --color `find . -name ''*.lua''` || (echo "ERROR: Found Lua source lines exceeding 80 columns." > /dev/stderr; exit 1)'
   - '! grep -n -P ''\t+'' --color `find . -name ''*.lua''` || (echo "ERROR: Cannot use tabs." > /dev/stderr; exit 1)'
   - sudo cpanm --notest Test::Nginx IPC::Run > build.log 2>&1 || (cat build.log && exit 1)
