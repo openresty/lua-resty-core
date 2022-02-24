@@ -32,6 +32,7 @@ Table of Contents
     * [ngx.semaphore](#ngxsemaphore)
     * [ngx.balancer](#ngxbalancer)
     * [ngx.ssl](#ngxssl)
+    * [ngx.ssl.clienthello](#ngxsslclienthello)
     * [ngx.ssl.session](#ngxsslsession)
     * [ngx.re](#ngxre)
     * [ngx.resp](#ngxresp)
@@ -295,6 +296,15 @@ This Lua module provides a Lua API for controlling SSL certificates, private key
 SSL protocol versions, and etc in NGINX downstream SSL handshakes.
 
 See the [documentation](./lib/ngx/ssl.md) for this Lua module for more details.
+
+[Back to TOC](#table-of-contents)
+
+## ngx.ssl.clienthello
+
+This Lua module provides a Lua API for post-processing SSL client hello message
+for NGINX downstream SSL connections.
+
+See the [documentation](./lib/ngx/ssl/clienthello.md) for this Lua module for more details.
 
 [Back to TOC](#table-of-contents)
 
