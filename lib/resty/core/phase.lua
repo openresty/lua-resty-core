@@ -55,6 +55,16 @@ function ngx.get_phase()
 end
 
 
+function ngx.get_raw_phase(r)
+    local context = C.ngx_http_lua_ffi_get_phase(r, errmsg)
+    if context == FFI_ERROR then -- NGX_ERROR
+        error(errmsg, 2)
+    end
+
+    return context
+end
+
+
 return {
     version = base.version
 }
