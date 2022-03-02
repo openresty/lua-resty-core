@@ -80,7 +80,7 @@ function _M.get_client_hello_server_name()
     end
 
     if ngx_phase() ~= "ssl_client_hello" then
-        error("API disabled in the current context", 2)
+        error("API disabled in the current context")
     end
 
     local sizep = get_size_ptr()
@@ -108,7 +108,7 @@ function _M.get_client_hello_ext(ext_type)
     end
 
     if ngx_phase() ~= "ssl_client_hello" then
-        error("API disabled in the current context", 2)
+        error("API disabled in the current context")
     end
 
     local sizep = get_size_ptr()
@@ -146,7 +146,7 @@ function _M.set_protocols(protocols)
     end
 
     if ngx_phase() ~= "ssl_client_hello" then
-        error("API disabled in the current context" .. ngx_phase(), 2)
+        error("API disabled in the current context")
     end
 
     local prots = 0
