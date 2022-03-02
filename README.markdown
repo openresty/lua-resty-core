@@ -29,6 +29,7 @@ Table of Contents
     * [resty.core.phase](#restycorephase)
     * [resty.core.ndk](#restycorendk)
     * [resty.core.socket](#restycoresocket)
+    * [resty.core.param](#restycoreparam)
     * [ngx.semaphore](#ngxsemaphore)
     * [ngx.balancer](#ngxbalancer)
     * [ngx.ssl](#ngxssl)
@@ -270,6 +271,12 @@ in the current request before you reusing the `ctx` table in some other place.
 ## resty.core.socket
 
 * [socket.setoption](https://github.com/openresty/lua-nginx-module#tcpsocksetoption)
+
+[Back to TOC](#table-of-contents)
+
+## resty.core.param
+
+* [ngx.arg](https://github.com/openresty/lua-nginx-module#ngxarg) (getter only)
 
 [Back to TOC](#table-of-contents)
 
