@@ -2513,7 +2513,7 @@ client certificate subject: nil
     lua_package_path "$TEST_NGINX_LUA_PACKAGE_PATH";
 
     server {
-        listen 127.0.0.1:12345 ssl;
+        listen 127.0.0.1:$TEST_NGINX_RAND_PORT_2 ssl;
         server_name   test.com;
         ssl_certificate_by_lua_block {
             local ssl = require "ngx.ssl"
@@ -2541,7 +2541,7 @@ client certificate subject: nil
 
                 sock:settimeout(3000)
 
-                local ok, err = sock:connect("127.0.0.1", 12345)
+                local ok, err = sock:connect("127.0.0.1", $TEST_NGINX_RAND_PORT_2)
                 if not ok then
                     ngx.say("failed to connect: ", err)
                     return
@@ -2598,8 +2598,8 @@ received:
 received: foo
 close: 1 nil
 
---- error_log
-read server port from Lua: 12345
+--- error_log eval
+qr/read server port from Lua: \d+/
 
 --- no_error_log
 [error]
