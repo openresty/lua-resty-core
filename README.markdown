@@ -271,6 +271,8 @@ in the current request before you reusing the `ctx` table in some other place.
 ## resty.core.socket
 
 * [socket.setoption](https://github.com/openresty/lua-nginx-module#tcpsocksetoption)
+* [socket.setclientcert](https://github.com/openresty/lua-nginx-module#tcpsocksetclientcert)
+* [socket.sslhandshake](https://github.com/openresty/lua-nginx-module#tcpsocksslhandshake)
 
 [Back to TOC](#table-of-contents)
 

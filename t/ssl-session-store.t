@@ -85,7 +85,7 @@ __DATA__
 GET /t
 --- response_body
 connected: 1
-ssl handshake: userdata
+ssl handshake: cdata
 close: 1 nil
 
 --- error_log eval
@@ -157,7 +157,7 @@ qr/ssl_session_store_by_lua\(nginx.conf:\d+\):4: session size: \d+/s
 GET /t
 --- response_body
 connected: 1
-ssl handshake: userdata
+ssl handshake: cdata
 close: 1 nil
 
 --- error_log eval
@@ -265,7 +265,7 @@ qr/ssl_session_store_by_lua\(nginx.conf:\d+\):4: session id: [a-fA-f\d]+/s
 GET /t
 --- response_body
 connected: 1
-ssl handshake: userdata
+ssl handshake: cdata
 close: 1 nil
 
 --- error_log eval
