@@ -30,6 +30,7 @@ local context_names = {
     [0x1000] = "ssl_session_fetch",
     [0x2000] = "exit_worker",
     [0x4000] = "ssl_client_hello",
+    [0x8000] = "server_rewrite",
 }
 
 
