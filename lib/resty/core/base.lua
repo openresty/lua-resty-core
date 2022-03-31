@@ -2,6 +2,7 @@
 
 
 local ffi = require 'ffi'
+local C = ffi.C
 local ffi_new = ffi.new
 local error = error
 local select = select
@@ -14,6 +15,10 @@ local str_buf
 local size_ptr
 local FREE_LIST_REF = 0
 
+
+ffi.cdef[[
+    double lj_ffi_get_key_sentinel(void);
+]]
 
 if subsystem == 'http' then
     local ngx_lua_v = ngx.config.ngx_lua_version
@@ -69,14 +74,38 @@ end
 do
     local orig_require = require
     local pkg_loaded = package.loaded
-    local function my_require(name)
-        local mod = pkg_loaded[name]
-        if mod then
-            return mod
-        end
-        return orig_require(name)
+    local key_sentinel
+
+    local function get_key_sentinel()
+        local n = C.lj_ffi_get_key_sentinel()
+        key_sentinel = tonumber(n)
     end
-    getfenv(0).require = my_require
+
+    pcall(get_key_sentinel)
+
+    if key_sentinel ~= nil then
+        local function my_require(name)
+            local mod = pkg_loaded[name]
+            if mod then
+                if type(mod) == 'number' and mod == key_sentinel then
+                    error("loop or previous error loading module '" .. name .. "'")
+                end
+
+                return mod
+            end
+            return orig_require(name)
+        end
+        getfenv(0).require = my_require
+    else
+        local function my_require(name)
+            local mod = pkg_loaded[name]
+            if mod then
+                return mod
+            end
+            return orig_require(name)
+        end
+        getfenv(0).require = my_require
+    end
 end
 
 
