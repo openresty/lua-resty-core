@@ -75,7 +75,7 @@ do
     local function my_require(name)
         local mod = pkg_loaded[name]
         if mod then
-            if type(mod) == 'number' and mod == key_sentinel then
+            if mod == key_sentinel then
                 error("loop or previous error loading module '" .. name .. "'")
             end
 

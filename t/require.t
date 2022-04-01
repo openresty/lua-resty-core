@@ -69,6 +69,6 @@ return _M
 GET /t
 --- response_body eval
 qr|failed to load foo: .*-core/t/servroot//html/foo.lua:10: /opt/luajit21/lib/libluajit-5.1.so.2: undefined symbol: xxxx
-failed to load foo again: ./lib/resty/core/base.lua:91: loop or previous error loading module 'foo'|ms
+failed to load foo again: ./lib/resty/core/base.lua:\d+: loop or previous error loading module 'foo'|ms
 --- no_error_log
 [error]
