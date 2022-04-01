@@ -2,7 +2,6 @@
 
 
 local ffi = require 'ffi'
-local C = ffi.C
 local ffi_new = ffi.new
 local error = error
 local select = select
@@ -74,38 +73,21 @@ end
 do
     local orig_require = require
     local pkg_loaded = package.loaded
-    local key_sentinel
+    --- key_sentinel require using openresty/luajit2 otherwise it is nil
+    local key_sentinel = pkg_loaded.package.key_sentinel
 
-    local function get_key_sentinel()
-        local n = C.lj_ffi_get_key_sentinel()
-        key_sentinel = tonumber(n)
-    end
-
-    pcall(get_key_sentinel)
-
-    if key_sentinel ~= nil then
-        local function my_require(name)
-            local mod = pkg_loaded[name]
-            if mod then
-                if type(mod) == 'number' and mod == key_sentinel then
-                    error("loop or previous error loading module '" .. name .. "'")
-                end
-
-                return mod
+    local function my_require(name)
+        local mod = pkg_loaded[name]
+        if mod then
+            if type(mod) == 'number' and mod == key_sentinel then
+                error("loop or previous error loading module '" .. name .. "'")
             end
-            return orig_require(name)
+
+            return mod
         end
-        getfenv(0).require = my_require
-    else
-        local function my_require(name)
-            local mod = pkg_loaded[name]
-            if mod then
-                return mod
-            end
-            return orig_require(name)
-        end
-        getfenv(0).require = my_require
+        return orig_require(name)
     end
+    getfenv(0).require = my_require
 end
 
 
