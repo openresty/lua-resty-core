@@ -15,10 +15,6 @@ local size_ptr
 local FREE_LIST_REF = 0
 
 
-ffi.cdef[[
-    double lj_ffi_get_key_sentinel(void);
-]]
-
 if subsystem == 'http' then
     local ngx_lua_v = ngx.config.ngx_lua_version
     if not ngx.config
