@@ -69,8 +69,7 @@ end
 do
     local orig_require = require
     local pkg_loaded = package.loaded
-    --- key_sentinel require using openresty/luajit2 otherwise it is nil
-    local key_sentinel = pkg_loaded.package.key_sentinel
+    local key_sentinel = pkg_loaded[...]
 
     local function my_require(name)
         local mod = pkg_loaded[name]
