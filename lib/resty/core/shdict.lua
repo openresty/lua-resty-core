@@ -364,19 +364,19 @@ int ngx_stream_lua_ffi_shdict_incr_macos_arm64(ngx_stream_lua_shdict_incr_params
         str_value_buf, value_len, num_value,
         user_flags, get_stale, is_stale, errmsg)
 
-            get_params.zone = zone
-            get_params.key = key
-            get_params.key_len = key_len
-            get_params.value_type = value_type
-            get_params.str_value_buf = str_value_buf
-            get_params.str_value_len = value_len
-            get_params.num_value = num_value
-            get_params.user_flags = user_flags
-            get_params.get_stale = get_stale
-            get_params.is_stale = is_stale
-            get_params.errmsg = errmsg
+        get_params.zone = zone
+        get_params.key = key
+        get_params.key_len = key_len
+        get_params.value_type = value_type
+        get_params.str_value_buf = str_value_buf
+        get_params.str_value_len = value_len
+        get_params.num_value = num_value
+        get_params.user_flags = user_flags
+        get_params.get_stale = get_stale
+        get_params.is_stale = is_stale
+        get_params.errmsg = errmsg
 
-            return C.ngx_stream_lua_ffi_shdict_get_macos_arm64(get_params)
+        return C.ngx_stream_lua_ffi_shdict_get_macos_arm64(get_params)
     end
 
     ngx_lua_ffi_shdict_incr = function(zone, key,
