@@ -45,6 +45,56 @@ ffi.cdef[[
 ]]
 
 
+local ngx_lua_ffi_set_resp_header
+
+local MACOS_ARM64 = jit and jit.os == "OSX" and jit.arch == "arm64"
+
+if MACOS_ARM64 then
+    ffi.cdef[[
+        typedef struct {
+            ngx_http_request_t  *r;
+            const char          *key_data;
+            size_t               key_len;
+            int                  is_nil;
+            const char          *sval;
+            size_t               sval_len;
+            void                *mvals;
+            size_t               mvals_len;
+            int                  override;
+            char               **errmsg;
+        } ngx_http_lua_set_resp_header_t;
+
+        int ngx_http_lua_ffi_set_resp_header_macos_arm64(
+            ngx_http_lua_set_resp_header_t *p);
+    ]]
+    local set_param = ffi.new("ngx_http_lua_set_resp_header_t")
+
+    ngx_lua_ffi_set_resp_header = function(r, key, key_len, is_nil,
+
+        sval, sval_len, mvals, mvals_len, override, errmsg)
+        set_param.r = r
+        set_param.key_data = key
+        set_param.key_len = #key
+        set_param.is_nil = is_nil
+        set_param.sval = sval
+        set_param.sval_len = sval_len
+        set_param.mvals = mvals
+        set_param.mvals_len = mvals_len
+        set_param.override = override
+        set_param.errmsg = errmsg
+
+        return C.ngx_http_lua_ffi_set_resp_header_macos_arm64(set_param)
+    end
+else
+    ngx_lua_ffi_set_resp_header = function(r, key, key_len, is_nil,
+        sval, sval_len, mvals, mvals_len, override, errmsg)
+
+        return C.ngx_http_lua_ffi_set_resp_header(r, key, key_len, is_nil,
+        sval, sval_len, mvals, mvals_len, override, errmsg)
+    end
+end
+
+
 local function set_resp_header(tb, key, value, no_override)
     local r = get_request()
     if not r then
@@ -61,8 +111,8 @@ local function set_resp_header(tb, key, value, no_override)
             error("invalid header value", 3)
         end
 
-        rc = C.ngx_http_lua_ffi_set_resp_header(r, key, #key, true, nil, 0, nil,
-                                                0, 1, errmsg)
+        rc = ngx_lua_ffi_set_resp_header(r, key, #key, true, nil, 0, nil,
+                                         0, 1, errmsg)
     else
         local sval, sval_len, mvals, mvals_len, buf
 
@@ -99,9 +149,9 @@ local function set_resp_header(tb, key, value, no_override)
         end
 
         local override_int = no_override and 0 or 1
-        rc = C.ngx_http_lua_ffi_set_resp_header(r, key, #key, false, sval,
-                                                sval_len, mvals, mvals_len,
-                                                override_int, errmsg)
+        rc = ngx_lua_ffi_set_resp_header(r, key, #key, false, sval,
+                                         sval_len, mvals, mvals_len,
+                                         override_int, errmsg)
     end
 
     if rc == 0 or rc == FFI_DECLINED then
