@@ -62,16 +62,16 @@ if MACOS_ARM64 then
             size_t               mvals_len;
             int                  override;
             char               **errmsg;
-        } ngx_http_lua_set_resp_header_t;
+        } ngx_http_lua_set_resp_header_params_t;
 
         int ngx_http_lua_ffi_set_resp_header_macos_arm64(
-            ngx_http_lua_set_resp_header_t *p);
+            ngx_http_lua_set_resp_header_params_t *p);
     ]]
 
     local ffi_fill = ffi.fill
 
-    local set_param = ffi.new("ngx_http_lua_set_resp_header_t")
-    local sizeof_set_param = ffi.sizeof("ngx_http_lua_set_resp_header_t")
+    local set_param = ffi.new("ngx_http_lua_set_resp_header_params_t")
+    local sizeof_set_param = ffi.sizeof("ngx_http_lua_set_resp_header_params_t")
 
     ngx_lua_ffi_set_resp_header = function(r, key, key_len, is_nil,
         sval, sval_len, mvals, mvals_len, override, errmsg)
