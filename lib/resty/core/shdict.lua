@@ -179,7 +179,7 @@ local MACOS_ARM64 = jit and jit.os == "OSX" and jit.arch == "arm64"
 if MACOS_ARM64 and subsystem == 'http' then
     ffi.cdef[[
 typedef struct {
-    ngx_shm_zone_t      *zone;
+    void                *zone;
     const unsigned char *key;
     size_t               key_len;
     int                 *value_type;
@@ -193,7 +193,7 @@ typedef struct {
 } ngx_http_lua_shdict_get_params_t;
 
 typedef struct {
-    ngx_shm_zone_t      *zone;
+    void                *zone;
     int                  op;
     const unsigned char *key;
     size_t               key_len;
@@ -208,7 +208,7 @@ typedef struct {
 } ngx_http_lua_shdict_store_params_t;
 
 typedef struct {
-    ngx_shm_zone_t      *zone;
+    void                *zone;
     const unsigned char *key;
     size_t               key_len;
     double              *num_value;
@@ -251,7 +251,7 @@ end
 if MACOS_ARM64 and subsystem == 'stream' then
     ffi.cdef[[
 typedef struct {
-    ngx_shm_zone_t      *zone;
+    void                *zone;
     const unsigned char *key;
     size_t               key_len;
     int                 *value_type;
@@ -265,7 +265,7 @@ typedef struct {
 } ngx_stream_lua_shdict_get_params_t;
 
 typedef struct {
-    ngx_shm_zone_t      *zone;
+    void                *zone;
     int                  op;
     const unsigned char *key;
     size_t               key_len;
@@ -280,7 +280,7 @@ typedef struct {
 } ngx_stream_lua_shdict_store_params_t;
 
 typedef struct {
-    ngx_shm_zone_t      *zone;
+    void                *zone;
     const unsigned char *key;
     size_t               key_len;
     double              *num_value;
