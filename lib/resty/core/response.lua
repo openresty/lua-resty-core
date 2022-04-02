@@ -47,6 +47,13 @@ ffi.cdef[[
 
 local ngx_lua_ffi_set_resp_header
 
+ngx_lua_ffi_set_resp_header = function(r, key, key_len, is_nil,
+    sval, sval_len, mvals, mvals_len, override, errmsg)
+
+    return C.ngx_http_lua_ffi_set_resp_header(r, key, key_len, is_nil,
+                sval, sval_len, mvals, mvals_len, override, errmsg)
+end
+
 local MACOS_ARM64 = jit and jit.os == "OSX" and jit.arch == "arm64"
 
 if MACOS_ARM64 then
@@ -90,13 +97,6 @@ if MACOS_ARM64 then
         set_param.errmsg = errmsg
 
         return C.ngx_http_lua_ffi_set_resp_header_macos_arm64(set_param)
-    end
-else
-    ngx_lua_ffi_set_resp_header = function(r, key, key_len, is_nil,
-        sval, sval_len, mvals, mvals_len, override, errmsg)
-
-        return C.ngx_http_lua_ffi_set_resp_header(r, key, key_len, is_nil,
-                    sval, sval_len, mvals, mvals_len, override, errmsg)
     end
 end
 
