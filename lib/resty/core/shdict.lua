@@ -92,7 +92,19 @@ void *ngx_http_lua_ffi_shdict_udata_to_zone(void *zone_udata);
                                        init, init_ttl, forcible)
     end
 
-    ngx_lua_ffi_shdict_store = C.ngx_http_lua_ffi_shdict_store
+    ngx_lua_ffi_shdict_store = function(zone, op,
+                                        key, key_len, value_type,
+                                        str_value_buf, str_value_len,
+                                        num_value, exptime, user_flags, errmsg,
+                                        forcible)
+
+        return C.ngx_http_lua_ffi_shdict_store(zone, op,
+                                        key, key_len, value_type,
+                                        str_value_buf, str_value_len,
+                                        num_value, exptime, user_flags, errmsg,
+                                        forcible)
+    end
+
     ngx_lua_ffi_shdict_flush_all = C.ngx_http_lua_ffi_shdict_flush_all
     ngx_lua_ffi_shdict_get_ttl = C.ngx_http_lua_ffi_shdict_get_ttl
     ngx_lua_ffi_shdict_set_expire = C.ngx_http_lua_ffi_shdict_set_expire
@@ -164,7 +176,19 @@ void *ngx_stream_lua_ffi_shdict_udata_to_zone(void *zone_udata);
                                        init, init_ttl, forcible)
     end
 
-    ngx_lua_ffi_shdict_store = C.ngx_stream_lua_ffi_shdict_store
+    ngx_lua_ffi_shdict_store = function(zone, op,
+                                        key, key_len, value_type,
+                                        str_value_buf, str_value_len,
+                                        num_value, exptime, user_flags, errmsg,
+                                        forcible)
+
+        return C.ngx_stream_lua_ffi_shdict_store(zone, op,
+                                        key, key_len, value_type,
+                                        str_value_buf, str_value_len,
+                                        num_value, exptime, user_flags, errmsg,
+                                        forcible)
+    end
+
     ngx_lua_ffi_shdict_flush_all = C.ngx_stream_lua_ffi_shdict_flush_all
     ngx_lua_ffi_shdict_get_ttl = C.ngx_stream_lua_ffi_shdict_get_ttl
     ngx_lua_ffi_shdict_set_expire = C.ngx_stream_lua_ffi_shdict_set_expire
@@ -241,8 +265,8 @@ int ngx_http_lua_ffi_shdict_incr_macos_arm64(ngx_http_lua_shdict_incr_params_t *
     ]]
 
     local shg = ffi_new("ngx_http_lua_shdict_get_params_t")
-    local shs = ffi_new("ngx_http_lua_shdict_store_params_t")
     local shi = ffi_new("ngx_http_lua_shdict_incr_params_t")
+    local shs = ffi_new("ngx_http_lua_shdict_store_params_t")
 
     ngx_lua_ffi_shdict_get = function(zone, key, key_len, value_type,
                                       str_value_buf, value_len,
@@ -269,8 +293,8 @@ int ngx_http_lua_ffi_shdict_incr_macos_arm64(ngx_http_lua_shdict_incr_params_t *
         shi.zone = zone
         shi.key = key
         shi.key_len = key_len
-        shi.num_value = num_value
-        shi.errmsg = errmsg
+        shi.num_value = value
+        shi.errmsg = err
         shi.has_init = has_init
         shi.init = init
         shi.init_ttl = init_ttl
@@ -279,6 +303,26 @@ int ngx_http_lua_ffi_shdict_incr_macos_arm64(ngx_http_lua_shdict_incr_params_t *
         return C.ngx_http_lua_ffi_shdict_incr_macos_arm64(shi)
     end
 
+    ngx_lua_ffi_shdict_store = function(zone, op,
+                                        key, key_len, value_type,
+                                        str_value_buf, str_value_len,
+                                        num_value, exptime, user_flags, errmsg,
+                                        forcible)
+        shs.zone = zone
+        shs.op = op
+        shs.key = key
+        shs.key_len = key_len
+        shs.value_type = value_type
+        shs.str_value_buf = str_value_buf
+        shs.str_value_len = str_value_len
+        shs.num_value = num_value
+        shs.exptime = exptime
+        shs.user_flags = user_flags
+        shs.errmsg = errmsg
+        shs.forcible = forcible
+
+        return C.ngx_http_lua_ffi_shdict_store_macos_arm64(shs)
+    end
 end
 
 if MACOS_ARM64 and subsystem == 'stream' then
@@ -358,8 +402,8 @@ int ngx_stream_lua_ffi_shdict_incr_macos_arm64(ngx_stream_lua_shdict_incr_params
         shi.zone = zone
         shi.key = key
         shi.key_len = key_len
-        shi.num_value = num_value
-        shi.errmsg = errmsg
+        shi.num_value = value
+        shi.errmsg = err
         shi.has_init = has_init
         shi.init = init
         shi.init_ttl = init_ttl
@@ -368,6 +412,26 @@ int ngx_stream_lua_ffi_shdict_incr_macos_arm64(ngx_stream_lua_shdict_incr_params
         return C.ngx_stream_lua_ffi_shdict_incr_macos_arm64(shi)
     end
 
+    ngx_lua_ffi_shdict_store = function(zone, op,
+                                        key, key_len, value_type,
+                                        str_value_buf, str_value_len,
+                                        num_value, exptime, user_flags, errmsg,
+                                        forcible)
+        shs.zone = zone
+        shs.op = op
+        shs.key = key
+        shs.key_len = key_len
+        shs.value_type = value_type
+        shs.str_value_buf = str_value_buf
+        shs.str_value_len = str_value_len
+        shs.num_value = num_value
+        shs.exptime = exptime
+        shs.user_flags = user_flags
+        shs.errmsg = errmsg
+        shs.forcible = forcible
+
+        return C.ngx_stream_lua_ffi_shdict_store_macos_arm64(shs)
+    end
 end
 
 
