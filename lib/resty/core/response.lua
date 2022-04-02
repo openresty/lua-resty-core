@@ -68,10 +68,16 @@ if MACOS_ARM64 then
             ngx_http_lua_set_resp_header_t *p);
     ]]
 
+    local ffi_fill = ffi.fill
+    local ffi_sizeof = ffi.sizeof
+
     local set_param = ffi.new("ngx_http_lua_set_resp_header_t")
+    local sizeof_set_param = ffi.sizeof("ngx_http_lua_set_resp_header_t")
 
     ngx_lua_ffi_set_resp_header = function(r, key, key_len, is_nil,
         sval, sval_len, mvals, mvals_len, override, errmsg)
+
+        ffi_fill(set_param, sizeof_set_param)
 
         set_param.r = r
         set_param.key_data = key
@@ -91,7 +97,7 @@ else
         sval, sval_len, mvals, mvals_len, override, errmsg)
 
         return C.ngx_http_lua_ffi_set_resp_header(r, key, key_len, is_nil,
-        sval, sval_len, mvals, mvals_len, override, errmsg)
+                    sval, sval_len, mvals, mvals_len, override, errmsg)
     end
 end
 
