@@ -83,7 +83,15 @@ void *ngx_http_lua_ffi_shdict_udata_to_zone(void *zone_udata);
                                              is_stale, errmsg)
     end
 
-    ngx_lua_ffi_shdict_incr = C.ngx_http_lua_ffi_shdict_incr
+    ngx_lua_ffi_shdict_incr = function(zone, key,
+                                       key_len, value, err, has_init,
+                                       init, init_ttl, forcible)
+
+        return C.ngx_http_lua_ffi_shdict_incr(zone, key,
+                                       key_len, value, err, has_init,
+                                       init, init_ttl, forcible)
+    end
+
     ngx_lua_ffi_shdict_store = C.ngx_http_lua_ffi_shdict_store
     ngx_lua_ffi_shdict_flush_all = C.ngx_http_lua_ffi_shdict_flush_all
     ngx_lua_ffi_shdict_get_ttl = C.ngx_http_lua_ffi_shdict_get_ttl
@@ -147,7 +155,15 @@ void *ngx_stream_lua_ffi_shdict_udata_to_zone(void *zone_udata);
                                                is_stale, errmsg)
     end
 
-    ngx_lua_ffi_shdict_incr = C.ngx_stream_lua_ffi_shdict_incr
+    ngx_lua_ffi_shdict_incr = function(zone, key,
+                                       key_len, value, err, has_init,
+                                       init, init_ttl, forcible)
+
+        return C.ngx_stream_lua_ffi_shdict_incr(zone, key,
+                                       key_len, value, err, has_init,
+                                       init, init_ttl, forcible)
+    end
+
     ngx_lua_ffi_shdict_store = C.ngx_stream_lua_ffi_shdict_store
     ngx_lua_ffi_shdict_flush_all = C.ngx_stream_lua_ffi_shdict_flush_all
     ngx_lua_ffi_shdict_get_ttl = C.ngx_stream_lua_ffi_shdict_get_ttl
@@ -232,20 +248,37 @@ int ngx_http_lua_ffi_shdict_incr_macos_arm64(ngx_http_lua_shdict_incr_params_t *
                                       str_value_buf, value_len,
                                       num_value, user_flags, get_stale,
                                       is_stale, errmsg)
-            shg.zone = zone
-            shg.key = key
-            shg.key_len = key_len
-            shg.value_type = value_type
-            shg.str_value_buf = str_value_buf
-            shg.str_value_len = value_len
-            shg.num_value = num_value
-            shg.user_flags = user_flags
-            shg.get_stale = get_stale
-            shg.is_stale = is_stale
-            shg.errmsg = errmsg
+        shg.zone = zone
+        shg.key = key
+        shg.key_len = key_len
+        shg.value_type = value_type
+        shg.str_value_buf = str_value_buf
+        shg.str_value_len = value_len
+        shg.num_value = num_value
+        shg.user_flags = user_flags
+        shg.get_stale = get_stale
+        shg.is_stale = is_stale
+        shg.errmsg = errmsg
 
-            return C.ngx_http_lua_ffi_shdict_get_macos_arm64(shg)
+        return C.ngx_http_lua_ffi_shdict_get_macos_arm64(shg)
     end
+
+    ngx_lua_ffi_shdict_incr = function(zone, key,
+                                       key_len, value, err, has_init,
+                                       init, init_ttl, forcible)
+        shi.zone = zone
+        shi.key = key
+        shi.key_len = key_len
+        shi.num_value = num_value
+        shi.errmsg = errmsg
+        shi.has_init = has_init
+        shi.init = init
+        shi.init_ttl = init_ttl
+        shi.forcible = forcible
+
+        return C.ngx_http_lua_ffi_shdict_incr_macos_arm64(shi)
+    end
+
 end
 
 if MACOS_ARM64 and subsystem == 'stream' then
@@ -318,6 +351,23 @@ int ngx_stream_lua_ffi_shdict_incr_macos_arm64(ngx_stream_lua_shdict_incr_params
 
             return C.ngx_stream_lua_ffi_shdict_get_macos_arm64(shg)
     end
+
+    ngx_lua_ffi_shdict_incr = function(zone, key,
+                                       key_len, value, err, has_init,
+                                       init, init_ttl, forcible)
+        shi.zone = zone
+        shi.key = key
+        shi.key_len = key_len
+        shi.num_value = num_value
+        shi.errmsg = errmsg
+        shi.has_init = has_init
+        shi.init = init
+        shi.init_ttl = init_ttl
+        shi.forcible = forcible
+
+        return C.ngx_stream_lua_ffi_shdict_incr_macos_arm64(shi)
+    end
+
 end
 
 
