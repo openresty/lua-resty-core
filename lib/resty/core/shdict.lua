@@ -248,63 +248,63 @@ int ngx_http_lua_ffi_shdict_store_macos_arm64(ngx_http_lua_shdict_store_params_t
 int ngx_http_lua_ffi_shdict_incr_macos_arm64(ngx_http_lua_shdict_incr_params_t *p);
     ]]
 
-    local get_param = ffi_new("ngx_http_lua_shdict_get_params_t")
-    local incr_param = ffi_new("ngx_http_lua_shdict_incr_params_t")
-    local store_param = ffi_new("ngx_http_lua_shdict_store_params_t")
+    local get_params = ffi_new("ngx_http_lua_shdict_get_params_t")
+    local incr_params = ffi_new("ngx_http_lua_shdict_incr_params_t")
+    local store_params = ffi_new("ngx_http_lua_shdict_store_params_t")
 
     ngx_lua_ffi_shdict_get = function(zone, key, key_len, value_type,
         str_value_buf, value_len, num_value,
         user_flags, get_stale, is_stale, errmsg)
 
-        get_param.zone = zone
-        get_param.key = key
-        get_param.key_len = key_len
-        get_param.value_type = value_type
-        get_param.str_value_buf = str_value_buf
-        get_param.str_value_len = value_len
-        get_param.num_value = num_value
-        get_param.user_flags = user_flags
-        get_param.get_stale = get_stale
-        get_param.is_stale = is_stale
-        get_param.errmsg = errmsg
+        get_params.zone = zone
+        get_params.key = key
+        get_params.key_len = key_len
+        get_params.value_type = value_type
+        get_params.str_value_buf = str_value_buf
+        get_params.str_value_len = value_len
+        get_params.num_value = num_value
+        get_params.user_flags = user_flags
+        get_params.get_stale = get_stale
+        get_params.is_stale = is_stale
+        get_params.errmsg = errmsg
 
-        return C.ngx_http_lua_ffi_shdict_get_macos_arm64(get_param)
+        return C.ngx_http_lua_ffi_shdict_get_macos_arm64(get_params)
     end
 
     ngx_lua_ffi_shdict_incr = function(zone, key,
         key_len, value, err, has_init, init, init_ttl, forcible)
 
-        incr_param.zone = zone
-        incr_param.key = key
-        incr_param.key_len = key_len
-        incr_param.num_value = value
-        incr_param.errmsg = err
-        incr_param.has_init = has_init
-        incr_param.init = init
-        incr_param.init_ttl = init_ttl
-        incr_param.forcible = forcible
+        incr_params.zone = zone
+        incr_params.key = key
+        incr_params.key_len = key_len
+        incr_params.num_value = value
+        incr_params.errmsg = err
+        incr_params.has_init = has_init
+        incr_params.init = init
+        incr_params.init_ttl = init_ttl
+        incr_params.forcible = forcible
 
-        return C.ngx_http_lua_ffi_shdict_incr_macos_arm64(incr_param)
+        return C.ngx_http_lua_ffi_shdict_incr_macos_arm64(incr_params)
     end
 
     ngx_lua_ffi_shdict_store = function(zone, op,
         key, key_len, value_type, str_value_buf, str_value_len,
         num_value, exptime, user_flags, errmsg, forcible)
 
-        store_param.zone = zone
-        store_param.op = op
-        store_param.key = key
-        store_param.key_len = key_len
-        store_param.value_type = value_type
-        store_param.str_value_buf = str_value_buf
-        store_param.str_value_len = str_value_len
-        store_param.num_value = num_value
-        store_param.exptime = exptime
-        store_param.user_flags = user_flags
-        store_param.errmsg = errmsg
-        store_param.forcible = forcible
+        store_params.zone = zone
+        store_params.op = op
+        store_params.key = key
+        store_params.key_len = key_len
+        store_params.value_type = value_type
+        store_params.str_value_buf = str_value_buf
+        store_params.str_value_len = str_value_len
+        store_params.num_value = num_value
+        store_params.exptime = exptime
+        store_params.user_flags = user_flags
+        store_params.errmsg = errmsg
+        store_params.forcible = forcible
 
-        return C.ngx_http_lua_ffi_shdict_store_macos_arm64(store_param)
+        return C.ngx_http_lua_ffi_shdict_store_macos_arm64(store_params)
     end
 end
 
@@ -356,63 +356,63 @@ int ngx_stream_lua_ffi_shdict_store_macos_arm64(ngx_stream_lua_shdict_store_para
 int ngx_stream_lua_ffi_shdict_incr_macos_arm64(ngx_stream_lua_shdict_incr_params_t *p);
     ]]
 
-    local get_param = ffi_new("ngx_stream_lua_shdict_get_params_t")
-    local store_param = ffi_new("ngx_stream_lua_shdict_store_params_t")
-    local incr_param = ffi_new("ngx_stream_lua_shdict_incr_params_t")
+    local get_params = ffi_new("ngx_stream_lua_shdict_get_params_t")
+    local store_params = ffi_new("ngx_stream_lua_shdict_store_params_t")
+    local incr_params = ffi_new("ngx_stream_lua_shdict_incr_params_t")
 
     ngx_lua_ffi_shdict_get = function(zone, key, key_len, value_type,
         str_value_buf, value_len, num_value,
         user_flags, get_stale, is_stale, errmsg)
 
-            get_param.zone = zone
-            get_param.key = key
-            get_param.key_len = key_len
-            get_param.value_type = value_type
-            get_param.str_value_buf = str_value_buf
-            get_param.str_value_len = value_len
-            get_param.num_value = num_value
-            get_param.user_flags = user_flags
-            get_param.get_stale = get_stale
-            get_param.is_stale = is_stale
-            get_param.errmsg = errmsg
+            get_params.zone = zone
+            get_params.key = key
+            get_params.key_len = key_len
+            get_params.value_type = value_type
+            get_params.str_value_buf = str_value_buf
+            get_params.str_value_len = value_len
+            get_params.num_value = num_value
+            get_params.user_flags = user_flags
+            get_params.get_stale = get_stale
+            get_params.is_stale = is_stale
+            get_params.errmsg = errmsg
 
-            return C.ngx_stream_lua_ffi_shdict_get_macos_arm64(get_param)
+            return C.ngx_stream_lua_ffi_shdict_get_macos_arm64(get_params)
     end
 
     ngx_lua_ffi_shdict_incr = function(zone, key,
         key_len, value, err, has_init, init, init_ttl, forcible)
 
-        incr_param.zone = zone
-        incr_param.key = key
-        incr_param.key_len = key_len
-        incr_param.num_value = value
-        incr_param.errmsg = err
-        incr_param.has_init = has_init
-        incr_param.init = init
-        incr_param.init_ttl = init_ttl
-        incr_param.forcible = forcible
+        incr_params.zone = zone
+        incr_params.key = key
+        incr_params.key_len = key_len
+        incr_params.num_value = value
+        incr_params.errmsg = err
+        incr_params.has_init = has_init
+        incr_params.init = init
+        incr_params.init_ttl = init_ttl
+        incr_params.forcible = forcible
 
-        return C.ngx_stream_lua_ffi_shdict_incr_macos_arm64(incr_param)
+        return C.ngx_stream_lua_ffi_shdict_incr_macos_arm64(incr_params)
     end
 
     ngx_lua_ffi_shdict_store = function(zone, op,
         key, key_len, value_type, str_value_buf, str_value_len,
         num_value, exptime, user_flags, errmsg, forcible)
 
-        store_param.zone = zone
-        store_param.op = op
-        store_param.key = key
-        store_param.key_len = key_len
-        store_param.value_type = value_type
-        store_param.str_value_buf = str_value_buf
-        store_param.str_value_len = str_value_len
-        store_param.num_value = num_value
-        store_param.exptime = exptime
-        store_param.user_flags = user_flags
-        store_param.errmsg = errmsg
-        store_param.forcible = forcible
+        store_params.zone = zone
+        store_params.op = op
+        store_params.key = key
+        store_params.key_len = key_len
+        store_params.value_type = value_type
+        store_params.str_value_buf = str_value_buf
+        store_params.str_value_len = str_value_len
+        store_params.num_value = num_value
+        store_params.exptime = exptime
+        store_params.user_flags = user_flags
+        store_params.errmsg = errmsg
+        store_params.forcible = forcible
 
-        return C.ngx_stream_lua_ffi_shdict_store_macos_arm64(store_param)
+        return C.ngx_stream_lua_ffi_shdict_store_macos_arm64(store_params)
     end
 end
 

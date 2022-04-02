@@ -75,23 +75,23 @@ if MACOS_ARM64 then
             ngx_http_lua_set_resp_header_params_t *p);
     ]]
 
-    local set_param = ffi.new("ngx_http_lua_set_resp_header_params_t")
+    local set_params = ffi.new("ngx_http_lua_set_resp_header_params_t")
 
     ngx_lua_ffi_set_resp_header = function(r, key, key_len, is_nil,
         sval, sval_len, mvals, mvals_len, override, err)
 
-        set_param.r = r
-        set_param.key_data = key
-        set_param.key_len = key_len
-        set_param.is_nil = is_nil
-        set_param.sval = sval
-        set_param.sval_len = sval_len
-        set_param.mvals = mvals
-        set_param.mvals_len = mvals_len
-        set_param.override = override
-        set_param.errmsg = err
+        set_params.r = r
+        set_params.key_data = key
+        set_params.key_len = key_len
+        set_params.is_nil = is_nil
+        set_params.sval = sval
+        set_params.sval_len = sval_len
+        set_params.mvals = mvals
+        set_params.mvals_len = mvals_len
+        set_params.override = override
+        set_params.errmsg = err
 
-        return C.ngx_http_lua_ffi_set_resp_header_macos_arm64(set_param)
+        return C.ngx_http_lua_ffi_set_resp_header_macos_arm64(set_params)
     end
 end
 
