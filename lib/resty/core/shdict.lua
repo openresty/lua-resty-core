@@ -153,6 +153,108 @@ else
     error("unknown subsystem: " .. subsystem)
 end
 
+
+local MACOS_ARM64 = jit and jit.os == "OSX" and jit.arch == "arm64"
+
+if MACOS_ARM64 and subsystem == 'http' then
+    ffi.cdef[[
+typedef struct {
+    ngx_shm_zone_t      *zone;
+    const unsigned char *key;
+    size_t               key_len;
+    int                 *value_type;
+    unsigned char      **str_value_buf;
+    size_t              *str_value_len;
+    double              *num_value;
+    int                 *user_flags;
+    int                  get_stale;
+    int                 *is_stale;
+    char               **errmsg;
+} ngx_http_lua_shdict_get_params_t;
+
+typedef struct {
+    ngx_shm_zone_t      *zone;
+    int                  op;
+    const unsigned char *key;
+    size_t               key_len;
+    int                  value_type;
+    const unsigned char *str_value_buf;
+    size_t               str_value_len;
+    double               num_value;
+    long                 exptime;
+    int                  user_flags;
+    char               **errmsg;
+    int                 *forcible;
+} ngx_http_lua_shdict_store_params_t;
+
+typedef struct {
+    ngx_shm_zone_t      *zone;
+    const unsigned char *key;
+    size_t               key_len;
+    double              *num_value;
+    char               **errmsg;
+    int                  has_init;
+    double               init;
+    long                 init_ttl;
+    int                 *forcible;
+} ngx_http_lua_shdict_incr_params_t;
+
+int ngx_http_lua_ffi_shdict_get_macos_arm64(ngx_http_lua_shdict_get_params_t *p);
+int ngx_http_lua_ffi_shdict_store_macos_arm64(ngx_http_lua_shdict_store_params_t *p);
+int ngx_http_lua_ffi_shdict_incr_macos_arm64(ngx_http_lua_shdict_incr_params_t *p);
+    ]]
+end
+
+if MACOS_ARM64 and subsystem == 'stream' then
+    ffi.cdef[[
+typedef struct {
+    ngx_shm_zone_t      *zone;
+    const unsigned char *key;
+    size_t               key_len;
+    int                 *value_type;
+    unsigned char      **str_value_buf;
+    size_t              *str_value_len;
+    double              *num_value;
+    int                 *user_flags;
+    int                  get_stale;
+    int                 *is_stale;
+    char               **errmsg;
+} ngx_stream_lua_shdict_get_params_t;
+
+typedef struct {
+    ngx_shm_zone_t      *zone;
+    int                  op;
+    const unsigned char *key;
+    size_t               key_len;
+    int                  value_type;
+    const unsigned char *str_value_buf;
+    size_t               str_value_len;
+    double               num_value;
+    long                 exptime;
+    int                  user_flags;
+    char               **errmsg;
+    int                 *forcible;
+} ngx_stream_lua_shdict_store_params_t;
+
+typedef struct {
+    ngx_shm_zone_t      *zone;
+    const unsigned char *key;
+    size_t               key_len;
+    double              *num_value;
+    char               **errmsg;
+    int                  has_init;
+    double               init;
+    long                 init_ttl;
+    int                 *forcible;
+} ngx_stream_lua_shdict_incr_params_t;
+
+int ngx_stream_lua_ffi_shdict_get_macos_arm64(ngx_stream_lua_shdict_get_params_t *p);
+int ngx_stream_lua_ffi_shdict_store_macos_arm64(ngx_stream_lua_shdict_store_params_t *p);
+int ngx_stream_lua_ffi_shdict_incr_macos_arm64(ngx_stream_lua_shdict_incr_params_t *p);
+    ]]
+end
+
+
 if not pcall(function () return C.free end) then
     ffi.cdef[[
 void free(void *ptr);
