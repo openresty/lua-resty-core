@@ -69,7 +69,6 @@ if MACOS_ARM64 then
     ]]
 
     local ffi_fill = ffi.fill
-    local ffi_sizeof = ffi.sizeof
 
     local set_param = ffi.new("ngx_http_lua_set_resp_header_t")
     local sizeof_set_param = ffi.sizeof("ngx_http_lua_set_resp_header_t")
