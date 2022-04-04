@@ -15,7 +15,7 @@ my $openssl_version = eval { `$NginxBinary -V 2>&1` };
 if ($openssl_version =~ m/built with OpenSSL (0\S*|1\.0\S*|1\.1\.0\S*)/) {
     plan(skip_all => "too old OpenSSL, need 1.1.1, was $1");
 } else {
-    plan tests => repeat_each() * (blocks() * 6 - 2);
+    plan tests => repeat_each() * (blocks() * 6 - 2) - 4;
 }
 
 no_long_string();
@@ -871,19 +871,19 @@ failed to do SSL handshake: handshake failed
     lua_package_path "$TEST_NGINX_LUA_PACKAGE_PATH";
 
     server {
-        listen unix:$TEST_NGINX_HTML_DIR/nginx.sock ssl;
+        listen 127.0.0.2:$TEST_NGINX_RAND_PORT_1 ssl;
         server_name   test.com;
         ssl_client_hello_by_lua_block {
             local ssl_clt = require "ngx.ssl.clienthello"
             local types, err = ssl_clt.get_client_hello_supported_versions()
-            if not err then
+            if not err and types then
                 for _, ssl_type in pairs(types) do
                     if ssl_type == "TLSv1.2" then
                         ngx.exit(ngx.OK)
                     end
                 end
             end
-            print("failed to get_client_hello_supported_versions")
+            ngx.log(ngx.ERR, "failed to get_client_hello_supported_versions")
             ngx.exit(ngx.ERROR)
         }
         ssl_protocols TLSv1 TLSv1.1 TLSv1.2;
@@ -900,7 +900,7 @@ failed to do SSL handshake: handshake failed
 --- config
     server_tokens off;
     lua_ssl_trusted_certificate ../../cert/test.crt;
-    lua_ssl_protocols TLSv1.1;
+    lua_ssl_protocols TLSv1 TLSv1.1 ;
 
     location /t {
         content_by_lua_block {
@@ -909,7 +909,7 @@ failed to do SSL handshake: handshake failed
 
                 sock:settimeout(3000)
 
-                local ok, err = sock:connect("unix:$TEST_NGINX_HTML_DIR/nginx.sock")
+                local ok, err = sock:connect("127.0.0.2", $TEST_NGINX_RAND_PORT_1)
                 if not ok then
                     ngx.say("failed to connect: ", err)
                     return
@@ -957,7 +957,8 @@ GET /t
 connected: 1
 failed to do SSL handshake: handshake failed
 
+--- error_log
+failed to get_client_hello_supported_versions
+
 --- no_error_log
 [alert]
-[emerg]
-
