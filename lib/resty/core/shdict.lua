@@ -243,9 +243,12 @@ typedef struct {
     int                 *forcible;
 } ngx_http_lua_shdict_incr_params_t;
 
-int ngx_http_lua_ffi_shdict_get_macos_arm64(ngx_http_lua_shdict_get_params_t *p);
-int ngx_http_lua_ffi_shdict_store_macos_arm64(ngx_http_lua_shdict_store_params_t *p);
-int ngx_http_lua_ffi_shdict_incr_macos_arm64(ngx_http_lua_shdict_incr_params_t *p);
+int ngx_http_lua_ffi_shdict_get_macos_arm64(
+        ngx_http_lua_shdict_get_params_t *p);
+int ngx_http_lua_ffi_shdict_store_macos_arm64(
+        ngx_http_lua_shdict_store_params_t *p);
+int ngx_http_lua_ffi_shdict_incr_macos_arm64(
+        ngx_http_lua_shdict_incr_params_t *p);
     ]]
 
     local get_params = ffi_new("ngx_http_lua_shdict_get_params_t")
@@ -351,9 +354,12 @@ typedef struct {
     int                 *forcible;
 } ngx_stream_lua_shdict_incr_params_t;
 
-int ngx_stream_lua_ffi_shdict_get_macos_arm64(ngx_stream_lua_shdict_get_params_t *p);
-int ngx_stream_lua_ffi_shdict_store_macos_arm64(ngx_stream_lua_shdict_store_params_t *p);
-int ngx_stream_lua_ffi_shdict_incr_macos_arm64(ngx_stream_lua_shdict_incr_params_t *p);
+int ngx_stream_lua_ffi_shdict_get_macos_arm64(
+        ngx_stream_lua_shdict_get_params_t *p);
+int ngx_stream_lua_ffi_shdict_store_macos_arm64(
+        ngx_stream_lua_shdict_store_params_t *p);
+int ngx_stream_lua_ffi_shdict_incr_macos_arm64(
+        ngx_stream_lua_shdict_incr_params_t *p);
     ]]
 
     local get_params = ffi_new("ngx_stream_lua_shdict_get_params_t")
