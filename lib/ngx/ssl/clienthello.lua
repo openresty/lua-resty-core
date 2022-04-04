@@ -17,6 +17,9 @@ local get_size_ptr = base.get_size_ptr
 local FFI_OK = base.FFI_OK
 local subsystem = ngx.config.subsystem
 local ngx_phase = ngx.get_phase
+local byte = string.byte
+local lshift = bit.lshift
+local table_insert = table.insert
 
 
 local ngx_lua_ffi_ssl_get_client_hello_server_name
@@ -125,6 +128,67 @@ function _M.get_client_hello_ext(ext_type)
     end
 
     return nil, ffi_str(errmsg[0])
+end
+
+
+local supported_versions_type = 43
+local versions_map = {
+    [0x002] = "SSLv2",
+    [0x300] = "SSLv3",
+    [0x301] = "TLSv1",
+    [0x302] = "TLSv1.1",
+    [0x303] = "TLSv1.2",
+    [0x304] = "TLSv1.3",
+}
+
+-- return types, err
+function _M.get_client_hello_supported_versions()
+    local r = get_request()
+    if not r then
+        error("no request found")
+    end
+
+    if ngx_phase() ~= "ssl_client_hello" then
+        error("API disabled in the current context")
+    end
+
+    local sizep = get_size_ptr()
+
+    local rc = ngx_lua_ffi_ssl_get_client_hello_ext(r, supported_versions_type,
+                                            cucharpp, sizep, errmsg)
+
+    if rc ~= FFI_OK then
+        -- NGX_DECLINED: no extension
+        if rc == -5 then
+            return nil
+        end
+
+        return nil, ffi_str(errmsg[0])
+    end
+
+    local supported_versions_str = ffi_str(cucharpp[0], sizep[0])
+    local remain_len = #supported_versions_str
+    if remain_len == 0 then
+        return nil
+    end
+
+    local supported_versions_len = byte(supported_versions_str, 1)
+    remain_len = remain_len - 1
+
+    if remain_len ~= supported_versions_len then
+        return nil
+    end
+    local types = {}
+    while remain_len >= 2  do
+        local type_hi = byte(supported_versions_str, remain_len)
+        local type_lo = byte(supported_versions_str, remain_len + 1)
+        local type_id = lshift(type_hi, 8) + type_lo
+        if versions_map[type_id] ~= nil then
+            table_insert(types, versions_map[type_id])
+        end
+        remain_len = remain_len - 2
+    end
+    return types
 end
 
 
