@@ -69,6 +69,8 @@ end
 do
     local orig_require = require
     local pkg_loaded = package.loaded
+    -- the key_sentinel is inserted into package.loaded before the chunk is executed
+    -- and replaced if the chunk completes normally.
     local key_sentinel = pkg_loaded[...]
 
     local function my_require(name)
