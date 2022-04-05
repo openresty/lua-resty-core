@@ -865,6 +865,8 @@ failed to do SSL handshake: handshake failed
 [alert]
 [emerg]
 
+
+
 === TEST 9: get client hello supported versions - allow TLSv1.2
 --- skip_nginx: 5: < 1.19.9
 --- http_config
