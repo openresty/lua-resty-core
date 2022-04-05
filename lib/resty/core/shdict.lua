@@ -34,6 +34,7 @@ local subsystem = ngx.config.subsystem
 local ngx_lua_ffi_shdict_get
 local ngx_lua_ffi_shdict_incr
 local ngx_lua_ffi_shdict_store
+local ngx_lua_ffi_shdict_store_when
 local ngx_lua_ffi_shdict_flush_all
 local ngx_lua_ffi_shdict_get_ttl
 local ngx_lua_ffi_shdict_set_expire
@@ -59,6 +60,14 @@ int ngx_http_lua_ffi_shdict_store(void *zone, int op,
     double num_value, long exptime, int user_flags, char **errmsg,
     int *forcible);
 
+int ngx_http_lua_ffi_shdict_store_when(void *zone, int op,
+    const unsigned char *key, size_t key_len, int old_value_type,
+    const unsigned char *old_str_value_buf, size_t old_str_value_len,
+    double old_num_value, int value_type,
+    const unsigned char *str_value_buf, size_t str_value_len,
+    double num_value, long exptime, int user_flags, char **errmsg,
+    int *forcible);
+
 int ngx_http_lua_ffi_shdict_flush_all(void *zone);
 
 long ngx_http_lua_ffi_shdict_get_ttl(void *zone,
@@ -75,6 +84,7 @@ void *ngx_http_lua_ffi_shdict_udata_to_zone(void *zone_udata);
     ngx_lua_ffi_shdict_get = C.ngx_http_lua_ffi_shdict_get
     ngx_lua_ffi_shdict_incr = C.ngx_http_lua_ffi_shdict_incr
     ngx_lua_ffi_shdict_store = C.ngx_http_lua_ffi_shdict_store
+    ngx_lua_ffi_shdict_store_when = C.ngx_http_lua_ffi_shdict_store_when
     ngx_lua_ffi_shdict_flush_all = C.ngx_http_lua_ffi_shdict_flush_all
     ngx_lua_ffi_shdict_get_ttl = C.ngx_http_lua_ffi_shdict_get_ttl
     ngx_lua_ffi_shdict_set_expire = C.ngx_http_lua_ffi_shdict_set_expire
@@ -113,6 +123,14 @@ int ngx_stream_lua_ffi_shdict_store(void *zone, int op,
     double num_value, long exptime, int user_flags, char **errmsg,
     int *forcible);
 
+int ngx_stream_lua_ffi_shdict_store_when(void *zone, int op,
+    const unsigned char *key, size_t key_len, int old_value_type,
+    const unsigned char *old_str_value_buf, size_t old_str_value_len,
+    double old_num_value, int value_type,
+    const unsigned char *str_value_buf, size_t str_value_len,
+    double num_value, long exptime, int user_flags, char **errmsg,
+    int *forcible);
+
 int ngx_stream_lua_ffi_shdict_flush_all(void *zone);
 
 long ngx_stream_lua_ffi_shdict_get_ttl(void *zone,
@@ -129,6 +147,7 @@ void *ngx_stream_lua_ffi_shdict_udata_to_zone(void *zone_udata);
     ngx_lua_ffi_shdict_get = C.ngx_stream_lua_ffi_shdict_get
     ngx_lua_ffi_shdict_incr = C.ngx_stream_lua_ffi_shdict_incr
     ngx_lua_ffi_shdict_store = C.ngx_stream_lua_ffi_shdict_store
+    ngx_lua_ffi_shdict_store_when = C.ngx_stream_lua_ffi_shdict_store_when
     ngx_lua_ffi_shdict_flush_all = C.ngx_stream_lua_ffi_shdict_flush_all
     ngx_lua_ffi_shdict_get_ttl = C.ngx_stream_lua_ffi_shdict_get_ttl
     ngx_lua_ffi_shdict_set_expire = C.ngx_stream_lua_ffi_shdict_set_expire
@@ -262,13 +281,128 @@ local function shdict_store(zone, op, key, value, exptime, flags)
 end
 
 
+local function shdict_store_when(zone, op, key, old_value, value, exptime,
+                                 flags)
+    zone = check_zone(zone)
+
+    if not exptime then
+        exptime = 0
+    elseif exptime < 0 then
+        error('bad "exptime" argument', 2)
+    end
+
+    if not flags then
+        flags = 0
+    end
+
+    if key == nil then
+        return nil, "nil key"
+    end
+
+    if type(key) ~= "string" then
+        key = tostring(key)
+    end
+
+    local key_len = #key
+    if key_len == 0 then
+        return nil, "empty key"
+    end
+    if key_len > 65535 then
+        return nil, "key too long"
+    end
+
+    local old_str_val_buf
+    local old_str_val_len = 0
+    local old_num_val = 0
+    local old_valtyp = type(old_value)
+
+    -- print("value type: ", old_valtyp)
+
+    if old_valtyp == "string" then
+        old_valtyp = 4  -- LUA_TSTRING
+        old_str_val_buf = old_value
+        old_str_val_len = #old_value
+
+    elseif old_valtyp == "number" then
+        old_valtyp = 3  -- LUA_TNUMBER
+        old_num_val = old_value
+
+    elseif old_value == nil then
+        old_valtyp = 0  -- LUA_TNIL
+
+    elseif old_valtyp == "boolean" then
+        old_valtyp = 1  -- LUA_TBOOLEAN
+        old_num_val = old_value and 1 or 0
+
+    else
+        return nil, "bad old value type"
+    end
+
+    local str_val_buf
+    local str_val_len = 0
+    local num_val = 0
+    local valtyp = type(value)
+
+    -- print("value type: ", valtyp)
+    -- print("exptime: ", exptime)
+
+    if valtyp == "string" then
+        valtyp = 4  -- LUA_TSTRING
+        str_val_buf = value
+        str_val_len = #value
+
+    elseif valtyp == "number" then
+        valtyp = 3  -- LUA_TNUMBER
+        num_val = value
+
+    elseif value == nil then
+        valtyp = 0  -- LUA_TNIL
+
+    elseif valtyp == "boolean" then
+        valtyp = 1  -- LUA_TBOOLEAN
+        num_val = value and 1 or 0
+
+    else
+        return nil, "bad value type"
+    end
+
+    local rc = ngx_lua_ffi_shdict_store_when(zone, op, key, key_len,
+                                        old_valtyp, old_str_val_buf,
+                                        old_str_val_len, old_num_val,
+                                        valtyp, str_val_buf,
+                                        str_val_len, num_val,
+                                        exptime * 1000, flags, errmsg,
+                                        forcible)
+
+    -- print("rc == ", rc)
+
+    if rc == 0 then  -- NGX_OK
+        return true, nil, forcible[0] == 1
+    end
+
+    -- NGX_DECLINED or NGX_ERROR
+    return false, ffi_str(errmsg[0]), forcible[0] == 1
+end
+
+
 local function shdict_set(zone, key, value, exptime, flags)
     return shdict_store(zone, 0, key, value, exptime, flags)
 end
 
 
+local function shdict_set_when(zone, key, old_value, value, exptime, flags)
+    return shdict_store_when(zone, 0, key, old_value, value, exptime, flags)
+end
+
+
 local function shdict_safe_set(zone, key, value, exptime, flags)
     return shdict_store(zone, 0x0004, key, value, exptime, flags)
+end
+
+
+local function shdict_safe_set_when(zone, key, old_value, value, exptime, flags)
+    return shdict_store_when(zone, 0x0004, key, old_value, value, exptime,
+                             flags)
 end
 
 
@@ -621,6 +755,8 @@ if dict then
             mt.incr = shdict_incr
             mt.set = shdict_set
             mt.safe_set = shdict_safe_set
+            mt.set_when = shdict_set_when
+            mt.safe_set_when = shdict_safe_set_when
             mt.add = shdict_add
             mt.safe_add = shdict_safe_add
             mt.replace = shdict_replace
