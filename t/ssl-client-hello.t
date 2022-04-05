@@ -875,7 +875,7 @@ failed to do SSL handshake: handshake failed
         server_name   test.com;
         ssl_client_hello_by_lua_block {
             local ssl_clt = require "ngx.ssl.clienthello"
-            local types, err = ssl_clt.get_client_hello_supported_versions()
+            local types, err = ssl_clt.get_supported_versions()
             if not err and types then
                 for _, ssl_type in pairs(types) do
                     if ssl_type == "TLSv1.2" then
@@ -883,7 +883,7 @@ failed to do SSL handshake: handshake failed
                     end
                 end
             end
-            ngx.log(ngx.ERR, "failed to get_client_hello_supported_versions")
+            ngx.log(ngx.ERR, "failed to get_supported_versions")
             ngx.exit(ngx.ERROR)
         }
         ssl_protocols TLSv1 TLSv1.1 TLSv1.2;
@@ -958,7 +958,7 @@ connected: 1
 failed to do SSL handshake: handshake failed
 
 --- error_log
-failed to get_client_hello_supported_versions
+failed to get_supported_versions
 
 --- no_error_log
 [alert]

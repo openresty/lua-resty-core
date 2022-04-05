@@ -106,9 +106,9 @@ So this function can only be called in the context of [ssl_client_hello_by_lua*]
 
 [Back to TOC](#table-of-contents)
 
-get_client_hello_supported_versions
+get_supported_versions
 --------------
-**syntax:** *types, err = ssl_clt.get_client_hello_supported_versions()*
+**syntax:** *types, err = ssl_clt.get_supported_versions()*
 
 **context:** *ssl_client_hello_by_lua&#42;*
 

@@ -142,7 +142,7 @@ local versions_map = {
 }
 
 -- return types, err
-function _M.get_client_hello_supported_versions()
+function _M.get_supported_versions()
     local r = get_request()
     if not r then
         error("no request found")
