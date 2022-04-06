@@ -71,7 +71,8 @@ if MACOS then
     local set_params = ffi.new("ngx_http_lua_set_resp_header_params_t")
 
     ngx_lua_ffi_set_resp_header = function(r, key, key_len, is_nil,
-        sval, sval_len, mvals, mvals_len, override, err)
+                                           sval, sval_len, mvals,
+                                           mvals_len, override, err)
 
         set_params.r = r
         set_params.key_data = key
@@ -89,10 +90,12 @@ if MACOS then
 
 else
     ngx_lua_ffi_set_resp_header = function(r, key, key_len, is_nil,
-        sval, sval_len, mvals, mvals_len, override, err)
+                                           sval, sval_len, mvals,
+                                           mvals_len, override, err)
 
         return C.ngx_http_lua_ffi_set_resp_header(r, key, key_len, is_nil,
-                    sval, sval_len, mvals, mvals_len, override, err)
+                                                  sval, sval_len, mvals,
+                                                  mvals_len, override, err)
     end
 end
 
