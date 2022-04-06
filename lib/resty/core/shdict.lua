@@ -198,9 +198,9 @@ else
 end
 
 
-local MACOS_ARM64 = jit and jit.os == "OSX" and jit.arch == "arm64"
+local MACOS = jit and jit.os == "OSX"
 
-if MACOS_ARM64 and subsystem == 'http' then
+if MACOS and subsystem == 'http' then
     ffi.cdef[[
 typedef struct {
     void                *zone;
@@ -243,11 +243,11 @@ typedef struct {
     int                 *forcible;
 } ngx_http_lua_shdict_incr_params_t;
 
-int ngx_http_lua_ffi_shdict_get_macos_arm64(
+int ngx_http_lua_ffi_shdict_get_macos(
         ngx_http_lua_shdict_get_params_t *p);
-int ngx_http_lua_ffi_shdict_store_macos_arm64(
+int ngx_http_lua_ffi_shdict_store_macos(
         ngx_http_lua_shdict_store_params_t *p);
-int ngx_http_lua_ffi_shdict_incr_macos_arm64(
+int ngx_http_lua_ffi_shdict_incr_macos(
         ngx_http_lua_shdict_incr_params_t *p);
     ]]
 
@@ -271,7 +271,7 @@ int ngx_http_lua_ffi_shdict_incr_macos_arm64(
         get_params.is_stale = is_stale
         get_params.errmsg = errmsg
 
-        return C.ngx_http_lua_ffi_shdict_get_macos_arm64(get_params)
+        return C.ngx_http_lua_ffi_shdict_get_macos(get_params)
     end
 
     ngx_lua_ffi_shdict_incr = function(zone, key,
@@ -287,7 +287,7 @@ int ngx_http_lua_ffi_shdict_incr_macos_arm64(
         incr_params.init_ttl = init_ttl
         incr_params.forcible = forcible
 
-        return C.ngx_http_lua_ffi_shdict_incr_macos_arm64(incr_params)
+        return C.ngx_http_lua_ffi_shdict_incr_macos(incr_params)
     end
 
     ngx_lua_ffi_shdict_store = function(zone, op,
@@ -307,11 +307,11 @@ int ngx_http_lua_ffi_shdict_incr_macos_arm64(
         store_params.errmsg = errmsg
         store_params.forcible = forcible
 
-        return C.ngx_http_lua_ffi_shdict_store_macos_arm64(store_params)
+        return C.ngx_http_lua_ffi_shdict_store_macos(store_params)
     end
 end
 
-if MACOS_ARM64 and subsystem == 'stream' then
+if MACOS and subsystem == 'stream' then
     ffi.cdef[[
 typedef struct {
     void                *zone;
@@ -354,11 +354,11 @@ typedef struct {
     int                 *forcible;
 } ngx_stream_lua_shdict_incr_params_t;
 
-int ngx_stream_lua_ffi_shdict_get_macos_arm64(
+int ngx_stream_lua_ffi_shdict_get_macos(
         ngx_stream_lua_shdict_get_params_t *p);
-int ngx_stream_lua_ffi_shdict_store_macos_arm64(
+int ngx_stream_lua_ffi_shdict_store_macos(
         ngx_stream_lua_shdict_store_params_t *p);
-int ngx_stream_lua_ffi_shdict_incr_macos_arm64(
+int ngx_stream_lua_ffi_shdict_incr_macos(
         ngx_stream_lua_shdict_incr_params_t *p);
     ]]
 
@@ -382,7 +382,7 @@ int ngx_stream_lua_ffi_shdict_incr_macos_arm64(
         get_params.is_stale = is_stale
         get_params.errmsg = errmsg
 
-        return C.ngx_stream_lua_ffi_shdict_get_macos_arm64(get_params)
+        return C.ngx_stream_lua_ffi_shdict_get_macos(get_params)
     end
 
     ngx_lua_ffi_shdict_incr = function(zone, key,
@@ -398,7 +398,7 @@ int ngx_stream_lua_ffi_shdict_incr_macos_arm64(
         incr_params.init_ttl = init_ttl
         incr_params.forcible = forcible
 
-        return C.ngx_stream_lua_ffi_shdict_incr_macos_arm64(incr_params)
+        return C.ngx_stream_lua_ffi_shdict_incr_macos(incr_params)
     end
 
     ngx_lua_ffi_shdict_store = function(zone, op,
@@ -418,7 +418,7 @@ int ngx_stream_lua_ffi_shdict_incr_macos_arm64(
         store_params.errmsg = errmsg
         store_params.forcible = forcible
 
-        return C.ngx_stream_lua_ffi_shdict_store_macos_arm64(store_params)
+        return C.ngx_stream_lua_ffi_shdict_store_macos(store_params)
     end
 end
 
