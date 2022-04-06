@@ -47,9 +47,9 @@ ffi.cdef[[
 
 local ngx_lua_ffi_set_resp_header
 
-local MACOS_ARM64 = jit and jit.os == "OSX" and jit.arch == "arm64"
+local MACOS = jit and jit.os == "OSX"
 
-if MACOS_ARM64 then
+if MACOS then
     ffi.cdef[[
         typedef struct {
             ngx_http_request_t  *r;
@@ -64,7 +64,7 @@ if MACOS_ARM64 then
             char               **errmsg;
         } ngx_http_lua_set_resp_header_params_t;
 
-        int ngx_http_lua_ffi_set_resp_header_macos_arm64(
+        int ngx_http_lua_ffi_set_resp_header_macos(
             ngx_http_lua_set_resp_header_params_t *p);
     ]]
 
@@ -84,7 +84,7 @@ if MACOS_ARM64 then
         set_params.override = override
         set_params.errmsg = err
 
-        return C.ngx_http_lua_ffi_set_resp_header_macos_arm64(set_params)
+        return C.ngx_http_lua_ffi_set_resp_header_macos(set_params)
     end
 
 else
