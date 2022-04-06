@@ -52,16 +52,16 @@ local MACOS = jit and jit.os == "OSX"
 if MACOS then
     ffi.cdef[[
         typedef struct {
-            ngx_http_request_t  *r;
-            const char          *key_data;
-            size_t               key_len;
-            int                  is_nil;
-            const char          *sval;
-            size_t               sval_len;
-            void                *mvals;
-            size_t               mvals_len;
-            int                  override;
-            char               **errmsg;
+            ngx_http_request_t   *r;
+            const char           *key_data;
+            size_t                key_len;
+            int                   is_nil;
+            const char           *sval;
+            size_t                sval_len;
+            void                 *mvals;
+            size_t                mvals_len;
+            int                   override;
+            char                **errmsg;
         } ngx_http_lua_set_resp_header_params_t;
 
         int ngx_http_lua_ffi_set_resp_header_macos(
