@@ -155,7 +155,7 @@ function _M.get_supported_versions()
     local sizep = get_size_ptr()
 
     local rc = ngx_lua_ffi_ssl_get_client_hello_ext(r, supported_versions_type,
-                                            cucharpp, sizep, errmsg)
+                                                    cucharpp, sizep, errmsg)
 
     if rc ~= FFI_OK then
         -- NGX_DECLINED: no extension
