@@ -130,7 +130,7 @@ function _M.get_client_hello_ext(ext_type)
     return nil, ffi_str(errmsg[0])
 end
 
-
+-- tls.handshake.extension.type supported_version
 local supported_versions_type = 43
 local versions_map = {
     [0x002] = "SSLv2",
