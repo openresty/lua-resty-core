@@ -868,7 +868,7 @@ failed to do SSL handshake: handshake failed
 
 
 === TEST 9: get client hello supported versions - allow TLSv1.2
---- skip_nginx: 5: < 1.19.9
+--- skip_nginx: 4: < 1.19.9
 --- http_config
     lua_package_path "$TEST_NGINX_LUA_PACKAGE_PATH";
 
