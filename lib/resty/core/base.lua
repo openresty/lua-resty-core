@@ -3,6 +3,7 @@
 
 local ffi = require 'ffi'
 local ffi_new = ffi.new
+local pcall = pcall
 local error = error
 local select = select
 local ceil = math.ceil
