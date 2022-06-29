@@ -16,10 +16,9 @@ local FREE_LIST_REF = 0
 
 
 if subsystem == 'http' then
-    local ngx_lua_v = ngx.config.ngx_lua_version
     if not ngx.config
        or not ngx.config.ngx_lua_version
-       or ngx_lua_v ~= 10021
+       or ngx.config.ngx_lua_version ~= 10021
     then
         error("ngx_http_lua_module 0.10.21 required")
     end
