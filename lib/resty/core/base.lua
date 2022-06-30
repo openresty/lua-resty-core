@@ -248,7 +248,8 @@ do
     ok, exdata = pcall(require, "thread.exdata")
     if ok and exdata then
         function _M.get_request()
-            return exdata()
+            local r = exdata()
+            return r
         end
 
     else
