@@ -248,10 +248,7 @@ do
     ok, exdata = pcall(require, "thread.exdata")
     if ok and exdata then
         function _M.get_request()
-            local r = exdata()
-            if r ~= nil then
-                return r
-            end
+            return exdata()
         end
 
     else
