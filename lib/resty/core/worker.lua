@@ -24,7 +24,7 @@ if subsystem == "http" then
     ffi.cdef[[
     int ngx_http_lua_ffi_worker_id(void);
     int ngx_http_lua_ffi_worker_pid(void);
-    int ngx_http_lua_ffi_worker_pids(int *pids, size_t *pidslen);
+    int ngx_http_lua_ffi_worker_pids(int *pids, size_t *pids_len);
     int ngx_http_lua_ffi_worker_count(void);
     int ngx_http_lua_ffi_worker_exiting(void);
     ]]
@@ -39,7 +39,7 @@ elseif subsystem == "stream" then
     ffi.cdef[[
     int ngx_stream_lua_ffi_worker_id(void);
     int ngx_stream_lua_ffi_worker_pid(void);
-    int ngx_stream_lua_ffi_worker_pids(int *pids, size_t *pidslen);
+    int ngx_stream_lua_ffi_worker_pids(int *pids, size_t *pids_len);
     int ngx_stream_lua_ffi_worker_count(void);
     int ngx_stream_lua_ffi_worker_exiting(void);
     ]]
