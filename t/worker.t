@@ -123,7 +123,7 @@ qr/\[TRACE\s+\d+ content_by_lua\(nginx\.conf:\d+\):4 loop\]/
 === TEST 5: ngx.worker.pids
 --- config
     location /lua {
-        content_by_lua '
+        content_by_lua_block {
             local pids = ngx.worker.pids()
             local pid = ngx.worker.pid()
             ngx.say("worker pid: ", pid)
@@ -138,7 +138,7 @@ qr/\[TRACE\s+\d+ content_by_lua\(nginx\.conf:\d+\):4 loop\]/
                 end
             end
             ngx.say("worker pid is wrong.")
-        ';
+        }
     }
 --- request
 GET /lua

@@ -73,7 +73,7 @@ function ngx.worker.pids()
 
     local pids = {}
     if res == 0 then
-        for i=1, tonumber(size_ptr[0]) do
+        for i = 1, tonumber(size_ptr[0]) do
             pids[i] = pids_ptr[i-1]
         end
     end
