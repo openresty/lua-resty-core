@@ -61,9 +61,14 @@ function ngx.worker.pid()
     return ngx_lua_ffi_worker_pid()
 end
 
+local size_ptr = ffi_new("size_t[1]")
+local pids_ptr = ffi_new("int[1024]") -- using NGX_MAX_PROCESSES
+
 function ngx.worker.pids()
-    local size_ptr = ffi_new("size_t[1]")
-    local pids_ptr = ffi_new("int[1024]") -- using NGX_MAX_PROCESSES
+    if ngx.get_phase() == "init" or ngx.get_phase() == "init_worker" then
+        return nil, "API disabled in the current context"
+    end
+
     local res = ngx_lua_ffi_worker_pids(pids_ptr, size_ptr)
 
     local pids = {}
