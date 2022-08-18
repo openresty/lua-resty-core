@@ -13,6 +13,7 @@ local subsystem = ngx.config.subsystem
 
 local ngx_lua_ffi_worker_id
 local ngx_lua_ffi_worker_pid
+local ngx_lua_ffi_worker_pids
 local ngx_lua_ffi_worker_count
 local ngx_lua_ffi_worker_exiting
 

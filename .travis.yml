@@ -74,7 +74,6 @@ install:
   - git clone https://github.com/openresty/set-misc-nginx-module.git ../set-misc-nginx-module
   - git clone https://github.com/openresty/mockeagain.git
   - git clone https://github.com/openresty/test-nginx.git
-  - git clone https://github.com/openresty/stream-lua-nginx-module.git ../stream-lua-nginx-module
   - git clone -b feat/get_pids https://github.com/attenuation/stream-lua-nginx-module.git ../stream-lua-nginx-module
 
 script:
