@@ -238,6 +238,7 @@ in the current request before you reusing the `ctx` table in some other place.
 
 * [ngx.time](https://github.com/openresty/lua-nginx-module#ngxtime)
 * [ngx.now](https://github.com/openresty/lua-nginx-module#ngxnow)
+* [ngx.msec](https://github.com/openresty/lua-nginx-module#ngxmsec)
 * [ngx.update_time](https://github.com/openresty/lua-nginx-module#ngxupdate_time)
 * [ngx.localtime](https://github.com/openresty/lua-nginx-module#ngxlocaltime)
 * [ngx.utctime](https://github.com/openresty/lua-nginx-module#ngxutctime)

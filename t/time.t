@@ -324,3 +324,39 @@ not ok: string argument only
 [alert]
 bad argument type
 stitch
+
+
+
+=== TEST 13: ngx.msec()
+--- config
+    location = /t {
+        access_log off;
+        content_by_lua_block {
+            local proc = io.open("/proc/uptime", "r")
+            local content = proc:read()
+            proc:close()
+            local idx = string.find(content, " ", 1, true)
+            local uptime = 1000 * tonumber(string.sub(content, 1, idx - 1))
+            ngx.update_time()
+
+            local t
+            for i = 1, 30 do
+                t = ngx.msec()
+            end
+            ngx.say(t >= uptime)
+            local diff = t - uptime
+            ngx.say(diff < 10)
+        }
+    }
+--- request
+GET /t
+--- response_body
+true
+true
+
+--- error_log eval
+qr/\[TRACE\s+\d+ content_by_lua\(nginx\.conf:\d+\):10 loop\]/
+--- no_error_log
+[error]
+bad argument type
+stitch

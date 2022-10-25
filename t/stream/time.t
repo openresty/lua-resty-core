@@ -138,3 +138,34 @@ qr/\[TRACE\s+\d+ content_by_lua\(nginx\.conf:\d+\):3 loop\]/
 [error]
 bad argument type
 stitch
+
+
+
+=== TEST 7: ngx.now()
+--- stream_server_config
+    content_by_lua_block {
+        local proc = io.open("/proc/uptime", "r")
+        local content = proc:read()
+        proc:close()
+        local idx = string.find(content, " ", 1, true)
+        local uptime = 1000 * tonumber(string.sub(content, 1, idx - 1))
+        ngx.update_time()
+
+        local t
+        for i = 1, 500 do
+            t = ngx.msec()
+        end
+        ngx.say(t >= uptime)
+        local diff = t - uptime
+        ngx.say(diff < 10)
+    }
+--- stream_response
+true
+true
+
+--- error_log eval
+qr/\[TRACE\s+\d+ content_by_lua\(nginx\.conf:\d+\):10 loop\]/
+--- no_error_log
+[error]
+bad argument type
+stitch
