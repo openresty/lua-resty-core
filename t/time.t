@@ -327,11 +327,12 @@ stitch
 
 
 
-=== TEST 13: ngx.msec()
+=== TEST 13: "resty.core.time".monotonic_msec
 --- config
     location = /t {
         access_log off;
         content_by_lua_block {
+            local cur_msec = require "resty.core.time".monotonic_msec
             local proc = io.open("/proc/uptime", "r")
             local content = proc:read()
             proc:close()
@@ -341,7 +342,7 @@ stitch
 
             local t
             for i = 1, 30 do
-                t = ngx.msec()
+                t = cur_msec()
             end
             ngx.say(t >= uptime)
             local diff = t - uptime
@@ -355,7 +356,44 @@ true
 true
 
 --- error_log eval
-qr/\[TRACE\s+\d+ content_by_lua\(nginx\.conf:\d+\):10 loop\]/
+qr/\[TRACE\s+\d+ content_by_lua\(nginx\.conf:\d+\):11 loop\]/
+--- no_error_log
+[error]
+bad argument type
+stitch
+
+
+
+=== TEST 14: "resty.core.time".monotonic_time
+--- config
+    location = /t {
+        access_log off;
+        content_by_lua_block {
+            local cur_time = require "resty.core.time".monotonic_time
+            local proc = io.open("/proc/uptime", "r")
+            local content = proc:read()
+            proc:close()
+            local idx = string.find(content, " ", 1, true)
+            local uptime = tonumber(string.sub(content, 1, idx - 1))
+            ngx.update_time()
+
+            local t
+            for i = 1, 30 do
+                t = cur_time()
+            end
+            ngx.say(t >= uptime)
+            local diff = t - uptime
+            ngx.say(diff < 0.01)
+        }
+    }
+--- request
+GET /t
+--- response_body
+true
+true
+
+--- error_log eval
+qr/\[TRACE\s+\d+ content_by_lua\(nginx\.conf:\d+\):11 loop\]/
 --- no_error_log
 [error]
 bad argument type
