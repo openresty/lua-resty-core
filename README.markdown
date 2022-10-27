@@ -244,6 +244,8 @@ in the current request before you reusing the `ctx` table in some other place.
 * [ngx.cookie_time](https://github.com/openresty/lua-nginx-module#ngxcookie_time)
 * [ngx.http_time](https://github.com/openresty/lua-nginx-module#ngxhttp_time)
 * [ngx.parse_http_time](https://github.com/openresty/lua-nginx-module#ngxparse_http_time)
+* [monotonic_msec](./lib/resty/core/time.md#monotonic_msec)
+* [monotonic_time](./lib/resty/core/time.md#monotonic_time)
 
 [Back to TOC](#table-of-contents)
 
