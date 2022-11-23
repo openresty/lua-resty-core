@@ -24,6 +24,7 @@ local ngx_lua_ffi_balancer_set_more_tries
 local ngx_lua_ffi_balancer_get_last_failure
 local ngx_lua_ffi_balancer_set_timeouts -- used by both stream and http
 local ngx_lua_ffi_balancer_set_upstream_tls
+local ngx_lua_ffi_balancer_bind_to_local_addr
 
 
 if subsystem == 'http' then
@@ -48,8 +49,13 @@ if subsystem == 'http' then
 
     int ngx_http_lua_ffi_balancer_recreate_request(ngx_http_request_t *r,
         char **err);
+
     int ngx_http_lua_ffi_balancer_set_upstream_tls(ngx_http_request_t *r,
         int on, char **err);
+
+    int ngx_http_lua_ffi_balancer_bind_to_local_addr(ngx_http_request_t *r,
+        const u_char *addr, size_t addr_len,
+        u_char *errbuf, size_t *errbuf_size);
     ]]
 
     ngx_lua_ffi_balancer_set_current_peer =
@@ -69,6 +75,9 @@ if subsystem == 'http' then
 
     ngx_lua_ffi_balancer_set_upstream_tls =
         C.ngx_http_lua_ffi_balancer_set_upstream_tls
+
+    ngx_lua_ffi_balancer_bind_to_local_addr =
+        C.ngx_http_lua_ffi_balancer_bind_to_local_addr
 
 elseif subsystem == 'stream' then
     ffi.cdef[[
@@ -350,6 +359,39 @@ if subsystem == 'http' then
         end
 
         return nil, ffi_str(errmsg[0])
+    end
+end
+
+if subsystem == "http" then
+    function _M.bind_to_local_addr(addr)
+        local r = get_request()
+        if not r then
+            error("no request found")
+        end
+
+        if type(addr) ~= "string" then
+            error("bad argument #1 to 'bind_to_local_addr' "
+                  .. "(string expected, got " .. type(addr) .. ")")
+        end
+
+        local errbuf_size = 1024
+        local errbuf = get_string_buf(errbuf_size)
+        local sizep = get_size_ptr()
+        sizep[0] = errbuf_size
+        local rc = ngx_lua_ffi_balancer_bind_to_local_addr(r, addr, #addr,
+                                                           errbuf,
+                                                           sizep)
+        if rc == FFI_OK then
+            return true
+        end
+
+        return nil, ffi_str(errbuf, sizep[0])
+    end
+
+else
+    function _M.bind_to_local_addr(addr)
+        error("'bind_to_local_addr' not yet implemented in " .. subsystem ..
+              " subsystem", 2)
     end
 end
 

@@ -16,6 +16,7 @@ Table of Contents
     * [get_last_failure](#get_last_failure)
     * [recreate_request](#recreate_request)
     * [set_current_peer](#set_current_peer)
+    * [bind_to_local_addr](#bind_to_local_addr)
     * [enable_keepalive](#enable_keepalive)
     * [set_more_tries](#set_more_tries)
     * [set_timeouts](#set_timeouts)
@@ -169,6 +170,20 @@ and pass the results to the `balancer_by_lua*` handler via [ngx.ctx](https://git
 You should not specify `host` and `proxy_ssl_name` at the same time.
 
 This directive should be used on the toplevel scope of your `nginx.conf`.
+
+In case of an error, this function returns `nil` and a string describing the error.
+
+[Back to TOC](#table-of-contents)
+
+bind_to_local_addr
+--------------
+**syntax:** *ok, err = balancer.bind_to_local_addr(addr)*
+
+**context:** *balancer_by_lua&#42;*
+
+Makes outgoing connections to a proxied server originate from the specified local IP address with an optional port.
+
+`addr` is a string value of the IP address with optional port. For example: 127.0.0.1, 127.0.0.1:12345.
 
 In case of an error, this function returns `nil` and a string describing the error.
 
