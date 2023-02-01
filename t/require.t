@@ -31,7 +31,7 @@ __DATA__
 --- config
     location /t {
         content_by_lua_block {
-            local has_foo, foo 
+            local has_foo, foo
             has_foo, foo= pcall(require, "foo")
             if not has_foo then
                 ngx.say("failed to load foo: ", foo)
@@ -68,7 +68,7 @@ return _M
 --- request
 GET /t
 --- response_body eval
-qr|failed to load foo: .*/html/foo.lua:10: /opt/luajit21/lib/libluajit-5.1.so.2: undefined symbol: xxxx
+qr|failed to load foo: .*/html/foo.lua:10: .*/lib/libluajit-5.1.so.2: undefined symbol: xxxx
 failed to load foo again: ./lib/resty/core/base.lua:\d+: loop or previous error loading module 'foo'|ms
 --- no_error_log
 [error]
