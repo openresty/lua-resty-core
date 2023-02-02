@@ -190,7 +190,8 @@ end
 function _M.get_string_buf(size, must_alloc)
     -- ngx.log(ngx.ERR, "str buf size: ", str_buf_size)
     if size > str_buf_size or must_alloc then
-        return ffi_new(c_buf_type, size)
+        local buf = ffi_new(c_buf_type, size)
+        return buf
     end
 
     if not str_buf then
