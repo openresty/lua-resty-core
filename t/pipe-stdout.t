@@ -920,12 +920,12 @@ exit
             else
 
                 -- so just return the expected data in repeated tests.
-                ngx.say("hello world")
+                ngx.say("closed")
             end
         }
     }
 --- response_body
-hello world
+closed
 
 
 
