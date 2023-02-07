@@ -383,14 +383,14 @@ stitch
             end
             ngx.say(t >= uptime)
             local diff = t - uptime
-            ngx.say(diff < 0.01)
+            ngx.say("< 0.01: ", diff < 0.01)
         }
     }
 --- request
 GET /t
 --- response_body
 true
-true
+< 0.01: true
 
 --- error_log eval
 qr/\[TRACE\s+\d+ content_by_lua\(nginx\.conf:\d+\):11 loop\]/
