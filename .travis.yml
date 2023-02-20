@@ -104,3 +104,4 @@ script:
   - nginx -V
   - ldd `which nginx`|grep -E 'luajit|ssl|pcre'
   - prove -I. -Itest-nginx/lib -j$JOBS -r t
+
