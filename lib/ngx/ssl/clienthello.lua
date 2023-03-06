@@ -30,6 +30,7 @@ local ffi_cast = ffi.cast
 local ngx_lua_ffi_ssl_get_client_hello_server_name
 local ngx_lua_ffi_ssl_get_client_hello_ext
 local ngx_lua_ffi_ssl_set_protocols
+local ngx_lua_ffi_ssl_set_ciphers
 local ngx_lua_ffi_ssl_get_client_hello_ext_present
 local ngx_lua_ffi_ssl_get_client_hello_ciphers
 
@@ -46,6 +47,10 @@ if subsystem == 'http' then
     int ngx_http_lua_ffi_ssl_set_protocols(ngx_http_request_t *r,
         int protocols, char **err);
 
+    int
+    ngx_http_lua_ffi_ssl_set_ciphers(ngx_http_request_t *r,
+        const char *ciphers, int prefer_server_ciphers, char **err);
+
     int ngx_http_lua_ffi_ssl_get_client_hello_ext_present(ngx_http_request_t *r,
         int **extensions, size_t *extensions_len, char **err);
         /* Undefined for the stream subsystem */
@@ -59,6 +64,7 @@ if subsystem == 'http' then
     ngx_lua_ffi_ssl_get_client_hello_ext =
         C.ngx_http_lua_ffi_ssl_get_client_hello_ext
     ngx_lua_ffi_ssl_set_protocols = C.ngx_http_lua_ffi_ssl_set_protocols
+    ngx_lua_ffi_ssl_set_ciphers = C.ngx_http_lua_ffi_ssl_set_ciphers
     ngx_lua_ffi_ssl_get_client_hello_ext_present =
         C.ngx_http_lua_ffi_ssl_get_client_hello_ext_present
     ngx_lua_ffi_ssl_get_client_hello_ciphers =
@@ -78,6 +84,10 @@ elseif subsystem == 'stream' then
 
     int ngx_stream_lua_ffi_ssl_set_protocols(ngx_stream_lua_request_t *r,
         int protocols, char **err);
+
+    int
+    ngx_stream_lua_ffi_ssl_set_ciphers(ngx_stream_lua_request_t *r,
+        const char *ciphers, int prefer_server_ciphers, char **err);
     ]]
 
     ngx_lua_ffi_ssl_get_client_hello_server_name =
@@ -85,6 +95,7 @@ elseif subsystem == 'stream' then
     ngx_lua_ffi_ssl_get_client_hello_ext =
         C.ngx_stream_lua_ffi_ssl_get_client_hello_ext
     ngx_lua_ffi_ssl_set_protocols = C.ngx_stream_lua_ffi_ssl_set_protocols
+    ngx_lua_ffi_ssl_set_ciphers = C.ngx_stream_lua_ffi_ssl_set_ciphers
 end
 
 
@@ -331,6 +342,26 @@ function _M.set_protocols(protocols)
     end
 
     local rc = ngx_lua_ffi_ssl_set_protocols(r, prots, errmsg)
+    if rc == FFI_OK then
+        return true
+    end
+
+    return nil, ffi_str(errmsg[0])
+end
+
+function _M.set_ciphers(ciphers, prefer_server_ciphers)
+    local r = get_request()
+    if not r then
+        error("no request found")
+    end
+
+    if ngx_phase() ~= "ssl_client_hello" then
+        error("API disabled in the current context" .. ngx_phase(), 2)
+    end
+
+    prefer_server_ciphers = prefer_server_ciphers and 1 or 0
+    local rc = ngx_lua_ffi_ssl_set_ciphers(r, ciphers, prefer_server_ciphers,
+                                           errmsg)
     if rc == FFI_OK then
         return true
     end
