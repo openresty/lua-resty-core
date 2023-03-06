@@ -17,6 +17,7 @@ Table of Contents
     * [get_client_hello_ext_present](#get_client_hello_ext_present)
     * [get_client_hello_ext](#get_client_hello_ext)
     * [set_protocols](#set_protocols)
+    * [set_ciphers](#set_ciphers)
 * [Community](#community)
     * [English Mailing List](#english-mailing-list)
     * [Chinese Mailing List](#chinese-mailing-list)
@@ -46,6 +47,7 @@ server {
         local host, err = ssl_clt.get_client_hello_server_name()
         if host == "test.com" then
             ssl_clt.set_protocols({"TLSv1", "TLSv1.1"})
+            ssl_clt.set_ciphers("DHE-RSA-AES256-SHA:ECDHE-ECDSA-AES128-SHA:ECDHE-RSA-AES128-SHA", true)
         elseif host == "test2.com" then
             ssl_clt.set_protocols({"TLSv1.2", "TLSv1.3"})
         elseif not host then
@@ -291,6 +293,27 @@ Considering it is meaningless to set ssl protocols after the protocol is determi
 so this function may only be called in the context of [ssl_client_hello_by_lua*](https://github.com/openresty/lua-nginx-module/#ssl_client_hello_by_lua_block).
 
 Example: `ssl_clt.set_protocols({"TLSv1.1", "TLSv1.2", "TLSv1.3"})`
+
+[Back to TOC](#table-of-contents)
+
+set_ciphers
+----------------------
+**syntax:** *ok, err = ssl_clt.set_ciphers(ciphers, prefer_server_ciphers)*
+
+**context:** *ssl_client_hello_by_lua&#42;*
+
+Sets the SSL ciphers supported by the current downstream SSL connection.
+
+Use `prefer_server_ciphers` parameter to control the chooseing process of the cipher.
+When choosing a cipher, use the server's preferences instead of the client preferences.
+When not set, the SSL server will always follow the clients preferences. When set, the SSLv3/TLSv1 server will choose following its own preferences. Because of the different protocol, for SSLv2 the server will send its list of preferences to the client and the client chooses.
+
+Returns `true` on success, or a `nil` value and a string describing the error otherwise.
+
+Considering it is meaningless to set ssl protocols after the protocol is determined,
+so this function may only be called in the context of [ssl_client_hello_by_lua*](https://github.com/openresty/lua-nginx-module/#ssl_client_hello_by_lua_block).
+
+Example: `ssl_clt.set_ciphers("DHE-RSA-AES256-SHA:ECDHE-ECDSA-AES128-SHA:ECDHE-RSA-AES128-SHA", true)`
 
 [Back to TOC](#table-of-contents)
 
