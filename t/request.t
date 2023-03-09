@@ -170,12 +170,12 @@ qr/\[TRACE\s+\d+ content_by_lua\(nginx\.conf:\d+\):4 loop\]/
 --- request
 GET /t
 --- response_body
+foo_BAR: foo
 baz: baz
 connection: close
 foo-bar: foo
-foo_BAR: foo
 host: localhost
-x-bar-header: bar
+x_bar_header: bar
 X_Bar_Header: bar
 x_Bar_Header: bar
 x_bar_header: bar
