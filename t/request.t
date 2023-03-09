@@ -175,6 +175,7 @@ baz: baz
 connection: close
 foo-bar: foo
 host: localhost
+x-bar-header: bar
 X_Bar_Header: bar
 x_Bar_Header: bar
 x_bar_header: bar
