@@ -114,7 +114,12 @@ local truncated = ffi.new("int[1]")
 
 local req_headers_mt = {
     __index = function (tb, key)
-        return rawget(tb, (str_replace_char(lower(key), '_', '-')))
+        key = lower(key)
+        local value = rawget(tb, key)
+        if value == nil then
+            value =  rawget(tb, (str_replace_char(key, '_', '-')))
+        end
+        return value
     end
 }
 
