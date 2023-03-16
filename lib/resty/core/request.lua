@@ -116,8 +116,8 @@ local req_headers_mt = {
     __index = function (tb, key)
         key = lower(key)
         local value = rawget(tb, key)
-        if value == nil then
-            if value == nil and str_find(key, '_', 1, true) then
+        if value == nil and str_find(key, '_', 1, true) then
+            value = rawget(tb, (str_replace_char(key, '_', '-')))
         end
         return value
     end
