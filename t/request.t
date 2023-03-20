@@ -140,8 +140,11 @@ qr/\[TRACE\s+\d+ content_by_lua\(nginx\.conf:\d+\):4 loop\]/
 
 
 === TEST 4: ngx.req.get_headers (metatable)
---- http_config
-    underscores_in_headers on;
+--- http_config eval
+"
+$::HttpConfig
+underscores_in_headers on;
+"
 --- config
     location = /t {
         set $foo hello;
