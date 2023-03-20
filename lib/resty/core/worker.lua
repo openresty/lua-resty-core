@@ -87,7 +87,8 @@ if jit.os ~= "Windows" then
 
         local pids = {}
         local size_ptr = get_size_ptr()
-        local worker_cnt = ngx.worker.count()
+        -- the old and the new workers coexist during reloading
+        local worker_cnt = ngx.worker.count() * 4
         if worker_cnt == 0 then
             return pids
         end
