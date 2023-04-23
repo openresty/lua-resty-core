@@ -45,13 +45,6 @@ if subsystem == "http" then
     ngx_lua_ffi_worker_pid = C.ngx_http_lua_ffi_worker_pid
     ngx_lua_ffi_worker_count = C.ngx_http_lua_ffi_worker_count
     ngx_lua_ffi_worker_exiting = C.ngx_http_lua_ffi_worker_exiting
-    if is_not_windows then
-        ffi.cdef[[
-        int ngx_http_lua_ffi_worker_pids(int *pids, size_t *pids_len);
-        ]]
-
-        ngx_lua_ffi_worker_pids = C.ngx_http_lua_ffi_worker_pids
-    end
 
 elseif subsystem == "stream" then
     ffi.cdef[[
@@ -66,13 +59,6 @@ elseif subsystem == "stream" then
     ngx_lua_ffi_worker_count = C.ngx_stream_lua_ffi_worker_count
     ngx_lua_ffi_worker_exiting = C.ngx_stream_lua_ffi_worker_exiting
 
-    if is_not_windows then
-        ffi.cdef[[
-        int ngx_stream_lua_ffi_worker_pids(int *pids, size_t *pids_len);
-        ]]
-
-        ngx_lua_ffi_worker_pids = C.ngx_stream_lua_ffi_worker_pids
-    end
 end
 
 
@@ -87,6 +73,22 @@ end
 
 
 if is_not_windows then
+    if subsystem == "http" then
+        ffi.cdef[[
+        int ngx_http_lua_ffi_worker_pids(int *pids, size_t *pids_len);
+        ]]
+
+        ngx_lua_ffi_worker_pids = C.ngx_http_lua_ffi_worker_pids
+
+    elseif subsystem == "stream" then
+        ffi.cdef[[
+        int ngx_stream_lua_ffi_worker_pids(int *pids, size_t *pids_len);
+        ]]
+
+        ngx_lua_ffi_worker_pids = C.ngx_stream_lua_ffi_worker_pids
+    end
+
+
     function ngx.worker.pids()
         if ngx.get_phase() == "init" or ngx.get_phase() == "init_worker" then
             return nil, "API disabled in the current context"
