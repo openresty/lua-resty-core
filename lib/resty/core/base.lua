@@ -241,6 +241,7 @@ _M.FFI_AGAIN = -2
 _M.FFI_BUSY = -3
 _M.FFI_DONE = -4
 _M.FFI_DECLINED = -5
+_M.FFI_ABORT = -6
 
 
 do
