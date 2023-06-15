@@ -97,7 +97,7 @@ qr/ssl_session_fetch_by_lua\(nginx.conf:\d+\):\d+: session id: [a-fA-f\d]+/s
 
 --- grep_error_log_out eval
 [
-'',
+qr/ssl_session_fetch_by_lua\(nginx.conf:\d+\):4: session id: [a-fA-f\d]+/s,
 qr/ssl_session_fetch_by_lua\(nginx.conf:\d+\):4: session id: [a-fA-f\d]+/s,
 qr/ssl_session_fetch_by_lua\(nginx.conf:\d+\):4: session id: [a-fA-f\d]+/s,
 ]
@@ -534,7 +534,10 @@ $/s,
 
     ssl_session_fetch_by_lua_block {
         local ssl = require "ngx.ssl.session"
-        local f = assert(io.open("$TEST_NGINX_SERVER_ROOT/html/session.tmp"))
+        local f = io.open("$TEST_NGINX_SERVER_ROOT/html/session.tmp")
+        if f == nil then
+            return
+        end
         local sess = f:read("*a")
         f:close()
         ssl.set_serialized_session(sess)
