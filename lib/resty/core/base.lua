@@ -19,9 +19,9 @@ local FREE_LIST_REF = 0
 if subsystem == 'http' then
     if not ngx.config
        or not ngx.config.ngx_lua_version
-       or ngx.config.ngx_lua_version ~= 10024
+       or ngx.config.ngx_lua_version ~= 10025
     then
-        error("ngx_http_lua_module 0.10.24 required")
+        error("ngx_http_lua_module 0.10.25 required")
     end
 
 elseif subsystem == 'stream' then
@@ -33,7 +33,7 @@ elseif subsystem == 'stream' then
     end
 
 else
-    error("ngx_http_lua_module 0.10.24 or "
+    error("ngx_http_lua_module 0.10.25 or "
           .. "ngx_stream_lua_module 0.0.13 required")
 end
 
