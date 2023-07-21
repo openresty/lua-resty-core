@@ -93,8 +93,7 @@ ffi.cdef[[
     size_t ngx_http_lua_ffi_req_get_querystring_len(ngx_http_request_t *r);
 
     int ngx_http_lua_ffi_req_get_uri_args(ngx_http_request_t *r,
-        unsigned char *buf, ngx_http_lua_ffi_table_elt_t *out,
-        int count, int allow_empty_key);
+        unsigned char *buf, ngx_http_lua_ffi_table_elt_t *out, int count);
 
     int ngx_http_lua_ffi_req_get_method(ngx_http_request_t *r);
 
@@ -200,7 +199,7 @@ function ngx.req.get_headers(max_headers, raw)
 end
 
 
-function ngx.req.get_uri_args(max_args, tab, allow_empty_key)
+function ngx.req.get_uri_args(max_args, tab)
     local r = get_request()
     if not r then
         error("no request found")
@@ -209,8 +208,6 @@ function ngx.req.get_uri_args(max_args, tab, allow_empty_key)
     if not max_args then
         max_args = -1
     end
-
-    allow_empty_key = allow_empty_key or false
 
     if tab then
         clear_tab(tab)
@@ -230,8 +227,7 @@ function ngx.req.get_uri_args(max_args, tab, allow_empty_key)
     local strbuf = get_string_buf(args_len + n * table_elt_size)
     local kvbuf = ffi_cast(table_elt_type, strbuf + args_len)
 
-    local nargs = C.ngx_http_lua_ffi_req_get_uri_args(r, strbuf, kvbuf, n,
-                                                      allow_empty_key)
+    local nargs = C.ngx_http_lua_ffi_req_get_uri_args(r, strbuf, kvbuf, n)
 
     local args = tab or new_tab(0, nargs)
     for i = 0, nargs - 1 do
