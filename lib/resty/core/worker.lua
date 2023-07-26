@@ -73,12 +73,7 @@ end
 
 
 if is_not_windows then
-    local ngx_phase
-
     if subsystem == "http" then
-        require "resty.core.phase"  -- for ngx.get_phase
-        ngx_phase = ngx.get_phase
-
         ffi.cdef[[
         int ngx_http_lua_ffi_worker_pids(int *pids, size_t *pids_len);
         ]]
@@ -95,11 +90,9 @@ if is_not_windows then
 
 
     function ngx.worker.pids()
-        if ngx_phase then
-            local phase = ngx_phase()
-            if phase == "init" or phase == "init_worker" then
-                return nil, "API disabled in the current context"
-            end
+        local phase = ngx.get_phase()
+        if phase == "init" or phase == "init_worker" then
+            return nil, "API disabled in the current context"
         end
 
         local pids = {}
