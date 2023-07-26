@@ -89,15 +89,20 @@ if is_not_windows then
     end
 
 
+    require "resty.core.phase"  -- for ngx.get_phase
+    local ngx_phase = ngx.get_phase
+
+
     function ngx.worker.pids()
-        if ngx.get_phase() == "init" or ngx.get_phase() == "init_worker" then
+        local phase = ngx_phase()
+        if phase == "init" or phase == "init_worker" then
             return nil, "API disabled in the current context"
         end
 
         local pids = {}
         local size_ptr = get_size_ptr()
         -- the old and the new workers coexist during reloading
-        local worker_cnt = ngx.worker.count() * 4
+        local worker_cnt = ngx_lua_ffi_worker_count() * 4
         if worker_cnt == 0 then
             return pids
         end
@@ -116,6 +121,7 @@ if is_not_windows then
         return pids
     end
 end
+
 
 function ngx.worker.id()
     local id = ngx_lua_ffi_worker_id()
