@@ -379,6 +379,7 @@ lua release ngx.ctx at ref 1
     }
 --- config
     lua_ssl_trusted_certificate ../../cert/test.crt;
+    lua_ssl_protocols TLSv1.2;
 
     location /t {
         content_by_lua_block {
@@ -481,6 +482,7 @@ lua release ngx.ctx at ref 1
     }
 --- config
     lua_ssl_trusted_certificate ../../cert/test.crt;
+    lua_ssl_protocols TLSv1.2;
 
     location /t {
         content_by_lua_block {
@@ -549,6 +551,7 @@ lua release ngx.ctx at ref 1
     }
 --- config
     lua_ssl_trusted_certificate ../../cert/test.crt;
+    lua_ssl_protocols TLSv1.2;
 
     location /t {
         content_by_lua_block {
@@ -644,6 +647,7 @@ lua release ngx.ctx at ref 1
     }
 --- config
     lua_ssl_trusted_certificate ../../cert/test.crt;
+    lua_ssl_protocols TLSv1.2;
 
     location /t {
         content_by_lua_block {
@@ -716,6 +720,7 @@ lua release ngx.ctx at ref 1
     }
 --- config
     lua_ssl_trusted_certificate ../../cert/test.crt;
+    lua_ssl_protocols TLSv1.2;
 
     location /t {
         content_by_lua_block {

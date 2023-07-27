@@ -51,6 +51,7 @@ __DATA__
     resolver $TEST_NGINX_RESOLVER;
     lua_ssl_trusted_certificate $TEST_NGINX_CERT_DIR/cert/test.crt;
     lua_ssl_verify_depth 3;
+    lua_ssl_protocols TLSv1.2;
 
     location /t {
         set $port $TEST_NGINX_MEMCACHED_PORT;
@@ -138,6 +139,7 @@ qr/ssl_session_fetch_by_lua\(nginx.conf:\d+\):4: session id: [a-fA-f\d]+/s,
     resolver $TEST_NGINX_RESOLVER;
     lua_ssl_trusted_certificate $TEST_NGINX_CERT_DIR/cert/test.crt;
     lua_ssl_verify_depth 3;
+    lua_ssl_protocols TLSv1.2;
 
     location /t {
         set $port $TEST_NGINX_MEMCACHED_PORT;
@@ -246,6 +248,7 @@ In practice, never store session in plaintext on persistent storage.
     resolver $TEST_NGINX_RESOLVER;
     lua_ssl_trusted_certificate $TEST_NGINX_CERT_DIR/cert/test.crt;
     lua_ssl_verify_depth 3;
+    lua_ssl_protocols TLSv1.2;
 
     location /t {
         set $port $TEST_NGINX_MEMCACHED_PORT;
@@ -342,6 +345,7 @@ able to carry on and negotiate a new session.
     resolver $TEST_NGINX_RESOLVER;
     lua_ssl_trusted_certificate $TEST_NGINX_CERT_DIR/cert/test.crt;
     lua_ssl_verify_depth 3;
+    lua_ssl_protocols TLSv1.2;
 
     location /t {
         set $port $TEST_NGINX_MEMCACHED_PORT;
@@ -449,6 +453,7 @@ $/s,
     }
 --- config
     lua_ssl_trusted_certificate $TEST_NGINX_CERT_DIR/cert/test.crt;
+    lua_ssl_protocols TLSv1.2;
 
     location /t {
         set $sess_file $TEST_NGINX_HTML_DIR/sess;
@@ -557,6 +562,7 @@ $/s,
 --- config
     lua_ssl_trusted_certificate $TEST_NGINX_CERT_DIR/cert/test.crt;
     lua_ssl_verify_depth 3;
+    lua_ssl_protocols TLSv1.2;
 
     location /t {
         set $port $TEST_NGINX_MEMCACHED_PORT;
