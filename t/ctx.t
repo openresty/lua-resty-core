@@ -537,6 +537,7 @@ lua release ngx.ctx at ref 1
         ssl_session_tickets off;
         ssl_certificate ../../cert/test.crt;
         ssl_certificate_key ../../cert/test.key;
+        ssl_protocols TLSv1.2;
 
         server_tokens off;
         location /foo {
@@ -551,7 +552,6 @@ lua release ngx.ctx at ref 1
     }
 --- config
     lua_ssl_trusted_certificate ../../cert/test.crt;
-    lua_ssl_protocols TLSv1.2;
 
     location /t {
         content_by_lua_block {
@@ -639,6 +639,7 @@ lua release ngx.ctx at ref 1
         ssl_session_tickets off;
         ssl_certificate ../../cert/test.crt;
         ssl_certificate_key ../../cert/test.key;
+        ssl_protocols TLSv1.2;
 
         server_tokens off;
         location /foo {
@@ -647,7 +648,6 @@ lua release ngx.ctx at ref 1
     }
 --- config
     lua_ssl_trusted_certificate ../../cert/test.crt;
-    lua_ssl_protocols TLSv1.2;
 
     location /t {
         content_by_lua_block {
@@ -706,6 +706,7 @@ lua release ngx.ctx at ref 1
         ssl_session_tickets off;
         ssl_certificate ../../cert/test.crt;
         ssl_certificate_key ../../cert/test.key;
+        ssl_protocols TLSv1.2;
 
         ssl_certificate_by_lua_block {
             ngx.ctx.count = ngx.ctx.count and (ngx.ctx.count + 100) or 100
@@ -720,7 +721,6 @@ lua release ngx.ctx at ref 1
     }
 --- config
     lua_ssl_trusted_certificate ../../cert/test.crt;
-    lua_ssl_protocols TLSv1.2;
 
     location /t {
         content_by_lua_block {
