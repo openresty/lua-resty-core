@@ -61,10 +61,10 @@ install:
   - if [ ! -d download-cache ]; then mkdir download-cache; fi
   - if [ ! -f download-cache/openssl-$OPENSSL_VER.tar.gz ]; then wget -P download-cache https://www.openssl.org/source/openssl-$OPENSSL_VER.tar.gz || wget -P download-cache https://www.openssl.org/source/old/${OPENSSL_VER//[a-z]/}/openssl-$OPENSSL_VER.tar.gz; fi
   - if [ ! -f download-cache/pcre-$PCRE_VER.tar.gz ]; then wget -P download-cache http://ftp.cs.stanford.edu/pub/exim/pcre/pcre-$PCRE_VER.tar.gz; fi
-  - git clone https://github.com/openresty/openresty.git ../openresty
-  - git clone https://github.com/openresty/openresty-devel-utils.git
+  - git clone -b 1.21.4.x https://github.com/openresty/openresty.git ../openresty
+  - git clone -b 1.21.4.x https://github.com/openresty/openresty-devel-utils.git
   - git clone https://github.com/simpl/ngx_devel_kit.git ../ndk-nginx-module
-  - git clone https://github.com/openresty/lua-nginx-module.git ../lua-nginx-module
+  - git clone -b 0.10.25.x https://github.com/openresty/lua-nginx-module.git ../lua-nginx-module
   - git clone https://github.com/openresty/no-pool-nginx.git ../no-pool-nginx
   - git clone https://github.com/openresty/echo-nginx-module.git ../echo-nginx-module
   - git clone https://github.com/openresty/lua-resty-lrucache.git
@@ -73,7 +73,7 @@ install:
   - git clone https://github.com/openresty/set-misc-nginx-module.git ../set-misc-nginx-module
   - git clone https://github.com/openresty/mockeagain.git
   - git clone https://github.com/openresty/test-nginx.git
-  - git clone https://github.com/openresty/stream-lua-nginx-module.git ../stream-lua-nginx-module
+  - git clone -b 0.0.13.x https://github.com/openresty/stream-lua-nginx-module.git ../stream-lua-nginx-module
 
 script:
   - cd luajit2/
