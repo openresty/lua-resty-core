@@ -24,6 +24,8 @@ Table of Contents
     * [get_tls1_version_str](#get_tls1_version_str)
     * [parse_pem_cert](#parse_pem_cert)
     * [parse_pem_priv_key](#parse_pem_priv_key)
+    * [parse_der_cert](#parse_der_cert)
+    * [parse_der_priv_key](#parse_der_priv_key)
     * [set_cert](#set_cert)
     * [set_priv_key](#set_priv_key)
     * [verify_client](#verify_client)
@@ -457,6 +459,41 @@ This function was first added in version `0.1.7`.
 
 [Back to TOC](#table-of-contents)
 
+parse_der_cert
+--------------
+**syntax:** *cert_chain, err = ssl.parse_der_cert(der_cert_chain)*
+
+**context:** *any*
+
+Converts the DER-formated SSL certificate chain data into an opaque cdata pointer (for later uses
+in the [set_cert](#set_cert)
+function, for example).
+
+In case of failures, returns `nil` and a string describing the error.
+
+You can always use libraries like [lua-resty-lrucache](https://github.com/openresty/lua-resty-lrucache#readme)
+to cache the cdata result.
+
+This function can be called in any context.
+
+[Back to TOC](#table-of-contents)
+
+parse_der_priv_key
+------------------
+**syntax:** *priv_key, err = ssl.parse_der_priv_key(der_priv_key)*
+
+**context:** *any*
+
+Converts the DER-formatted SSL private key data into an opaque cdata pointer (for later uses
+in the [set_priv_key](#set_priv_key)
+function, for example).
+
+In case of failures, returns `nil` and a string describing the error.
+
+This function can be called in any context.
+
+[Back to TOC](#table-of-contents)
+
 set_cert
 --------
 **syntax:** *ok, err = ssl.set_cert(cert_chain)*
@@ -464,7 +501,7 @@ set_cert
 **context:** *ssl_certificate_by_lua&#42;*
 
 Sets the SSL certificate chain opaque pointer returned by the
-[parse_pem_cert](#parse_pem_cert) function for the current SSL connection.
+[parse_pem_cert](#parse_pem_cert) or [parse_der_cert](#parse_der_cert)function for the current SSL connection.
 
 Returns `true` on success, or a `nil` value and a string describing the error otherwise.
 
@@ -483,7 +520,7 @@ set_priv_key
 **context:** *ssl_certificate_by_lua&#42;*
 
 Sets the SSL private key opaque pointer returned by the
-[parse_pem_priv_key](#parse_pem_priv_key) function for the current SSL connection.
+[parse_pem_priv_key](#parse_pem_priv_key) or [parse_der_priv_key](#parse_der_priv_key) function for the current SSL connection.
 
 Returns `true` on success, or a `nil` value and a string describing the error otherwise.
 
