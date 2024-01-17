@@ -33,6 +33,7 @@ local ngx_lua_ffi_ssl_get_tls1_version
 local ngx_lua_ffi_parse_pem_cert
 local ngx_lua_ffi_parse_pem_priv_key
 local ngx_lua_ffi_parse_der_cert
+local ngx_lua_ffi_parse_der_priv_key
 local ngx_lua_ffi_set_cert
 local ngx_lua_ffi_set_priv_key
 local ngx_lua_ffi_free_cert
