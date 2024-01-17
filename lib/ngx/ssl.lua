@@ -32,6 +32,7 @@ local ngx_lua_ffi_priv_key_pem_to_der
 local ngx_lua_ffi_ssl_get_tls1_version
 local ngx_lua_ffi_parse_pem_cert
 local ngx_lua_ffi_parse_pem_priv_key
+local ngx_lua_ffi_parse_der_cert
 local ngx_lua_ffi_set_cert
 local ngx_lua_ffi_set_priv_key
 local ngx_lua_ffi_free_cert
@@ -77,6 +78,12 @@ if subsystem == 'http' then
     void *ngx_http_lua_ffi_parse_pem_priv_key(const unsigned char *pem,
         size_t pem_len, char **err);
 
+    void *ngx_http_lua_ffi_parse_der_cert(const char *data,
+        size_t len, char **err);
+
+    void *ngx_http_lua_ffi_parse_der_priv_key(const char *data, size_t len,
+        char **err) ;
+
     int ngx_http_lua_ffi_set_cert(void *r, void *cdata, char **err);
 
     int ngx_http_lua_ffi_set_priv_key(void *r, void *cdata, char **err);
@@ -103,6 +110,8 @@ if subsystem == 'http' then
     ngx_lua_ffi_ssl_get_tls1_version = C.ngx_http_lua_ffi_ssl_get_tls1_version
     ngx_lua_ffi_parse_pem_cert = C.ngx_http_lua_ffi_parse_pem_cert
     ngx_lua_ffi_parse_pem_priv_key = C.ngx_http_lua_ffi_parse_pem_priv_key
+    ngx_lua_ffi_parse_der_cert = C.ngx_http_lua_ffi_parse_der_cert
+    ngx_lua_ffi_parse_der_priv_key = C.ngx_http_lua_ffi_parse_der_priv_key
     ngx_lua_ffi_set_cert = C.ngx_http_lua_ffi_set_cert
     ngx_lua_ffi_set_priv_key = C.ngx_http_lua_ffi_set_priv_key
     ngx_lua_ffi_free_cert = C.ngx_http_lua_ffi_free_cert
@@ -379,6 +388,26 @@ end
 
 function _M.parse_pem_priv_key(pem)
     local pkey = ngx_lua_ffi_parse_pem_priv_key(pem, #pem, errmsg)
+    if pkey ~= nil then
+        return ffi_gc(pkey, ngx_lua_ffi_free_priv_key)
+    end
+
+    return nil, ffi_str(errmsg[0])
+end
+
+
+function _M.parse_der_cert(der)
+    local cert = ngx_lua_ffi_parse_der_cert(der, #der, errmsg)
+    if cert ~= nil then
+        return ffi_gc(cert, ngx_lua_ffi_free_cert)
+    end
+
+    return nil, ffi_str(errmsg[0])
+end
+
+
+function _M.parse_der_priv_key(der)
+    local pkey = ngx_lua_ffi_parse_der_priv_key(der, #der, errmsg)
     if pkey ~= nil then
         return ffi_gc(pkey, ngx_lua_ffi_free_priv_key)
     end
