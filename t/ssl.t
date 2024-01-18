@@ -2838,6 +2838,8 @@ lua ssl server name: "test.com"
 [alert]
 [emerg]
 
+
+
 === TEST 29: parse PEM cert and key to cdata
 --- http_config
     lua_package_path "$TEST_NGINX_LUA_PACKAGE_PATH";
