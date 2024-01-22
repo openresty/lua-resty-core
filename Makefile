@@ -23,6 +23,7 @@ ifeq ($(LUA_LIB_DIR),/usr/local/lib/lua/)
 	@echo "\033[33mPLEASE NOTE: \033[0m"
 	@echo "\033[33mThe necessary lua_package_path directive needs to be added to nginx.conf\033[0m"
 	@echo "\033[33min the http context, because \"/usr/local/lib/lua/\" is not in LuaJIT’s default search path.\033[0m"
+	@echo "\033[33mRefer to the Installation section of README.markdown.\033[0m"
 endif
 
 test: all
