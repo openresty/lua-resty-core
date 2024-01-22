@@ -123,14 +123,16 @@ Installation
 ============
 
 LuaJIT will search for this library in /usr/local/share/lua/5.1/.
-If installed in other paths, add necessary `lua_package_path` directive to `nginx.conf` in the http context.
-
-lua_package_path "/opt/nginx/lib/lua/?.lua;;";
 
 ```bash
-
  cd lua-resty-core
  make install LUA_LIB_DIR=/usr/local/share/lua/5.1
+```
+
+If installed in other paths, add necessary `lua_package_path` directive to `nginx.conf` in the http context.
+
+```
+lua_package_path "/opt/nginx/lib/lua/?.lua;;";
 ```
 
 [Back to TOC](#table-of-contents)
