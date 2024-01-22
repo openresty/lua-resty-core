@@ -11,6 +11,7 @@ Table of Contents
 * [Synopsis](#synopsis)
 * [Description](#description)
 * [Prerequisites](#prerequisites)
+* [Installation](#installation)
 * [API Implemented](#api-implemented)
     * [resty.core.hash](#restycorehash)
     * [resty.core.base64](#restycorebase64)
@@ -115,6 +116,22 @@ into serious compatibility issues.
 * [ngx_http_lua_module](https://github.com/openresty/lua-nginx-module) v0.10.25.
 * [ngx_stream_lua_module](https://github.com/openresty/stream-lua-nginx-module) v0.0.13.
 * [lua-resty-lrucache](https://github.com/openresty/lua-resty-lrucache)
+
+[Back to TOC](#table-of-contents)
+
+Installation
+============
+
+LuaJIT will search for this library in /usr/local/share/lua/5.1/.
+If installed in other paths, add necessary `lua_package_path` directive to `nginx.conf` in the http context.
+
+lua_package_path "/opt/nginx/lib/lua/?.lua;;";
+
+```bash
+
+ cd lua-resty-core
+ make install LUA_LIB_DIR=/usr/local/share/lua/5.1
+```
 
 [Back to TOC](#table-of-contents)
 
