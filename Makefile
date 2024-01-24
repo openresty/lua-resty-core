@@ -6,6 +6,8 @@ LUA_INCLUDE_DIR ?= $(PREFIX)/include
 LUA_LIB_DIR ?=     $(PREFIX)/lib/lua/$(LUA_VERSION)
 INSTALL ?= install
 
+SHELL := /bin/bash
+
 .PHONY: all test install
 
 all: ;
