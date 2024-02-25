@@ -9,6 +9,7 @@ local ffi = require "ffi"
 local C = ffi.C
 local ffi_str = ffi.string
 local ffi_gc = ffi.gc
+local ffi_new = ffi.new
 local get_request = base.get_request
 local error = error
 local tonumber = tonumber
@@ -39,6 +40,7 @@ local ngx_lua_ffi_set_priv_key
 local ngx_lua_ffi_free_cert
 local ngx_lua_ffi_free_priv_key
 local ngx_lua_ffi_ssl_verify_client
+local ngx_lua_ffi_ssl_client_random
 
 
 if subsystem == 'http' then
@@ -95,6 +97,9 @@ if subsystem == 'http' then
 
     int ngx_http_lua_ffi_ssl_verify_client(void *r,
         void *cdata, int depth, char **err);
+
+    int ngx_http_lua_ffi_ssl_client_random(ngx_http_request_t *r,
+        const unsigned char *out, size_t *outlen, char **err);
     ]]
 
     ngx_lua_ffi_ssl_set_der_certificate =
@@ -118,6 +123,7 @@ if subsystem == 'http' then
     ngx_lua_ffi_free_cert = C.ngx_http_lua_ffi_free_cert
     ngx_lua_ffi_free_priv_key = C.ngx_http_lua_ffi_free_priv_key
     ngx_lua_ffi_ssl_verify_client = C.ngx_http_lua_ffi_ssl_verify_client
+    ngx_lua_ffi_ssl_client_random = C.ngx_http_lua_ffi_ssl_client_random
 
 elseif subsystem == 'stream' then
     ffi.cdef[[
@@ -174,6 +180,9 @@ elseif subsystem == 'stream' then
 
     int ngx_stream_lua_ffi_ssl_verify_client(void *r,
         void *cdata, int depth, char **err);
+
+    int ngx_stream_lua_ffi_ssl_client_random(ngx_stream_lua_request_t *r,
+        unsigned char *out, size_t *outlen, char **err);
     ]]
 
     ngx_lua_ffi_ssl_set_der_certificate =
@@ -197,6 +206,7 @@ elseif subsystem == 'stream' then
     ngx_lua_ffi_free_cert = C.ngx_stream_lua_ffi_free_cert
     ngx_lua_ffi_free_priv_key = C.ngx_stream_lua_ffi_free_priv_key
     ngx_lua_ffi_ssl_verify_client = C.ngx_stream_lua_ffi_ssl_verify_client
+    ngx_lua_ffi_ssl_client_random = C.ngx_stream_lua_ffi_ssl_client_random
 end
 
 
@@ -502,6 +512,36 @@ do
 
         return ver_str
     end
+end
+
+
+function _M.get_client_random(outlen)
+    local r = get_request()
+    if not r then
+        error("no request found")
+    end
+
+    if outlen == nil then
+        outlen = 32
+    end
+
+    local out = ffi_new("unsigned char[?]", outlen)
+    local sizep = ffi_new("size_t[1]", outlen)
+    local ret_len = false
+    if outlen == 0 then
+        ret_len = true
+    end
+
+    local rc = ngx_lua_ffi_ssl_client_random(r, out, sizep, errmsg)
+    if rc == FFI_OK then
+        if ret_len then
+            return tonumber(sizep[0])
+        end
+
+        return ffi_str(out, sizep[0])
+    end
+
+    return nil, ffi_str(errmsg[0])
 end
 
 
