@@ -532,7 +532,7 @@ function _M.get_client_random(outlen)
 
     local rc = ngx_lua_ffi_ssl_client_random(r, out, sizep, errmsg)
     if rc == FFI_OK then
-        if ret_len then
+        if out_len == 0 then
             return tonumber(sizep[0])
         end
 
