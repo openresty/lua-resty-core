@@ -9,7 +9,6 @@ local ffi = require "ffi"
 local C = ffi.C
 local ffi_str = ffi.string
 local ffi_gc = ffi.gc
-local ffi_new = ffi.new
 local get_request = base.get_request
 local error = error
 local tonumber = tonumber
@@ -528,11 +527,10 @@ function _M.get_client_random(outlen)
     local out = get_string_buf(outlen)
     local sizep = get_size_ptr()
     sizep[0] = outlen
-    local ret_len = false
 
     local rc = ngx_lua_ffi_ssl_client_random(r, out, sizep, errmsg)
     if rc == FFI_OK then
-        if out_len == 0 then
+        if outlen == 0 then
             return tonumber(sizep[0])
         end
 
