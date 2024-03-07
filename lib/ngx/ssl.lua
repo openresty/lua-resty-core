@@ -525,12 +525,10 @@ function _M.get_client_random(outlen)
         outlen = 32
     end
 
-    local out = ffi_new("unsigned char[?]", outlen)
-    local sizep = ffi_new("size_t[1]", outlen)
+    local out = get_string_buf(outlen)
+    local sizep = get_size_ptr()
+    sizep[0] = outlen
     local ret_len = false
-    if outlen == 0 then
-        ret_len = true
-    end
 
     local rc = ngx_lua_ffi_ssl_client_random(r, out, sizep, errmsg)
     if rc == FFI_OK then
