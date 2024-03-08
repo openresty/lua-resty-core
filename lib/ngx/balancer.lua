@@ -22,6 +22,7 @@ local ngx_lua_ffi_balancer_set_current_peer
 local ngx_lua_ffi_balancer_set_more_tries
 local ngx_lua_ffi_balancer_get_last_failure
 local ngx_lua_ffi_balancer_set_timeouts -- used by both stream and http
+local ngx_lua_ffi_balancer_set_upstream_tls
 
 
 if subsystem == 'http' then
@@ -41,6 +42,8 @@ if subsystem == 'http' then
 
     int ngx_http_lua_ffi_balancer_recreate_request(ngx_http_request_t *r,
         char **err);
+    int ngx_http_lua_ffi_balancer_set_upstream_tls(ngx_http_request_t *r,
+        int on, char **err);
     ]]
 
     ngx_lua_ffi_balancer_set_current_peer =
@@ -54,6 +57,9 @@ if subsystem == 'http' then
 
     ngx_lua_ffi_balancer_set_timeouts =
         C.ngx_http_lua_ffi_balancer_set_timeouts
+
+    ngx_lua_ffi_balancer_set_upstream_tls =
+        C.ngx_http_lua_ffi_balancer_set_upstream_tls
 
 elseif subsystem == 'stream' then
     ffi.cdef[[
@@ -227,6 +233,29 @@ if subsystem == 'http' then
         end
 
         return nil, "failed to recreate the upstream request"
+    end
+
+
+    function _M.set_upstream_tls(on)
+        local r = get_request()
+        if not r then
+            return error("no request found")
+        end
+
+        local rc
+
+        if on == 0 or on == false then
+            on = 0
+        else
+            on = 1
+        end
+
+        rc = ngx_lua_ffi_balancer_set_upstream_tls(r, on, errmsg);
+        if rc == FFI_OK then
+            return true
+        end
+
+        return nil, ffi_str(errmsg[0])
     end
 end
 
