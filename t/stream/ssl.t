@@ -2245,3 +2245,82 @@ lua ssl server name: "test.com"
 [error]
 [alert]
 [emerg]
+
+
+
+=== TEST 28: read client random via ssl.get_client_random()
+--- stream_config
+    lua_package_path "$TEST_NGINX_LUA_PACKAGE_PATH";
+
+    server {
+        listen 127.0.0.1:$TEST_NGINX_RAND_PORT_1 ssl;
+        ssl_certificate_by_lua_block {
+            local ssl = require "ngx.ssl"
+            local client_random_len = ssl.get_client_random(0)
+            print("client-random length: ", client_random_len)
+
+            local init_v = "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"
+            local client_random = ssl.get_client_random()
+            if client_random == init_v then
+                print("maybe the client random value is incorrect")
+            end
+        }
+        ssl_certificate ../../cert/test.crt;
+        ssl_certificate_key ../../cert/test.key;
+
+        return 'it works!\n';
+    }
+--- stream_server_config
+    lua_ssl_trusted_certificate ../../cert/test.crt;
+
+    content_by_lua_block {
+        do
+            local sock = ngx.socket.tcp()
+
+            sock:settimeout(3000)
+
+            local ok, err = sock:connect("127.0.0.1", $TEST_NGINX_RAND_PORT_1)
+            if not ok then
+                ngx.say("failed to connect: ", err)
+                return
+            end
+
+            ngx.say("connected: ", ok)
+
+            local sess, err = sock:sslhandshake(nil, nil, true)
+            if not sess then
+                ngx.say("failed to do SSL handshake: ", err)
+                return
+            end
+
+            ngx.say("ssl handshake: ", type(sess))
+
+            while true do
+                local line, err = sock:receive()
+                if not line then
+                    -- ngx.say("failed to receive response status line: ", err)
+                    break
+                end
+
+                ngx.say("received: ", line)
+            end
+
+            local ok, err = sock:close()
+            ngx.say("close: ", ok, " ", err)
+        end  -- do
+        -- collectgarbage()
+    }
+
+--- stream_response
+connected: 1
+ssl handshake: userdata
+received: it works!
+close: 1 nil
+
+--- error_log
+client-random length: 32
+
+--- no_error_log
+[error]
+[alert]
+[emerg]
