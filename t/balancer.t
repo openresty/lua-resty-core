@@ -882,3 +882,98 @@ connect() failed (111: Connection refused) while connecting to upstream, client:
 --- no_error_log
 [warn]
 [crit]
+
+
+
+=== TEST 20: set_upstream_tls off
+--- skip_nginx: 5: < 1.7.5
+--- http_config
+    lua_package_path "$TEST_NGINX_LUA_PACKAGE_PATH";
+
+    upstream backend {
+        server 0.0.0.1;
+        balancer_by_lua_block {
+            local b = require "ngx.balancer"
+            b.set_current_peer("127.0.0.1", tonumber(ngx.var.server_port))
+            b.set_upstream_tls(false)
+        }
+        keepalive 1;
+    }
+
+    server {
+        listen $TEST_NGINX_RAND_PORT_1 ssl;
+        ssl_certificate ../../cert/test.crt;
+        ssl_certificate_key ../../cert/test.key;
+
+        server_tokens off;
+        location = /back {
+            return 200 "ok";
+        }
+    }
+--- config
+    location /t {
+        proxy_pass https://backend/back;
+        proxy_http_version 1.1;
+        proxy_set_header Connection "";
+    }
+
+    location /back {
+        echo "Hello world!";
+    }
+--- request
+    GET /t
+--- no_error_log
+[alert]
+[error]
+--- response_body
+Hello world!
+
+--- no_check_leak
+
+
+
+=== TEST 21: set_upstream_tls on
+--- skip_nginx: 5: < 1.7.5
+--- http_config
+    lua_package_path "$TEST_NGINX_LUA_PACKAGE_PATH";
+
+    upstream backend {
+        server 0.0.0.1;
+        balancer_by_lua_block {
+            local b = require "ngx.balancer"
+            b.set_current_peer("127.0.0.1", $TEST_NGINX_RAND_PORT_1)
+            b.set_upstream_tls(false)
+            b.set_upstream_tls(true)
+        }
+
+        keepalive 1;
+    }
+
+    server {
+        listen $TEST_NGINX_RAND_PORT_1 ssl;
+        ssl_certificate ../../cert/test.crt;
+        ssl_certificate_key ../../cert/test.key;
+
+        server_tokens off;
+        location = /back {
+            return 200 "ok";
+        }
+    }
+--- config
+    location /t {
+        proxy_pass https://backend/back;
+        proxy_http_version 1.1;
+        proxy_set_header Connection "";
+    }
+
+    location /back {
+        echo "Hello world!";
+    }
+--- request
+    GET /t
+--- no_error_log
+[alert]
+[error]
+--- response_body chomp
+ok
+--- no_check_leak

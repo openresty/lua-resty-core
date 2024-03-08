@@ -13,11 +13,12 @@ Table of Contents
     * [stream subsystem](#stream-subsystem)
 * [Description](#description)
 * [Methods](#methods)
+    * [get_last_failure](#get_last_failure)
+    * [recreate_request](#recreate_request)
     * [set_current_peer](#set_current_peer)
     * [set_more_tries](#set_more_tries)
-    * [get_last_failure](#get_last_failure)
     * [set_timeouts](#set_timeouts)
-    * [recreate_request](#recreate_request)
+    * [set_upstream_tls](#set_upstream_tls)
 * [Community](#community)
     * [English Mailing List](#english-mailing-list)
     * [Chinese Mailing List](#chinese-mailing-list)
@@ -267,6 +268,21 @@ to this function should be made **only** if you know the request buffer must be 
 instead of unconditionally in each balancer retries.
 
 This function was first added in the `0.1.20` version of this library.
+
+[Back to TOC](#table-of-contents)
+
+set_upstream_tls
+------------
+**syntax:** `ok, err = balancer.set_upstream_tls(on)`
+
+**context:** *balancer_by_lua&#42;*
+
+Turn off the HTTPs or reenable the HTTPs for the upstream connection.
+
+- If `on` is `true`, then the https protocol will be used to connect to the upstream server.
+- If `on` is `false`, then the http protocol will be used to connect to the upstream server.
+
+This function was first added in the `0.1.29` version of this library.
 
 [Back to TOC](#table-of-contents)
 
