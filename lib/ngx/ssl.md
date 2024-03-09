@@ -29,6 +29,7 @@ Table of Contents
     * [set_cert](#set_cert)
     * [set_priv_key](#set_priv_key)
     * [verify_client](#verify_client)
+    * [get_client_random](#get_client_random)
 * [Community](#community)
     * [English Mailing List](#english-mailing-list)
     * [Chinese Mailing List](#chinese-mailing-list)
@@ -554,6 +555,22 @@ Note that TLS is not terminated when verification fails. You need to examine Ngi
 later to determine next steps.
 
 This function was first added in version `0.1.20`.
+
+[Back to TOC](#table-of-contents)
+
+get_client_random
+-----------
+**syntax:** *client_random = ssl.get_client_random(outlen?)*
+
+**context:** *any*
+
+Returns the random value sent from the client to the server during the initial SSL/TLS handshake.
+
+The `outlen` parameter indicates the maximum length of the client_random value returned.
+If the `outlen` is zero, this function returns the total length of the client_random value.
+If omitted, will use the value 32.
+
+This function can be called in any context where downstream https is used, but in the context of [ssl_client_hello_by_lua*](https://github.com/openresty/lua-nginx-module/#ssl_client_hello_by_lua_block), it can not return the real client_random value, just a string filled with 0.
 
 [Back to TOC](#table-of-contents)
 
