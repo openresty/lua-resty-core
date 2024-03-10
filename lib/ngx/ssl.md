@@ -330,7 +330,7 @@ export_keying_material
 ----------------------
 **syntax:** *key, err = ssl.export_keying_material(length, label, context)*
 
-context: *any*
+context: *set_by_lua&#42;, rewrite_by_lua&#42;, access_by_lua&#42;, content_by_lua&#42;, header_filter_by_lua&#42;, body_filter_by_lua&#42;, log_by_lua&#42;*
 
 Return a key derived from the SSL master secret.
 
@@ -365,7 +365,7 @@ export_keying_material_early
 ----------------------------
 **syntax:** *key, err = ssl.export_keying_material_early(length, label, context)*
 
-context: *any*
+context: *set_by_lua&#42;, rewrite_by_lua&#42;, access_by_lua&#42;, content_by_lua&#42;, header_filter_by_lua&#42;, body_filter_by_lua&#42;, log_by_lua&#42;*
 
 Returns a key derived from the SSL early exporter master secret.
 

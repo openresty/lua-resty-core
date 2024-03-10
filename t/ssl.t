@@ -3079,7 +3079,6 @@ client-random length: 32
 
 
 
-
 === TEST 31: export_keying_material
 --- http_config
     lua_package_path "$TEST_NGINX_LUA_PACKAGE_PATH";
@@ -3087,16 +3086,18 @@ client-random length: 32
     server {
         listen unix:$TEST_NGINX_HTML_DIR/nginx.sock ssl;
         server_name   test.com;
-        ssl_certificate_by_lua_block {
+        access_by_lua_block {
             local ssl = require "ngx.ssl"
-            local client_random_len = ssl.get_client_random(0)
-            print("client-random length: ", client_random_len)
+            local key_length = 16
+            local label = "EXPERIMENTAL my label"
+            local context = "\x00\x01\x02\x03"
 
-            local init_v = "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"
-            local client_random = ssl.get_client_random()
-            if client_random == init_v then
-                print("maybe the client random value is incorrect")
+            local key, err = ssl.export_keying_material(key_length, label, context)
+            if not key then
+                ngx.log(ngx.ERR, "failed to derive key ", err)
+                return
             end
+            ngx.log(ngx.INFO, "output key length: ", #key)
         }
         ssl_certificate ../../cert/test.crt;
         ssl_certificate_key ../../cert/test.key;
@@ -3177,8 +3178,7 @@ received: foo
 close: 1 nil
 
 --- error_log
-client-random length: 32
-
+output key length: 16
 --- no_error_log
 [error]
 [alert]

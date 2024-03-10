@@ -2142,6 +2142,7 @@ lua ssl server name: "test.com"
 [emerg]
 
 
+
 === TEST 27: parse DER cert and key to cdata
 --- stream_config
     lua_package_path "$TEST_NGINX_LUA_PACKAGE_PATH";
