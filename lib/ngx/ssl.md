@@ -32,7 +32,7 @@ Table of Contents
     * [get_client_random](#get_client_random)
     * [export_keying_material](#export_keying_material)
     * [export_keying_material_early](#export_keying_material_early)
-    * [get_ssl_pointer](#get_ssl_pointer)
+    * [get_req_ssl_pointer](#get_req_ssl_pointer)
 * [Community](#community)
     * [English Mailing List](#english-mailing-list)
     * [Chinese Mailing List](#chinese-mailing-list)

@@ -89,7 +89,7 @@ if subsystem == 'http' then
     void *ngx_http_lua_ffi_parse_der_priv_key(const char *data, size_t len,
         char **err) ;
 
-    void *ngx_http_lua_ffi_get_req_ssl_pointer(void *r, char *err);
+    void *ngx_http_lua_ffi_get_req_ssl_pointer(void *r);
 
     int ngx_http_lua_ffi_set_cert(void *r, void *cdata, char **err);
 
@@ -142,7 +142,7 @@ if subsystem == 'http' then
         C.ngx_http_lua_ffi_ssl_export_keying_material
     ngx_lua_ffi_ssl_export_keying_material_early =
         C.ngx_http_lua_ffi_ssl_export_keying_material_early
-    ngx_lua_ffi_get_req_ssl_pointer = ngx_http_lua_ffi_get_req_ssl_pointer
+    ngx_lua_ffi_get_req_ssl_pointer = C.ngx_http_lua_ffi_get_req_ssl_pointer
 
 elseif subsystem == 'stream' then
     ffi.cdef[[
@@ -557,9 +557,9 @@ function _M.get_req_ssl_pointer()
         error("no request found")
     end
 
-    local ssl = ngx_lua_ffi_get_req_ssl_pointer(r, errmsg)
+    local ssl = ngx_lua_ffi_get_req_ssl_pointer(r)
     if ssl == nil then
-        return nil, ffi_str(errmsg[0])
+        return nil, "no ssl object"
     end
 
     return ssl
