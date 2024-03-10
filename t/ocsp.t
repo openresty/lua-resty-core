@@ -1646,7 +1646,7 @@ ocsp status resp set ok: no status req,
 GET /t
 --- response_body
 connected: 1
-ssl handshake: userdata
+ssl handshake: cdata
 
 --- error_log
 lua ssl server name: "test.com"
@@ -1739,7 +1739,7 @@ OCSP response validation ok, next_update: 1587585600
 GET /t
 --- response_body
 connected: 1
-ssl handshake: userdata
+ssl handshake: cdata
 
 --- error_log
 lua ssl server name: "test.com"
