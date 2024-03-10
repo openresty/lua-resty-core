@@ -32,6 +32,7 @@ Table of Contents
     * [get_client_random](#get_client_random)
     * [export_keying_material](#export_keying_material)
     * [export_keying_material_early](#export_keying_material_early)
+    * [get_req_ssl_pointer](#get_req_ssl_pointer)
 * [Community](#community)
     * [English Mailing List](#english-mailing-list)
     * [Chinese Mailing List](#chinese-mailing-list)
@@ -643,6 +644,24 @@ If the `outlen` is zero, this function returns the total length of the client_ra
 If omitted, will use the value 32.
 
 This function can be called in any context where downstream https is used, but in the context of [ssl_client_hello_by_lua*](https://github.com/openresty/lua-nginx-module/#ssl_client_hello_by_lua_block), it can not return the real client_random value, just a string filled with 0.
+
+[Back to TOC](#table-of-contents)
+
+
+get_req_ssl_pointer
+------------
+**syntax:** *ssl_ptr, err = ssl.get_req_ssl_pointer()*
+
+**context:** *any*
+
+Retrieves the OpenSSL `SSL*` object for the current downstream connection.
+
+Returns an FFI pointer on success, or a `nil` value and a string describing the error otherwise.
+
+If you need to retain the pointer beyond the current phase then you will need to use OpenSSL's `SSL_up_ref` to increase the reference count.
+If you do, ensure that your reference is released with `SSL_free`.
+
+This function was first added in version `0.1.16`.
 
 [Back to TOC](#table-of-contents)
 
