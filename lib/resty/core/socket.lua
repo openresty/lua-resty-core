@@ -1,5 +1,6 @@
 local base = require "resty.core.base"
-base.allows_subsystem("http")
+base.allows_subsystem("http", "stream")
+local subsystem = ngx.config.subsystem
 local debug = require "debug"
 local ffi = require "ffi"
 
@@ -32,33 +33,67 @@ local option_index = {
     ["rcvbuf"]      = 5,
 }
 
+local ngx_lua_ffi_socket_tcp_send
+local ngx_lua_ffi_socket_tcp_get_send_result
+local ngx_lua_ffi_socket_udp_send
+
+if subsystem == "http" then
 
 ffi.cdef[[
 typedef struct ngx_http_lua_socket_tcp_upstream_s
     ngx_http_lua_socket_tcp_upstream_t;
-
-int
-ngx_http_lua_ffi_socket_tcp_getoption(ngx_http_lua_socket_tcp_upstream_t *u,
+typedef struct ngx_http_lua_socket_udp_upstream_s
+    ngx_http_lua_socket_udp_upstream_t;
+int ngx_http_lua_ffi_socket_tcp_getoption(ngx_http_lua_socket_tcp_upstream_t *u,
     int opt, int *val, unsigned char *err, size_t *errlen);
-
-int
-ngx_http_lua_ffi_socket_tcp_setoption(ngx_http_lua_socket_tcp_upstream_t *u,
+int ngx_http_lua_ffi_socket_tcp_setoption(ngx_http_lua_socket_tcp_upstream_t *u,
     int opt, int val, unsigned char *err, size_t *errlen);
-
-int
-ngx_http_lua_ffi_socket_tcp_sslhandshake(ngx_http_request_t *r,
+int ngx_http_lua_ffi_socket_tcp_sslhandshake(ngx_http_request_t *r,
     ngx_http_lua_socket_tcp_upstream_t *u, void *sess,
     int enable_session_reuse, ngx_str_t *server_name, int verify,
     int ocsp_status_req, void *chain, void *pkey, char **errmsg);
-
-int
-ngx_http_lua_ffi_socket_tcp_get_sslhandshake_result(ngx_http_request_t *r,
+int ngx_http_lua_ffi_socket_tcp_get_sslhandshake_result(ngx_http_request_t *r,
     ngx_http_lua_socket_tcp_upstream_t *u, void **sess, char **errmsg,
     int *openssl_error_code);
-
-void
-ngx_http_lua_ffi_ssl_free_session(void *sess);
+void ngx_http_lua_ffi_ssl_free_session(void *sess);
+int ngx_http_lua_ffi_socket_tcp_send_cdata(ngx_http_request_t *r,
+    ngx_http_lua_socket_tcp_upstream_t *u, void *cdata, size_t len,
+    size_t *sent, char **errmsg);
+int ngx_http_lua_ffi_socket_tcp_get_send_result(ngx_http_request_t *r,
+    ngx_http_lua_socket_tcp_upstream_t *u, size_t *sent, char **errmsg);
+int ngx_http_lua_ffi_socket_udp_send_cdata(ngx_http_request_t *r,
+    ngx_http_lua_socket_udp_upstream_t *u, void *cdata, size_t len,
+    char **errmsg);
 ]]
+
+ngx_lua_ffi_socket_tcp_send = C.ngx_http_lua_ffi_socket_tcp_send_cdata
+ngx_lua_ffi_socket_tcp_get_send_result
+    = C.ngx_http_lua_ffi_socket_tcp_get_send_result
+ngx_lua_ffi_socket_udp_send = C.ngx_http_lua_ffi_socket_udp_send_cdata
+
+elseif subsystem == "stream" then
+
+ffi.cdef[[
+typedef struct ngx_stream_lua_socket_tcp_upstream_s
+    ngx_stream_lua_socket_tcp_upstream_t;
+typedef struct ngx_stream_lua_socket_udp_upstream_s
+    ngx_stream_lua_socket_udp_upstream_t;
+int ngx_stream_lua_ffi_socket_tcp_send_cdata(ngx_stream_lua_request_t *r,
+    ngx_stream_lua_socket_tcp_upstream_t *u, void *cdata, size_t len,
+    size_t *sent, char **errmsg);
+int ngx_stream_lua_ffi_socket_tcp_get_send_result(ngx_stream_lua_request_t *r,
+    ngx_stream_lua_socket_tcp_upstream_t *u, size_t *sent, char **errmsg);
+int ngx_stream_lua_ffi_socket_udp_send_cdata(ngx_stream_lua_request_t *r,
+    ngx_stream_lua_socket_udp_upstream_t *u, void *cdata, size_t len,
+    char **errmsg);
+]]
+
+
+ngx_lua_ffi_socket_tcp_send = C.ngx_stream_lua_ffi_socket_tcp_send_cdata
+ngx_lua_ffi_socket_tcp_get_send_result
+    = C.ngx_stream_lua_ffi_socket_tcp_get_send_result
+ngx_lua_ffi_socket_udp_send = C.ngx_stream_lua_ffi_socket_udp_send_cdata
+end
 
 
 local output_value_buf = ffi_new("int[1]")
@@ -74,6 +109,12 @@ local SOCKET_CTX_INDEX          = 1
 local SOCKET_CLIENT_CERT_INDEX  = 6
 local SOCKET_CLIENT_PKEY_INDEX  = 7
 
+local errmsg             = base.get_errmsg_ptr()
+local sent               = ffi_new("size_t[1]")
+local session_ptr        = ffi_new("void *[1]")
+local server_name_str    = ffi_new("ngx_str_t[1]")
+local openssl_error_code = ffi_new("int[1]")
+
 
 local function get_tcp_socket(cosocket)
     local tcp_socket = cosocket[SOCKET_CTX_INDEX]
@@ -84,6 +125,18 @@ local function get_tcp_socket(cosocket)
     return tcp_socket
 end
 
+
+local function get_udp_socket(cosocket)
+    local udp_socket = cosocket[SOCKET_CTX_INDEX]
+    if not udp_socket then
+        error("udp socket is never created")
+    end
+
+    return udp_socket
+end
+
+
+if subsystem == "http" then
 
 local function getoption(cosocket, option)
     local tcp_socket = get_tcp_socket(cosocket)
@@ -143,12 +196,6 @@ local function setoption(cosocket, option, value)
 
     return true
 end
-
-
-local errmsg             = base.get_errmsg_ptr()
-local session_ptr        = ffi_new("void *[1]")
-local server_name_str    = ffi_new("ngx_str_t[1]")
-local openssl_error_code = ffi_new("int[1]")
 
 
 local function setclientcert(cosocket, cert, pkey)
@@ -259,13 +306,85 @@ local function sslhandshake(cosocket, reused_session, server_name, ssl_verify,
     end
 end
 
+local method_table = registry.__tcp_cosocket_mt
+method_table.getoption = getoption
+method_table.setoption = setoption
+method_table.setclientcert = setclientcert
+method_table.sslhandshake  = sslhandshake
+
+end
+
+
+local function tcp_send_cdata(cosocket, cdata, len)
+    local r = get_request()
+    if not r then
+        error("no request found", 2)
+    end
+
+    if type(cdata) ~= "cdata" then
+        error("#2 expecting cdta, but got " .. type(cdata), 2)
+    end
+
+    local u = get_tcp_socket(cosocket)
+
+    local rc = ngx_lua_ffi_socket_tcp_send(r, u, cdata, len,
+                                                  sent, errmsg)
+    while true do
+        if rc == FFI_ERROR then
+            return nil, ffi_str(errmsg[0])
+        end
+
+        if rc == FFI_OK then
+            rc = ngx_lua_ffi_socket_tcp_get_send_result(r, u, sent, errmsg)
+
+            assert(rc == FFI_OK)
+            return tonumber(sent[0])
+        end
+
+        assert(rc == FFI_AGAIN)
+
+        co_yield()
+
+        rc = ngx_lua_ffi_socket_tcp_get_send_result(r, u, sent, errmsg)
+    end
+end
+
+
+local function udp_send_cdata(cosocket, cdata, len)
+    local r = get_request()
+    if not r then
+        error("no request found", 2)
+    end
+
+    if type(cdata) ~= "cdata" then
+        error("#2 expecting cdta, but got " .. type(cdata), 2)
+    end
+
+    local u = get_udp_socket(cosocket)
+
+    local rc = ngx_lua_ffi_socket_udp_send(r, u, cdata, len, errmsg)
+    if rc == FFI_ERROR then
+        return nil, ffi_str(errmsg[0])
+    end
+
+    return 1
+end
+
 
 do
-    local method_table = registry.__tcp_cosocket_mt
-    method_table.getoption = getoption
-    method_table.setoption = setoption
-    method_table.setclientcert = setclientcert
-    method_table.sslhandshake  = sslhandshake
+    local tcp_mt = registry.__tcp_cosocket_mt
+    tcp_mt.send_cdata = tcp_send_cdata
+
+    local raw_tcp_mt = registry.__raw_req_tcp_cosocket_mt
+    raw_tcp_mt.send_cdata = tcp_send_cdata
+
+    local udp_mt = registry.__udp_cosocket_mt
+    udp_mt .send_cdata = udp_send_cdata
+
+    if subsystem == "stream" then
+        local raw_udp_mt = registry.__raw_udp_cosocket_mt
+        raw_udp_mt.send_cdata = udp_send_cdata
+    end
 end
 
 
