@@ -13,13 +13,13 @@ require "resty.core.uri"
 require "resty.core.exit"
 require "resty.core.base64"
 require "resty.core.request"
+require "resty.core.socket"
 
 
 if subsystem == 'http' then
     require "resty.core.response"
     require "resty.core.phase"
     require "resty.core.ndk"
-    require "resty.core.socket"
     require "resty.core.coroutine"
     require "resty.core.param"
 end
