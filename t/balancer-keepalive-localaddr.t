@@ -103,7 +103,7 @@ __DATA__
             local ip = ngx.var.arg_ip or "127.0.0.1"
             local port = ngx.var.arg_port or $TEST_NGINX_SERVER_SSL_PORT
 
-            local ok, err = b.set_current_peer(ip, port, nil, "test.com")
+            local ok, err = b.set_current_peer(ip, port, "test.com")
             if not ok then
                 ngx.log(ngx.ERR, "failed to set current peer: ", err)
                 return
@@ -152,7 +152,7 @@ $/
             local ip = ngx.var.arg_ip or "127.0.0.1"
             local port = ngx.var.arg_port or $TEST_NGINX_SERVER_SSL_PORT
 
-            local ok, err = b.set_current_peer(ip, port, nil, "test.com")
+            local ok, err = b.set_current_peer(ip, port, "test.com")
             if not ok then
                 ngx.log(ngx.ERR, "failed to set current peer: ", err)
                 return
@@ -205,7 +205,7 @@ $/
             local ip = ngx.var.arg_ip or "127.0.0.1"
             local port = ngx.var.arg_port or $TEST_NGINX_SERVER_SSL_PORT
 
-            local ok, err = b.set_current_peer(ip, port, nil, "test.com")
+            local ok, err = b.set_current_peer(ip, port, "test.com")
             if not ok then
                 ngx.log(ngx.ERR, "failed to set current peer: ", err)
                 return
@@ -255,7 +255,7 @@ $/
             local ip = ngx.var.arg_ip or "127.0.0.1"
             local port = ngx.var.arg_port or $TEST_NGINX_SERVER_SSL_PORT
 
-            local ok, err = b.set_current_peer(ip, port, nil, "test.com")
+            local ok, err = b.set_current_peer(ip, port, "test.com")
             if not ok then
                 ngx.log(ngx.ERR, "failed to set current peer: ", err)
                 return
@@ -313,7 +313,7 @@ $/
             local ip = ngx.var.arg_ip or "127.0.0.1"
             local port = ngx.var.arg_port or $TEST_NGINX_SERVER_SSL_PORT
 
-            local ok, err = b.set_current_peer(ip, port, nil, "test.com")
+            local ok, err = b.set_current_peer(ip, port, "test.com")
             if not ok then
                 ngx.log(ngx.ERR, "failed to set current peer: ", err)
                 return
@@ -362,7 +362,7 @@ $/
             local ip = ngx.var.arg_ip or "127.0.0.1"
             local port = ngx.var.arg_port or $TEST_NGINX_SERVER_SSL_PORT
 
-            local ok, err = b.set_current_peer(ip, port, nil, "test.com")
+            local ok, err = b.set_current_peer(ip, port, "test.com")
             if not ok then
                 ngx.log(ngx.ERR, "failed to set current peer: ", err)
                 return
@@ -411,7 +411,7 @@ $/
             local ip = ngx.var.arg_ip or "127.0.0.1"
             local port = ngx.var.arg_port or $TEST_NGINX_SERVER_SSL_PORT
 
-            local ok, err = b.set_current_peer(ip, port, nil, "test.com")
+            local ok, err = b.set_current_peer(ip, port, "test.com")
             if not ok then
                 ngx.log(ngx.ERR, "failed to set current peer: ", err)
                 return
