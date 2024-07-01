@@ -18,7 +18,7 @@ __DATA__
     lua_package_path "$TEST_NGINX_LUA_PACKAGE_PATH";
 
     upstream backend {
-        server 0.0.0.1 down;
+        server 0.0.0.1:1234 down;
         balancer_by_lua_block {
             local b = require "ngx.balancer"
             assert(b.set_current_peer("127.0.0.1", 12345))
@@ -52,7 +52,7 @@ qr/127.0.0.1/,
     lua_package_path "$TEST_NGINX_LUA_PACKAGE_PATH";
 
     upstream backend {
-        server 0.0.0.1 down;
+        server 0.0.0.1:1234 down;
         balancer_by_lua_block {
             local b = require "ngx.balancer"
             assert(b.set_current_peer("127.0.0.1", 12345))
@@ -88,7 +88,7 @@ qr/127.0.0.4/,
     lua_package_path "$TEST_NGINX_LUA_PACKAGE_PATH";
 
     upstream backend {
-        server 0.0.0.1 down;
+        server 0.0.0.1:1234 down;
         balancer_by_lua_block {
             local b = require "ngx.balancer"
             assert(b.set_current_peer("127.0.0.1", 12345))
