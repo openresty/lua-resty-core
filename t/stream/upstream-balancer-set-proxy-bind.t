@@ -1,6 +1,6 @@
 # vim:set ft= ts=4 sw=4 et fdm=marker:
 use lib '.';
-use t::TestCore;
+use t::TestCore::Stream;
 
 repeat_each(2);
 
