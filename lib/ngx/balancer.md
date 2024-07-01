@@ -21,7 +21,6 @@ Table of Contents
     * [set_more_tries](#set_more_tries)
     * [set_timeouts](#set_timeouts)
     * [set_upstream_tls](#set_upstream_tls)
-    * [set_proxy_bind](#set_proxy_bind)
 * [Community](#community)
     * [English Mailing List](#english-mailing-list)
     * [Chinese Mailing List](#chinese-mailing-list)
@@ -457,18 +456,6 @@ Turn off the HTTPs or reenable the HTTPs for the upstream connection.
 - If `on` is `false`, then the http protocol will be used to connect to the upstream server.
 
 This function was first added in the `0.1.29` version of this library.
-
-[Back to TOC](#table-of-contents)
-
-set_proxy_bind
-------------
-**syntax:** `ok, err = balancer.set_proxy_bind(addr)`
-
-**context:** *balancer_by_lua&#42;*
-
-Setting the local address bind for the upstream connection.
-
-**Note:** `addr` must be a valid IP address, and can also carry a port. `127.0.0.1:8080` or just `127.0.0.1`
 
 [Back to TOC](#table-of-contents)
 
