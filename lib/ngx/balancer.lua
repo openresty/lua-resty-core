@@ -93,6 +93,9 @@ elseif subsystem == 'stream' then
 
     int ngx_stream_lua_ffi_balancer_set_timeouts(ngx_stream_lua_request_t *r,
         long connect_timeout, long timeout, char **err);
+
+    int ngx_stream_lua_ffi_balancer_bind_to_local_addr(ngx_stream_lua_request_t *r,
+        const unsigned char *addr, size_t addr_len, char **err);
     ]]
 
     ngx_lua_ffi_balancer_set_current_peer =
@@ -114,6 +117,9 @@ elseif subsystem == 'stream' then
             return ngx_stream_lua_ffi_balancer_set_timeouts(r, connect_timeout,
                                                             timeout, err)
         end
+
+    ngx_lua_ffi_balancer_bind_to_local_addr =
+        C.ngx_stream_lua_ffi_balancer_bind_to_local_addr
 
 else
     error("unknown subsystem: " .. subsystem)
@@ -362,38 +368,29 @@ if subsystem == 'http' then
     end
 end
 
-if subsystem == "http" then
-    function _M.bind_to_local_addr(addr)
-        local r = get_request()
-        if not r then
-            error("no request found")
-        end
-
-        if type(addr) ~= "string" then
-            error("bad argument #1 to 'bind_to_local_addr' "
-                  .. "(string expected, got " .. type(addr) .. ")")
-        end
-
-        local errbuf_size = 1024
-        local errbuf = get_string_buf(errbuf_size)
-        local sizep = get_size_ptr()
-        sizep[0] = errbuf_size
-        local rc = ngx_lua_ffi_balancer_bind_to_local_addr(r, addr, #addr,
-                                                           errbuf,
-                                                           sizep)
-        if rc == FFI_OK then
-            return true
-        end
-
-        return nil, ffi_str(errbuf, sizep[0])
+function _M.bind_to_local_addr(addr)
+    local r = get_request()
+    if not r then
+        error("no request found")
     end
 
-else
-    function _M.bind_to_local_addr(addr)
-        error("'bind_to_local_addr' not yet implemented in " .. subsystem ..
-              " subsystem", 2)
+    if type(addr) ~= "string" then
+        error("bad argument #1 to 'bind_to_local_addr' "
+                .. "(string expected, got " .. type(addr) .. ")")
     end
+
+    local errbuf_size = 1024
+    local errbuf = get_string_buf(errbuf_size)
+    local sizep = get_size_ptr()
+    sizep[0] = errbuf_size
+    local rc = ngx_lua_ffi_balancer_bind_to_local_addr(r, addr, #addr,
+                                                        errbuf,
+                                                        sizep)
+    if rc == FFI_OK then
+        return true
+    end
+
+    return nil, ffi_str(errbuf, sizep[0])
 end
-
 
 return _M
