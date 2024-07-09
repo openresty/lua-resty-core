@@ -484,7 +484,7 @@ function _M.set_priv_key(priv_key)
 end
 
 
-function _M.verify_client(ca_certs, depth, trusted_cert)
+function _M.verify_client(client_certs, depth, trusted_cert)
     local r = get_request()
     if not r then
         error("no request found")
@@ -494,7 +494,7 @@ function _M.verify_client(ca_certs, depth, trusted_cert)
         depth = -1
     end
 
-    local rc = ngx_lua_ffi_ssl_verify_client(r, ca_certs, trusted_cert, depth, errmsg)
+    local rc = ngx_lua_ffi_ssl_verify_client(r, client_certs, trusted_cert, depth, errmsg)
     if rc == FFI_OK then
         return true
     end
