@@ -100,7 +100,7 @@ if subsystem == 'http' then
     void ngx_http_lua_ffi_free_priv_key(void *cdata);
 
     int ngx_http_lua_ffi_ssl_verify_client(void *r,
-        void *cdata, void *cdata, int depth, char **err);
+        void *client_certs, void *trusted_certs, int depth, char **err);
 
     int ngx_http_lua_ffi_ssl_client_random(ngx_http_request_t *r,
         const unsigned char *out, size_t *outlen, char **err);
@@ -198,7 +198,7 @@ elseif subsystem == 'stream' then
     void ngx_stream_lua_ffi_free_priv_key(void *cdata);
 
     int ngx_stream_lua_ffi_ssl_verify_client(void *r,
-        void *cdata, void *cdata, int depth, char **err);
+        void *client_certs, void *trusted_certs, int depth, char **err);
 
     int ngx_stream_lua_ffi_ssl_client_random(ngx_stream_lua_request_t *r,
         unsigned char *out, size_t *outlen, char **err);
@@ -484,7 +484,7 @@ function _M.set_priv_key(priv_key)
 end
 
 
-function _M.verify_client(client_certs, depth, trusted_cert)
+function _M.verify_client(client_certs, depth, trusted_certs)
     local r = get_request()
     if not r then
         error("no request found")
@@ -494,7 +494,8 @@ function _M.verify_client(client_certs, depth, trusted_cert)
         depth = -1
     end
 
-    local rc = ngx_lua_ffi_ssl_verify_client(r, client_certs, trusted_cert, depth, errmsg)
+    local rc = ngx_lua_ffi_ssl_verify_client(r, client_certs, trusted_certs,
+                                             depth, errmsg)
     if rc == FFI_OK then
         return true
     end
