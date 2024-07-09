@@ -3285,6 +3285,7 @@ lua ssl server name: "test.com"
 [crit]
 
 
+
 === TEST 33: verify client, but server not trust root ca
 --- http_config
     lua_package_path "$TEST_NGINX_LUA_PACKAGE_PATH";
@@ -3340,6 +3341,7 @@ FAILED:unable to verify the first certificate
 [error]
 [alert]
 [emerg]
+
 
 
 === TEST 34: verify client and server trust root ca
@@ -3407,4 +3409,3 @@ SUCCESS
 [error]
 [alert]
 [emerg]
-
