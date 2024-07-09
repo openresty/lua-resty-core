@@ -19,6 +19,8 @@ Table of Contents
     * [server_name](#server_name)
     * [server_port](#server_port)
     * [raw_server_addr](#raw_server_addr)
+    * [export_keying_material](#export_keying_material)
+    * [export_keying_material_early](#export_keying_material_early)
     * [raw_client_addr](#raw_client_addr)
     * [get_tls1_version](#get_tls1_version)
     * [get_tls1_version_str](#get_tls1_version_str)
@@ -30,8 +32,6 @@ Table of Contents
     * [set_priv_key](#set_priv_key)
     * [verify_client](#verify_client)
     * [get_client_random](#get_client_random)
-    * [export_keying_material](#export_keying_material)
-    * [export_keying_material_early](#export_keying_material_early)
     * [get_req_ssl_pointer](#get_req_ssl_pointer)
 * [Community](#community)
     * [English Mailing List](#english-mailing-list)
@@ -608,19 +608,22 @@ This function was first added in version `0.1.7`.
 
 verify_client
 -------------
-**syntax:** *ok, err = ssl.verify_client(ca_certs?, depth?)*
+**syntax:** *ok, err = ssl.verify_client(client_certs?, depth?, trusted_certs?)*
 
 **context:** *ssl_certificate_by_lua&#42;*
 
 Requires a client certificate during TLS handshake.
 
-The `ca_certs` is the CA certificate chain opaque pointer returned by the
+The `client_certs` is the CA certificate chain opaque pointer returned by the
 [parse_pem_cert](#parse_pem_cert) function for the current SSL connection.
 The list of certificates will be sent to clients. Also, they will be added to trusted store.
 If omitted, will not send any CA certificate to clients.
 
 The `depth` is the verification depth in the client certificates chain.
 If omitted, will use the value specified by `ssl_verify_depth`.
+
+The `trusted_certs` is same returned by the
+[parse_pem_cert](#parse_pem_cert) function. They will be added to trusted store.
 
 Returns `true` on success, or a `nil` value and a string describing the error otherwise.
 
@@ -690,7 +693,7 @@ Bugs and Patches
 Please report bugs or submit patches by
 
 1. creating a ticket on the [GitHub Issue Tracker](https://github.com/openresty/lua-resty-core/issues),
-1. or posting to the [OpenResty community](#community).
+2. or posting to the [OpenResty community](#community).
 
 [Back to TOC](#table-of-contents)
 

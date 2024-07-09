@@ -8,7 +8,7 @@ use t::TestCore;
 
 repeat_each(2);
 
-plan tests => repeat_each() * (blocks() * 6 + 1);
+plan tests => repeat_each() * (blocks() * 6 - 1);
 
 no_long_string();
 #no_diff();
@@ -2354,7 +2354,7 @@ got TLS1 version: TLSv1.3,
                 return
             end
 
-            local ok, err = ssl.verify_client(cert, 1)
+            local ok, err = ssl.verify_client(cert, 1, nil)
             if not ok then
                 ngx.log(ngx.ERR, "failed to verify client: ", err)
                 return
@@ -2468,7 +2468,7 @@ client certificate subject: emailAddress=agentzh@gmail.com,CN=test.com
                 return
             end
 
-            local ok, err = ssl.verify_client(cert, 1)
+            local ok, err = ssl.verify_client(cert, 1, nil)
             if not ok then
                 ngx.log(ngx.ERR, "failed to verify client: ", err)
                 return
@@ -3283,3 +3283,129 @@ lua ssl server name: "test.com"
 [error]
 [emerg]
 [crit]
+
+
+
+=== TEST 33: verify client, but server not trust root ca
+--- http_config
+    lua_package_path "$TEST_NGINX_LUA_PACKAGE_PATH";
+
+    server {
+        listen unix:$TEST_NGINX_HTML_DIR/nginx.sock ssl;
+        server_name   test.com;
+        ssl_certificate_by_lua_block {
+            local ssl = require "ngx.ssl"
+
+            local f = assert(io.open("t/cert/mtls_server.crt"))
+            local cert_data = f:read("*a")
+            f:close()
+
+            local cert, err = ssl.parse_pem_cert(cert_data)
+            if not cert then
+                ngx.log(ngx.ERR, "failed to parse pem cert: ", err)
+                return
+            end
+
+            local ok, err = ssl.verify_client(cert, 1, nil)
+            if not ok then
+                ngx.log(ngx.ERR, "failed to verify client: ", err)
+                return
+            end
+        }
+
+        ssl_certificate ../../cert/mtls_server.crt;
+        ssl_certificate_key ../../cert/mtls_server.key;
+
+        location / {
+            default_type 'text/plain';
+            content_by_lua_block {
+                ngx.say(ngx.var.ssl_client_verify)
+            }
+            more_clear_headers Date;
+        }
+    }
+--- config
+    location /t {
+        proxy_pass                  https://unix:$TEST_NGINX_HTML_DIR/nginx.sock;
+        proxy_ssl_certificate       ../../cert/mtls_client.crt;
+        proxy_ssl_certificate_key   ../../cert/mtls_client.key;
+        proxy_ssl_session_reuse     off;
+    }
+
+--- request
+GET /t
+--- response_body
+FAILED:unable to verify the first certificate
+
+--- no_error_log
+[error]
+[alert]
+[emerg]
+
+
+
+=== TEST 34: verify client and server trust root ca
+--- http_config
+    lua_package_path "$TEST_NGINX_LUA_PACKAGE_PATH";
+
+    server {
+        listen unix:$TEST_NGINX_HTML_DIR/nginx.sock ssl;
+        server_name   test.com;
+        ssl_certificate_by_lua_block {
+            local ssl = require "ngx.ssl"
+
+            local f = assert(io.open("t/cert/mtls_server.crt"))
+            local cert_data = f:read("*a")
+            f:close()
+
+            local cert, err = ssl.parse_pem_cert(cert_data)
+            if not cert then
+                ngx.log(ngx.ERR, "failed to parse pem cert: ", err)
+                return
+            end
+
+            local f = assert(io.open("t/cert/mtls_ca.crt"))
+            local cert_data = f:read("*a")
+            f:close()
+
+            local trusted_cert, err = ssl.parse_pem_cert(cert_data)
+            if not trusted_cert then
+                ngx.log(ngx.ERR, "failed to parse pem trusted cert: ", err)
+                return
+            end
+
+            local ok, err = ssl.verify_client(cert, 1, trusted_cert)
+            if not ok then
+                ngx.log(ngx.ERR, "failed to verify client: ", err)
+                return
+            end
+        }
+
+        ssl_certificate ../../cert/mtls_server.crt;
+        ssl_certificate_key ../../cert/mtls_server.key;
+
+        location / {
+            default_type 'text/plain';
+            content_by_lua_block {
+                ngx.say(ngx.var.ssl_client_verify)
+            }
+            more_clear_headers Date;
+        }
+    }
+--- config
+    location /t {
+        proxy_pass                  https://unix:$TEST_NGINX_HTML_DIR/nginx.sock;
+        proxy_ssl_certificate       ../../cert/mtls_client.crt;
+        proxy_ssl_certificate_key   ../../cert/mtls_client.key;
+        proxy_ssl_session_reuse     off;
+    }
+
+--- request
+GET /t
+--- response_body
+SUCCESS
+
+--- no_error_log
+[error]
+[alert]
+[emerg]
