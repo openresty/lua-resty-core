@@ -700,7 +700,6 @@ github issue openresty/lua-nginx-module#693
 --- grep_error_log_out
 hello from balancer by lua!
 hello from balancer by lua!
-hello from balancer by lua!
 --- error_log eval
 qr/\[error] .*? upstream prematurely closed connection while reading response header from upstream/
 
