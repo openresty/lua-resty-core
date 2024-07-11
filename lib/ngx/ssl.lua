@@ -100,7 +100,7 @@ if subsystem == 'http' then
     void ngx_http_lua_ffi_free_priv_key(void *cdata);
 
     int ngx_http_lua_ffi_ssl_verify_client(void *r,
-        void *client_certs, int depth, char **err, void *trusted_certs);
+        void *client_certs, void *trusted_certs, int depth, char **err);
 
     int ngx_http_lua_ffi_ssl_client_random(ngx_http_request_t *r,
         const unsigned char *out, size_t *outlen, char **err);
@@ -494,8 +494,8 @@ function _M.verify_client(client_certs, depth, trusted_certs)
         depth = -1
     end
 
-    local rc = ngx_lua_ffi_ssl_verify_client(r, client_certs, depth, errmsg,
-                                             trusted_certs)
+    local rc = ngx_lua_ffi_ssl_verify_client(r, client_certs, trusted_certs,
+                                             depth, errmsg)
     if rc == FFI_OK then
         return true
     end
