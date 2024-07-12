@@ -35,8 +35,8 @@ if subsystem == 'http' then
     ffi.cdef[[
     int ngx_http_lua_ffi_balancer_set_current_peer(ngx_http_request_t *r,
         const unsigned char *addr, size_t addr_len, int port,
-        char **err,
-        const unsigned char *host, ssize_t host_len);
+        const unsigned char *host, ssize_t host_len,
+        char **err);
 
     int ngx_http_lua_ffi_balancer_enable_keepalive(ngx_http_request_t *r,
         unsigned long timeout, unsigned int max_requests, char **err);
@@ -162,9 +162,9 @@ if subsystem == "http" then
 
         local rc = ngx_lua_ffi_balancer_set_current_peer(r, addr, #addr,
                                                          port,
-                                                         errmsg,
                                                          host,
-                                                         host and #host or 0)
+                                                         host and #host or 0,
+                                                         errmsg)
         if rc == FFI_OK then
             return true
         end
