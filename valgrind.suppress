@@ -151,7 +151,7 @@
     fun:ngx_ssl_recv
     fun:ngx_http_upstream_process_header
     fun:ngx_http_upstream_handler
-    fun:ngx_epoll_process_events
+    ...
     fun:ngx_process_events_and_timers
     fun:ngx_single_process_cycle
     fun:main
@@ -174,7 +174,7 @@
     fun:ngx_http_upstream_ssl_init_connection
     fun:ngx_http_upstream_send_request_handler
     fun:ngx_http_upstream_handler
-    fun:ngx_epoll_process_events
+    ...
     fun:ngx_process_events_and_timers
     fun:ngx_single_process_cycle
     fun:main
