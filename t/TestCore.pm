@@ -54,6 +54,12 @@ add_block_preprocessor(sub {
     if (!defined $block->http_config) {
         $block->set_value("http_config", $HttpConfig);
     }
+
+    if ($Test::Nginx::Util::UseValgrind) {
+        my $timeout = $block->timeout || 3;
+        $timeout *= 5;
+        $block->set_value("timeout", $timeout);
+    }
 });
 
 sub get_unused_port ($) {
