@@ -15,7 +15,7 @@ if ($NginxV !~ m/built with OpenSSL/) {
     plan tests => repeat_each() * (blocks() * 4);
 }
 
-$ENV{TEST_NGINX_SERVER_SSL_PORT_2} = $ENV{TEST_NGINX_SERVER_SSL_PORT} + 1;
+$ENV{TEST_NGINX_SERVER_SSL_PORT_2} = get_unused_port $ENV{TEST_NGINX_SERVER_SSL_PORT} + 1;
 
 our $UpstreamSrvConfig = <<_EOC_;
     server {
@@ -175,16 +175,16 @@ SNI=two
 SNI=three
 SNI=three
 --- grep_error_log_out eval
-qr/^lua balancer: keepalive no free connection, host: 127.0.0.1:23456, name: one
-lua balancer: keepalive saving connection \S+, host: 127.0.0.1:23456, name: one
-lua balancer: keepalive no free connection, host: 127.0.0.1:23456, name: two
-lua balancer: keepalive saving connection \S+, host: 127.0.0.1:23456, name: two
-lua balancer: keepalive no free connection, host: 127.0.0.2:23456, name: two
-lua balancer: keepalive saving connection \S+, host: 127.0.0.2:23456, name: two
-lua balancer: keepalive no free connection, host: 127.0.0.2:23456, name: three
-lua balancer: keepalive saving connection \S+, host: 127.0.0.2:23456, name: three
-lua balancer: keepalive no free connection, host: 127.0.0.2:23457, name: three
-lua balancer: keepalive saving connection \S+, host: 127.0.0.2:23457, name: three$/
+qr/^lua balancer: keepalive no free connection, host: 127.0.0.1:$ENV{TEST_NGINX_SERVER_SSL_PORT}, name: one
+lua balancer: keepalive saving connection \S+, host: 127.0.0.1:$ENV{TEST_NGINX_SERVER_SSL_PORT}, name: one
+lua balancer: keepalive no free connection, host: 127.0.0.1:$ENV{TEST_NGINX_SERVER_SSL_PORT}, name: two
+lua balancer: keepalive saving connection \S+, host: 127.0.0.1:$ENV{TEST_NGINX_SERVER_SSL_PORT}, name: two
+lua balancer: keepalive no free connection, host: 127.0.0.2:$ENV{TEST_NGINX_SERVER_SSL_PORT}, name: two
+lua balancer: keepalive saving connection \S+, host: 127.0.0.2:$ENV{TEST_NGINX_SERVER_SSL_PORT}, name: two
+lua balancer: keepalive no free connection, host: 127.0.0.2:$ENV{TEST_NGINX_SERVER_SSL_PORT}, name: three
+lua balancer: keepalive saving connection \S+, host: 127.0.0.2:$ENV{TEST_NGINX_SERVER_SSL_PORT}, name: three
+lua balancer: keepalive no free connection, host: 127.0.0.2:$ENV{TEST_NGINX_SERVER_SSL_PORT_2}, name: three
+lua balancer: keepalive saving connection \S+, host: 127.0.0.2:$ENV{TEST_NGINX_SERVER_SSL_PORT_2}, name: three$/
 
 
 
@@ -224,12 +224,12 @@ SNI=one
 SNI=two
 SNI=three
 --- grep_error_log_out eval
-qr/^lua balancer: keepalive no free connection, host: 127.0.0.1:23456, name: one
-lua balancer: keepalive saving connection \S+, host: 127.0.0.1:23456, name: one
-lua balancer: keepalive no free connection, host: 127.0.0.1:23456, name: two
-lua balancer: keepalive saving connection \S+, host: 127.0.0.1:23456, name: two
-lua balancer: keepalive no free connection, host: 127.0.0.1:23456, name: three
-lua balancer: keepalive saving connection \S+, host: 127.0.0.1:23456, name: three/
+qr/^lua balancer: keepalive no free connection, host: 127.0.0.1:$ENV{TEST_NGINX_SERVER_SSL_PORT}, name: one
+lua balancer: keepalive saving connection \S+, host: 127.0.0.1:$ENV{TEST_NGINX_SERVER_SSL_PORT}, name: one
+lua balancer: keepalive no free connection, host: 127.0.0.1:$ENV{TEST_NGINX_SERVER_SSL_PORT}, name: two
+lua balancer: keepalive saving connection \S+, host: 127.0.0.1:$ENV{TEST_NGINX_SERVER_SSL_PORT}, name: two
+lua balancer: keepalive no free connection, host: 127.0.0.1:$ENV{TEST_NGINX_SERVER_SSL_PORT}, name: three
+lua balancer: keepalive saving connection \S+, host: 127.0.0.1:$ENV{TEST_NGINX_SERVER_SSL_PORT}, name: three/
 
 
 
@@ -274,16 +274,16 @@ SNI=two
 SNI=three
 SNI=three
 --- grep_error_log_out eval
-qr/^lua balancer: keepalive no free connection, host: 127.0.0.1:23456, name: one
-lua balancer: keepalive saving connection \S+, host: 127.0.0.1:23456, name: one
-lua balancer: keepalive no free connection, host: 127.0.0.1:23456, name: two
-lua balancer: keepalive saving connection \S+, host: 127.0.0.1:23456, name: two
-lua balancer: keepalive no free connection, host: 127.0.0.2:23456, name: two
-lua balancer: keepalive saving connection \S+, host: 127.0.0.2:23456, name: two
-lua balancer: keepalive no free connection, host: 127.0.0.2:23456, name: three
-lua balancer: keepalive saving connection \S+, host: 127.0.0.2:23456, name: three
-lua balancer: keepalive no free connection, host: 127.0.0.2:23457, name: three
-lua balancer: keepalive saving connection \S+, host: 127.0.0.2:23457, name: three$/
+qr/^lua balancer: keepalive no free connection, host: 127.0.0.1:$ENV{TEST_NGINX_SERVER_SSL_PORT}, name: one
+lua balancer: keepalive saving connection \S+, host: 127.0.0.1:$ENV{TEST_NGINX_SERVER_SSL_PORT}, name: one
+lua balancer: keepalive no free connection, host: 127.0.0.1:$ENV{TEST_NGINX_SERVER_SSL_PORT}, name: two
+lua balancer: keepalive saving connection \S+, host: 127.0.0.1:$ENV{TEST_NGINX_SERVER_SSL_PORT}, name: two
+lua balancer: keepalive no free connection, host: 127.0.0.2:$ENV{TEST_NGINX_SERVER_SSL_PORT}, name: two
+lua balancer: keepalive saving connection \S+, host: 127.0.0.2:$ENV{TEST_NGINX_SERVER_SSL_PORT}, name: two
+lua balancer: keepalive no free connection, host: 127.0.0.2:$ENV{TEST_NGINX_SERVER_SSL_PORT}, name: three
+lua balancer: keepalive saving connection \S+, host: 127.0.0.2:$ENV{TEST_NGINX_SERVER_SSL_PORT}, name: three
+lua balancer: keepalive no free connection, host: 127.0.0.2:$ENV{TEST_NGINX_SERVER_SSL_PORT_2}, name: three
+lua balancer: keepalive saving connection \S+, host: 127.0.0.2:$ENV{TEST_NGINX_SERVER_SSL_PORT_2}, name: three$/
 
 
 
@@ -319,10 +319,10 @@ lua balancer: keepalive saving connection \S+, host: 127.0.0.2:23457, name: thre
 SNI=one
 SNI=two
 --- grep_error_log_out eval
-qr/^lua balancer: keepalive no free connection, host: 127.0.0.1:23456, name: one
-lua balancer: keepalive saving connection \S+, host: 127.0.0.1:23456, name: one
-lua balancer: keepalive no free connection, host: 127.0.0.1:23456, name: two
-lua balancer: keepalive saving connection \S+, host: 127.0.0.1:23456, name: two
+qr/^lua balancer: keepalive no free connection, host: 127.0.0.1:$ENV{TEST_NGINX_SERVER_SSL_PORT}, name: one
+lua balancer: keepalive saving connection \S+, host: 127.0.0.1:$ENV{TEST_NGINX_SERVER_SSL_PORT}, name: one
+lua balancer: keepalive no free connection, host: 127.0.0.1:$ENV{TEST_NGINX_SERVER_SSL_PORT}, name: two
+lua balancer: keepalive saving connection \S+, host: 127.0.0.1:$ENV{TEST_NGINX_SERVER_SSL_PORT}, name: two
 $/
 
 
@@ -465,14 +465,14 @@ ssl_client_s_dn=.*?CN=test\.com.*? ssl_protocol=TLSv1\.1
 ssl_client_s_dn=.*?CN=test2\.com.*? ssl_protocol=TLSv1\.1
 ssl_client_s_dn=.*?CN=test2\.com.*? ssl_protocol=TLSv1\.1
 --- grep_error_log_out eval
-qr/^lua balancer: keepalive no free connection, host: 127.0.0.1:23456, name: test.crt
-lua balancer: keepalive saving connection \S+, host: 127.0.0.1:23456, name: test.crt
-lua balancer: keepalive reusing connection \S+, host: 127.0.0.1:23456, name: test.crt
-lua balancer: keepalive saving connection \S+, host: 127.0.0.1:23456, name: test.crt
-lua balancer: keepalive no free connection, host: 127.0.0.1:23456, name: test2.crt
-lua balancer: keepalive saving connection \S+, host: 127.0.0.1:23456, name: test2.crt
-lua balancer: keepalive reusing connection \S+, host: 127.0.0.1:23456, name: test2.crt
-lua balancer: keepalive saving connection \S+, host: 127.0.0.1:23456, name: test2.crt
+qr/^lua balancer: keepalive no free connection, host: 127.0.0.1:$ENV{TEST_NGINX_SERVER_SSL_PORT}, name: test.crt
+lua balancer: keepalive saving connection \S+, host: 127.0.0.1:$ENV{TEST_NGINX_SERVER_SSL_PORT}, name: test.crt
+lua balancer: keepalive reusing connection \S+, host: 127.0.0.1:$ENV{TEST_NGINX_SERVER_SSL_PORT}, name: test.crt
+lua balancer: keepalive saving connection \S+, host: 127.0.0.1:$ENV{TEST_NGINX_SERVER_SSL_PORT}, name: test.crt
+lua balancer: keepalive no free connection, host: 127.0.0.1:$ENV{TEST_NGINX_SERVER_SSL_PORT}, name: test2.crt
+lua balancer: keepalive saving connection \S+, host: 127.0.0.1:$ENV{TEST_NGINX_SERVER_SSL_PORT}, name: test2.crt
+lua balancer: keepalive reusing connection \S+, host: 127.0.0.1:$ENV{TEST_NGINX_SERVER_SSL_PORT}, name: test2.crt
+lua balancer: keepalive saving connection \S+, host: 127.0.0.1:$ENV{TEST_NGINX_SERVER_SSL_PORT}, name: test2.crt
 $/
 
 
@@ -681,14 +681,14 @@ bad argument #2 to 'enable_keepalive' (expected >= 0)
 --- response_body
 --- wait: 0.15
 --- grep_error_log_out eval
-qr/^lua balancer: keepalive no free connection, host: 127.0.0.1:23456, name:\s
-lua balancer: keepalive saving connection \S+, host: 127.0.0.1:23456, name:\s
-lua balancer: keepalive reusing connection \S+, host: 127.0.0.1:23456, name:\s
-lua balancer: keepalive saving connection \S+, host: 127.0.0.1:23456, name:\s
-lua balancer: keepalive reusing connection \S+, host: 127.0.0.1:23456, name:\s
+qr/^lua balancer: keepalive no free connection, host: 127.0.0.1:$ENV{TEST_NGINX_SERVER_SSL_PORT}, name:\s
+lua balancer: keepalive saving connection \S+, host: 127.0.0.1:$ENV{TEST_NGINX_SERVER_SSL_PORT}, name:\s
+lua balancer: keepalive reusing connection \S+, host: 127.0.0.1:$ENV{TEST_NGINX_SERVER_SSL_PORT}, name:\s
+lua balancer: keepalive saving connection \S+, host: 127.0.0.1:$ENV{TEST_NGINX_SERVER_SSL_PORT}, name:\s
+lua balancer: keepalive reusing connection \S+, host: 127.0.0.1:$ENV{TEST_NGINX_SERVER_SSL_PORT}, name:\s
 lua balancer: keepalive not saving connection \S+
-lua balancer: keepalive no free connection, host: 127.0.0.1:23456, name:\s
-lua balancer: keepalive saving connection \S+, host: 127.0.0.1:23456, name: $/
+lua balancer: keepalive no free connection, host: 127.0.0.1:$ENV{TEST_NGINX_SERVER_SSL_PORT}, name:\s
+lua balancer: keepalive saving connection \S+, host: 127.0.0.1:$ENV{TEST_NGINX_SERVER_SSL_PORT}, name: $/
 
 
 
@@ -723,11 +723,11 @@ lua balancer: keepalive saving connection \S+, host: 127.0.0.1:23456, name: $/
     }
 --- response_body
 --- grep_error_log_out eval
-qr/\Alua balancer: keepalive no free connection, host: 127.0.0.1:23456, name:\s
-lua balancer: keepalive saving connection \S+, host: 127.0.0.1:23456, name:\s
-(lua balancer: keepalive reusing connection \S+, host: 127.0.0.1:23456, name:\s
-lua balancer: keepalive saving connection \S+, host: 127.0.0.1:23456, name:\s
-){98}lua balancer: keepalive reusing connection \S+, host: 127.0.0.1:23456, name:\s
+qr/\Alua balancer: keepalive no free connection, host: 127.0.0.1:$ENV{TEST_NGINX_SERVER_SSL_PORT}, name:\s
+lua balancer: keepalive saving connection \S+, host: 127.0.0.1:$ENV{TEST_NGINX_SERVER_SSL_PORT}, name:\s
+(lua balancer: keepalive reusing connection \S+, host: 127.0.0.1:$ENV{TEST_NGINX_SERVER_SSL_PORT}, name:\s
+lua balancer: keepalive saving connection \S+, host: 127.0.0.1:$ENV{TEST_NGINX_SERVER_SSL_PORT}, name:\s
+){98}lua balancer: keepalive reusing connection \S+, host: 127.0.0.1:$ENV{TEST_NGINX_SERVER_SSL_PORT}, name:\s
 lua balancer: keepalive not saving connection \S+
 \z/
 
@@ -798,11 +798,11 @@ lua balancer: keepalive not saving connection \S+
 --- response_body
 --- wait: 0.2
 --- grep_error_log_out eval
-qr/^lua balancer: keepalive no free connection, host: 127.0.0.1:23456, name:\s
-lua balancer: keepalive saving connection \S+, host: 127.0.0.1:23456, name:\s
+qr/^lua balancer: keepalive no free connection, host: 127.0.0.1:$ENV{TEST_NGINX_SERVER_SSL_PORT}, name:\s
+lua balancer: keepalive saving connection \S+, host: 127.0.0.1:$ENV{TEST_NGINX_SERVER_SSL_PORT}, name:\s
 lua balancer: keepalive closing connection \S+
-lua balancer: keepalive no free connection, host: 127.0.0.1:23456, name:\s
-lua balancer: keepalive saving connection \S+, host: 127.0.0.1:23456, name:\s
+lua balancer: keepalive no free connection, host: 127.0.0.1:$ENV{TEST_NGINX_SERVER_SSL_PORT}, name:\s
+lua balancer: keepalive saving connection \S+, host: 127.0.0.1:$ENV{TEST_NGINX_SERVER_SSL_PORT}, name:\s
 lua balancer: keepalive closing connection \S+$/
 
 
@@ -840,20 +840,20 @@ lua balancer: keepalive closing connection \S+$/
     }
 --- response_body
 --- grep_error_log_out eval
-qr/^lua balancer: keepalive no free connection, host: 127.0.0.1:23456, name:\s
-lua balancer: keepalive no free connection, host: 127.0.0.1:23456, name:\s
-lua balancer: keepalive no free connection, host: 127.0.0.1:23456, name:\s
-lua balancer: keepalive saving connection \S+, host: 127.0.0.1:23456, name:\s
-lua balancer: keepalive saving connection \S+, host: 127.0.0.1:23456, name:\s
+qr/^lua balancer: keepalive no free connection, host: 127.0.0.1:$ENV{TEST_NGINX_SERVER_SSL_PORT}, name:\s
+lua balancer: keepalive no free connection, host: 127.0.0.1:$ENV{TEST_NGINX_SERVER_SSL_PORT}, name:\s
+lua balancer: keepalive no free connection, host: 127.0.0.1:$ENV{TEST_NGINX_SERVER_SSL_PORT}, name:\s
+lua balancer: keepalive saving connection \S+, host: 127.0.0.1:$ENV{TEST_NGINX_SERVER_SSL_PORT}, name:\s
+lua balancer: keepalive saving connection \S+, host: 127.0.0.1:$ENV{TEST_NGINX_SERVER_SSL_PORT}, name:\s
 lua balancer: keepalive closing connection \S+
-lua balancer: keepalive saving connection \S+, host: 127.0.0.1:23456, name:\s
-lua balancer: keepalive reusing connection \S+, host: 127.0.0.1:23456, name:\s
-lua balancer: keepalive reusing connection \S+, host: 127.0.0.1:23456, name:\s
-lua balancer: keepalive no free connection, host: 127.0.0.1:23456, name:\s
-lua balancer: keepalive saving connection \S+, host: 127.0.0.1:23456, name:\s
-lua balancer: keepalive saving connection \S+, host: 127.0.0.1:23456, name:\s
+lua balancer: keepalive saving connection \S+, host: 127.0.0.1:$ENV{TEST_NGINX_SERVER_SSL_PORT}, name:\s
+lua balancer: keepalive reusing connection \S+, host: 127.0.0.1:$ENV{TEST_NGINX_SERVER_SSL_PORT}, name:\s
+lua balancer: keepalive reusing connection \S+, host: 127.0.0.1:$ENV{TEST_NGINX_SERVER_SSL_PORT}, name:\s
+lua balancer: keepalive no free connection, host: 127.0.0.1:$ENV{TEST_NGINX_SERVER_SSL_PORT}, name:\s
+lua balancer: keepalive saving connection \S+, host: 127.0.0.1:$ENV{TEST_NGINX_SERVER_SSL_PORT}, name:\s
+lua balancer: keepalive saving connection \S+, host: 127.0.0.1:$ENV{TEST_NGINX_SERVER_SSL_PORT}, name:\s
 lua balancer: keepalive closing connection \S+
-lua balancer: keepalive saving connection \S+, host: 127.0.0.1:23456, name: $/
+lua balancer: keepalive saving connection \S+, host: 127.0.0.1:$ENV{TEST_NGINX_SERVER_SSL_PORT}, name: $/
 
 
 
@@ -886,10 +886,10 @@ lua balancer: keepalive saving connection \S+, host: 127.0.0.1:23456, name: $/
 --- wait: 0.15
 --- response_body
 --- grep_error_log_out eval
-qr/^lua balancer: keepalive no free connection, host: 127.0.0.1:23456, name:\s
-lua balancer: keepalive no free connection, host: 127.0.0.1:23456, name:\s
-lua balancer: keepalive saving connection \S+, host: 127.0.0.1:23456, name:\s
-lua balancer: keepalive saving connection \S+, host: 127.0.0.1:23456, name:\s
+qr/^lua balancer: keepalive no free connection, host: 127.0.0.1:$ENV{TEST_NGINX_SERVER_SSL_PORT}, name:\s
+lua balancer: keepalive no free connection, host: 127.0.0.1:$ENV{TEST_NGINX_SERVER_SSL_PORT}, name:\s
+lua balancer: keepalive saving connection \S+, host: 127.0.0.1:$ENV{TEST_NGINX_SERVER_SSL_PORT}, name:\s
+lua balancer: keepalive saving connection \S+, host: 127.0.0.1:$ENV{TEST_NGINX_SERVER_SSL_PORT}, name:\s
 lua balancer: keepalive closing connection \S+
 lua balancer: keepalive closing connection \S+
 $/
@@ -924,9 +924,9 @@ $/
     }
 --- response_body
 --- grep_error_log_out eval
-qr/^lua balancer: keepalive no free connection, host: 127.0.0.1:23456, name:\s
+qr/^lua balancer: keepalive no free connection, host: 127.0.0.1:$ENV{TEST_NGINX_SERVER_SSL_PORT}, name:\s
 lua balancer: keepalive not saving connection \S+
-lua balancer: keepalive no free connection, host: 127.0.0.1:23456, name:\s
+lua balancer: keepalive no free connection, host: 127.0.0.1:$ENV{TEST_NGINX_SERVER_SSL_PORT}, name:\s
 lua balancer: keepalive not saving connection \S+
 $/
 
@@ -962,7 +962,7 @@ $/
 --- error_log eval
 qr/connect\(\) failed \(\d+: Connection refused\) while connecting to upstream/
 --- grep_error_log_out eval
-qr/^lua balancer: keepalive no free connection, host: 127.0.0.3:23456, name:\s
+qr/^lua balancer: keepalive no free connection, host: 127.0.0.3:$ENV{TEST_NGINX_SERVER_SSL_PORT}, name:\s
 lua balancer: keepalive not saving connection \S+$/
 
 
@@ -1003,7 +1003,7 @@ lua balancer: keepalive not saving connection \S+$/
 --- error_log
 upstream timed out
 --- grep_error_log_out eval
-qr/^lua balancer: keepalive no free connection, host: 127.0.0.1:23456, name:\s
+qr/^lua balancer: keepalive no free connection, host: 127.0.0.1:$ENV{TEST_NGINX_SERVER_SSL_PORT}, name:\s
 lua balancer: keepalive not saving connection \S+$/
 
 
@@ -1060,10 +1060,10 @@ lua balancer: keepalive not saving connection \S+$/
 --- no_error_log
 [crit]
 --- grep_error_log_out eval
-qr/^lua balancer: keepalive no free connection, host: 127.0.0.3:23456, name:\s
+qr/^lua balancer: keepalive no free connection, host: 127.0.0.3:$ENV{TEST_NGINX_SERVER_SSL_PORT}, name:\s
 lua balancer: keepalive not saving connection \S+
-lua balancer: keepalive no free connection, host: 127.0.0.1:23456, name:\s
-lua balancer: keepalive saving connection \S+, host: 127.0.0.1:23456, name: $/
+lua balancer: keepalive no free connection, host: 127.0.0.1:$ENV{TEST_NGINX_SERVER_SSL_PORT}, name:\s
+lua balancer: keepalive saving connection \S+, host: 127.0.0.1:$ENV{TEST_NGINX_SERVER_SSL_PORT}, name: $/
 
 
 
@@ -1121,10 +1121,10 @@ SNI=two
 --- no_error_log
 [crit]
 --- grep_error_log_out eval
-qr/^lua balancer: keepalive no free connection, host: 127.0.0.3:23456, name: one
+qr/^lua balancer: keepalive no free connection, host: 127.0.0.3:$ENV{TEST_NGINX_SERVER_SSL_PORT}, name: one
 lua balancer: keepalive not saving connection \S+
-lua balancer: keepalive no free connection, host: 127.0.0.1:23456, name: two
-lua balancer: keepalive saving connection \S+, host: 127.0.0.1:23456, name: two
+lua balancer: keepalive no free connection, host: 127.0.0.1:$ENV{TEST_NGINX_SERVER_SSL_PORT}, name: two
+lua balancer: keepalive saving connection \S+, host: 127.0.0.1:$ENV{TEST_NGINX_SERVER_SSL_PORT}, name: two
 $/
 
 
@@ -1209,12 +1209,12 @@ SNI=one
 --- grep_error_log eval: qr/(?:lua balancer: keepalive .*|(?:get|free) keepalive peer)/
 --- grep_error_log_out eval
 qr/^get keepalive peer
-lua balancer: keepalive no free connection, host: 127.0.0.1:23456, name: one
+lua balancer: keepalive no free connection, host: 127.0.0.1:$ENV{TEST_NGINX_SERVER_SSL_PORT}, name: one
 free keepalive peer
 free keepalive peer
 lua balancer: keepalive not saving connection \S+
 get keepalive peer
-lua balancer: keepalive no free connection, host: 127.0.0.1:23456, name: two
+lua balancer: keepalive no free connection, host: 127.0.0.1:$ENV{TEST_NGINX_SERVER_SSL_PORT}, name: two
 get keepalive peer
 free keepalive peer
 free keepalive peer

@@ -3,11 +3,15 @@ package t::TestCore;
 use Test::Nginx::Socket::Lua -Base;
 use Cwd qw(cwd realpath abs_path);
 use File::Basename;
+use Test::Nginx::Util 'is_tcp_port_used';
 
 $ENV{TEST_NGINX_HOTLOOP} ||= 10;
 $ENV{TEST_NGINX_MEMCACHED_PORT} ||= 11211;
-$ENV{TEST_NGINX_SERVER_SSL_PORT} ||= 23456;
 $ENV{TEST_NGINX_CERT_DIR} ||= dirname(realpath(abs_path(__FILE__)));
+
+sub get_unused_port ($);
+
+$ENV{TEST_NGINX_SERVER_SSL_PORT} ||= get_unused_port 23456;
 
 our $pwd = cwd();
 
@@ -41,6 +45,7 @@ our @EXPORT = qw(
     $lua_package_path
     $init_by_lua_block
     $HttpConfig
+    get_unused_port
 );
 
 add_block_preprocessor(sub {
@@ -50,5 +55,21 @@ add_block_preprocessor(sub {
         $block->set_value("http_config", $HttpConfig);
     }
 });
+
+sub get_unused_port ($) {
+    my $port = shift;
+
+    my $i = 1000;
+    srand($$); # reset the random seed
+    while ($i-- > 0) {
+        my $rand_port = $port + int(rand(65535 - $port));
+        if (!is_tcp_port_used $rand_port) {
+            #warn "found unused port $rand_port, pid $$\n";
+            return $rand_port;
+        }
+    }
+
+    die "no unused port available";
+}
 
 1;
