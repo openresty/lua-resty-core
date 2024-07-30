@@ -18,6 +18,7 @@ local FFI_NO_REQ_CTX = base.FFI_NO_REQ_CTX
 local FFI_OK = base.FFI_OK
 local error = error
 local setmetatable = setmetatable
+local type = type
 local subsystem = ngx.config.subsystem
 
 
@@ -52,12 +53,18 @@ local _M = {
 }
 
 
+-- use a new ctxs table to make LuaJIT JIT compiler happy to generate more
+-- efficient machine code.
+local ctxs = {}
+registry.ngx_lua_ctx_tables = ctxs
+
+
 local get_ctx_table
 do
     local in_ssl_phase = ffi.new("int[1]")
     local ssl_ctx_ref = ffi.new("int[1]")
 
-    function get_ctx_table()
+    function get_ctx_table(ctx)
         local r = get_request()
 
         if not r then
@@ -69,27 +76,30 @@ do
             error("no request ctx found")
         end
 
-        local ctxs = registry.ngx_lua_ctx_tables
         if ctx_ref < 0 then
-            local ctx
-
             ctx_ref = ssl_ctx_ref[0]
             if ctx_ref > 0 and ctxs[ctx_ref] then
                 if in_ssl_phase[0] ~= 0 then
                     return ctxs[ctx_ref]
                 end
 
-                ctx = new_tab(0, 4)
+                if not ctx then
+                    ctx = new_tab(0, 4)
+                end
+
                 ctx = setmetatable(ctx, ctxs[ctx_ref])
 
             else
                 if in_ssl_phase[0] ~= 0 then
-                    ctx = new_tab(1, 4)
+                    if not ctx then
+                        ctx = new_tab(1, 4)
+                    end
+
                     -- to avoid creating another table, we assume the users
                     -- won't overwrite the `__index` key
                     ctx.__index = ctx
 
-                else
+                elseif not ctx then
                     ctx = new_tab(0, 4)
                 end
             end
@@ -104,9 +114,15 @@ do
     end
 end
 register_getter("ctx", get_ctx_table)
+_M.get_ctx_table = get_ctx_table
 
 
 local function set_ctx_table(ctx)
+    local ctx_type = type(ctx)
+    if ctx_type ~= "table" then
+        error("ctx should be a table while getting a " .. ctx_type)
+    end
+
     local r = get_request()
 
     if not r then
@@ -118,7 +134,6 @@ local function set_ctx_table(ctx)
         error("no request ctx found")
     end
 
-    local ctxs = registry.ngx_lua_ctx_tables
     if ctx_ref < 0 then
         ctx_ref = ref_in_table(ctxs, ctx)
         ngx_lua_ffi_set_ctx_ref(r, ctx_ref)

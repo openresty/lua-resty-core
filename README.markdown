@@ -11,6 +11,7 @@ Table of Contents
 * [Synopsis](#synopsis)
 * [Description](#description)
 * [Prerequisites](#prerequisites)
+* [Installation](#installation)
 * [API Implemented](#api-implemented)
     * [resty.core.hash](#restycorehash)
     * [resty.core.base64](#restycorebase64)
@@ -20,6 +21,7 @@ Table of Contents
     * [resty.core.shdict](#restycoreshdict)
     * [resty.core.var](#restycorevar)
     * [resty.core.ctx](#restycorectx)
+    * [get_ctx_table](#get_ctx_table)
     * [resty.core.request](#restycorerequest)
     * [resty.core.response](#restycoreresponse)
     * [resty.core.misc](#restycoremisc)
@@ -27,9 +29,12 @@ Table of Contents
     * [resty.core.worker](#restycoreworker)
     * [resty.core.phase](#restycorephase)
     * [resty.core.ndk](#restycorendk)
+    * [resty.core.socket](#restycoresocket)
+    * [resty.core.param](#restycoreparam)
     * [ngx.semaphore](#ngxsemaphore)
     * [ngx.balancer](#ngxbalancer)
     * [ngx.ssl](#ngxssl)
+    * [ngx.ssl.clienthello](#ngxsslclienthello)
     * [ngx.ssl.session](#ngxsslsession)
     * [ngx.re](#ngxre)
     * [ngx.resp](#ngxresp)
@@ -51,7 +56,7 @@ This library is production ready.
 Synopsis
 ========
 
-This library is automatically loaded by default in OpenResty 1.15.8.1. This
+This library is automatically loaded by default since OpenResty 1.15.8.1. This
 behavior can be disabled via the
 [lua_load_resty_core](https://github.com/openresty/lua-nginx-module#lua_load_resty_core)
 directive, but note that the use of this library is vividly recommended, as its
@@ -108,9 +113,42 @@ of this library in the particular OpenResty release you are using. Otherwise you
 into serious compatibility issues.
 
 * LuaJIT 2.1 (for now, it is the v2.1 git branch in the official luajit-2.0 git repository: http://luajit.org/download.html )
-* [ngx_http_lua_module](https://github.com/openresty/lua-nginx-module) v0.10.18.
-* [ngx_stream_lua_module](https://github.com/openresty/stream-lua-nginx-module) v0.0.9.
+* [ngx_http_lua_module](https://github.com/openresty/lua-nginx-module) v0.10.25.
+* [ngx_stream_lua_module](https://github.com/openresty/stream-lua-nginx-module) v0.0.13.
 * [lua-resty-lrucache](https://github.com/openresty/lua-resty-lrucache)
+
+[Back to TOC](#table-of-contents)
+
+Installation
+============
+
+By default, LuaJIT will search Lua files in /usr/local/share/lua/5.1/.
+But `make install` will install this module to /usr/local/lib/lua.
+So you may find the error like this:
+
+```text
+nginx: [alert] failed to load the 'resty.core' module
+```
+
+You can install this module with the following command to resolve the above problem.
+
+```bash
+cd lua-resty-core
+sudo make install LUA_LIB_DIR=/usr/local/share/lua/5.1
+```
+
+You can also change the installation directory to any other directory you like with the LUA_LIB_DIR argument.
+
+```bash
+cd lua-resty-core
+sudo make install LUA_LIB_DIR=/opt/nginx/lualib
+```
+
+After that, you need to add the above directory to the LuaJIT search direcotries with `lua_package_path` nginx directive in the http context and stream context.
+
+```
+lua_package_path "/opt/nginx/lualib/?.lua;;";
+```
 
 [Back to TOC](#table-of-contents)
 
@@ -188,6 +226,21 @@ API Implemented
 
 [Back to TOC](#table-of-contents)
 
+## get_ctx_table
+
+**syntax:** *ctx = resty.core.ctx.get_ctx_table(ctx?)*
+
+Similar to [ngx.ctx](#restycorectx) but it accepts an optional `ctx` argument.
+It will use the `ctx` from caller instead of creating a new table
+when the `ctx` table does not exist.
+
+Notice: the `ctx` table will be used in the current request's whole life cycle.
+Please be very careful when you try to reuse the `ctx` table.
+You need to make sure there is no Lua code using or going to use the `ctx` table
+in the current request before you reusing the `ctx` table in some other place.
+
+[Back to TOC](#table-of-contents)
+
 ## resty.core.request
 
 * [ngx.req.get_headers](https://github.com/openresty/lua-nginx-module#ngxreqget_headers)
@@ -211,6 +264,7 @@ API Implemented
 * [ngx.status](https://github.com/openresty/lua-nginx-module#ngxstatus)
 * [ngx.is_subrequest](https://github.com/openresty/lua-nginx-module#ngxis_subrequest)
 * [ngx.headers_sent](https://github.com/openresty/lua-nginx-module#ngxheaders_sent)
+* [ngx.req.is_internal](https://github.com/openresty/lua-nginx-module#ngxreqis_internal)
 
 [Back to TOC](#table-of-contents)
 
@@ -224,6 +278,8 @@ API Implemented
 * [ngx.cookie_time](https://github.com/openresty/lua-nginx-module#ngxcookie_time)
 * [ngx.http_time](https://github.com/openresty/lua-nginx-module#ngxhttp_time)
 * [ngx.parse_http_time](https://github.com/openresty/lua-nginx-module#ngxparse_http_time)
+* [monotonic_msec](./lib/resty/core/time.md#monotonic_msec)
+* [monotonic_time](./lib/resty/core/time.md#monotonic_time)
 
 [Back to TOC](#table-of-contents)
 
@@ -245,6 +301,20 @@ API Implemented
 ## resty.core.ndk
 
 * [ndk.set_var](https://github.com/openresty/lua-nginx-module#ndkset_vardirective)
+
+[Back to TOC](#table-of-contents)
+
+## resty.core.socket
+
+* [socket.setoption](https://github.com/openresty/lua-nginx-module#tcpsocksetoption)
+* [socket.setclientcert](https://github.com/openresty/lua-nginx-module#tcpsocksetclientcert)
+* [socket.sslhandshake](https://github.com/openresty/lua-nginx-module#tcpsocksslhandshake)
+
+[Back to TOC](#table-of-contents)
+
+## resty.core.param
+
+* [ngx.arg](https://github.com/openresty/lua-nginx-module#ngxarg) (getter only)
 
 [Back to TOC](#table-of-contents)
 
@@ -271,6 +341,15 @@ This Lua module provides a Lua API for controlling SSL certificates, private key
 SSL protocol versions, and etc in NGINX downstream SSL handshakes.
 
 See the [documentation](./lib/ngx/ssl.md) for this Lua module for more details.
+
+[Back to TOC](#table-of-contents)
+
+## ngx.ssl.clienthello
+
+This Lua module provides a Lua API for post-processing SSL client hello message
+for NGINX downstream SSL connections.
+
+See the [documentation](./lib/ngx/ssl/clienthello.md) for this Lua module for more details.
 
 [Back to TOC](#table-of-contents)
 

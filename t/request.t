@@ -8,7 +8,7 @@ use t::TestCore;
 
 repeat_each(2);
 
-plan tests => repeat_each() * (blocks() * 5 + 5);
+plan tests => repeat_each() * (blocks() * 4 + 19);
 
 #no_diff();
 #no_long_string();
@@ -140,6 +140,11 @@ qr/\[TRACE\s+\d+ content_by_lua\(nginx\.conf:\d+\):4 loop\]/
 
 
 === TEST 4: ngx.req.get_headers (metatable)
+--- http_config eval
+"
+$::HttpConfig
+underscores_in_headers on;
+"
 --- config
     location = /t {
         set $foo hello;
@@ -159,6 +164,10 @@ qr/\[TRACE\s+\d+ content_by_lua\(nginx\.conf:\d+\):4 loop\]/
             for _, k in ipairs(keys) do
                 ngx.say(k, ": ", headers[k])
             end
+
+            ngx.say("X_Bar_Header: ", headers["X_Bar_Header"])
+            ngx.say("x_Bar_Header: ", headers["x_Bar_Header"])
+            ngx.say("x_bar_header: ", headers["x_bar_header"])
         }
     }
 --- request
@@ -169,9 +178,14 @@ baz: baz
 connection: close
 foo-bar: foo
 host: localhost
+x_bar_header: bar
+X_Bar_Header: bar
+x_Bar_Header: bar
+x_bar_header: bar
 --- more_headers
 Foo-Bar: foo
 Baz: baz
+X_Bar_Header: bar
 --- wait: 0.2
 --- error_log eval
 qr/\[TRACE\s+\d+ .*? -> \d+\]/
@@ -439,6 +453,8 @@ qr/\[TRACE\s+\d+ content_by_lua\(nginx\.conf:\d+\):3 loop\]/
 [error]
 bad argument type
 stitch
+--- skip_nginx
+6: >= 1.21.1
 
 
 
@@ -586,3 +602,94 @@ Foo: baz, 123
 --- http09
 --- response_body
 table,table
+
+
+
+=== TEST 19: CONNECT method is considered invalid since nginx 1.21.1
+--- config
+    location = /t {
+        access_log off;
+        content_by_lua_block {
+            local t
+            for i = 1, 500 do
+                t = ngx.req.get_method()
+            end
+            ngx.say("method: ", t)
+            ngx.req.discard_body()
+        }
+    }
+--- request
+CONNECT /t
+hello
+--- error_code: 405
+--- no_error_log
+[error]
+--- skip_nginx
+2: < 1.21.1
+
+
+
+=== TEST 20: get_uri_args allows to reuse table
+--- config
+    location = /t {
+        set $foo hello;
+        content_by_lua_block {
+            local base = require "resty.core.base"
+            local args = base.new_tab(0, 3)
+            local id = tostring(args)
+            for i = 1, 5 do
+                base.clear_tab(args)
+                args = ngx.req.get_uri_args(-1, args)
+                assert(tostring(args) == id)
+            end
+            local keys = {}
+            for k, _ in pairs(args) do
+                keys[#keys + 1] = k
+            end
+            table.sort(keys)
+            for _, k in ipairs(keys) do
+                local v = args[k]
+                if type(v) == "table" then
+                    ngx.say(k, ": ", table.concat(v, ", "))
+                else
+                    ngx.say(k, ": ", v)
+                end
+            end
+        }
+    }
+--- request
+GET /t?a=3%200&foo%20bar=&a=hello&blah
+--- response_body
+a: 3 0, hello
+blah: true
+foo bar: 
+--- no_error_log
+[error]
+
+
+
+=== TEST 21: get_uri_args allows to reuse table (empty)
+--- config
+    location = /t {
+        set $foo hello;
+        content_by_lua_block {
+            local base = require "resty.core.base"
+            local args = base.new_tab(0, 3)
+            local id = tostring(args)
+            for i = 1, 5 do
+                args = ngx.req.get_uri_args(-1, args)
+                assert(tostring(args) == id)
+            end
+            local n_key = 0
+            for k, _ in pairs(args) do
+                n_key = n_key + 1
+            end
+            ngx.say(n_key)
+        }
+    }
+--- request
+GET /t
+--- response_body
+0
+--- no_error_log
+[error]

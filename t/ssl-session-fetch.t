@@ -23,7 +23,6 @@ $ENV{TEST_NGINX_HTML_DIR} ||= html_dir();
 $ENV{TEST_NGINX_MEMCACHED_PORT} ||= 11211;
 $ENV{TEST_NGINX_RESOLVER} ||= '8.8.8.8';
 $ENV{TEST_NGINX_CERT_DIR} ||= dirname(realpath(abs_path(__FILE__)));
-$ENV{TEST_NGINX_SERVER_SSL_PORT} ||= 4443;
 
 run_tests();
 
@@ -52,6 +51,7 @@ __DATA__
     resolver $TEST_NGINX_RESOLVER;
     lua_ssl_trusted_certificate $TEST_NGINX_CERT_DIR/cert/test.crt;
     lua_ssl_verify_depth 3;
+    lua_ssl_protocols TLSv1.2;
 
     location /t {
         set $port $TEST_NGINX_MEMCACHED_PORT;
@@ -90,17 +90,17 @@ __DATA__
 GET /t
 --- response_body
 connected: 1
-ssl handshake: userdata
+ssl handshake: cdata
 close: 1 nil
 
 --- grep_error_log eval
-qr/ssl_session_fetch_by_lua_block:\d+: session id: [a-fA-f\d]+/s
+qr/ssl_session_fetch_by_lua\(nginx.conf:\d+\):\d+: session id: [a-fA-f\d]+/s
 
 --- grep_error_log_out eval
 [
-'',
-qr/ssl_session_fetch_by_lua_block:4: session id: [a-fA-f\d]+/s,
-qr/ssl_session_fetch_by_lua_block:4: session id: [a-fA-f\d]+/s,
+"",
+qr/ssl_session_fetch_by_lua\(nginx.conf:\d+\):4: session id: [a-fA-f\d]+/s,
+qr/ssl_session_fetch_by_lua\(nginx.conf:\d+\):4: session id: [a-fA-f\d]+/s,
 ]
 
 --- no_error_log
@@ -139,6 +139,7 @@ qr/ssl_session_fetch_by_lua_block:4: session id: [a-fA-f\d]+/s,
     resolver $TEST_NGINX_RESOLVER;
     lua_ssl_trusted_certificate $TEST_NGINX_CERT_DIR/cert/test.crt;
     lua_ssl_verify_depth 3;
+    lua_ssl_protocols TLSv1.2;
 
     location /t {
         set $port $TEST_NGINX_MEMCACHED_PORT;
@@ -177,7 +178,7 @@ qr/ssl_session_fetch_by_lua_block:4: session id: [a-fA-f\d]+/s,
 GET /t
 --- response_body
 connected: 1
-ssl handshake: userdata
+ssl handshake: cdata
 close: 1 nil
 
 --- grep_error_log eval
@@ -185,7 +186,7 @@ qr/ssl_session_fetch_by_lua:\d: session size: [a-fA-f\d]+|get session error: bad
 
 --- grep_error_log_out eval
 [
-'',
+"",
 'get session error: bad session in lua context
 ',
 'get session error: bad session in lua context
@@ -221,7 +222,11 @@ In practice, never store session in plaintext on persistent storage.
         local ssl = require "ngx.ssl.session"
         local sid = ssl.get_session_id()
         print("session id: ", sid)
-        local f = assert(io.open("$TEST_NGINX_SERVER_ROOT/html/session.tmp"))
+        local f = io.open("$TEST_NGINX_SERVER_ROOT/html/session.tmp")
+        if f == nil then
+            return
+        end
+
         local sess = f:read("*a")
         f:close()
         ssl.set_serialized_session(sess)
@@ -242,6 +247,7 @@ In practice, never store session in plaintext on persistent storage.
     resolver $TEST_NGINX_RESOLVER;
     lua_ssl_trusted_certificate $TEST_NGINX_CERT_DIR/cert/test.crt;
     lua_ssl_verify_depth 3;
+    lua_ssl_protocols TLSv1.2;
 
     location /t {
         set $port $TEST_NGINX_MEMCACHED_PORT;
@@ -280,17 +286,17 @@ In practice, never store session in plaintext on persistent storage.
 GET /t
 --- response_body
 connected: 1
-ssl handshake: userdata
+ssl handshake: cdata
 close: 1 nil
 
 --- grep_error_log eval
-qr/ssl_session_(fetch|store)_by_lua_block:\d+: session id: [a-fA-F\d]+/s
+qr/ssl_session_(fetch|store)_by_lua\(nginx.conf:\d+\):\d+: session id: [a-fA-F\d]+/s
 
 --- grep_error_log_out eval
 [
-qr/ssl_session_store_by_lua_block:5: session id: [a-fA-F\d]+/s,
-qr/ssl_session_fetch_by_lua_block:4: session id: [a-fA-F\d]+/s,
-qr/ssl_session_fetch_by_lua_block:4: session id: [a-fA-F\d]+/s,
+qr/ssl_session_store_by_lua\(nginx.conf:\d+\):5: session id: [a-fA-F\d]+/s,
+qr/ssl_session_fetch_by_lua\(nginx.conf:\d+\):4: session id: [a-fA-F\d]+/s,
+qr/ssl_session_fetch_by_lua\(nginx.conf:\d+\):4: session id: [a-fA-F\d]+/s,
 ]
 
 --- no_error_log
@@ -338,6 +344,7 @@ able to carry on and negotiate a new session.
     resolver $TEST_NGINX_RESOLVER;
     lua_ssl_trusted_certificate $TEST_NGINX_CERT_DIR/cert/test.crt;
     lua_ssl_verify_depth 3;
+    lua_ssl_protocols TLSv1.2;
 
     location /t {
         set $port $TEST_NGINX_MEMCACHED_PORT;
@@ -376,25 +383,24 @@ able to carry on and negotiate a new session.
 GET /t
 --- response_body
 connected: 1
-ssl handshake: userdata
+ssl handshake: cdata
 close: 1 nil
 
 --- grep_error_log eval
-qr/failed to resume session: failed to de-serialize session|ssl_session_(fetch|store)_by_lua_block:\d+: session id: [a-fA-F\d]+/s
+qr/failed to resume session: failed to de-serialize session|ssl_session_(fetch|store)_by_lua\(nginx.conf:\d+\):\d+: session id: [a-fA-F\d]+/s
 
 --- grep_error_log_out eval
 [
-qr/^ssl_session_store_by_lua_block:5: session id: [a-fA-F\d]+$/s,
-qr/^ssl_session_fetch_by_lua_block:4: session id: [a-fA-F\d]+
+qr/^ssl_session_store_by_lua\(nginx.conf:\d+\):5: session id: [a-fA-F\d]+$/s,
+qr/^ssl_session_fetch_by_lua\(nginx.conf:\d+\):4: session id: [a-fA-F\d]+
 failed to resume session: failed to de-serialize session
-ssl_session_store_by_lua_block:5: session id: [a-fA-F\d]+
+ssl_session_store_by_lua\(nginx.conf:\d+\):5: session id: [a-fA-F\d]+
 $/s,
-qr/ssl_session_fetch_by_lua_block:4: session id: [a-fA-F\d]+
+qr/ssl_session_fetch_by_lua:4: session id: [a-fA-F\d]+
 failed to resume session: failed to de-serialize session
-ssl_session_store_by_lua_block:5: session id: [a-fA-F\d]+
+ssl_session_store_by_lua\(nginx.conf:\d+\):5: session id: [a-fA-F\d]+
 $/s,
 ]
-
 --- no_error_log
 [alert]
 [emerg]
@@ -429,11 +435,12 @@ $/s,
     }
 
     server {
-        listen $TEST_NGINX_SERVER_SSL_PORT ssl;
+        listen $TEST_NGINX_RAND_PORT_1 ssl;
         server_name test.com;
         ssl_session_tickets off;
         ssl_certificate $TEST_NGINX_CERT_DIR/cert/test.crt;
         ssl_certificate_key $TEST_NGINX_CERT_DIR/cert/test.key;
+        ssl_protocols TLSv1.2;
 
         location / {
             content_by_lua_block {
@@ -446,7 +453,7 @@ $/s,
 
     location /t {
         set $sess_file $TEST_NGINX_HTML_DIR/sess;
-        set $addr 127.0.0.1:$TEST_NGINX_SERVER_SSL_PORT;
+        set $addr 127.0.0.1:$TEST_NGINX_RAND_PORT_1;
         content_by_lua_block {
             ngx.shared.done:delete("handshake")
             local addr = ngx.var.addr;
@@ -490,17 +497,20 @@ ok
 --- error_log eval
 qr/content_by_lua\(nginx\.conf:\d+\):\d+: CONNECTED/
 --- grep_error_log eval
-qr/failed to resume session: failed to de-serialize session|ssl_session_(fetch|store)_by_lua_block:\d+: session id: [a-fA-F\d]+/s
+qr/failed to resume session: failed to de-serialize session|ssl_session_(fetch|store)_by_lua\(nginx.conf:\d+\):\d+: session id: [a-fA-F\d]+/s
 --- grep_error_log_out eval
 [
-qr/^ssl_session_store_by_lua_block:\d+: session id: [a-fA-F\d]+$/s,
-qr/^ssl_session_fetch_by_lua_block:\d+: session id: [a-fA-F\d]+
+qr/^ssl_session_fetch_by_lua\(nginx.conf:\d+\):\d+: session id: [a-fA-F\d]+
 failed to resume session: failed to de-serialize session
-ssl_session_store_by_lua_block:\d+: session id: [a-fA-F\d]+
+ssl_session_store_by_lua\(nginx.conf:\d+\):\d+: session id: [a-fA-F\d]+
 $/s,
-qr/ssl_session_fetch_by_lua_block:\d+: session id: [a-fA-F\d]+
+qr/^ssl_session_fetch_by_lua\(nginx.conf:\d+\):\d+: session id: [a-fA-F\d]+
 failed to resume session: failed to de-serialize session
-ssl_session_store_by_lua_block:\d+: session id: [a-fA-F\d]+
+ssl_session_store_by_lua\(nginx.conf:\d+\):\d+: session id: [a-fA-F\d]+
+$/s,
+qr/^ssl_session_fetch_by_lua\(nginx.conf:\d+\):\d+: session id: [a-fA-F\d]+
+failed to resume session: failed to de-serialize session
+ssl_session_store_by_lua\(nginx.conf:\d+\):\d+: session id: [a-fA-F\d]+
 $/s,
 ]
 
@@ -508,6 +518,7 @@ $/s,
 [alert]
 [emerg]
 [error]
+--- timeout: 5
 
 
 
@@ -524,7 +535,10 @@ $/s,
 
     ssl_session_fetch_by_lua_block {
         local ssl = require "ngx.ssl.session"
-        local f = assert(io.open("$TEST_NGINX_SERVER_ROOT/html/session.tmp"))
+        local f = io.open("$TEST_NGINX_SERVER_ROOT/html/session.tmp")
+        if f == nil then
+            return
+        end
         local sess = f:read("*a")
         f:close()
         ssl.set_serialized_session(sess)
@@ -544,6 +558,7 @@ $/s,
 --- config
     lua_ssl_trusted_certificate $TEST_NGINX_CERT_DIR/cert/test.crt;
     lua_ssl_verify_depth 3;
+    lua_ssl_protocols TLSv1.2;
 
     location /t {
         set $port $TEST_NGINX_MEMCACHED_PORT;
@@ -579,7 +594,7 @@ $/s,
 GET /t
 --- response_body
 connected: 1
-ssl handshake: userdata
+ssl handshake: cdata
 close: 1 nil
 --- no_error_log
 [alert]

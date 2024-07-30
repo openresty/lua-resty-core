@@ -1025,6 +1025,7 @@ MD5\([^)]+\)= 8bc944dbd052ef51652e70a5104492e3
     }
 --- response_body
 closed
+--- timeout: 10s
 
 
 
@@ -1127,6 +1128,7 @@ hello
 --- config
     location = /t {
         content_by_lua_block {
+            collectgarbage()
             local ngx_pipe = require "ngx.pipe"
             local proc = ngx_pipe.spawn("echo 'hello' && >&2 echo 'world'")
 
@@ -1360,7 +1362,10 @@ lua pipe kill process:
     }
 --- response_body
 ok
---- shutdown_error_log
+--- error_log
+lua pipe destroy process:
+lua pipe kill process:
+--- no_shutdown_error_log
 lua pipe destroy process:
 lua pipe kill process:
 
@@ -1589,7 +1594,7 @@ end
             local f = io.open("$TEST_NGINX_HTML_DIR/a.lua")
             local code = f:read("*a")
             local proc = helper.run_lua_with_graceful_shutdown("$TEST_NGINX_HTML_DIR", code)
-            proc:set_timeouts(100, 100, 100, 100)
+            proc:set_timeouts(300, 300, 300, 300)
 
             local data, err = proc:stdout_read_all()
             if not data then

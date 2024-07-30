@@ -26,9 +26,7 @@ Table of Contents
 Status
 ======
 
-This Lua module is currently considered experimental.
-
-The API is still in flux and may change in the future without notice.
+This Lua module is production ready.
 
 Synopsis
 ========
@@ -37,7 +35,7 @@ Capturing nginx error logs with specified log filtering level
 -------------------------------------------------------------
 
 ```nginx
-error logs/error.log info;
+error_log logs/error.log info;
 
 http {
     # enable capturing error logs

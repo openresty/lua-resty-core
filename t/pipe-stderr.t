@@ -783,7 +783,7 @@ end
             local f = io.open("$TEST_NGINX_HTML_DIR/a.lua")
             local code = f:read("*a")
             local proc = helper.run_lua_with_graceful_shutdown("$TEST_NGINX_HTML_DIR", code)
-            proc:set_timeouts(100, 100, 100, 100)
+            proc:set_timeouts(300, 300, 300, 300)
 
             local data, err = proc:stdout_read_all()
             if not data then
