@@ -102,7 +102,7 @@ add_block_preprocessor(sub {
     }
 
     if (!defined $block->grep_error_log) {
-        $block->set_value("grep_error_log", qr/lua balancer: keepalive (?!closing).*/);
+        $block->set_value("grep_error_log", qr/lua balancer: keepalive .*/);
     }
 
     if (!defined $block->no_error_log) {
