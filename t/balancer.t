@@ -9,7 +9,10 @@ use t::TestCore;
 
 repeat_each(2);
 
-plan tests => repeat_each() * (blocks() * 4 + 6);
+my $TestPlan = $ENV{TEST_NGINX_CHECK_LEAK} ?
+    repeat_each() * (blocks() * 4 + 8) : repeat_each() * (blocks() * 4 + 6);
+
+plan tests => $TestPlan;
 
 $ENV{TEST_NGINX_LUA_PACKAGE_PATH} = "$t::TestCore::lua_package_path";
 
