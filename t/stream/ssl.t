@@ -13,6 +13,13 @@ plan tests => repeat_each() * (blocks() * 6 + 1);
 no_long_string();
 #no_diff();
 
+my $NginxBinary = $ENV{'TEST_NGINX_BINARY'} || 'nginx';
+my $openssl_version = eval { `$NginxBinary -V 2>&1` };
+
+if ($openssl_version =~ m/\bBoringSSL\b/) {
+    $ENV{TEST_NGINX_BORINGSSL} = 1;
+}
+
 env_to_nginx("PATH=" . $ENV{'PATH'});
 $ENV{TEST_NGINX_LUA_PACKAGE_PATH} = "$t::TestCore::Stream::lua_package_path";
 $ENV{TEST_NGINX_HTML_DIR} ||= html_dir();
@@ -81,9 +88,9 @@ __DATA__
 connected: 1
 failed to do SSL handshake: handshake failed
 
---- error_log
-lua ssl server name: "test.com"
-sslv3 alert handshake failure
+--- error_log eval
+['lua ssl server name: "test.com"',
+qr/sslv3 alert handshake failure|routines:OPENSSL_internal:SSLV3_ALERT_HANDSHAKE_FAILURE:SSL alert number 40/]
 
 --- no_error_log
 [alert]
@@ -862,6 +869,8 @@ got TLS1 version: SSLv3,
 [error]
 [alert]
 [emerg]
+--- skip_eval
+--- skip_nginx: 6: >=1.27.1
 
 
 
@@ -927,6 +936,7 @@ got TLS1 version: TLSv1,
 [error]
 [alert]
 [emerg]
+--- skip_nginx: 6: >=1.27.1
 
 
 
@@ -992,6 +1002,7 @@ got TLS1 version: TLSv1.1,
 [error]
 [alert]
 [emerg]
+--- skip_nginx: 6: >=1.27.1
 
 
 
@@ -1973,8 +1984,8 @@ client certificate subject: emailAddress=agentzh@gmail.com,CN=test.com
     proxy_ssl_certificate_key   ../../cert/test.key;
     proxy_ssl_session_reuse     off;
 
---- stream_response
-FAILED:self signed certificate
+--- stream_response eval
+qr/FAILED:self[- ]signed certificate/
 
 --- error_log
 client certificate subject: emailAddress=agentzh@gmail.com,CN=test.com
