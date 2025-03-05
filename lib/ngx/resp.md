@@ -13,6 +13,7 @@ Table of Contents
 * [Methods](#methods)
     * [add_header](#add_header)
     * [set_status](#set_status)
+    * [bypass_if_checks](#bypass_if_checks)
 * [Community](#community)
     * [English Mailing List](#english-mailing-list)
     * [Chinese Mailing List](#chinese-mailing-list)
@@ -86,6 +87,14 @@ Unlike `ngx.status` which only sets the status, this function sets the response
 status with an optional reason. The `reason` should be a string.
 
 [Back to TOC](#table-of-contents)
+
+bypass_if_checks
+------------------
+**syntax:** *ngx_resp.bypass_if_checks()*
+Bypasses the conditional header checks as defined in RFC 9110 for the current request.
+This method is useful when you need to skip validation of headers such as `If-Modified-Since`,
+`If-None-Match`, `If-Range`, `If-Unmodified-Since`, and `If-Match`, allowing the response to 
+proceed without evaluating these conditions.
 
 Community
 =========
