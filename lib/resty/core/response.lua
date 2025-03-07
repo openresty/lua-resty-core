@@ -233,7 +233,7 @@ local function bypass_if_checks()
     if not r then
         error("no request found")
     end
-    return C.ngx_http_lua_ffi_bypass_if_checks(r)
+    C.ngx_http_lua_ffi_bypass_if_checks(r)
 end
 
 
