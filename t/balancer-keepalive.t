@@ -1220,3 +1220,53 @@ get keepalive peer
 free keepalive peer
 free keepalive peer
 lua balancer: keepalive not saving connection \S+$/
+
+
+
+=== TEST 28: long hostname
+--- http_upstream
+    upstream test_upstream {
+        server 0.0.0.1;
+
+        balancer_by_lua_block {
+            local b = require "ngx.balancer"
+
+            local ip = ngx.var.arg_ip or "127.0.0.1"
+            local port = ngx.var.arg_port or $TEST_NGINX_SERVER_SSL_PORT
+            local host = ngx.var.arg_cn or "keepalive1.test.host.com"
+
+            local ok, err = b.set_current_peer(ip, port, host)
+            if not ok then
+                ngx.log(ngx.ERR, "failed to set current peer: ", err)
+                return
+            end
+
+            local ok, err = b.enable_keepalive()
+            if not ok then
+                ngx.log(ngx.ERR, "failed to set keepalive: ", err)
+                return
+            end
+        }
+    }
+--- config eval
+"
+    location = /t {
+        echo_subrequest GET '/proxy_lua_sni/echo_sni' -q 'ip=127.0.0.1&cn=keepalive1.longname.test.host.com';
+        echo_subrequest GET '/proxy_lua_sni/echo_sni' -q 'ip=127.0.0.1&cn=keepalive1.longname.test.host.com';
+        echo_subrequest GET '/proxy_lua_sni/echo_sni' -q 'ip=127.0.0.2&cn=keepalive2.longname.test.host.com';
+        echo_subrequest GET '/proxy_lua_sni/echo_sni' -q 'ip=127.0.0.2&cn=keepalive2.longname.test.host.com';
+        echo_subrequest GET '/proxy_lua_sni/echo_sni' -q 'ip=127.0.0.2&cn=keepalive2.longname.test.host.com&port=$ENV{TEST_NGINX_SERVER_SSL_PORT_2}';
+    }
+"
+--- response_body
+SNI=keepalive1.longname.test.host.com
+SNI=keepalive1.longname.test.host.com
+SNI=keepalive2.longname.test.host.com
+SNI=keepalive2.longname.test.host.com
+SNI=keepalive2.longname.test.host.com
+--- grep_error_log eval
+qr/keepalive reusing connection[^\n]*/
+--- grep_error_log_out eval
+qr/keepalive reusing connection [0-9A-F]+, host: 127.0.0.1:\d+, name: keepalive1.longname.test.host.com
+keepalive reusing connection [0-9A-F]+, host: 127.0.0.2:\d+, name: keepalive2.longname.test.host.com
+/
