@@ -479,7 +479,8 @@ read SNI name from Lua: nil, type: nil
                 ngx.exit(ngx.ERROR)
             end
         }
-        ssl_protocols TLSv1 TLSv1.1;
+
+        ssl_protocols TLSv1.3;
         ssl_certificate ../../cert/test.crt;
         ssl_certificate_key ../../cert/test.key;
 
@@ -585,7 +586,7 @@ close: 1 nil
                 ngx.exit(ngx.ERROR)
             end
         }
-        ssl_protocols TLSv1 TLSv1.1;
+        ssl_protocols TLSv1 TLSv1.1 TLSv1.2;
         ssl_certificate ../../cert/test.crt;
         ssl_certificate_key ../../cert/test.key;
 
@@ -675,7 +676,7 @@ close: 1 nil
 
 
 
-=== TEST 7: dynamically set ssl protocol - deny TLSv1.1
+=== TEST 7: dynamically set ssl protocol - deny TLSv1.2
 --- skip_nginx: 5: < 1.19.9
 --- http_config
     lua_package_path "$TEST_NGINX_LUA_PACKAGE_PATH";
@@ -685,13 +686,13 @@ close: 1 nil
         server_name   test.com;
         ssl_client_hello_by_lua_block {
             local ssl_clt = require "ngx.ssl.clienthello"
-            local ok = ssl_clt.set_protocols({"TLSv1.2", "TLSv1.3"})
+            local ok = ssl_clt.set_protocols({"TLSv1.3"})
             if not ok then
                 print("failed to set_protocols")
                 ngx.exit(ngx.ERROR)
             end
         }
-        ssl_protocols TLSv1 TLSv1.1;
+        ssl_protocols TLSv1 TLSv1.1 TLSV1.2 TLSV1.3;
         ssl_certificate ../../cert/test.crt;
         ssl_certificate_key ../../cert/test.key;
 
@@ -705,7 +706,7 @@ close: 1 nil
 --- config
     server_tokens off;
     lua_ssl_trusted_certificate ../../cert/test.crt;
-    lua_ssl_protocols TLSv1.1;
+    lua_ssl_protocols TLSv1.1 TLSV1.2;
 
     location /t {
         content_by_lua_block {
@@ -772,7 +773,8 @@ failed to do SSL handshake: handshake failed
 
 
 === TEST 8: dynamically set ssl protocol - deny TLSv1
---- skip_nginx: 5: < 1.19.9
+openssl3 does not support TLSv1
+--- skip_nginx: 5: < 100.0.0
 --- http_config
     lua_package_path "$TEST_NGINX_LUA_PACKAGE_PATH";
 
@@ -880,7 +882,7 @@ failed to do SSL handshake: handshake failed
             local types, err = ssl_clt.get_supported_versions()
             if not err and types then
                 for _, ssl_type in pairs(types) do
-                    if ssl_type == "TLSv1.2" then
+                    if ssl_type == "TLSv1.3" then
                         ngx.exit(ngx.OK)
                     end
                 end
@@ -888,7 +890,7 @@ failed to do SSL handshake: handshake failed
             ngx.log(ngx.ERR, "failed to get_supported_versions")
             ngx.exit(ngx.ERROR)
         }
-        ssl_protocols TLSv1 TLSv1.1 TLSv1.2;
+        ssl_protocols TLSv1 TLSv1.1 TLSv1.2 TLSv1.3;
         ssl_certificate ../../cert/test.crt;
         ssl_certificate_key ../../cert/test.key;
 
@@ -902,7 +904,7 @@ failed to do SSL handshake: handshake failed
 --- config
     server_tokens off;
     lua_ssl_trusted_certificate ../../cert/test.crt;
-    lua_ssl_protocols TLSv1 TLSv1.1 ;
+    lua_ssl_protocols TLSv1 TLSv1.1 TLSv1.2;
 
     location /t {
         content_by_lua_block {
@@ -964,3 +966,102 @@ failed to get_supported_versions
 
 --- no_error_log
 [alert]
+
+
+
+=== TEST 10: log all_extensions in the clienthello packet
+--- http_config
+    lua_package_path "$TEST_NGINX_LUA_PACKAGE_PATH";
+
+    server {
+        listen 127.0.0.2:$TEST_NGINX_RAND_PORT_1 ssl;
+        server_name   test.com;
+        ssl_client_hello_by_lua_block {
+            local ssl_clt = require "ngx.ssl.clienthello"
+            local all_extensions, err = ssl_clt.get_client_hello_ext_present()
+            if not err and all_extensions then
+                for i, ext in ipairs(all_extensions) do
+                    ngx.log(ngx.INFO, i, ": TLS EXT ", ext)
+                end
+            else
+                ngx.log(ngx.ERR, "failed to get all_extensions")
+            end
+            ngx.exit(ngx.ERROR)
+        }
+
+        ssl_protocols TLSv1 TLSv1.1 TLSv1.2;
+        ssl_certificate ../../cert/test.crt;
+        ssl_certificate_key ../../cert/test.key;
+
+        server_tokens off;
+        location /foo {
+            default_type 'text/plain';
+            content_by_lua_block {ngx.status = 201 ngx.say("foo") ngx.exit(201)}
+            more_clear_headers Date;
+        }
+    }
+--- config
+    server_tokens off;
+    lua_ssl_trusted_certificate ../../cert/test.crt;
+    lua_ssl_protocols TLSv1 TLSv1.1 TLSv1.2;
+
+    location /t {
+        content_by_lua_block {
+            do
+                local sock = ngx.socket.tcp()
+
+                sock:settimeout(3000)
+
+                local ok, err = sock:connect("127.0.0.2", $TEST_NGINX_RAND_PORT_1)
+                if not ok then
+                    ngx.say("failed to connect: ", err)
+                    return
+                end
+
+                ngx.say("connected: ", ok)
+
+                local sess, err = sock:sslhandshake(nil, nil, true)
+                if not sess then
+                    ngx.say("failed to do SSL handshake: ", err)
+                    return
+                end
+
+                ngx.say("ssl handshake: ", type(sess))
+
+                local req = "GET /foo HTTP/1.0\r\nHost: test.com\r\nConnection: close\r\n\r\n"
+                local bytes, err = sock:send(req)
+                if not bytes then
+                    ngx.say("failed to send http request: ", err)
+                    return
+                end
+
+                ngx.say("sent http request: ", bytes, " bytes.")
+
+                while true do
+                    local line, err = sock:receive()
+                    if not line then
+                        -- ngx.say("failed to receive response status line: ", err)
+                        break
+                    end
+
+                    ngx.say("received: ", line)
+                end
+
+                local ok, err = sock:close()
+                ngx.say("close: ", ok, " ", err)
+            end  -- do
+            -- collectgarbage()
+        }
+    }
+
+--- request
+GET /t
+--- response_body
+connected: 1
+failed to do SSL handshake: handshake failed
+--- error_log eval
+qr/1: TLS EXT \d+, context: ssl_client_hello_by_lua/
+--- no_error_log
+[alert]
+[crit]
+[placeholder]
