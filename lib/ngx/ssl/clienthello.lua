@@ -20,11 +20,14 @@ local ngx_phase = ngx.get_phase
 local byte = string.byte
 local lshift = bit.lshift
 local table_insert = table.insert
+local table_new = require "table.new"
+local intp = ffi.new("int*[1]")
 
 
 local ngx_lua_ffi_ssl_get_client_hello_server_name
 local ngx_lua_ffi_ssl_get_client_hello_ext
 local ngx_lua_ffi_ssl_set_protocols
+local ngx_lua_ffi_ssl_get_client_hello_ext_present
 
 
 if subsystem == 'http' then
@@ -38,6 +41,8 @@ if subsystem == 'http' then
 
     int ngx_http_lua_ffi_ssl_set_protocols(ngx_http_request_t *r,
         int protocols, char **err);
+    int ngx_http_lua_ffi_ssl_get_client_hello_ext_present(ngx_http_request_t *r,
+        int **extensions, size_t *extensions_len, char **err);
     ]]
 
     ngx_lua_ffi_ssl_get_client_hello_server_name =
@@ -45,6 +50,9 @@ if subsystem == 'http' then
     ngx_lua_ffi_ssl_get_client_hello_ext =
         C.ngx_http_lua_ffi_ssl_get_client_hello_ext
     ngx_lua_ffi_ssl_set_protocols = C.ngx_http_lua_ffi_ssl_set_protocols
+    ngx_lua_ffi_ssl_get_client_hello_ext_present =
+        C.ngx_http_lua_ffi_ssl_get_client_hello_ext_present
+
 
 elseif subsystem == 'stream' then
     ffi.cdef[[
@@ -102,6 +110,39 @@ function _M.get_client_hello_server_name()
     return nil, ffi_str(errmsg[0])
 end
 
+-- return extensions_table, err
+function _M.get_client_hello_ext_present()
+    local r = get_request()
+    if not r then
+        error("no request found")
+    end
+
+    if ngx_phase() ~= "ssl_client_hello" then
+        error("API disabled in the current context")
+    end
+
+    local sizep = get_size_ptr()
+
+    local rc = ngx_lua_ffi_ssl_get_client_hello_ext_present(r, intp,
+                                                            sizep, errmsg)
+    if rc == FFI_OK then -- Convert C array to Lua table
+        local array = intp[0]
+        local size = tonumber(sizep[0])
+        local extensions_table = table_new(size, 0)
+        for i=0, size-1, 1 do
+            extensions_table[i + 1] = array[i]
+        end
+
+        return extensions_table
+    end
+
+    -- NGX_DECLINED: no extensions; very unlikely
+    if rc == -5 then
+        return nil
+    end
+
+    return nil, ffi_str(errmsg[0])
+end
 
 -- return ext, err
 function _M.get_client_hello_ext(ext_type)
