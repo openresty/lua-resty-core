@@ -63,6 +63,10 @@ ngx_http_lua_ffi_socket_tcp_get_sslhandshake_result(ngx_http_request_t *r,
 
 void
 ngx_http_lua_ffi_ssl_free_session(void *sess);
+
+int
+ngx_http_lua_ffi_socket_tcp_getfd(ngx_http_request_t *r,
+    ngx_http_lua_socket_tcp_upstream_t *u, char **errmsg);
 ]]
 
 ngx_lua_ffi_socket_tcp_getoption = C.ngx_http_lua_ffi_socket_tcp_getoption
@@ -293,12 +297,40 @@ local function sslhandshake(cosocket, reused_session, server_name, ssl_verify,
 end
 
 
+local function getfd(cosocket)
+    if not cosocket then
+        error("ngx.socket getfd: expecting the cosocket object, but seen none")
+    end
+
+    local r = get_request()
+    if not r then
+        error("no request found")
+    end
+
+    local u = get_tcp_socket(cosocket)
+
+    local fd = C.ngx_http_lua_ffi_socket_tcp_getfd(r, u, errmsg)
+    if (fd < 0) then
+        return nil, ffi_str(errmsg[0])
+    end
+
+    return fd;
+end
+
+
 do
     local method_table = registry.__tcp_cosocket_mt
     method_table.getoption = getoption
     method_table.setoption = setoption
     method_table.setclientcert = setclientcert
     method_table.sslhandshake  = sslhandshake
+    method_table.getfd = getfd
+
+    method_table = registry.__tcp_req_cosocket_mt
+    method_table.getfd = getfd
+
+    method_table = registry.__tcp_raw_req_cosocket_mt
+    method_table.getfd = getfd
 end
 
 elseif subsystem == 'stream' then
