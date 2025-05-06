@@ -13,6 +13,7 @@ Table of Contents
 * [Methods](#methods)
     * [get_client_hello_server_name](#get_client_hello_server_name)
     * [get_supported_versions](#get_supported_versions)
+    * [get_client_hello_ext_present](#get_client_hello_ext_present)
     * [get_client_hello_ext](#get_client_hello_ext)
     * [set_protocols](#set_protocols)
 * [Community](#community)
@@ -125,8 +126,48 @@ So this function can only be called in the context of [ssl_client_hello_by_lua*]
 
 [Back to TOC](#table-of-contents)
 
+get_client_hello_ext_present
+----------------------------
+**syntax:** *ext, err = ssl_clt.get_client_hello_ext_present()*
+
+**context:** *ssl_client_hello_by_lua&#42;*
+
+Returns a Lua table contains the extension types on success.
+
+In case of errors, it returns `nil` and a string describing the error.
+
+Note that the ext is gotten from the raw extensions of the client hello message associated with the current downstream SSL connection.
+
+So this function can only be called in the context of [ssl_client_hello_by_lua*](https://github.com/openresty/lua-nginx-module/#ssl_client_hello_by_lua_block).
+
+Example:
+
+```nginx
+# nginx.conf
+server {
+    listen 443 ssl;
+    server_name   test.com;
+    ssl_client_hello_by_lua_block {
+        local ssl_clt = require "ngx.ssl.clienthello"
+        local exts = ssl_clt.get_client_hello_ext_present()
+        if not exts then
+            ngx.log(ngx.ERR, "failed to get_client_hello_ext_present()")
+            ngx.exit(ngx.ERROR)
+        end
+
+        for i, ext in ipairs(exts) do
+            ngx.log(ngx.INFO, "extension ", ext)
+        end
+    }
+    ssl_certificate test.crt;
+    ssl_certificate_key test.key;
+}
+```
+
+[Back to TOC](#table-of-contents)
+
 get_client_hello_ext
-----------------------
+--------------------
 **syntax:** *ext, err = ssl_clt.get_client_hello_ext(ext_type)*
 
 **context:** *ssl_client_hello_by_lua&#42;*
