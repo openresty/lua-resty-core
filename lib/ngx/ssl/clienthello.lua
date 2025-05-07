@@ -22,6 +22,7 @@ local lshift = bit.lshift
 local table_insert = table.insert
 local table_new = require "table.new"
 local intp = ffi.new("int*[1]")
+local usp = ffi.new("unsigned short*[1]")
 
 
 local ngx_lua_ffi_ssl_get_client_hello_server_name
@@ -169,10 +170,10 @@ function _M.get_client_hello_ciphers()
 
     local sizep = get_size_ptr()
 
-    local rc = ngx_lua_ffi_ssl_get_client_hello_ciphers(r, intp,
+    local rc = ngx_lua_ffi_ssl_get_client_hello_ciphers(r, usp,
                                                                   sizep, errmsg)
     if rc == FFI_OK then
-        local array = intp[0]
+        local array = usp[0]
         local size = tonumber(sizep[0])
         local ciphers_table = table_new(size, 0)
         for i=0, size-1, 1 do
