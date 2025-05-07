@@ -28,6 +28,7 @@ local ngx_lua_ffi_ssl_get_client_hello_server_name
 local ngx_lua_ffi_ssl_get_client_hello_ext
 local ngx_lua_ffi_ssl_set_protocols
 local ngx_lua_ffi_ssl_get_client_hello_ext_present
+local ngx_lua_ffi_ssl_get_client_hello_ciphers
 
 
 if subsystem == 'http' then
@@ -45,6 +46,9 @@ if subsystem == 'http' then
     int ngx_http_lua_ffi_ssl_get_client_hello_ext_present(ngx_http_request_t *r,
         int **extensions, size_t *extensions_len, char **err);
         /* Undefined for the stream subsystem */
+    int ngx_http_lua_ffi_ssl_get_client_hello_ciphers(ngx_http_request_t *r,
+        int **ciphers,  size_t *cipherslen, char **err);
+        /* Undefined for the stream subsystem */
     ]]
 
     ngx_lua_ffi_ssl_get_client_hello_server_name =
@@ -54,6 +58,9 @@ if subsystem == 'http' then
     ngx_lua_ffi_ssl_set_protocols = C.ngx_http_lua_ffi_ssl_set_protocols
     ngx_lua_ffi_ssl_get_client_hello_ext_present =
         C.ngx_http_lua_ffi_ssl_get_client_hello_ext_present
+    ngx_lua_ffi_ssl_get_client_hello_ciphers =
+        C.ngx_http_lua_ffi_ssl_get_client_hello_ciphers
+
 
 
 elseif subsystem == 'stream' then
@@ -141,6 +148,41 @@ function _M.get_client_hello_ext_present()
     end
 
     -- NGX_DECLINED: no extensions; very unlikely
+    if rc == -5 then
+        return nil
+    end
+
+    return nil, ffi_str(errmsg[0])
+end
+
+-- return ciphers_table, err
+-- including GREASE ciphers
+function _M.get_client_hello_ciphers()
+    local r = get_request()
+    if not r then
+        error("no request found")
+    end
+
+    if ngx_phase() ~= "ssl_client_hello" then
+        error("API disabled in the current context")
+    end
+
+    local sizep = get_size_ptr()
+
+    local rc = ngx_lua_ffi_ssl_get_client_hello_ciphers(r, intp,
+                                                                  sizep, errmsg)
+    if rc == FFI_OK then
+        local array = intp[0]
+        local size = tonumber(sizep[0])
+        local ciphers_table = table_new(size, 0)
+        for i=0, size-1, 1 do
+            ciphers_table[i + 1] = array[i]
+        end
+
+        return ciphers_table
+    end
+
+    -- NGX_DECLINED
     if rc == -5 then
         return nil
     end
