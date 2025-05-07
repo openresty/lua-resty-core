@@ -41,8 +41,10 @@ if subsystem == 'http' then
 
     int ngx_http_lua_ffi_ssl_set_protocols(ngx_http_request_t *r,
         int protocols, char **err);
+
     int ngx_http_lua_ffi_ssl_get_client_hello_ext_present(ngx_http_request_t *r,
         int **extensions, size_t *extensions_len, char **err);
+        /* Undefined for the stream subsystem */
     ]]
 
     ngx_lua_ffi_ssl_get_client_hello_server_name =
@@ -125,6 +127,8 @@ function _M.get_client_hello_ext_present()
 
     local rc = ngx_lua_ffi_ssl_get_client_hello_ext_present(r, intp,
                                                             sizep, errmsg)
+-- the function used under the hood, SSL_client_hello_get1_extensions_present,
+-- already excludes GREASE, thank G*d
     if rc == FFI_OK then -- Convert C array to Lua table
         local array = intp[0]
         local size = tonumber(sizep[0])
