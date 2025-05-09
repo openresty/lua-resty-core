@@ -93,6 +93,27 @@ local ccharpp = ffi.new("const char*[1]")
 local cucharpp = ffi.new("const unsigned char*[1]")
 
 
+--https://datatracker.ietf.org/doc/html/rfc8701
+local TLS_GREASE = {
+    [2570] = true,
+    [6682] = true,
+    [10794] = true,
+    [14906] = true,
+    [19018] = true,
+    [23130] = true,
+    [27242] = true,
+    [31354] = true,
+    [35466] = true,
+    [39578] = true,
+    [43690] = true,
+    [47802] = true,
+    [51914] = true,
+    [56026] = true,
+    [60138] = true,
+    [64250] = true
+}
+
+
 -- return server_name, err
 function _M.get_client_hello_server_name()
     local r = get_request()
@@ -157,12 +178,14 @@ function _M.get_client_hello_ext_present()
 end
 
 -- return ciphers_table, err
--- including GREASE ciphers
+-- excluding GREASE ciphers
 function _M.get_client_hello_ciphers()
     local r = get_request()
     if not r then
         error("no request found")
     end
+
+    local ciphers_table = {} -- table_new won't work because I need to de-GREASE
 
     if ngx_phase() ~= "ssl_client_hello" then
         error("API disabled in the current context")
@@ -175,9 +198,12 @@ function _M.get_client_hello_ciphers()
     if rc == FFI_OK then
         local array = usp[0]
         local size = tonumber(sizep[0])
-        local ciphers_table = table_new(size, 0)
+        local y = 1
         for i=0, size-1, 1 do
-            ciphers_table[i + 1] = array[i]
+            if not TLS_GREASE[array[i]] then
+                ciphers_table[y] = array[i]
+                y = y + 1
+            end
         end
 
         return ciphers_table
