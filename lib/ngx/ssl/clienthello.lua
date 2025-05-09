@@ -185,8 +185,6 @@ function _M.get_client_hello_ciphers()
         error("no request found")
     end
 
-    local ciphers_table = {} -- table_new won't work because I need to de-GREASE
-
     if ngx_phase() ~= "ssl_client_hello" then
         error("API disabled in the current context")
     end
@@ -196,6 +194,7 @@ function _M.get_client_hello_ciphers()
     local rc = ngx_lua_ffi_ssl_get_client_hello_ciphers(r, usp,
                                                                   sizep, errmsg)
     if rc == FFI_OK then
+        local ciphers_table = {} -- table_new won't work because I need to de-GREASE
         local array = usp[0]
         local size = tonumber(sizep[0])
         local y = 1
