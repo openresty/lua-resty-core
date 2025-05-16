@@ -257,6 +257,15 @@ local function sslhandshake(cosocket, reused_session, server_name, ssl_verify,
         error("no request ctx found", 2)
     end
 
+    if rc == FFI_OK then
+        if reused_session == false then
+            return true
+        end
+
+        rc = C.ngx_http_lua_ffi_socket_tcp_get_sslhandshake_result(r, u,
+                 session_ptr, errmsg, openssl_error_code)
+    end
+
     while true do
         if rc == FFI_ERROR then
             if openssl_error_code[0] ~= 0 then
