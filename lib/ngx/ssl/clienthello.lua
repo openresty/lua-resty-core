@@ -22,12 +22,16 @@ local lshift = bit.lshift
 local table_insert = table.insert
 local table_new = require "table.new"
 local intp = ffi.new("int*[1]")
+local get_string_buf = base.get_string_buf
+local ffi_ushort_pointer_type = ffi.typeof("unsigned short *")
+local ffi_cast = ffi.cast
 
 
 local ngx_lua_ffi_ssl_get_client_hello_server_name
 local ngx_lua_ffi_ssl_get_client_hello_ext
 local ngx_lua_ffi_ssl_set_protocols
 local ngx_lua_ffi_ssl_get_client_hello_ext_present
+local ngx_lua_ffi_ssl_get_client_hello_ciphers
 
 
 if subsystem == 'http' then
@@ -41,8 +45,13 @@ if subsystem == 'http' then
 
     int ngx_http_lua_ffi_ssl_set_protocols(ngx_http_request_t *r,
         int protocols, char **err);
+
     int ngx_http_lua_ffi_ssl_get_client_hello_ext_present(ngx_http_request_t *r,
         int **extensions, size_t *extensions_len, char **err);
+        /* Undefined for the stream subsystem */
+    int ngx_http_lua_ffi_ssl_get_client_hello_ciphers(ngx_http_request_t *r,
+        unsigned short *ciphers,  size_t ciphers_len, char **err);
+        /* Undefined for the stream subsystem */
     ]]
 
     ngx_lua_ffi_ssl_get_client_hello_server_name =
@@ -52,6 +61,9 @@ if subsystem == 'http' then
     ngx_lua_ffi_ssl_set_protocols = C.ngx_http_lua_ffi_ssl_set_protocols
     ngx_lua_ffi_ssl_get_client_hello_ext_present =
         C.ngx_http_lua_ffi_ssl_get_client_hello_ext_present
+    ngx_lua_ffi_ssl_get_client_hello_ciphers =
+        C.ngx_http_lua_ffi_ssl_get_client_hello_ciphers
+
 
 
 elseif subsystem == 'stream' then
@@ -81,6 +93,27 @@ local _M = { version = base.version }
 
 local ccharpp = ffi.new("const char*[1]")
 local cucharpp = ffi.new("const unsigned char*[1]")
+
+
+--https://datatracker.ietf.org/doc/html/rfc8701
+local TLS_GREASE = {
+    [2570] = true,
+    [6682] = true,
+    [10794] = true,
+    [14906] = true,
+    [19018] = true,
+    [23130] = true,
+    [27242] = true,
+    [31354] = true,
+    [35466] = true,
+    [39578] = true,
+    [43690] = true,
+    [47802] = true,
+    [51914] = true,
+    [56026] = true,
+    [60138] = true,
+    [64250] = true
+}
 
 
 -- return server_name, err
@@ -125,6 +158,8 @@ function _M.get_client_hello_ext_present()
 
     local rc = ngx_lua_ffi_ssl_get_client_hello_ext_present(r, intp,
                                                             sizep, errmsg)
+-- the function used under the hood, SSL_client_hello_get1_extensions_present,
+-- already excludes GREASE, thank G*d
     if rc == FFI_OK then -- Convert C array to Lua table
         local array = intp[0]
         local size = tonumber(sizep[0])
@@ -137,6 +172,44 @@ function _M.get_client_hello_ext_present()
     end
 
     -- NGX_DECLINED: no extensions; very unlikely
+    if rc == -5 then
+        return nil
+    end
+
+    return nil, ffi_str(errmsg[0])
+end
+
+-- return ciphers_table, err
+-- excluding GREASE ciphers
+function _M.get_client_hello_ciphers()
+    local r = get_request()
+    if not r then
+        error("no request found")
+    end
+
+    if ngx_phase() ~= "ssl_client_hello" then
+        error("API disabled in the current context")
+    end
+
+    local buf = get_string_buf(256) -- 256 bytes is short[128]
+    local ciphers = ffi_cast(ffi_ushort_pointer_type, buf)
+    local cipher_cnt = ngx_lua_ffi_ssl_get_client_hello_ciphers(r, ciphers,
+                                                                128, errmsg)
+    if cipher_cnt > 0 then
+        local ciphers_table = table_new(16, 0)
+        local y = 1
+        for i = 0, cipher_cnt - 1 do
+            local cipher = tonumber(ciphers[i])
+            if not TLS_GREASE[cipher] then
+                ciphers_table[y] = cipher
+                y = y + 1
+            end
+        end
+
+        return ciphers_table
+    end
+
+    -- NGX_DECLINED
     if rc == -5 then
         return nil
     end
