@@ -1085,7 +1085,6 @@ qr/1: TLS EXT \d+, context: ssl_client_hello_by_lua/
             else
                 ngx.log(ngx.ERR, "failed to get ciphers")
             end
-            ngx.exit(ngx.ERROR)
         }
 
         ssl_protocols TLSv1 TLSv1.1 TLSv1.2;
@@ -1126,28 +1125,6 @@ qr/1: TLS EXT \d+, context: ssl_client_hello_by_lua/
                 end
 
                 ngx.say("ssl handshake: ", type(sess))
-
-                local req = "GET /foo HTTP/1.0\r\nHost: test.com\r\nConnection: close\r\n\r\n"
-                local bytes, err = sock:send(req)
-                if not bytes then
-                    ngx.say("failed to send http request: ", err)
-                    return
-                end
-
-                ngx.say("sent http request: ", bytes, " bytes.")
-
-                while true do
-                    local line, err = sock:receive()
-                    if not line then
-                        -- ngx.say("failed to receive response status line: ", err)
-                        break
-                    end
-
-                    ngx.say("received: ", line)
-                end
-
-                local ok, err = sock:close()
-                ngx.say("close: ", ok, " ", err)
             end  -- do
             -- collectgarbage()
         }
@@ -1157,10 +1134,10 @@ qr/1: TLS EXT \d+, context: ssl_client_hello_by_lua/
 GET /t
 --- response_body
 connected: 1
-failed to do SSL handshake: handshake failed
+ssl handshake: cdata
 --- error_log eval
 qr/1: CIPHER \d+, context: ssl_client_hello_by_lua/
 --- no_error_log
 [alert]
 [crit]
-[placeholder]
+[error]

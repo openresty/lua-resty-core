@@ -22,7 +22,9 @@ local lshift = bit.lshift
 local table_insert = table.insert
 local table_new = require "table.new"
 local intp = ffi.new("int*[1]")
-local usp = ffi.new("unsigned short*[1]")
+local get_string_buf = base.get_string_buf
+local ffi_ushort_pointer_type = ffi.typeof("unsigned short *")
+local ffi_cast = ffi.cast
 
 
 local ngx_lua_ffi_ssl_get_client_hello_server_name
@@ -48,7 +50,7 @@ if subsystem == 'http' then
         int **extensions, size_t *extensions_len, char **err);
         /* Undefined for the stream subsystem */
     int ngx_http_lua_ffi_ssl_get_client_hello_ciphers(ngx_http_request_t *r,
-        int **ciphers,  size_t *cipherslen, char **err);
+        unsigned short *ciphers,  size_t ciphers_len, char **err);
         /* Undefined for the stream subsystem */
     ]]
 
@@ -189,18 +191,17 @@ function _M.get_client_hello_ciphers()
         error("API disabled in the current context")
     end
 
-    local sizep = get_size_ptr()
-
-    local rc = ngx_lua_ffi_ssl_get_client_hello_ciphers(r, usp,
-                                                                  sizep, errmsg)
-    if rc == FFI_OK then
+    local buf = get_string_buf(256) -- 256 bytes is short[128]
+    local ciphers = ffi_cast(ffi_ushort_pointer_type, buf)
+    local cipher_cnt = ngx_lua_ffi_ssl_get_client_hello_ciphers(r, ciphers,
+                                                                128, errmsg)
+    if cipher_cnt > 0 then
         local ciphers_table = table_new(16, 0)
-        local array = usp[0]
-        local size = tonumber(sizep[0])
         local y = 1
-        for i=0, size-1, 1 do
-            if not TLS_GREASE[array[i]] then
-                ciphers_table[y] = array[i]
+        for i = 0, cipher_cnt - 1 do
+            local cipher = tonumber(ciphers[i])
+            if not TLS_GREASE[cipher] then
+                ciphers_table[y] = cipher
                 y = y + 1
             end
         end
