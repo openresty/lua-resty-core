@@ -81,7 +81,7 @@ instead of appending it.
 
 set_status
 ----------
-**syntax:** *ngx_resp.status(status, reason?)*
+**syntax:** *ngx_resp.set_status(status, reason?)*
 
 Unlike `ngx.status` which only sets the status, this function sets the response
 status with an optional reason. The `reason` should be a string.
