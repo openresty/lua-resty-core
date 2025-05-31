@@ -37,3 +37,19 @@ qr/\[TRACE\s+\d+ content_by_lua\(nginx\.conf:\d+\):3 loop\]/
 [error]
 bad argument type
 stitch
+
+
+
+=== TEST 2: get dst address
+--- stream_server_config
+    content_by_lua_block {
+        local dst_addr = ngx.req.get_original_addr()
+        ngx.say("origin addr: ", dst_addr)
+    }
+--- stream_response eval
+qr/127.0.0.1:\d+/
+--- no_error_log
+[error]
+[alert]
+[crit]
+[crit2]
