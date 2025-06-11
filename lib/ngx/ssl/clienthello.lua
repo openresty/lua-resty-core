@@ -209,11 +209,6 @@ function _M.get_client_hello_ciphers()
         return ciphers_table
     end
 
-    -- NGX_DECLINED
-    if rc == -5 then
-        return nil
-    end
-
     return nil, ffi_str(errmsg[0])
 end
 

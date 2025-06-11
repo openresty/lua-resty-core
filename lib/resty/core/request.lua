@@ -74,11 +74,12 @@ if subsystem == "stream" then
     local buf_sizep = ffi_new("size_t[1]")
 
     function ngx.req.get_original_addr()
+        local rc
         local r = get_request()
         local err = get_string_buf(ERR_BUF_SIZE)
         local errlenp = get_size_ptr()
         buf_sizep[0] = 128
-        local rc = C.ngx_stream_lua_ffi_req_dst_addr(r, buf, buf_sizep, err, errlenp)
+        rc = C.ngx_stream_lua_ffi_req_dst_addr(r, buf, buf_sizep, err, errlenp)
         if tonumber(rc) ~= 0 then
             return nil, tostring(err, errlenp[0])
         end
