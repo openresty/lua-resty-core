@@ -9,9 +9,15 @@ local ffi = require "ffi"
 local C = ffi.C
 local ffi_str = ffi.string
 local ffi_gc = ffi.gc
+local ffi_copy = ffi.copy
+local ffi_sizeof = ffi.sizeof
+local ffi_typeof = ffi.typeof
+local ffi_new = ffi.new
 local get_request = base.get_request
 local error = error
 local tonumber = tonumber
+local format = string.format
+local concat = table.concat
 local errmsg = base.get_errmsg_ptr()
 local get_string_buf = base.get_string_buf
 local get_size_ptr = base.get_size_ptr
@@ -43,6 +49,7 @@ local ngx_lua_ffi_ssl_client_random
 local ngx_lua_ffi_ssl_export_keying_material
 local ngx_lua_ffi_ssl_export_keying_material_early
 local ngx_lua_ffi_get_req_ssl_pointer
+local ngx_lua_ffi_req_shared_ssl_ciphers
 
 
 if subsystem == 'http' then
@@ -114,6 +121,15 @@ if subsystem == 'http' then
         unsigned char *out, size_t out_size,
         const char *label, size_t llen,
         const unsigned char *ctx, size_t ctxlen, char **err);
+
+    int ngx_http_lua_ffi_req_shared_ssl_ciphers(ngx_http_request_t *r,
+        unsigned short *ciphers, unsigned short *nciphers,
+        int filter_grease, char **err);
+
+    typedef struct {
+        uint16_t nciphers;
+        uint16_t ciphers[?];
+    } ngx_lua_ssl_ciphers;
     ]]
 
     ngx_lua_ffi_ssl_set_der_certificate =
@@ -143,6 +159,8 @@ if subsystem == 'http' then
     ngx_lua_ffi_ssl_export_keying_material_early =
         C.ngx_http_lua_ffi_ssl_export_keying_material_early
     ngx_lua_ffi_get_req_ssl_pointer = C.ngx_http_lua_ffi_get_req_ssl_pointer
+    ngx_lua_ffi_req_shared_ssl_ciphers =
+        C.ngx_http_lua_ffi_req_shared_ssl_ciphers
 
 elseif subsystem == 'stream' then
     ffi.cdef[[
@@ -237,6 +255,37 @@ local charpp = ffi.new("char*[1]")
 local intp = ffi.new("int[1]")
 local ushortp = ffi.new("unsigned short[1]")
 
+do
+    local ciphers_buf = ffi_new("uint16_t [?]", 256)
+
+    function _M.get_req_shared_ssl_ciphers(filter_grease)
+        local r = get_request()
+        if not r then
+            error("no request found")
+        end
+
+        if filter_grease == nil then
+            filter_grease = true  -- Default to filter GREASE
+        end
+
+        ciphers_buf[0] = 255  -- Set max number of ciphers we can hold
+        local filter_flag = filter_grease and 1 or 0
+        local rc = ngx_lua_ffi_req_shared_ssl_ciphers(r, ciphers_buf + 1,
+                                                      ciphers_buf, filter_flag,
+                                                      errmsg)
+        if rc ~= FFI_OK then
+            return nil, ffi_str(errmsg[0])
+        end
+
+        -- Build result table
+        local result = {}
+        for i = 1, ciphers_buf[0] do
+            result[i] = tonumber(ciphers_buf[i])
+        end
+
+        return result
+    end
+end
 
 function _M.clear_certs()
     local r = get_request()

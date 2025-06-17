@@ -8,7 +8,7 @@ use t::TestCore;
 
 repeat_each(2);
 
-plan tests => repeat_each() * (blocks() * 6 - 1);
+plan tests => repeat_each() * (blocks() * 6 );
 
 no_long_string();
 #no_diff();
@@ -110,8 +110,7 @@ failed to do SSL handshake: handshake failed
 
 --- error_log eval
 ['lua ssl server name: "test.com"',
-qr/routines::no suitable signature algorithm|sslv3 alert handshake failure|routines:OPENSSL_internal:SSLV3_ALERT_HANDSHAKE_FAILURE:SSL alert number 40/]
-
+qr/sslv3 alert handshake failure|SSL alert number 40/]
 --- no_error_log
 [alert]
 [emerg]
@@ -3419,3 +3418,61 @@ SUCCESS
 [error]
 [alert]
 [emerg]
+
+
+
+=== TEST 35: get shared SSL ciphers
+--- http_config
+    lua_package_path "$TEST_NGINX_LUA_PACKAGE_PATH";
+    server {
+        listen unix:$TEST_NGINX_HTML_DIR/nginx.sock ssl;
+        server_name   test.com;
+        ssl_protocols TLSv1.2;
+        ssl_ciphers ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES256-GCM-SHA384;
+
+        ssl_certificate_by_lua_block {
+            local ssl = require "ngx.ssl"
+            local ciphers, err = ssl.get_req_shared_ssl_ciphers()
+            if not err and ciphers then
+                ngx.log(ngx.INFO, "shared ciphers count: ", #ciphers)
+                local count = 0
+                for i, cipher_id in ipairs(ciphers) do
+                    count = count + 1
+                    ngx.log(ngx.INFO, string.format("%d: SHARED_CIPHER 0x%04x", i, cipher_id))
+                    if count >= 3 then  -- log only first 3 to avoid too much output
+                        break
+                    end
+                end
+            else
+                ngx.log(ngx.ERR, "failed to get shared ciphers: ", err)
+            end
+        }
+        ssl_certificate ../../cert/test.crt;
+        ssl_certificate_key ../../cert/test.key;
+
+        server_tokens off;
+        location /foo {
+            default_type 'text/plain';
+            content_by_lua_block {ngx.status = 200 ngx.say("foo") ngx.exit(200)}
+            more_clear_headers Date;
+        }
+    }
+--- config
+    location /t {
+        proxy_ssl_protocols TLSv1.2;
+        proxy_ssl_ciphers ECDHE-RSA-AES128-GCM-SHA256;
+        proxy_pass https://unix:$TEST_NGINX_HTML_DIR/nginx.sock:/foo;
+        proxy_ssl_session_reuse off;
+    }
+
+--- request
+GET /t
+--- response_body
+foo
+--- error_log eval
+[qr/shared ciphers count: \d+/,
+qr/1: SHARED_CIPHER 0x/]
+--- no_error_log
+[alert]
+[crit]
+[error]
