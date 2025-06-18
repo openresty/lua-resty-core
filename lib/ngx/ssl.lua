@@ -158,7 +158,8 @@ if subsystem == 'http' then
     ngx_lua_ffi_ssl_export_keying_material_early =
         C.ngx_http_lua_ffi_ssl_export_keying_material_early
     ngx_lua_ffi_get_req_ssl_pointer = C.ngx_http_lua_ffi_get_req_ssl_pointer
-    ngx_lua_ffi_req_shared_ssl_ciphers = C.ngx_http_lua_ffi_req_shared_ssl_ciphers
+    ngx_lua_ffi_req_shared_ssl_ciphers =
+        C.ngx_http_lua_ffi_req_shared_ssl_ciphers
 
 elseif subsystem == 'stream' then
     ffi.cdef[[
@@ -571,7 +572,8 @@ do
         end,
         __tostring = function(ciphers)
             for n, c in ipairs(ciphers) do
-                ciphers_t[n] = type(c) == "table" and c.iana_name or format("0x%.4x", c)
+                ciphers_t[n] = type(c) == "table" and c.iana_name or
+                               format("0x%.4x", c)
             end
             return concat(ciphers_t, ":", 1, ciphers.nciphers)
         end
@@ -588,7 +590,8 @@ do
         end
 
         ciphers_buf[0] = 255  -- Set max number of ciphers we can hold
-        local rc = ngx_lua_ffi_req_shared_ssl_ciphers(r, ciphers_buf + 1, ciphers_buf, errmsg)
+        local rc = ngx_lua_ffi_req_shared_ssl_ciphers(r, ciphers_buf + 1,
+                                                       ciphers_buf, errmsg)
         if rc ~= FFI_OK then
             return nil, ffi_str(errmsg[0])
         end
@@ -608,7 +611,8 @@ do
 
         -- Create the cipher structure
         local ciphers = ciphers_typ(filtered_count)
-        ffi_copy(ciphers, filtered_buf, (filtered_count + 1) * ffi_sizeof('uint16_t'))
+        ffi_copy(ciphers, filtered_buf,
+                 (filtered_count + 1) * ffi_sizeof('uint16_t'))
 
         return ciphers
     end
@@ -627,6 +631,7 @@ function _M.clear_certs()
 
     return nil, ffi_str(errmsg[0])
 end
+
 
 function _M.set_der_cert(data)
     local r = get_request()
