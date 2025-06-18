@@ -24,8 +24,6 @@ local get_size_ptr = base.get_size_ptr
 local FFI_DECLINED = base.FFI_DECLINED
 local FFI_OK = base.FFI_OK
 local subsystem = ngx.config.subsystem
-local table_new = require "table.new"
-local table_insert = table.insert
 
 
 local ngx_lua_ffi_ssl_set_der_certificate
@@ -384,22 +382,6 @@ do
             enc = "CHACHA20/POLY1305(256)",
             hash = "AEAD"
         },
-        [0xc02b] = {
-            iana_name = "TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256",
-            tls_version = 1.2,
-            kex = "ECDH",
-            auth = "ECDSA",
-            enc = "AESGCM(128)",
-            hash = "AEAD"
-        },
-        [0xc02f] = {
-            iana_name = "TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256",
-            tls_version = 1.2,
-            kex = "ECDH",
-            auth = "RSA",
-            enc = "AESGCM(128)",
-            hash = "AEAD"
-        },
         [0x9e] = {
             iana_name = "TLS_DHE_RSA_WITH_AES_128_GCM_SHA256",
             tls_version = 1.2,
@@ -614,7 +596,7 @@ do
         -- Filter out GREASE ciphers
         local filtered_count = 0
         local filtered_buf = ffi_new("uint16_t [?]", ciphers_buf[0] + 1)
-        
+
         for i = 1, ciphers_buf[0] do
             local cipher_id = ciphers_buf[i]
             if not TLS_GREASE[cipher_id] then
@@ -622,7 +604,6 @@ do
                 filtered_count = filtered_count + 1
             end
         end
-        
         filtered_buf[0] = filtered_count
 
         -- Create the cipher structure
@@ -632,7 +613,6 @@ do
         return ciphers
     end
 end
-
 
 function _M.clear_certs()
     local r = get_request()
@@ -647,7 +627,6 @@ function _M.clear_certs()
 
     return nil, ffi_str(errmsg[0])
 end
-
 
 function _M.set_der_cert(data)
     local r = get_request()
