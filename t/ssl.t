@@ -3419,3 +3419,63 @@ SUCCESS
 [error]
 [alert]
 [emerg]
+
+
+=== TEST 33: get shared SSL ciphers
+--- http_config
+    lua_package_path "$TEST_NGINX_LUA_PACKAGE_PATH";
+    server {
+        listen unix:$TEST_NGINX_HTML_DIR/nginx.sock ssl;
+        server_name   test.com;
+        ssl_protocols TLSv1.2;
+        ssl_ciphers ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES256-GCM-SHA384;
+
+        ssl_certificate_by_lua_block {
+            local ssl = require "ngx.ssl"
+            local ciphers, err = ssl.get_shared_ssl_ciphers()
+            if not err and ciphers then
+                ngx.log(ngx.INFO, "shared ciphers count: ", ciphers.nciphers)
+                ngx.log(ngx.INFO, "cipher summary: ", tostring(ciphers))
+                local count = 0
+                for i, cipher_info in ipairs(ciphers) do
+                    count = count + 1
+                    ngx.log(ngx.INFO, i, ": SHARED_CIPHER ", cipher_info.iana_name)
+                    if count >= 3 then  -- log only first 3 to avoid too much output
+                        break
+                    end
+                end
+            else
+                ngx.log(ngx.ERR, "failed to get shared ciphers: ", err)
+            end
+        }
+        ssl_certificate ../../cert/test.crt;
+        ssl_certificate_key ../../cert/test.key;
+
+        server_tokens off;
+        location /foo {
+            default_type 'text/plain';
+            content_by_lua_block {ngx.status = 200 ngx.say("foo") ngx.exit(200)}
+            more_clear_headers Date;
+        }
+    }
+--- config
+    location /t {
+        proxy_ssl_protocols TLSv1.2;
+        proxy_ssl_ciphers ECDHE-RSA-AES128-GCM-SHA256;
+        proxy_pass https://unix:$TEST_NGINX_HTML_DIR/nginx.sock:/foo;
+        proxy_ssl_session_reuse off;
+    }
+
+--- request
+GET /t
+--- response_body
+foo
+--- error_log eval
+[qr/shared ciphers count: 3/,
+qr/1: SHARED_CIPHER TLS_/]
+--- error_log chomp
+cipher summary: TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256
+--- no_error_log
+[alert]
+[crit]
+[error]

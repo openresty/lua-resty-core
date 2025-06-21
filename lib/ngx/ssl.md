@@ -32,6 +32,7 @@ Table of Contents
     * [set_priv_key](#set_priv_key)
     * [verify_client](#verify_client)
     * [get_client_random](#get_client_random)
+    * [get_shared_ssl_ciphers](#get_shared_ssl_ciphers)
     * [get_req_ssl_pointer](#get_req_ssl_pointer)
 * [Community](#community)
     * [English Mailing List](#english-mailing-list)
@@ -647,6 +648,52 @@ If the `outlen` is zero, this function returns the total length of the client_ra
 If omitted, will use the value 32.
 
 This function can be called in any context where downstream https is used, but in the context of [ssl_client_hello_by_lua*](https://github.com/openresty/lua-nginx-module/#ssl_client_hello_by_lua_block), it can not return the real client_random value, just a string filled with 0.
+
+[Back to TOC](#table-of-contents)
+
+
+get_shared_ssl_ciphers
+-----------
+**syntax:** *ciphers = ssl.get_shared_ssl_ciphers()*
+
+**context:** *any*
+
+Returns a structured object containing the cipher suite information that are supported by both the server and the client for the current SSL connection.
+
+This function returns the intersection of server-supported ciphers and client-offered ciphers, representing the ciphers that can actually be used for the connection.
+
+The returned object is a structured FFI object with the following characteristics:
+
+- `ciphers.nciphers`: The number of shared ciphers
+- Supports `ipairs()` iteration to access detailed cipher information
+- Supports `tostring()` to get a formatted cipher list
+- Each cipher entry contains:
+  - `iana_name`: The IANA standard name (e.g., "TLS_AES_128_GCM_SHA256")
+  - `tls_version`: The TLS version (1.2, 1.3, etc.)
+  - `kex`: Key exchange algorithm (e.g., "ECDHE")
+  - `auth`: Authentication method (e.g., "RSA", "ECDSA")
+  - `enc`: Encryption algorithm (e.g., "AES 128 GCM")
+  - `hash`: Hash algorithm (e.g., "SHA256")
+
+Example usage:
+```lua
+local ciphers = ssl.get_shared_ssl_ciphers()
+if ciphers then
+    ngx.log(ngx.INFO, "Found ", ciphers.nciphers, " shared ciphers")
+    for i, cipher in ipairs(ciphers) do
+        ngx.log(ngx.INFO, "Cipher: ", cipher.iana_name, 
+                " (TLS ", cipher.tls_version, ")")
+    end
+end
+```
+
+GREASE (Generate Random Extensions And Sustain Extensibility) cipher values are automatically filtered out from the results.
+
+Returns `nil` and an error string on failure.
+
+This function can be called in any context where downstream https is used.
+
+This function was first added in version `0.1.29`.
 
 [Back to TOC](#table-of-contents)
 
