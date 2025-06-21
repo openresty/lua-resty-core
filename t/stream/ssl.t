@@ -90,8 +90,7 @@ failed to do SSL handshake: handshake failed
 
 --- error_log eval
 ['lua ssl server name: "test.com"',
-qr/sslv3 alert handshake failure|routines:OPENSSL_internal:SSLV3_ALERT_HANDSHAKE_FAILURE:SSL alert number 40/]
-
+qr/routines::no shared cipher|sslv3 alert handshake failure|routines:OPENSSL_internal:SSLV3_ALERT_HANDSHAKE_FAILURE:SSL alert number 40/]
 --- no_error_log
 [alert]
 [emerg]
