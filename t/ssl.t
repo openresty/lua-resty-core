@@ -8,7 +8,7 @@ use t::TestCore;
 
 repeat_each(2);
 
-plan tests => repeat_each() * (blocks() * 6 - 1);
+plan tests => repeat_each() * (blocks() * 6 );
 
 no_long_string();
 #no_diff();
@@ -110,7 +110,7 @@ failed to do SSL handshake: handshake failed
 
 --- error_log eval
 ['lua ssl server name: "test.com"',
-qr/routines::no suitable signature algorithm|sslv3 alert handshake failure|routines:OPENSSL_internal:SSLV3_ALERT_HANDSHAKE_FAILURE:SSL alert number 40/]
+qr/sslv3 alert handshake failure|routines:OPENSSL_internal:SSLV3_ALERT_HANDSHAKE_FAILURE:SSL alert number 40/]
 
 --- no_error_log
 [alert]
@@ -3421,7 +3421,8 @@ SUCCESS
 [emerg]
 
 
-=== TEST 33: get shared SSL ciphers
+
+=== TEST 35: get shared SSL ciphers
 --- http_config
     lua_package_path "$TEST_NGINX_LUA_PACKAGE_PATH";
     server {
@@ -3434,12 +3435,11 @@ SUCCESS
             local ssl = require "ngx.ssl"
             local ciphers, err = ssl.get_shared_ssl_ciphers()
             if not err and ciphers then
-                ngx.log(ngx.INFO, "shared ciphers count: ", ciphers.nciphers)
-                ngx.log(ngx.INFO, "cipher summary: ", tostring(ciphers))
+                ngx.log(ngx.INFO, "shared ciphers count: ", #ciphers)
                 local count = 0
-                for i, cipher_info in ipairs(ciphers) do
+                for i, cipher_id in ipairs(ciphers) do
                     count = count + 1
-                    ngx.log(ngx.INFO, i, ": SHARED_CIPHER ", cipher_info.iana_name)
+                    ngx.log(ngx.INFO, string.format("%d: SHARED_CIPHER 0x%04x", i, cipher_id))
                     if count >= 3 then  -- log only first 3 to avoid too much output
                         break
                     end
@@ -3471,10 +3471,8 @@ GET /t
 --- response_body
 foo
 --- error_log eval
-[qr/shared ciphers count: 3/,
-qr/1: SHARED_CIPHER TLS_/]
---- error_log chomp
-cipher summary: TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256
+[qr/shared ciphers count: \d+/,
+qr/1: SHARED_CIPHER 0x/]
 --- no_error_log
 [alert]
 [crit]

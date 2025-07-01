@@ -123,7 +123,7 @@ if subsystem == 'http' then
         const unsigned char *ctx, size_t ctxlen, char **err);
 
     int ngx_http_lua_ffi_req_shared_ssl_ciphers(ngx_http_request_t *r,
-        unsigned short *ciphers, unsigned short *nciphers, char **err);
+        unsigned short *ciphers, unsigned short *nciphers, int filter_grease, char **err);
 
     typedef struct {
         uint16_t nciphers;
@@ -255,366 +255,34 @@ local intp = ffi.new("int[1]")
 local ushortp = ffi.new("unsigned short[1]")
 
 do
-    --https://datatracker.ietf.org/doc/html/rfc8701
-    local TLS_GREASE = {
-        [2570] = true,
-        [6682] = true,
-        [10794] = true,
-        [14906] = true,
-        [19018] = true,
-        [23130] = true,
-        [27242] = true,
-        [31354] = true,
-        [35466] = true,
-        [39578] = true,
-        [43690] = true,
-        [47802] = true,
-        [51914] = true,
-        [56026] = true,
-        [60138] = true,
-        [64250] = true
-    }
-
-    -- TLS cipher suite functionality
-    local tls_proto_id = {
-        -- TLS 1.3 ciphers
-        [0x1301] = {
-            iana_name = "TLS_AES_128_GCM_SHA256",
-            tls_version = 1.3,
-            kex = "any",
-            auth = "any",
-            enc = "AESGCM(128)",
-            hash = "AEAD"
-        },
-        [0x1302] = {
-            iana_name = "TLS_AES_256_GCM_SHA384",
-            tls_version = 1.3,
-            kex = "any",
-            auth = "any",
-            enc = "AESGCM(256)",
-            hash = "AEAD"
-        },
-        [0x1303] = {
-            iana_name = "TLS_CHACHA20_POLY1305_SHA256",
-            tls_version = 1.3,
-            kex = "any",
-            auth = "any",
-            enc = "CHACHA20/POLY1305(256)",
-            hash = "AEAD"
-        },
-        [0x1304] = {
-            iana_name = "TLS_AES_128_CCM_SHA256",
-            tls_version = 1.3,
-            kex = "none",
-            auth = "none",
-            enc = "AES 128 CCM",
-            hash = "SHA256"
-        },
-        [0x1305] = {
-            iana_name = "TLS_AES_128_CCM_8_SHA256",
-            tls_version = 1.3,
-            kex = "none",
-            auth = "none",
-            enc = "AES 128 CCM 8",
-            hash = "SHA256"
-        },
-        -- TLS 1.2 ciphers (most common ones)
-        [0xc02b] = {
-            iana_name = "TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256",
-            tls_version = 1.2,
-            kex = "ECDH",
-            auth = "ECDSA",
-            enc = "AESGCM(128)",
-            hash = "AEAD"
-        },
-        [0xc02f] = {
-            iana_name = "TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256",
-            tls_version = 1.2,
-            kex = "ECDH",
-            auth = "RSA",
-            enc = "AESGCM(128)",
-            hash = "AEAD"
-        },
-        [0xc02c] = {
-            iana_name = "TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384",
-            tls_version = 1.2,
-            kex = "ECDH",
-            auth = "ECDSA",
-            enc = "AESGCM(256)",
-            hash = "AEAD"
-        },
-        [0xc030] = {
-            iana_name = "TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384",
-            tls_version = 1.2,
-            kex = "ECDH",
-            auth = "RSA",
-            enc = "AESGCM(256)",
-            hash = "AEAD"
-        },
-        [0x9f] = {
-            iana_name = "TLS_DHE_RSA_WITH_AES_256_GCM_SHA384",
-            tls_version = 1.2,
-            kex = "DH",
-            auth = "RSA",
-            enc = "AESGCM(256)",
-            hash = "AEAD"
-        },
-        [0xcca9] = {
-            iana_name = "TLS_ECDHE_ECDSA_WITH_CHACHA20_POLY1305_SHA256",
-            tls_version = 1.2,
-            kex = "ECDH",
-            auth = "ECDSA",
-            enc = "CHACHA20/POLY1305(256)",
-            hash = "AEAD"
-        },
-        [0xcca8] = {
-            iana_name = "TLS_ECDHE_RSA_WITH_CHACHA20_POLY1305_SHA256",
-            tls_version = 1.2,
-            kex = "ECDH",
-            auth = "RSA",
-            enc = "CHACHA20/POLY1305(256)",
-            hash = "AEAD"
-        },
-        [0xccaa] = {
-            iana_name = "TLS_DHE_RSA_WITH_CHACHA20_POLY1305_SHA256",
-            tls_version = 1.2,
-            kex = "DH",
-            auth = "RSA",
-            enc = "CHACHA20/POLY1305(256)",
-            hash = "AEAD"
-        },
-        [0x9e] = {
-            iana_name = "TLS_DHE_RSA_WITH_AES_128_GCM_SHA256",
-            tls_version = 1.2,
-            kex = "DH",
-            auth = "RSA",
-            enc = "AESGCM(128)",
-            hash = "AEAD"
-        },
-        [0xc024] = {
-            iana_name = "TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA384",
-            tls_version = 1.2,
-            kex = "ECDH",
-            auth = "ECDSA",
-            enc = "AES(256)",
-            hash = "SHA384"
-        },
-        [0xc028] = {
-            iana_name = "TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384",
-            tls_version = 1.2,
-            kex = "ECDH",
-            auth = "RSA",
-            enc = "AES(256)",
-            hash = "SHA384"
-        },
-        [0x6b] = {
-            iana_name = "TLS_DHE_RSA_WITH_AES_256_CBC_SHA256",
-            tls_version = 1.2,
-            kex = "DH",
-            auth = "RSA",
-            enc = "AES(256)",
-            hash = "SHA256"
-        },
-        [0xc023] = {
-            iana_name = "TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA256",
-            tls_version = 1.2,
-            kex = "ECDH",
-            auth = "ECDSA",
-            enc = "AES(128)",
-            hash = "SHA256"
-        },
-        [0xc027] = {
-            iana_name = "TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256",
-            tls_version = 1.2,
-            kex = "ECDH",
-            auth = "RSA",
-            enc = "AES(128)",
-            hash = "SHA256"
-        },
-        [0x67] = {
-            iana_name = "TLS_DHE_RSA_WITH_AES_128_CBC_SHA256",
-            tls_version = 1.2,
-            kex = "DH",
-            auth = "RSA",
-            enc = "AES(128)",
-            hash = "SHA256"
-        },
-        [0xc00a] = {
-            iana_name = "TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA",
-            tls_version = 1.0,
-            kex = "ECDH",
-            auth = "ECDSA",
-            enc = "AES(256)",
-            hash = "SHA1"
-        },
-        [0xc014] = {
-            iana_name = "TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA",
-            tls_version = 1.0,
-            kex = "ECDH",
-            auth = "RSA",
-            enc = "AES(256)",
-            hash = "SHA1"
-        },
-        [0x39] = {
-            iana_name = "TLS_DHE_RSA_WITH_AES_256_CBC_SHA",
-            tls_version = 0x0300,
-            kex = "DH",
-            auth = "RSA",
-            enc = "AES(256)",
-            hash = "SHA1"
-        },
-        [0xc009] = {
-            iana_name = "TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA",
-            tls_version = 1.0,
-            kex = "ECDH",
-            auth = "ECDSA",
-            enc = "AES(128)",
-            hash = "SHA1"
-        },
-        [0xc013] = {
-            iana_name = "TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA",
-            tls_version = 1.0,
-            kex = "ECDH",
-            auth = "RSA",
-            enc = "AES(128)",
-            hash = "SHA1"
-        },
-        [0x33] = {
-            iana_name = "TLS_DHE_RSA_WITH_AES_128_CBC_SHA",
-            tls_version = 0x0300,
-            kex = "DH",
-            auth = "RSA",
-            enc = "AES(128)",
-            hash = "SHA1"
-        },
-        [0x9d] = {
-            iana_name = "TLS_RSA_WITH_AES_256_GCM_SHA384",
-            tls_version = 1.2,
-            kex = "RSA",
-            auth = "RSA",
-            enc = "AESGCM(256)",
-            hash = "AEAD"
-        },
-        [0x9c] = {
-            iana_name = "TLS_RSA_WITH_AES_128_GCM_SHA256",
-            tls_version = 1.2,
-            kex = "RSA",
-            auth = "RSA",
-            enc = "AESGCM(128)",
-            hash = "AEAD"
-        },
-        [0x3d] = {
-            iana_name = "TLS_RSA_WITH_AES_256_CBC_SHA256",
-            tls_version = 1.2,
-            kex = "RSA",
-            auth = "RSA",
-            enc = "AES(256)",
-            hash = "SHA256"
-        },
-        [0x3c] = {
-            iana_name = "TLS_RSA_WITH_AES_128_CBC_SHA256",
-            tls_version = 1.2,
-            kex = "RSA",
-            auth = "RSA",
-            enc = "AES(128)",
-            hash = "SHA256"
-        },
-        [0x35] = {
-            iana_name = "TLS_RSA_WITH_AES_256_CBC_SHA",
-            tls_version = 0x0300,
-            kex = "RSA",
-            auth = "RSA",
-            enc = "AES(256)",
-            hash = "SHA1"
-        },
-        [0x2f] = {
-            iana_name = "TLS_RSA_WITH_AES_128_CBC_SHA",
-            tls_version = 0x0300,
-            kex = "RSA",
-            auth = "RSA",
-            enc = "AES(128)",
-            hash = "SHA1"
-        },
-        -- 其他 PSK、SRP、RSA-PSK、DHE-PSK、ECDHE-PSK 可继续补充
-        -- ...
-    }
-
-    local unknown_cipher = {
-        iana_name = "UNKNOWN",
-        tls_version = 0,
-        kex = "UNKNOWN",
-        auth = "UNKNOWN",
-        enc = "UNKNOWN",
-        hash = "UNKNOWN"
-    }
-
-    setmetatable(tls_proto_id, {
-        __index = function(t, k)
-            t[k] = unknown_cipher
-            return unknown_cipher
-        end
-    })
-
-    -- Iterator function for ciphers
-    local function iterate_ciphers(ciphers, n)
-        if n < ciphers.nciphers then
-            return n + 1, tls_proto_id[ciphers.ciphers[n]]
-        end
-    end
-
-    -- Buffer for temporary cipher table conversion
-    local ciphers_t = {}
-
-    -- Metatype for cipher structure
-    ffi.metatype('ngx_lua_ssl_ciphers', {
-        __ipairs = function(ciphers)
-            return iterate_ciphers, ciphers, 0
-        end,
-        __tostring = function(ciphers)
-            for n, c in ipairs(ciphers) do
-                ciphers_t[n] = type(c) == "table" and c.iana_name or
-                               format("0x%.4x", c)
-            end
-            return concat(ciphers_t, ":", 1, ciphers.nciphers)
-        end
-    })
-
-    -- Cipher type and buffer
-    local ciphers_typ = ffi_typeof("ngx_lua_ssl_ciphers")
     local ciphers_buf = ffi_new("uint16_t [?]", 256)
 
-    function _M.get_shared_ssl_ciphers()
+    function _M.get_shared_ssl_ciphers(filter_grease)
         local r = get_request()
         if not r then
             error("no request found")
         end
 
+        if filter_grease == nil then
+            filter_grease = true  -- Default to filter GREASE
+        end
+
         ciphers_buf[0] = 255  -- Set max number of ciphers we can hold
+        local filter_flag = filter_grease and 1 or 0
         local rc = ngx_lua_ffi_req_shared_ssl_ciphers(r, ciphers_buf + 1,
-                                                       ciphers_buf, errmsg)
+                                                       ciphers_buf, filter_flag, errmsg)
         if rc ~= FFI_OK then
             return nil, ffi_str(errmsg[0])
         end
 
-        -- Filter out GREASE ciphers
-        local filtered_count = 0
-        local filtered_buf = ffi_new("uint16_t [?]", ciphers_buf[0] + 1)
-
+        -- Build result table
+        local result = {}
         for i = 1, ciphers_buf[0] do
             local cipher_id = ciphers_buf[i]
-            if not TLS_GREASE[cipher_id] then
-                filtered_buf[filtered_count + 1] = cipher_id
-                filtered_count = filtered_count + 1
-            end
+            result[#result + 1] = cipher_id
         end
-        filtered_buf[0] = filtered_count
 
-        -- Create the cipher structure
-        local ciphers = ciphers_typ(filtered_count)
-        ffi_copy(ciphers, filtered_buf,
-                 (filtered_count + 1) * ffi_sizeof('uint16_t'))
-
-        return ciphers
+        return result
     end
 end
 
