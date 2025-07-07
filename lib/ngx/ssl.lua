@@ -125,11 +125,6 @@ if subsystem == 'http' then
     int ngx_http_lua_ffi_req_shared_ssl_ciphers(ngx_http_request_t *r,
         unsigned short *ciphers, unsigned short *nciphers,
         int filter_grease, char **err);
-
-    typedef struct {
-        uint16_t nciphers;
-        uint16_t ciphers[?];
-    } ngx_lua_ssl_ciphers;
     ]]
 
     ngx_lua_ffi_ssl_set_der_certificate =
