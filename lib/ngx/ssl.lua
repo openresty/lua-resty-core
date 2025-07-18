@@ -9,15 +9,10 @@ local ffi = require "ffi"
 local C = ffi.C
 local ffi_str = ffi.string
 local ffi_gc = ffi.gc
-local ffi_copy = ffi.copy
-local ffi_sizeof = ffi.sizeof
-local ffi_typeof = ffi.typeof
 local ffi_new = ffi.new
 local get_request = base.get_request
 local error = error
 local tonumber = tonumber
-local format = string.format
-local concat = table.concat
 local errmsg = base.get_errmsg_ptr()
 local get_string_buf = base.get_string_buf
 local get_size_ptr = base.get_size_ptr
@@ -215,6 +210,10 @@ elseif subsystem == 'stream' then
 
     int ngx_stream_lua_ffi_ssl_client_random(ngx_stream_lua_request_t *r,
         unsigned char *out, size_t *outlen, char **err);
+
+    int ngx_stream_lua_ffi_req_shared_ssl_ciphers(ngx_stream_lua_request_t *r,
+        unsigned short *ciphers, unsigned short *nciphers,
+        int filter_grease, char **err);
     ]]
 
     ngx_lua_ffi_ssl_set_der_certificate =
@@ -240,6 +239,8 @@ elseif subsystem == 'stream' then
     ngx_lua_ffi_free_priv_key = C.ngx_stream_lua_ffi_free_priv_key
     ngx_lua_ffi_ssl_verify_client = C.ngx_stream_lua_ffi_ssl_verify_client
     ngx_lua_ffi_ssl_client_random = C.ngx_stream_lua_ffi_ssl_client_random
+    ngx_lua_ffi_req_shared_ssl_ciphers =
+        C.ngx_stream_lua_ffi_req_shared_ssl_ciphers
 end
 
 

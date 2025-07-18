@@ -8,7 +8,7 @@ use t::TestCore::Stream;
 
 repeat_each(2);
 
-plan tests => repeat_each() * (blocks() * 6 + 1);
+plan tests => repeat_each() * (blocks() * 6 + 2);
 
 no_long_string();
 #no_diff();
@@ -2335,3 +2335,94 @@ client-random length: 32
 [error]
 [alert]
 [emerg]
+
+
+
+=== TEST 29: get shared SSL ciphers
+--- stream_config
+    lua_package_path "$TEST_NGINX_LUA_PACKAGE_PATH";
+
+    server {
+        listen 127.0.0.1:$TEST_NGINX_RAND_PORT_1 ssl;
+        ssl_protocols TLSv1.2;
+        ssl_ciphers ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES256-GCM-SHA384;
+
+        ssl_certificate_by_lua_block {
+            local ssl = require "ngx.ssl"
+            local ciphers, err = ssl.get_req_shared_ssl_ciphers()
+            if not err and ciphers then
+                ngx.log(ngx.INFO, "shared ciphers count: ", #ciphers)
+                local count = 0
+                for i, cipher_id in ipairs(ciphers) do
+                    count = count + 1
+                    ngx.log(ngx.INFO, string.format("%d: SHARED_CIPHER 0x%04x", i, cipher_id))
+                    if count >= 3 then  -- log only first 3 to avoid too much output
+                        break
+                    end
+                end
+            else
+                ngx.log(ngx.ERR, "failed to get shared ciphers: ", err)
+            end
+        }
+        ssl_certificate ../../cert/test.crt;
+        ssl_certificate_key ../../cert/test.key;
+
+        return 'it works!\n';
+    }
+--- stream_server_config
+    lua_ssl_trusted_certificate ../../cert/test.crt;
+    lua_ssl_protocols TLSv1.2;
+    lua_ssl_ciphers ECDHE-RSA-AES128-GCM-SHA256;
+
+    content_by_lua_block {
+        do
+            local sock = ngx.socket.tcp()
+
+            sock:settimeout(3000)
+
+            local ok, err = sock:connect("127.0.0.1", $TEST_NGINX_RAND_PORT_1)
+            if not ok then
+                ngx.say("failed to connect: ", err)
+                return
+            end
+
+            ngx.say("connected: ", ok)
+
+            local sess, err = sock:sslhandshake(nil, nil, true)
+            if not sess then
+                ngx.say("failed to do SSL handshake: ", err)
+                return
+            end
+
+            ngx.say("ssl handshake: ", type(sess))
+
+            while true do
+                local line, err = sock:receive()
+                if not line then
+                    -- ngx.say("failed to receive response status line: ", err)
+                    break
+                end
+
+                ngx.say("received: ", line)
+            end
+
+            local ok, err = sock:close()
+            ngx.say("close: ", ok, " ", err)
+        end  -- do
+        -- collectgarbage()
+    }
+
+--- stream_response
+connected: 1
+ssl handshake: userdata
+received: it works!
+close: 1 nil
+
+--- error_log eval
+[qr/shared ciphers count: \d+/,
+qr/1: SHARED_CIPHER 0x/]
+
+--- no_error_log
+[alert]
+[crit]
+[error]
