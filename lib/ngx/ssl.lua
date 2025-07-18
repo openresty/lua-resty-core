@@ -215,6 +215,9 @@ elseif subsystem == 'stream' then
 
     int ngx_stream_lua_ffi_ssl_client_random(ngx_stream_lua_request_t *r,
         unsigned char *out, size_t *outlen, char **err);
+
+    int ngx_stream_lua_ffi_req_shared_ssl_ciphers(ngx_stream_lua_request_t *r,
+        unsigned short *ciphers, unsigned short *nciphers, int filter_grease, char **err);
     ]]
 
     ngx_lua_ffi_ssl_set_der_certificate =
@@ -240,6 +243,8 @@ elseif subsystem == 'stream' then
     ngx_lua_ffi_free_priv_key = C.ngx_stream_lua_ffi_free_priv_key
     ngx_lua_ffi_ssl_verify_client = C.ngx_stream_lua_ffi_ssl_verify_client
     ngx_lua_ffi_ssl_client_random = C.ngx_stream_lua_ffi_ssl_client_random
+    ngx_lua_ffi_req_shared_ssl_ciphers =
+        C.ngx_stream_lua_ffi_req_shared_ssl_ciphers
 end
 
 
