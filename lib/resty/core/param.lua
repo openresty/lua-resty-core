@@ -12,6 +12,8 @@ local FFI_AGAIN = base.FFI_AGAIN
 local FFI_OK = base.FFI_OK
 local get_request = base.get_request
 local get_string_buf = base.get_string_buf
+local error = error
+local assert = assert
 local getmetatable = getmetatable
 local ngx = ngx
 local ngx_phase = ngx.get_phase
@@ -43,7 +45,8 @@ local function get_setby_param(r, idx)
         return nil
     end
 
-    return ffi_str(data_p[0], len_p[0])
+    local s = ffi_str(data_p[0], len_p[0])
+    return s
 end
 
 
@@ -56,14 +59,16 @@ local function get_body_filter_param(r, idx)
             local buf = get_string_buf(len_p[0])
             assert(C.ngx_http_lua_ffi_copy_body_filter_param_body(r, buf)
                    == FFI_OK)
-            return ffi_str(buf, len_p[0])
+            local s = ffi_str(buf, len_p[0])
+            return s
         end
 
         if len_p[0] == 0 then
             return ""
         end
 
-        return ffi_str(data_p[0], len_p[0])
+        local s = ffi_str(data_p[0], len_p[0])
+        return s
 
     elseif idx == 2 then
         local rc = C.ngx_http_lua_ffi_get_body_filter_param_eof(r)

@@ -92,7 +92,8 @@ local function var_get(self, name)
     -- ngx.log(ngx.WARN, "rc = ", rc)
 
     if rc == 0 then -- NGX_OK
-        return ffi_str(value_ptr[0], value_len[0])
+        local s = ffi_str(value_ptr[0], value_len[0])
+        return s
     end
 
     if rc == -5 then  -- NGX_DECLINED
