@@ -2426,3 +2426,84 @@ qr/1: SHARED_CIPHER 0x/]
 [alert]
 [crit]
 [error]
+
+
+
+=== TEST 30: get req SSL pointer
+--- stream_config
+    lua_package_path "$TEST_NGINX_LUA_PACKAGE_PATH";
+
+    server {
+        listen 127.0.0.1:$TEST_NGINX_RAND_PORT_1 ssl;
+        ssl_protocols TLSv1.2;
+        ssl_ciphers ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES256-GCM-SHA384;
+
+        ssl_certificate_by_lua_block {
+            local ssl = require "ngx.ssl"
+            local ssl_conn, err = ssl.get_req_ssl_pointer()
+            if err ~= nil then
+                ngx.log(ngx.ERR, "failed to get ssl pointer: ", err)
+                return
+            end
+            ngx.log(ngx.INFO, "ssl pointer: ", tostring(ssl_conn))
+        }
+
+        ssl_certificate ../../cert/test.crt;
+        ssl_certificate_key ../../cert/test.key;
+
+        return 'it works!\n';
+    }
+--- stream_server_config
+    lua_ssl_trusted_certificate ../../cert/test.crt;
+    lua_ssl_protocols TLSv1.2;
+    lua_ssl_ciphers ECDHE-RSA-AES128-GCM-SHA256;
+
+    content_by_lua_block {
+        do
+            local sock = ngx.socket.tcp()
+
+            sock:settimeout(3000)
+
+            local ok, err = sock:connect("127.0.0.1", $TEST_NGINX_RAND_PORT_1)
+            if not ok then
+                ngx.say("failed to connect: ", err)
+                return
+            end
+
+            ngx.say("connected: ", ok)
+
+            local sess, err = sock:sslhandshake(nil, nil, true)
+            if not sess then
+                ngx.say("failed to do SSL handshake: ", err)
+                return
+            end
+
+            ngx.say("ssl handshake: ", type(sess))
+
+            while true do
+                local line, err = sock:receive()
+                if not line then
+                    -- ngx.say("failed to receive response status line: ", err)
+                    break
+                end
+
+                ngx.say("received: ", line)
+            end
+
+            local ok, err = sock:close()
+            ngx.say("close: ", ok, " ", err)
+        end  -- do
+        -- collectgarbage()
+    }
+
+--- stream_response
+connected: 1
+ssl handshake: userdata
+received: it works!
+close: 1 nil
+--- error_log eval
+qr/ssl pointer: cdata<void \*>: 0x[0-9a-f]+,/
+--- no_error_log
+[alert]
+[crit]
+[error]
