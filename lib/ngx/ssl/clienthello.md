@@ -18,6 +18,7 @@ Table of Contents
     * [get_client_hello_ext](#get_client_hello_ext)
     * [set_protocols](#set_protocols)
     * [set_ciphers](#set_ciphers)
+    * [set_ciphersuites](#set_ciphersuites)
 * [Community](#community)
     * [English Mailing List](#english-mailing-list)
     * [Chinese Mailing List](#chinese-mailing-list)
@@ -302,9 +303,9 @@ set_ciphers
 
 **context:** *ssl_client_hello_by_lua&#42;*
 
-Sets the SSL ciphers supported by the current downstream SSL connection.
+Sets the list of ciphers (TLSv1.2 and below) supported by the current downstream SSL connection.
 
-Use `prefer_server_ciphers` parameter to control the chooseing process of the cipher.
+Use `prefer_server_ciphers` parameter to control the choosing process of the cipher.
 When choosing a cipher, use the server's preferences instead of the client preferences.
 When not set, the SSL server will always follow the clients preferences. When set, the SSLv3/TLSv1 server will choose following its own preferences. Because of the different protocol, for SSLv2 the server will send its list of preferences to the client and the client chooses.
 
@@ -314,6 +315,34 @@ Considering it is meaningless to set ssl protocols after the protocol is determi
 so this function may only be called in the context of [ssl_client_hello_by_lua*](https://github.com/openresty/lua-nginx-module/#ssl_client_hello_by_lua_block).
 
 Example: `ssl_clt.set_ciphers("DHE-RSA-AES256-SHA:ECDHE-ECDSA-AES128-SHA:ECDHE-RSA-AES128-SHA", true)`
+
+[Back to TOC](#table-of-contents)
+
+set_ciphersuites
+----------------------
+**syntax:** *ok, err = ssl_clt.set_ciphersuites(ciphersuites, prefer_server_ciphers)*
+
+**context:** *ssl_client_hello_by_lua&#42;*
+
+set_ciphersuites() is used to configure the available TLSv1.3 ciphersuites.
+
+Use `prefer_server_ciphers` parameter to control the choosing process of the cipher.
+When choosing a cipher, use the server's preferences instead of the client preferences.
+When not set, the SSL server will always follow the clients preferences. When set, the SSL/TLS server will choose following its own preferences.
+
+Returns `true` on success, or a `nil` value and a string describing the error otherwise.
+
+Considering it is meaningless to set ssl protocols after the protocol is determined,
+so this function may only be called in the context of [ssl_client_hello_by_lua*](https://github.com/openresty/lua-nginx-module/#ssl_client_hello_by_lua_block).
+
+Example: `ssl_clt.set_ciphers("TLS_AES_128_GCM_SHA256:TLS_AES_128_CCM_SHA256", true)`
+
+Available TLS 1.3 protocols:
+
+- TLS_AES_256_GCM_SHA384
+- TLS_CHACHA20_POLY1305_SHA256
+- TLS_AES_128_GCM_SHA256
+- TLS_AES_128_CCM_SHA256
 
 [Back to TOC](#table-of-contents)
 
