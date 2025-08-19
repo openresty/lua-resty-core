@@ -40,7 +40,8 @@ local ngx_lua_ffi_shdict_set_expire
 local ngx_lua_ffi_shdict_capacity
 local ngx_lua_ffi_shdict_free_space
 local ngx_lua_ffi_shdict_udata_to_zone
-
+local ngx_lua_ffi_shdict_cas
+local ngx_lua_ffi_shdict_get_if_not_eq
 
 if subsystem == 'http' then
     ffi.cdef[[
@@ -70,6 +71,20 @@ int ngx_http_lua_ffi_shdict_set_expire(void *zone,
 size_t ngx_http_lua_ffi_shdict_capacity(void *zone);
 
 void *ngx_http_lua_ffi_shdict_udata_to_zone(void *zone_udata);
+
+int ngx_http_lua_ffi_shdict_cas(void *zone, const unsigned char *key,
+    size_t key_len, int old_value_type, const unsigned char *old_str_value_buf,
+    size_t old_str_value_len, double old_num_value, int old_user_flags,
+    int value_type, const unsigned char *str_value_buf, size_t str_value_len,
+    double num_value, int user_flags, int set_user_flags,
+    long exptime, int match_flags, int *match, char **errmsg, int *forcible);
+int
+ngx_http_lua_ffi_shdict_get_if_not_eq(void *zone,
+    const unsigned char *key, size_t key_len, int old_value_type,
+    const unsigned char *old_str_value_buf, size_t old_str_value_len,
+    double old_num_value, int old_user_flags, int *value_type,
+    unsigned char **str_value_buf, size_t *str_value_len, double *num_value,
+    int *user_flags, int match_flags, int *match, char **errmsg);
     ]]
 
     ngx_lua_ffi_shdict_get = function(zone, key, key_len, value_type,
@@ -111,7 +126,8 @@ void *ngx_http_lua_ffi_shdict_udata_to_zone(void *zone_udata);
     ngx_lua_ffi_shdict_capacity = C.ngx_http_lua_ffi_shdict_capacity
     ngx_lua_ffi_shdict_udata_to_zone =
         C.ngx_http_lua_ffi_shdict_udata_to_zone
-
+    ngx_lua_ffi_shdict_cas = C.ngx_http_lua_ffi_shdict_cas
+    ngx_lua_ffi_shdict_get_if_not_eq = C.ngx_http_lua_ffi_shdict_get_if_not_eq
     if not pcall(function ()
         return C.ngx_http_lua_ffi_shdict_free_space
     end)
@@ -154,6 +170,20 @@ int ngx_stream_lua_ffi_shdict_set_expire(void *zone,
 size_t ngx_stream_lua_ffi_shdict_capacity(void *zone);
 
 void *ngx_stream_lua_ffi_shdict_udata_to_zone(void *zone_udata);
+
+int ngx_stream_lua_ffi_shdict_cas(void *zone, const unsigned char *key,
+    size_t key_len, int old_value_type, const unsigned char *old_str_value_buf,
+    size_t old_str_value_len, double old_num_value, int old_user_flags,
+    int value_type, const unsigned char *str_value_buf, size_t str_value_len,
+    double num_value, int user_flags, int set_user_flags,
+    long exptime, int match_flags, int *match, char **errmsg, int *forcible);
+int
+ngx_stream_lua_ffi_shdict_get_if_not_eq(void *zone,
+    const unsigned char *key, size_t key_len, int old_value_type,
+    const unsigned char *old_str_value_buf, size_t old_str_value_len,
+    double old_num_value, int old_user_flags, int *value_type,
+    unsigned char **str_value_buf, size_t *str_value_len, double *num_value,
+    int *user_flags, int match_flags, int *match, char **errmsg);
     ]]
 
     ngx_lua_ffi_shdict_get = function(zone, key, key_len, value_type,
@@ -195,6 +225,8 @@ void *ngx_stream_lua_ffi_shdict_udata_to_zone(void *zone_udata);
     ngx_lua_ffi_shdict_capacity = C.ngx_stream_lua_ffi_shdict_capacity
     ngx_lua_ffi_shdict_udata_to_zone =
         C.ngx_stream_lua_ffi_shdict_udata_to_zone
+    ngx_lua_ffi_shdict_cas = C.ngx_stream_lua_ffi_shdict_cas
+    ngx_lua_ffi_shdict_get_if_not_eq = C.ngx_stream_lua_ffi_shdict_get_if_not_eq
 
     if not pcall(function ()
         return C.ngx_stream_lua_ffi_shdict_free_space
@@ -458,6 +490,7 @@ local value_type = ffi_new("int[1]")
 local user_flags = ffi_new("int[1]")
 local num_value = ffi_new("double[1]")
 local is_stale = ffi_new("int[1]")
+local match = ffi_new("int[1]")
 local forcible = ffi_new("int[1]")
 local str_value_buf = ffi_new("unsigned char *[1]")
 local errmsg = base.get_errmsg_ptr()
@@ -583,6 +616,228 @@ end
 
 local function shdict_delete(zone, key)
     return shdict_set(zone, key, nil)
+end
+
+local function shdict_cas(zone, key, old_value, old_flags,
+                          value, flags, exptime)
+    zone = check_zone(zone)
+
+    if not exptime then
+        exptime = 0
+    elseif exptime < 0 then
+        error('bad "exptime" argument',2)
+    end
+
+    if key == nil then
+        return nil, "nil key"
+    end
+
+    if type(key) ~= "string" then
+        key = tostring(key)
+    end
+
+    local key_len = #key
+    if key_len == 0 then
+        return nil, "empty key"
+    end
+    if key_len > 65535 then
+        return nil, "key to long"
+    end
+
+    local set_user_flags = 1
+    if not flags then
+        set_user_flags = 0
+        flags = 0
+    end
+
+    local match_flags = 1
+    if not old_flags then
+        old_flags = 0
+        match_flags = 0
+    end
+
+    local str_val_buf
+    local str_val_len = 0
+    local num_val = 0
+    local valtyp = type(value)
+
+    if valtyp == "string" then
+        valtyp = 4  -- LUA_TSTRING
+        str_val_buf = value
+        str_val_len = #value
+
+    elseif valtyp == "number" then
+        valtyp = 3  -- LUA_TNUMBER
+        num_val = value
+
+    elseif value == nil then
+        valtyp = 0  -- LUA_TNIL
+
+    elseif valtyp == "boolean" then
+        valtyp = 1  -- LUA_TBOOLEAN
+        num_val = value and 1 or 0
+
+    else
+        return nil, "bad value type"
+    end
+
+    local old_str_val_buf
+    local old_str_val_len = 0
+    local old_num_val = 0
+    local old_valtyp = type(old_value)
+
+    if old_valtyp == "string" then
+        old_valtyp = 4  -- LUA_TSTRING
+        old_str_val_buf = old_value
+        old_str_val_len = #old_value
+
+    elseif old_valtyp == "number" then
+        old_valtyp = 3  -- LUA_TNUMBER
+        old_num_val = old_value
+
+    elseif old_value == nil then
+        old_valtyp = 0  -- LUA_TNIL
+
+    elseif old_valtyp == "boolean" then
+        old_valtyp = 1  -- LUA_TBOOLEAN
+        old_num_val = old_value and 1 or 0
+
+    else
+        return nil, "bad old_value type"
+    end
+    local rc = ngx_lua_ffi_shdict_cas(zone, key, key_len,
+                                      old_valtyp, old_str_val_buf,
+                                      old_str_val_len, old_num_val,
+                                      old_flags,
+                                      valtyp, str_val_buf,
+                                      str_val_len, num_val, flags,
+                                      set_user_flags,
+                                      exptime * 1000,
+                                      match_flags, match,
+                                      errmsg, forcible)
+    if rc == 0 then  -- NGX_OK
+        return true, nil, forcible[0] == 1
+    end
+
+    -- NGX_DECLINED or NGX_ERROR
+    if match[0] == 1 then
+        return false, false, forcible[0] == 1
+    end
+    if errmsg[0] ~= nil then
+        return false, ffi_str(errmsg[0]), forcible[0] == 1
+    end
+    error("errmsg not specified")
+
+end
+local function shdict_get_if_not_eq(zone, key, old_value, old_flags)
+    zone = check_zone(zone)
+
+    if key == nil then
+        return nil, "nil key"
+    end
+
+    if type(key) ~= "string" then
+        key = tostring(key)
+    end
+
+    local match_flags = 1
+    if not old_flags then
+        old_flags = 0
+        match_flags = 0
+    end
+
+    local key_len = #key
+    if key_len == 0 then
+        return nil, "empty key"
+    end
+    if key_len > 65535 then
+        return nil, "key too long"
+    end
+
+    local old_str_val_buf
+    local old_str_val_len = 0
+    local old_num_val = 0
+    local old_valtyp = type(old_value)
+
+    if old_valtyp == "string" then
+        old_valtyp = 4  -- LUA_TSTRING
+        old_str_val_buf = old_value
+        old_str_val_len = #old_value
+
+    elseif old_valtyp == "number" then
+        old_valtyp = 3  -- LUA_TNUMBER
+        old_num_val = old_value
+
+    elseif old_value == nil then
+        old_valtyp = 0  -- LUA_TNIL
+
+    elseif old_valtyp == "boolean" then
+        old_valtyp = 1  -- LUA_TBOOLEAN
+        old_num_val = old_value and 1 or 0
+
+    else
+        return nil, "bad old_value type"
+    end
+
+    local size = get_string_buf_size()
+    local buf = get_string_buf(size)
+    str_value_buf[0] = buf
+    local value_len = get_size_ptr()
+    value_len[0] = size
+
+    local rc = ngx_lua_ffi_shdict_get_if_not_eq(zone, key, key_len,
+                                      old_valtyp, old_str_val_buf,
+                                      old_str_val_len,
+                                      old_num_val, old_flags,
+                                      value_type,
+                                      str_value_buf, value_len,
+                                      num_value, user_flags,
+                                      match_flags, match, errmsg)
+    if rc ~= 0 then
+        if match[0] == 1 then
+            return nil, false
+        elseif errmsg[0] ~= nil then
+            return nil, ffi_str(errmsg[0])
+        end
+
+        error("failed to get the key")
+    end
+
+    local typ = value_type[0]
+
+    if typ == 0 then -- LUA_TNIL
+        return nil
+    end
+
+    local flags = tonumber(user_flags[0])
+
+    local val
+
+    if typ == 4 then -- LUA_TSTRING
+        if str_value_buf[0] ~= buf then
+            -- ngx.say("len: ", tonumber(value_len[0]))
+            buf = str_value_buf[0]
+            val = ffi_str(buf, value_len[0])
+            C.free(buf)
+        else
+            val = ffi_str(buf, value_len[0])
+        end
+
+    elseif typ == 3 then -- LUA_TNUMBER
+        val = tonumber(num_value[0])
+
+    elseif typ == 1 then -- LUA_TBOOLEAN
+        val = (tonumber(buf[0]) ~= 0)
+
+    else
+        error("unknown value type: " .. typ)
+    end
+
+    if flags ~= 0 then
+        return val, flags
+    end
+
+    return val
 end
 
 
@@ -924,6 +1179,8 @@ if dict then
             mt.expire = shdict_expire
             mt.capacity = shdict_capacity
             mt.free_space = shdict_free_space
+            mt.cas = shdict_cas
+            mt.get_if_not_eq = shdict_get_if_not_eq
         end
     end
 end
