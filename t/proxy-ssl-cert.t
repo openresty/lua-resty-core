@@ -12,10 +12,10 @@ repeat_each(2);
 my $NginxBinary = $ENV{'TEST_NGINX_BINARY'} || 'nginx';
 my $openssl_version = eval { `$NginxBinary -V 2>&1` };
 
-if ($openssl_version =~ m/built with OpenSSL (0\S*|1\.0\S*|1\.1\.0\S*)/) {
-    plan(skip_all => "too old OpenSSL, need 1.1.1, was $1");
+if ($openssl_version =~ m/built with OpenSSL (0|1\.0\.(?:0|1[^\d]|2[a-d]).*)/) {
+    plan(skip_all => "too old OpenSSL, need >= 1.0.2e, was $1");
 } else {
-    plan tests => repeat_each() * (blocks() * 6 - 2) - 4;
+    plan tests => repeat_each() * (blocks() * 3);
 }
 
 no_long_string();
