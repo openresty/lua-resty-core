@@ -79,9 +79,10 @@ if subsystem == "stream" then
         local err = get_string_buf(ERR_BUF_SIZE)
         local errlenp = get_size_ptr()
         buf_sizep[0] = 128
+        errlenp[0] = ERR_BUF_SIZE
         rc = C.ngx_stream_lua_ffi_req_dst_addr(r, buf, buf_sizep, err, errlenp)
         if tonumber(rc) ~= 0 then
-            return nil, tostring(err, errlenp[0])
+            return nil, ffi_str(err, errlenp[0])
         end
 
         return ffi_str(buf, buf_sizep[0])

@@ -41,6 +41,7 @@ stitch
 
 
 === TEST 2: get dst address
+SO_ORIGINAL_DST is only enable when the flow is redirect by iptables
 --- stream_server_config
     content_by_lua_block {
         local dst_addr = ngx.req.get_original_addr()
@@ -53,3 +54,4 @@ qr/127.0.0.1:\d+/
 [alert]
 [crit]
 [crit2]
+--- SKIP
