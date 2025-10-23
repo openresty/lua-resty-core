@@ -243,15 +243,15 @@ local function sslhandshake(cosocket, reused_session, server_name, ssl_verify,
     end
 
     if alpn then
-        local alpn = {}
+        local _bytes = {}
         for _, proto_str in ipairs(alpn)  do
-            alpn[#alpn + 1] = string.len(proto_str)
+            _bytes[#_bytes + 1] = string.len(proto_str)
             for _, proto_byte in ipairs({ string.byte(proto_str, 1, #proto_str) }) do
-                alpn[#alpn + 1] = proto_byte
+                _bytes[#_bytes + 1] = proto_byte
             end
         end
-        alpn_str[0].data = ffi.new("unsigned char[?]", #alpn, alpn)
-        alpn_str[0].len = #alpn
+        alpn_str[0].data = ffi.new("unsigned char[?]", #_bytes, _bytes)
+        alpn_str[0].len = #_bytes
     else
         alpn_str[0].data = nil
         alpn_str[0].len = 0
