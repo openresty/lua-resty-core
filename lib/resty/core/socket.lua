@@ -13,10 +13,11 @@ local type     = type
 local select   = select
 local registry = debug.getregistry()
 
-local C       = ffi.C
-local ffi_new = ffi.new
-local ffi_str = ffi.string
-local ffi_gc  = ffi.gc
+local str_byte = string.byte
+local C        = ffi.C
+local ffi_new  = ffi.new
+local ffi_str  = ffi.string
+local ffi_gc   = ffi.gc
 
 local get_string_buf = base.get_string_buf
 local get_size_ptr   = base.get_size_ptr
@@ -245,9 +246,9 @@ local function sslhandshake(cosocket, reused_session, server_name, ssl_verify,
     if alpn then
         local _bytes = {}
         for _, proto_str in ipairs(alpn)  do
-            _bytes[#_bytes + 1] = string.len(proto_str)
+            _bytes[#_bytes + 1] = #proto_str
             for _, proto_byte in ipairs(
-                    { string.byte(proto_str, 1, #proto_str) }) do
+                    { str_byte(proto_str, 1, #proto_str) }) do
                 _bytes[#_bytes + 1] = proto_byte
             end
         end
