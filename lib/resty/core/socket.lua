@@ -185,6 +185,7 @@ if subsystem == 'http' then
 local errmsg             = base.get_errmsg_ptr()
 local session_ptr        = ffi_new("void *[1]")
 local server_name_str    = ffi_new("ngx_str_t[1]")
+local alpn_str           = ffi_new("ngx_str_t[1]")
 local openssl_error_code = ffi_new("int[1]")
 
 
@@ -217,7 +218,7 @@ end
 
 
 local function sslhandshake(cosocket, reused_session, server_name, ssl_verify,
-    send_status_req, ...)
+    send_status_req, alpn, ...)
 
     local n = select("#", ...)
     if not cosocket or n > 0 then
@@ -241,6 +242,21 @@ local function sslhandshake(cosocket, reused_session, server_name, ssl_verify,
         server_name_str[0].len = 0
     end
 
+    if alpn then
+        local alpn = {}
+        for _, proto_str in ipairs(alpn)  do
+            alpn[#alpn + 1] = string.len(proto_str)
+            for _, proto_byte in ipairs({ string.byte(proto_str, 1, #proto_str) }) do
+                alpn[#alpn + 1] = proto_byte
+            end
+        end
+        alpn_str[0].data = ffi.new("unsigned char[?]", #alpn, alpn)
+        alpn_str[0].len = #alpn
+    else
+        alpn_str[0].data = nil
+        alpn_str[0].len = 0
+    end
+
     local u = get_tcp_socket(cosocket)
 
     local rc = C.ngx_http_lua_ffi_socket_tcp_sslhandshake(r, u,
@@ -251,6 +267,7 @@ local function sslhandshake(cosocket, reused_session, server_name, ssl_verify,
                    send_status_req and 1 or 0,
                    cosocket[SOCKET_CLIENT_CERT_INDEX],
                    cosocket[SOCKET_CLIENT_PKEY_INDEX],
+                   alpn_str,
                    errmsg)
 
     if rc == FFI_NO_REQ_CTX then
