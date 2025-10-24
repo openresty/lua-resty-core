@@ -64,7 +64,7 @@ Description
 
 This Lua module provides API functions for post-processing SSL server certificate message for NGINX upstream connections.
 
-It must to be used in the contexts [proxy_ssl_verify_by_lua*](https://github.com/openresty/lua-nginx-module/#proxy_ssl_verify_by_lua_block).
+It must be used in the context [proxy_ssl_verify_by_lua*](https://github.com/openresty/lua-nginx-module/#proxy_ssl_verify_by_lua_block).
 
 This directive runs user Lua code when Nginx is about to post-process the SSL server certificate message for the upstream SSL (https) connections.
 
