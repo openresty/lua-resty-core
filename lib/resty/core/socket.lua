@@ -55,7 +55,8 @@ int
 ngx_http_lua_ffi_socket_tcp_sslhandshake(ngx_http_request_t *r,
     ngx_http_lua_socket_tcp_upstream_t *u, void *sess,
     int enable_session_reuse, ngx_str_t *server_name, int verify,
-    int ocsp_status_req, void *chain, void *pkey, char **errmsg);
+    int ocsp_status_req, void *chain, void *pkey, ngx_str_t *alpn,
+    char **errmsg);
 
 int
 ngx_http_lua_ffi_socket_tcp_get_sslhandshake_result(ngx_http_request_t *r,
