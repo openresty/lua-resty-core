@@ -72,7 +72,7 @@ Description
 
 This Lua module provides API functions for post-processing SSL client hello message for NGINX downstream connections.
 
-It must to be used in the contexts [ssl_client_hello_by_lua*](https://github.com/openresty/lua-nginx-module/#ssl_client_hello_by_lua_block).
+It must be used in the context [ssl_client_hello_by_lua*](https://github.com/openresty/lua-nginx-module/#ssl_client_hello_by_lua_block).
 
 This Lua API is particularly useful for dynamically setting the SSL protocols according to the SNI.
 

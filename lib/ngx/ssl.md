@@ -270,7 +270,7 @@ server_port
 **context:** *any*
 
 Returns the server port. Returns `nil`
-when server dont have a port.
+when the server does not have a port.
 
 In case of failures, it returns `nil` *and* a string describing the error.
 
