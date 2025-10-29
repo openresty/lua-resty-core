@@ -1580,6 +1580,7 @@ lua ssl server name: "test.com"
         ssl_certificate_by_lua_block {
             local ssl = require "ngx.ssl"
 
+            collectgarbage("collect")
             ssl.clear_certs()
 
             local f = assert(io.open("t/cert/chain/chain.pem"))
@@ -1713,6 +1714,7 @@ lua ssl server name: "test.com"
         ssl_certificate_by_lua_block {
             local ssl = require "ngx.ssl"
 
+            collectgarbage("collect")
             ssl.clear_certs()
 
             local f = assert(io.open("t/cert/chain/chain-bad0.pem"))
@@ -1837,6 +1839,7 @@ qr/\[error\] .*? failed to parse pem cert: PEM_read_bio_X509_AUX\(\) failed/
         ssl_certificate_by_lua_block {
             local ssl = require "ngx.ssl"
 
+            collectgarbage("collect")
             ssl.clear_certs()
 
             local f = assert(io.open("t/cert/chain/chain-bad2.pem"))
@@ -1961,6 +1964,7 @@ qr/\[error\] .*? failed to parse pem cert: PEM_read_bio_X509\(\) failed/
         ssl_certificate_by_lua_block {
             local ssl = require "ngx.ssl"
 
+            collectgarbage("collect")
             ssl.clear_certs()
 
             local f = assert(io.open("t/cert/chain/chain.pem"))
@@ -2357,6 +2361,7 @@ got TLS1 version: TLSv1.3,
             local cert_data = f:read("*a")
             f:close()
 
+            collectgarbage("collect")
             local cert, err = ssl.parse_pem_cert(cert_data)
             if not cert then
                 ngx.log(ngx.ERR, "failed to parse pem cert: ", err)
@@ -2471,6 +2476,7 @@ client certificate subject: emailAddress=agentzh@gmail.com,CN=test.com
             local cert_data = f:read("*a")
             f:close()
 
+            collectgarbage("collect")
             local cert, err = ssl.parse_pem_cert(cert_data)
             if not cert then
                 ngx.log(ngx.ERR, "failed to parse pem cert: ", err)
@@ -2865,6 +2871,7 @@ lua ssl server name: "test.com"
             local cert_data = f:read("*a")
             f:close()
 
+            collectgarbage("collect")
             local cert, err = ssl.parse_der_cert(cert_data)
             if not cert then
                 ngx.log(ngx.ERR, "failed to parse pem cert: ", err)
@@ -3309,6 +3316,7 @@ lua ssl server name: "test.com"
             local cert_data = f:read("*a")
             f:close()
 
+            collectgarbage("collect")
             local cert, err = ssl.parse_pem_cert(cert_data)
             if not cert then
                 ngx.log(ngx.ERR, "failed to parse pem cert: ", err)
@@ -3367,6 +3375,7 @@ FAILED:unable to verify the first certificate
             local cert_data = f:read("*a")
             f:close()
 
+            collectgarbage("collect")
             local cert, err = ssl.parse_pem_cert(cert_data)
             if not cert then
                 ngx.log(ngx.ERR, "failed to parse pem cert: ", err)

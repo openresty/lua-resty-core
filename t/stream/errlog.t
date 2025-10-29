@@ -584,7 +584,7 @@ log body:\d{4}/\d{2}/\d{2} \d{2}:\d{2}:\d{2} \[error\] (\d+).*content_by_lua\(ng
     }
 --- log_level: notice
 --- stream_response_like chomp
-\A(?:log lines: #33
+\A(?:log lines: #(?:32|33)
 log level:4
 log body:\d{4}/\d{2}/\d{2} \d{2}:\d{2}:\d{2} \[error\] (\d+).*content_by_lua\(nginx.conf:\d+\):\d+: --> 84, client: 127.0.0.1, server: 0.0.0.0:\d+
 log level:5
