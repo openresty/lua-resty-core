@@ -91,28 +91,31 @@ if subsystem == 'http' then
     void *ngx_http_lua_ffi_parse_der_priv_key(const char *data, size_t len,
         char **err) ;
 
-    void *ngx_http_lua_ffi_get_req_ssl_pointer(void *r, char **err);
+    void *ngx_http_lua_ffi_get_req_ssl_pointer(ngx_http_request_t *r,
+        char **err);
 
-    int ngx_http_lua_ffi_set_cert(void *r, void *cdata, char **err);
+    int ngx_http_lua_ffi_set_cert(ngx_http_request_t *r, void *cdata,
+        char **err);
 
-    int ngx_http_lua_ffi_set_priv_key(void *r, void *cdata, char **err);
+    int ngx_http_lua_ffi_set_priv_key(ngx_http_request_t *r, void *cdata,
+        char **err);
 
     void ngx_http_lua_ffi_free_cert(void *cdata);
 
     void ngx_http_lua_ffi_free_priv_key(void *cdata);
 
-    int ngx_http_lua_ffi_ssl_verify_client(void *r,
+    int ngx_http_lua_ffi_ssl_verify_client(ngx_http_request_t *r,
         void *client_certs, void *trusted_certs, int depth, char **err);
 
     int ngx_http_lua_ffi_ssl_client_random(ngx_http_request_t *r,
         const unsigned char *out, size_t *outlen, char **err);
 
-    int ngx_http_lua_ffi_ssl_export_keying_material(void *r,
+    int ngx_http_lua_ffi_ssl_export_keying_material(ngx_http_request_t *r,
         unsigned char *out, size_t out_size,
         const char *label, size_t llen,
         const unsigned char *ctx, size_t ctxlen, int use_ctx, char **err);
 
-    int ngx_http_lua_ffi_ssl_export_keying_material_early(void *r,
+    int ngx_http_lua_ffi_ssl_export_keying_material_early(ngx_http_request_t *r,
         unsigned char *out, size_t out_size,
         const char *label, size_t llen,
         const unsigned char *ctx, size_t ctxlen, char **err);
@@ -197,17 +200,20 @@ elseif subsystem == 'stream' then
     void *ngx_stream_lua_ffi_parse_der_priv_key(const unsigned char *der,
         size_t der_len, char **err);
 
-    void *ngx_stream_lua_ffi_get_req_ssl_pointer(void *r, char **err);
+    void *ngx_stream_lua_ffi_get_req_ssl_pointer(ngx_stream_lua_request_t *r,
+        char **err);
 
-    int ngx_stream_lua_ffi_set_cert(void *r, void *cdata, char **err);
+    int ngx_stream_lua_ffi_set_cert(ngx_stream_lua_request_t *r, void *cdata,
+        char **err);
 
-    int ngx_stream_lua_ffi_set_priv_key(void *r, void *cdata, char **err);
+    int ngx_stream_lua_ffi_set_priv_key(ngx_stream_lua_request_t *r,
+        void *cdata, char **err);
 
     void ngx_stream_lua_ffi_free_cert(void *cdata);
 
     void ngx_stream_lua_ffi_free_priv_key(void *cdata);
 
-    int ngx_stream_lua_ffi_ssl_verify_client(void *r,
+    int ngx_stream_lua_ffi_ssl_verify_client(ngx_stream_lua_request_t *r,
         void *client_certs, void *trusted_certs, int depth, char **err);
 
     int ngx_stream_lua_ffi_ssl_client_random(ngx_stream_lua_request_t *r,
