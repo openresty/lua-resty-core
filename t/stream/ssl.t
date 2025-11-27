@@ -2514,3 +2514,41 @@ qr/ssl pointer: cdata<void \*>: 0x[0-9a-f]+,/
 [alert]
 [crit]
 [error]
+
+
+
+=== TEST 31: get upstream SSL pointer
+Just for test api.
+The ssl_session_reuesed is always false in log_by_lua phase.
+--- stream_config
+    lua_package_path "$TEST_NGINX_LUA_PACKAGE_PATH";
+
+    server {
+        listen 127.0.0.1:$TEST_NGINX_RAND_PORT_1 ssl;
+        ssl_certificate ../../cert/test.crt;
+        ssl_certificate_key ../../cert/test.key;
+
+        return 'it works!\n';
+    }
+--- stream_server_config
+    lua_ssl_trusted_certificate ../../cert/test.crt;
+    proxy_pass 127.0.0.1:$TEST_NGINX_RAND_PORT_1;
+    proxy_ssl on;
+    log_by_lua_block {
+        local ssl = require "ngx.ssl"
+        local ssl_conn, err = ssl.get_upstream_ssl_pointer()
+        if err ~= nil then
+            ngx.log(ngx.ERR, "failed to get ssl pointer: ", err)
+            return
+        end
+        ngx.log(ngx.INFO, "session reused: ", ssl.ssl_session_reused(ssl_conn))
+    }
+
+--- stream_response
+it works!
+--- error_log eval
+qr/session reused: false/
+--- no_error_log
+[alert]
+[crit]
+[error]

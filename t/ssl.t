@@ -3214,6 +3214,11 @@ output key length: 16
             local ssl_pointer, err = ssl.get_req_ssl_pointer()
             if not ssl_pointer then
                 ngx.log(ngx.ERR, "cann't get SSL pointer")
+            else
+                local reused, err = ssl.ssl_session_reused(ssl_pointer)
+                if reused then
+                    ngx.log(ngx.ERR, "reused state is true but expected state is false")
+                end
             end
         }
         ssl_certificate ../../cert/test.crt;
@@ -3485,3 +3490,58 @@ qr/1: SHARED_CIPHER 0x/]
 [alert]
 [crit]
 [error]
+
+
+
+=== TEST 36: get upstream SSL pointer
+--- http_config
+    lua_package_path "$TEST_NGINX_LUA_PACKAGE_PATH";
+
+    upstream backend {
+        server unix:$TEST_NGINX_HTML_DIR/nginx.sock;
+        keepalive 32;
+    }
+
+    server {
+        listen unix:$TEST_NGINX_HTML_DIR/nginx.sock ssl;
+        server_name   test.com;
+        ssl_certificate ../../cert/test.crt;
+        ssl_certificate_key ../../cert/test.key;
+
+        server_tokens off;
+        location / {
+            default_type 'text/plain';
+            content_by_lua_block {
+                ngx.say("ok")
+            }
+            more_clear_headers Date;
+        }
+    }
+--- config
+    server_tokens off;
+    lua_ssl_trusted_certificate ../../cert/test.crt;
+
+    location /t {
+        proxy_pass https://backend/nginx.sock;
+        header_filter_by_lua_block {
+            local ssl = require "ngx.ssl"
+            local ssl_pointer, err = ssl.get_upstream_ssl_pointer()
+            if not ssl_pointer then
+                ngx.log(ngx.ERR, "cann't get upstream SSL pointer: ", err)
+            end
+
+            local reused, err = ssl.ssl_session_reused(ssl_pointer)
+            ngx.log(ngx.INFO, "upstream ssl state: ", reused, ", err: ", err)
+        }
+    }
+
+--- request
+GET /t
+--- response_body
+ok
+--- error_log eval
+qr/upstream ssl state: (false|true)/
+--- no_error_log
+[error]
+[emerg]
+[crit]
