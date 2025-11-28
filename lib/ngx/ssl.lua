@@ -97,7 +97,8 @@ if subsystem == 'http' then
     void *ngx_http_lua_ffi_parse_der_priv_key(const char *data, size_t len,
         char **err) ;
 
-    void *ngx_http_lua_ffi_get_req_ssl_pointer(ngx_http_request_t *r, char **err);
+    void *ngx_http_lua_ffi_get_req_ssl_pointer(ngx_http_request_t *r,
+        char **err);
 
     void *ngx_http_lua_ffi_get_upstream_ssl_pointer(
         ngx_http_request_t *r, char **err);
