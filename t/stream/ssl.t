@@ -815,7 +815,7 @@ lua ssl server name: "test.com"
         ssl_certificate_by_lua_block {
             local ssl = require "ngx.ssl"
 
-            local ver, err = ssl.get_tls1_version_str(resp)
+            local ver, err = ssl.get_tls1_version_str()
             if not ver then
                 ngx.log(ngx.ERR, "failed to get TLS1 version: ", err)
                 return
@@ -882,7 +882,7 @@ got TLS1 version: SSLv3,
         ssl_certificate_by_lua_block {
             local ssl = require "ngx.ssl"
 
-            local ver, err = ssl.get_tls1_version_str(resp)
+            local ver, err = ssl.get_tls1_version_str()
             if not ver then
                 ngx.log(ngx.ERR, "failed to get TLS1 version: ", err)
                 return
@@ -948,7 +948,7 @@ got TLS1 version: TLSv1,
         ssl_certificate_by_lua_block {
             local ssl = require "ngx.ssl"
 
-            local ver, err = ssl.get_tls1_version_str(resp)
+            local ver, err = ssl.get_tls1_version_str()
             if not ver then
                 ngx.log(ngx.ERR, "failed to get TLS1 version: ", err)
                 return
@@ -1014,7 +1014,7 @@ got TLS1 version: TLSv1.1,
         ssl_certificate_by_lua_block {
             local ssl = require "ngx.ssl"
 
-            local ver, err = ssl.get_tls1_version_str(resp)
+            local ver, err = ssl.get_tls1_version_str()
             if not ver then
                 ngx.log(ngx.ERR, "failed to get TLS1 version: ", err)
                 return
@@ -1853,7 +1853,7 @@ qr/subject=\/?C(?<eq>\s?=\s?)US(?<sep>\/|,\s)ST\k<eq>California\k<sep>L\k<eq>San
         ssl_certificate_by_lua_block {
             local ssl = require "ngx.ssl"
 
-            local ver, err = ssl.get_tls1_version_str(resp)
+            local ver, err = ssl.get_tls1_version_str()
             if not ver then
                 ngx.log(ngx.ERR, "failed to get TLS1 version: ", err)
                 return
