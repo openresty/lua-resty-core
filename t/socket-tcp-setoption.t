@@ -785,3 +785,73 @@ GET /t
 qr/\Aenabling rcvbuf failed: [\/\s\w]+\n\z/
 --- no_error_log
 [error]
+
+
+
+=== TEST 16: keepintvl
+--- config
+    set $port $TEST_NGINX_SERVER_PORT;
+
+    location /t {
+        content_by_lua_block {
+            require "resty.core.socket"
+
+            local port = ngx.var.port
+            local sock = ngx.socket.tcp()
+            local ok, err = sock:connect("127.0.0.1", port)
+            if not ok then
+                ngx.say("failed to connect: ", err)
+                return
+            end
+            local v1, err = sock:getoption("keepalive")
+            if not v1 then
+                ngx.say("get default keepalive failed: ", err)
+                return
+            end
+
+            ok, err = sock:setoption("keepalive", 10)
+            if not ok then
+                ngx.say("enabling keepalive failed: ", err)
+                return
+            end
+            local v2, err = sock:getoption("keepalive")
+            if not v2 then
+                ngx.say("get enabled keepalive failed: ", err)
+                return
+            end
+            ngx.say("keepalive changes from ", v1, " to ", v2)
+
+            ok, err = sock:setoption("keepintvl", 3)
+            if not ok then
+                ngx.say("enable keepintvl failed: ", err)
+                return
+            end
+            local intvl, err = sock:getoption("keepintvl")
+            if not intvl then
+                ngx.say("get keepintvl failed: ", err)
+                return
+            end
+            ngx.say("keepintvl is ", intvl)
+
+            ok, err = sock:setoption("keepcnt", 5)
+            if not ok then
+                ngx.say("enable keepcnt failed: ", err)
+                return
+            end
+            local keepcnt, err = sock:getoption("keepcnt")
+            if not intvl then
+                ngx.say("get keepcnt failed: ", err)
+                return
+            end
+            ngx.say("keepcnt is ", keepcnt)
+            sock:close()
+        }
+    }
+--- request
+GET /t
+--- response_body
+keepalive changes from 0 to 1
+keepintvl is 3
+keepcnt is 5
+--- no_error_log
+[error]

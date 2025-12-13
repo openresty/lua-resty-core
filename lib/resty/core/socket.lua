@@ -32,7 +32,8 @@ local option_index = {
     ["tcp-nodelay"] = 3,
     ["sndbuf"]      = 4,
     ["rcvbuf"]      = 5,
-    ["ip-transparent"] = 6,
+    ["keepintvl"]   = 6,
+    ["keepcnt"]     = 7,
 }
 
 
@@ -342,12 +343,18 @@ do
     method_table.setclientcert = setclientcert
     method_table.sslhandshake  = sslhandshake
     method_table.getfd = getfd
+    method_table.getoption = getoption
+    method_table.setoption = setoption
 
     method_table = registry.__tcp_req_cosocket_mt
     method_table.getfd = getfd
+    method_table.getoption = getoption
+    method_table.setoption = setoption
 
     method_table = registry.__tcp_raw_req_cosocket_mt
     method_table.getfd = getfd
+    method_table.getoption = getoption
+    method_table.setoption = setoption
 end
 
 elseif subsystem == 'stream' then
@@ -359,6 +366,8 @@ do
 
     method_table = registry.__tcp_raw_req_cosocket_mt
     method_table.getfd = getfd
+    method_table.getoption = getoption
+    method_table.setoption = setoption
 end
 end
 
