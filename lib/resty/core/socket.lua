@@ -75,7 +75,7 @@ ngx_http_lua_ffi_socket_tcp_getfd(ngx_http_request_t *r,
 
 ngx_lua_ffi_socket_tcp_getoption = C.ngx_http_lua_ffi_socket_tcp_getoption
 ngx_lua_ffi_socket_tcp_setoption = C.ngx_http_lua_ffi_socket_tcp_setoption
-ngx_lua_ffi_socket_getfd = ngx_http_lua_ffi_socket_tcp_getfd
+ngx_lua_ffi_socket_getfd = C.ngx_http_lua_ffi_socket_tcp_getfd
 
 elseif subsystem == 'stream' then
 
@@ -97,7 +97,7 @@ ngx_stream_lua_ffi_socket_tcp_getfd(ngx_stream_lua_request_t *r,
 
 ngx_lua_ffi_socket_tcp_getoption = C.ngx_stream_lua_ffi_socket_tcp_getoption
 ngx_lua_ffi_socket_tcp_setoption = C.ngx_stream_lua_ffi_socket_tcp_setoption
-ngx_lua_ffi_socket_getfd = ngx_stream_lua_ffi_socket_tcp_getfd
+ngx_lua_ffi_socket_getfd = C.ngx_stream_lua_ffi_socket_tcp_getfd
 end
 
 
@@ -203,7 +203,7 @@ local function getfd(cosocket)
 
     local u = get_tcp_socket(cosocket)
 
-    local fd = C.ngx_stream_lua_ffi_socket_tcp_getfd(r, u, errmsg)
+    local fd = ngx_lua_ffi_socket_getfd(r, u, errmsg)
     if (fd < 0) then
         return nil, ffi_str(errmsg[0])
     end
