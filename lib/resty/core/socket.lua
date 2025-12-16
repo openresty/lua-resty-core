@@ -153,9 +153,7 @@ local function getoption(cosocket, option)
 end
 
 
-
 local function setoption(cosocket, option, value)
-
     if option == nil then
         return nil, 'missing the "option" argument'
     end
