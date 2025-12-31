@@ -71,6 +71,10 @@ ngx_http_lua_ffi_ssl_free_session(void *sess);
 int
 ngx_http_lua_ffi_socket_tcp_getfd(ngx_http_request_t *r,
     ngx_http_lua_socket_tcp_upstream_t *u, char **errmsg);
+int
+ngx_http_lua_socket_tcp_get_ssl_session(ngx_http_request_t *r,
+    ngx_http_lua_socket_tcp_upstream_t *u, void **sess,
+    char **errmsg);
 ]]
 
 ngx_lua_ffi_socket_tcp_getoption = C.ngx_http_lua_ffi_socket_tcp_getoption
@@ -102,6 +106,7 @@ end
 
 
 local output_value_buf = ffi_new("int[1]")
+local session_ptr      = ffi_new("void *[1]")
 local ERR_BUF_SIZE = 4096
 
 local FFI_OK         = base.FFI_OK
@@ -211,7 +216,6 @@ end
 
 
 if subsystem == 'http' then
-local session_ptr        = ffi_new("void *[1]")
 local server_name_str    = ffi_new("ngx_str_t[1]")
 local openssl_error_code = ffi_new("int[1]")
 
@@ -334,6 +338,26 @@ local function sslhandshake(cosocket, reused_session, server_name, ssl_verify,
 end
 
 
+local function getsslsession(cosocket)
+    if not cosocket then
+        error("ngx.socket getfd: expecting the cosocket object, but seen none")
+    end
+
+    local r = get_request()
+    if not r then
+        error("no request found")
+    end
+
+    local u = get_tcp_socket(cosocket)
+    local rc = C.ngx_http_lua_socket_tcp_get_ssl_session(r, u,
+                                                         session_ptr, errmsg)
+    if rc == FFI_ERROR then
+        return nil, ffi_str(errmsg[0])
+    end
+
+    return ffi_gc(session_ptr[0], C.ngx_http_lua_ffi_ssl_free_session)
+end
+
 do
     local method_table = registry.__tcp_cosocket_mt
     method_table.getoption = getoption
@@ -343,6 +367,7 @@ do
     method_table.getfd = getfd
     method_table.getoption = getoption
     method_table.setoption = setoption
+    method_table.getsslsession = getsslsession
 
     method_table = registry.__tcp_req_cosocket_mt
     method_table.getfd = getfd
