@@ -32,6 +32,7 @@ local context_names = {
     [0x00004000] = "ssl_client_hello",
     [0x00008000] = "server_rewrite",
     [0x00010000] = "proxy_ssl_verify",
+    [0x00020000] = "precontent",
 }
 
 
