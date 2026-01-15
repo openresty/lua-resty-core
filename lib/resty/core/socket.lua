@@ -40,6 +40,8 @@ local option_index = {
 local ngx_lua_ffi_socket_tcp_getoption
 local ngx_lua_ffi_socket_tcp_setoption
 local ngx_lua_ffi_socket_getfd
+local ngx_lua_ffi_socket_getsslpointer
+local ngx_lua_ffi_socket_getsslctx
 
 if subsystem == 'http' then
 ffi.cdef[[
@@ -75,11 +77,21 @@ int
 ngx_http_lua_socket_tcp_get_ssl_session(ngx_http_request_t *r,
     ngx_http_lua_socket_tcp_upstream_t *u, void **sess,
     char **errmsg);
+int
+ngx_http_lua_ffi_socket_tcp_get_ssl_pointer(ngx_http_request_t *r,
+    ngx_http_lua_socket_tcp_upstream_t *u, void **pssl,
+    char **errmsg);
+int
+ngx_http_lua_ffi_socket_tcp_get_ssl_ctx(ngx_http_request_t *r,
+    ngx_http_lua_socket_tcp_upstream_t *u, void **pctx,
+    char **errmsg);
 ]]
 
 ngx_lua_ffi_socket_tcp_getoption = C.ngx_http_lua_ffi_socket_tcp_getoption
 ngx_lua_ffi_socket_tcp_setoption = C.ngx_http_lua_ffi_socket_tcp_setoption
 ngx_lua_ffi_socket_getfd = C.ngx_http_lua_ffi_socket_tcp_getfd
+ngx_lua_ffi_socket_getsslpointer = C.ngx_http_lua_ffi_socket_tcp_get_ssl_pointer
+ngx_lua_ffi_socket_getsslctx = C.ngx_http_lua_ffi_socket_tcp_get_ssl_ctx
 
 elseif subsystem == 'stream' then
 
@@ -97,11 +109,21 @@ int
 ngx_stream_lua_ffi_socket_tcp_getfd(ngx_stream_lua_request_t *r,
    ngx_stream_lua_socket_tcp_upstream_t *u,
    char **errmsg);
+int
+ngx_stream_lua_ffi_socket_tcp_get_ssl_pointer(ngx_stream_lua_request_t *r,
+    ngx_stream_lua_socket_tcp_upstream_t *u, void **pssl,
+    char **errmsg);
+int
+ngx_stream_lua_ffi_socket_tcp_get_ssl_ctx(ngx_stream_lua_request_t *r,
+    ngx_stream_lua_socket_tcp_upstream_t *u, void **pctx,
+    char **errmsg);
 ]]
 
 ngx_lua_ffi_socket_tcp_getoption = C.ngx_stream_lua_ffi_socket_tcp_getoption
 ngx_lua_ffi_socket_tcp_setoption = C.ngx_stream_lua_ffi_socket_tcp_setoption
 ngx_lua_ffi_socket_getfd = C.ngx_stream_lua_ffi_socket_tcp_getfd
+ngx_lua_ffi_socket_getsslpointer = C.ngx_stream_lua_ffi_socket_tcp_get_ssl_pointer
+ngx_lua_ffi_socket_getsslctx = C.ngx_stream_lua_ffi_socket_tcp_get_ssl_ctx
 end
 
 
@@ -213,6 +235,49 @@ local function getfd(cosocket)
 
     return fd;
 end
+
+
+local function getsslpointer(cosocket)
+    if not cosocket then
+        error("ngx.socket getfd: expecting the cosocket object, but seen none")
+    end
+
+    local r = get_request()
+    if not r then
+        error("no request found")
+    end
+
+    local u = get_tcp_socket(cosocket)
+    local rc = ngx_lua_ffi_socket_getsslpointer(r, u,
+                                                session_ptr, errmsg)
+    if rc == FFI_ERROR then
+        return nil, ffi_str(errmsg[0])
+    end
+
+    return session_ptr[0]
+end
+
+
+local function getsslctx(cosocket)
+    if not cosocket then
+        error("ngx.socket getfd: expecting the cosocket object, but seen none")
+    end
+
+    local r = get_request()
+    if not r then
+        error("no request found")
+    end
+
+    local u = get_tcp_socket(cosocket)
+    local rc = ngx_lua_ffi_socket_getsslctx(r, u,
+                                            session_ptr, errmsg)
+    if rc == FFI_ERROR then
+        return nil, ffi_str(errmsg[0])
+    end
+
+    return session_ptr[0]
+end
+
 
 
 if subsystem == 'http' then
@@ -358,6 +423,7 @@ local function getsslsession(cosocket)
     return ffi_gc(session_ptr[0], C.ngx_http_lua_ffi_ssl_free_session)
 end
 
+
 do
     local method_table = registry.__tcp_cosocket_mt
     method_table.getoption = getoption
@@ -368,6 +434,8 @@ do
     method_table.getoption = getoption
     method_table.setoption = setoption
     method_table.getsslsession = getsslsession
+    method_table.getsslpointer = getsslpointer
+    method_table.getsslctx = getsslctx
 
     method_table = registry.__tcp_req_cosocket_mt
     method_table.getfd = getfd
@@ -386,6 +454,8 @@ do
     method_table.getoption = getoption
     method_table.setoption = setoption
     method_table.getfd = getfd
+    method_table.getsslpointer = getsslpointer
+    method_table.getsslctx = getsslctx
 
     method_table = registry.__tcp_raw_req_cosocket_mt
     method_table.getfd = getfd
