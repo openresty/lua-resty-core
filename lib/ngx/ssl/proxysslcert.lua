@@ -10,7 +10,6 @@ local C = ffi.C
 local ffi_str = ffi.string
 local get_request = base.get_request
 local error = error
-local tonumber = tonumber
 local errmsg = base.get_errmsg_ptr()
 local FFI_OK = base.FFI_OK
 local subsystem = ngx.config.subsystem
