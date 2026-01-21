@@ -3,6 +3,7 @@
 
 local ffi = require 'ffi'
 local base = require "resty.core.base"
+local ngx_configure = require "ngx.configure"
 
 
 local _M = {
@@ -464,6 +465,10 @@ local errmsg = base.get_errmsg_ptr()
 
 
 local function check_zone(zone)
+    if ngx_configure.is_configure_phase() then
+        error("API disabled in the context of configure_by_lua", 3)
+    end
+
     if not zone or type(zone) ~= "table" then
         error("bad \"zone\" argument", 3)
     end
