@@ -13,10 +13,11 @@ local type     = type
 local select   = select
 local registry = debug.getregistry()
 
-local C       = ffi.C
-local ffi_new = ffi.new
-local ffi_str = ffi.string
-local ffi_gc  = ffi.gc
+local str_byte = string.byte
+local C        = ffi.C
+local ffi_new  = ffi.new
+local ffi_str  = ffi.string
+local ffi_gc   = ffi.gc
 
 local get_string_buf = base.get_string_buf
 local get_size_ptr   = base.get_size_ptr
@@ -60,7 +61,8 @@ int
 ngx_http_lua_ffi_socket_tcp_sslhandshake(ngx_http_request_t *r,
     ngx_http_lua_socket_tcp_upstream_t *u, void *sess,
     int enable_session_reuse, ngx_str_t *server_name, int verify,
-    int ocsp_status_req, void *chain, void *pkey, char **errmsg);
+    int ocsp_status_req, void *chain, void *pkey, ngx_str_t *alpn,
+    char **errmsg);
 
 int
 ngx_http_lua_ffi_socket_tcp_get_sslhandshake_result(ngx_http_request_t *r,
@@ -283,6 +285,7 @@ end
 
 if subsystem == 'http' then
 local server_name_str    = ffi_new("ngx_str_t[1]")
+local alpn_str           = ffi_new("ngx_str_t[1]")
 local openssl_error_code = ffi_new("int[1]")
 
 
@@ -315,7 +318,7 @@ end
 
 
 local function sslhandshake(cosocket, reused_session, server_name, ssl_verify,
-    send_status_req, ...)
+    send_status_req, alpn, ...)
 
     local n = select("#", ...)
     if not cosocket or n > 0 then
@@ -339,6 +342,22 @@ local function sslhandshake(cosocket, reused_session, server_name, ssl_verify,
         server_name_str[0].len = 0
     end
 
+    if alpn then
+        local _bytes = {}
+        for _, proto_str in ipairs(alpn)  do
+            _bytes[#_bytes + 1] = #proto_str
+            for _, proto_byte in ipairs(
+                    { str_byte(proto_str, 1, #proto_str) }) do
+                _bytes[#_bytes + 1] = proto_byte
+            end
+        end
+        alpn_str[0].data = ffi.new("unsigned char[?]", #_bytes, _bytes)
+        alpn_str[0].len = #_bytes
+    else
+        alpn_str[0].data = nil
+        alpn_str[0].len = 0
+    end
+
     local u = get_tcp_socket(cosocket)
 
     local rc = C.ngx_http_lua_ffi_socket_tcp_sslhandshake(r, u,
@@ -349,6 +368,7 @@ local function sslhandshake(cosocket, reused_session, server_name, ssl_verify,
                    send_status_req and 1 or 0,
                    cosocket[SOCKET_CLIENT_CERT_INDEX],
                    cosocket[SOCKET_CLIENT_PKEY_INDEX],
+                   alpn_str,
                    errmsg)
 
     if rc == FFI_NO_REQ_CTX then
