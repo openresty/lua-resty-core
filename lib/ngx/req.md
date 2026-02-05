@@ -65,7 +65,7 @@ This method adds the specified header and its value to the current
 request. It works similarly as
 [ngx.req.set_header](https://github.com/openresty/lua-nginx-module#ngxreqset_header),
 with the exception that when the header already exists, the specified value(s)
-will be appended instead of overriden.
+will be appended instead of overridden.
 
 The first argument `header_name` must be a non-empty string.
 

@@ -209,7 +209,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 
 [Back to TOC](#table-of-contents)
 
-See AlsoCopyright
+See Also
 ========
 * the ngx_lua module: https://github.com/openresty/lua-nginx-module
 * the [proxy_ssl_certificate_by_lua*](https://github.com/openresty/lua-nginx-module/#proxy_ssl_certificate_by_lua_block) directive.

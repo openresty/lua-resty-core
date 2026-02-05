@@ -99,7 +99,7 @@ get_client_hello_server_name
 
 Returns the TLS SNI (Server Name Indication) name set by the client.
 
-Return `nil` when then the extension does not exist.
+Return `nil` when the extension does not exist.
 
 In case of errors, it returns `nil` and a string describing the error.
 
@@ -117,7 +117,7 @@ get_supported_versions
 
 Returns the table of ssl hello supported versions set by the client.
 
-Return `nil` when then the extension does not exist.
+Return `nil` when the extension does not exist.
 
 In case of errors, it returns `nil` and a string describing the error.
 

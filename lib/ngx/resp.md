@@ -40,7 +40,7 @@ ngx_resp.add_header("Foo", "baz")
 
 
 ngx_resp.set(531, "user defined error")
---> the response line will be: 531 user defiend error
+--> the response line will be: 531 user defined error
 ```
 
 [Back to TOC](#table-of-contents)
