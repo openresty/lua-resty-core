@@ -225,7 +225,7 @@ set_der_priv_key
 
 **context:** *ssl_certificate_by_lua&#42;*
 
-Sets the DER-formatted prviate key for the current SSL connection.
+Sets the DER-formatted private key for the current SSL connection.
 
 Returns `true` on success, or a `nil` value and a string describing the error otherwise.
 
@@ -502,7 +502,7 @@ parse_pem_cert
 
 **context:** *any*
 
-Converts the PEM-formated SSL certificate chain data into an opaque cdata pointer (for later uses
+Converts the PEM-formatted SSL certificate chain data into an opaque cdata pointer (for later uses
 in the [set_cert](#set_cert)
 function, for example).
 
@@ -541,7 +541,7 @@ parse_der_cert
 
 **context:** *any*
 
-Converts the DER-formated SSL certificate chain data into an opaque cdata pointer (for later uses
+Converts the DER-formatted SSL certificate chain data into an opaque cdata pointer (for later uses
 in the [set_cert](#set_cert)
 function, for example).
 

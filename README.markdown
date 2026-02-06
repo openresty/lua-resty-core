@@ -144,7 +144,7 @@ cd lua-resty-core
 sudo make install LUA_LIB_DIR=/opt/nginx/lualib
 ```
 
-After that, you need to add the above directory to the LuaJIT search direcotries with `lua_package_path` nginx directive in the http context and stream context.
+After that, you need to add the above directory to the LuaJIT search directories with `lua_package_path` nginx directive in the http context and stream context.
 
 ```
 lua_package_path "/opt/nginx/lualib/?.lua;;";
