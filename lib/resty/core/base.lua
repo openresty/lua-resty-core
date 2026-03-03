@@ -21,7 +21,8 @@ if subsystem == 'http' then
        or not ngx.config.ngx_lua_version
        or ngx.config.ngx_lua_version ~= 10029
     then
-        error("ngx_http_lua_module 0.10.29 required")
+        local ver = ngx.config and tostring(ngx.config.ngx_lua_version) or 'nil'
+        error("ngx_http_lua_module 0.10.29 required but got " .. ver)
     end
 
 elseif subsystem == 'stream' then
@@ -29,7 +30,8 @@ elseif subsystem == 'stream' then
        or not ngx.config.ngx_lua_version
        or ngx.config.ngx_lua_version ~= 17
     then
-        error("ngx_stream_lua_module 0.0.17 required")
+        local ver = ngx.config and tostring(ngx.config.ngx_lua_version) or 'nil'
+        error("ngx_stream_lua_module 0.0.17 required but got " .. ver)
     end
 
 else
