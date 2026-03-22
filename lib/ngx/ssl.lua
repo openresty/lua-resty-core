@@ -41,6 +41,8 @@ local ngx_lua_ffi_free_cert
 local ngx_lua_ffi_free_priv_key
 local ngx_lua_ffi_ssl_verify_client
 local ngx_lua_ffi_ssl_client_random
+local ngx_lua_ffi_ssl_server_random
+local ngx_lua_ffi_ssl_session_master_key
 local ngx_lua_ffi_ssl_export_keying_material
 local ngx_lua_ffi_ssl_export_keying_material_early
 local ngx_lua_ffi_get_req_ssl_pointer
@@ -117,6 +119,12 @@ if subsystem == 'http' then
     int ngx_http_lua_ffi_ssl_client_random(ngx_http_request_t *r,
         const unsigned char *out, size_t *outlen, char **err);
 
+    int ngx_http_lua_ffi_ssl_server_random(ngx_http_request_t *r,
+        const unsigned char *out, size_t *outlen, char **err);
+
+    int ngx_http_lua_ffi_ssl_session_master_key(ngx_http_request_t *r,
+        const unsigned char *out, size_t *outlen, char **err);
+
     int ngx_http_lua_ffi_ssl_export_keying_material(void *r,
         unsigned char *out, size_t out_size,
         const char *label, size_t llen,
@@ -154,6 +162,9 @@ if subsystem == 'http' then
     ngx_lua_ffi_free_priv_key = C.ngx_http_lua_ffi_free_priv_key
     ngx_lua_ffi_ssl_verify_client = C.ngx_http_lua_ffi_ssl_verify_client
     ngx_lua_ffi_ssl_client_random = C.ngx_http_lua_ffi_ssl_client_random
+    ngx_lua_ffi_ssl_server_random = C.ngx_http_lua_ffi_ssl_server_random
+    ngx_lua_ffi_ssl_session_master_key =
+        C.ngx_http_lua_ffi_ssl_session_master_key
     ngx_lua_ffi_ssl_export_keying_material =
         C.ngx_http_lua_ffi_ssl_export_keying_material
     ngx_lua_ffi_ssl_export_keying_material_early =
@@ -704,6 +715,60 @@ function _M.get_client_random(outlen)
     sizep[0] = outlen
 
     local rc = ngx_lua_ffi_ssl_client_random(r, out, sizep, errmsg)
+    if rc == FFI_OK then
+        if outlen == 0 then
+            return tonumber(sizep[0])
+        end
+
+        return ffi_str(out, sizep[0])
+    end
+
+    return nil, ffi_str(errmsg[0])
+end
+
+
+function _M.get_server_random(outlen)
+    local r = get_request()
+    if not r then
+        error("no request found")
+    end
+
+    if outlen == nil then
+        outlen = 32
+    end
+
+    local out = get_string_buf(outlen)
+    local sizep = get_size_ptr()
+    sizep[0] = outlen
+
+    local rc = ngx_lua_ffi_ssl_server_random(r, out, sizep, errmsg)
+    if rc == FFI_OK then
+        if outlen == 0 then
+            return tonumber(sizep[0])
+        end
+
+        return ffi_str(out, sizep[0])
+    end
+
+    return nil, ffi_str(errmsg[0])
+end
+
+
+function _M.get_session_master_key(outlen)
+    local r = get_request()
+    if not r then
+        error("no request found")
+    end
+
+    if outlen == nil then
+        outlen = 48
+    end
+
+    local out = get_string_buf(outlen)
+    local sizep = get_size_ptr()
+    sizep[0] = outlen
+
+    local rc = ngx_lua_ffi_ssl_session_master_key(r, out, sizep, errmsg)
     if rc == FFI_OK then
         if outlen == 0 then
             return tonumber(sizep[0])
