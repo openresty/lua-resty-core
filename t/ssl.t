@@ -3737,7 +3737,7 @@ received: Server: nginx
 received: Content-Type: text/plain
 received: Content-Length: 4
 received: Connection: close
-received:
+received: 
 received: foo
 close: 1 nil
 
@@ -3761,21 +3761,30 @@ server-random length: 32
         ssl_protocols TLSv1.2;
         ssl_certificate_by_lua_block {
             local ssl = require "ngx.ssl"
-            local master_key_len = ssl.get_session_master_key(0)
-            print("master-key length: ", master_key_len)
-
-            local master_key = ssl.get_session_master_key()
-            if master_key and #master_key > 0 then
-                print("got master key of length: ", #master_key)
-            end
+            ssl.clear_certs()
+            ssl.set_der_cert(ssl.cert_pem_to_der(
+                assert(io.open("t/cert/test.crt")):read("*a")))
+            ssl.set_der_priv_key(ssl.priv_key_pem_to_der(
+                assert(io.open("t/cert/test.key")):read("*a")))
         }
+
         ssl_certificate ../../cert/test.crt;
         ssl_certificate_key ../../cert/test.key;
 
         server_tokens off;
         location /foo {
             default_type 'text/plain';
-            content_by_lua_block {ngx.status = 201 ngx.say("foo") ngx.exit(201)}
+            content_by_lua_block {
+                local ssl = require "ngx.ssl"
+                local mk_len = ssl.get_session_master_key(0)
+                ngx.say("master-key length: ", mk_len)
+
+                local mk = ssl.get_session_master_key()
+                if mk and #mk > 0 then
+                    ngx.say("got master key of length: ",
+                            #mk)
+                end
+            }
             more_clear_headers Date;
         }
     }
@@ -3818,7 +3827,6 @@ server-random length: 32
                 while true do
                     local line, err = sock:receive()
                     if not line then
-                        -- ngx.say("failed to receive response status line: ", err)
                         break
                     end
 
@@ -3828,7 +3836,6 @@ server-random length: 32
                 local ok, err = sock:close()
                 ngx.say("close: ", ok, " ", err)
             end  -- do
-            -- collectgarbage()
         }
     }
 
@@ -3838,18 +3845,15 @@ GET /t
 connected: 1
 ssl handshake: cdata
 sent http request: 56 bytes.
-received: HTTP/1.1 201 Created
+received: HTTP/1.1 200 OK
 received: Server: nginx
 received: Content-Type: text/plain
-received: Content-Length: 4
+received: Transfer-Encoding: chunked
 received: Connection: close
 received:
-received: foo
+received: master-key length: 48
+received: got master key of length: 48
 close: 1 nil
-
---- error_log
-master-key length: 48
-got master key of length: 48
 
 --- no_error_log
 [error]
