@@ -32,6 +32,8 @@ Table of Contents
     * [set_priv_key](#set_priv_key)
     * [verify_client](#verify_client)
     * [get_client_random](#get_client_random)
+    * [get_server_random](#get_server_random)
+    * [get_session_master_key](#get_session_master_key)
     * [get_shared_ssl_ciphers](#get_shared_ssl_ciphers)
     * [get_req_ssl_pointer](#get_req_ssl_pointer)
     * [get_upstream_ssl_pointer](#get_upstream_ssl_pointer)
@@ -649,6 +651,40 @@ If the `outlen` is zero, this function returns the total length of the client_ra
 If omitted, will use the value 32.
 
 This function can be called in any context where downstream https is used, but in the context of [ssl_client_hello_by_lua*](https://github.com/openresty/lua-nginx-module/#ssl_client_hello_by_lua_block), it can not return the real client_random value, just a string filled with 0.
+
+[Back to TOC](#table-of-contents)
+
+get_server_random
+-----------
+**syntax:** *server_random = ssl.get_server_random(outlen?)*
+
+**context:** *any*
+
+Returns the random value sent from the server to the client during the initial SSL/TLS handshake. This wraps OpenSSL's `SSL_get_server_random()`.
+
+The `outlen` parameter indicates the maximum length of the server_random value returned.
+If the `outlen` is zero, this function returns the total length of the server_random value.
+If omitted, will use the value 32.
+
+This function can be called in any context where downstream https is used.
+
+[Back to TOC](#table-of-contents)
+
+get_session_master_key
+-----------
+**syntax:** *master_key = ssl.get_session_master_key(outlen?)*
+
+**context:** *any*
+
+Returns the master secret from the current SSL session. This wraps OpenSSL's `SSL_SESSION_get_master_key()`.
+
+The `outlen` parameter indicates the maximum length of the master key value returned.
+If the `outlen` is zero, this function returns the total length of the master key value.
+If omitted, will use the value 48 (i.e. `SSL_MAX_MASTER_KEY_LENGTH`).
+
+Note that in TLS 1.3, the master secret is not used in the same way as in TLS 1.2, so this function is primarily useful for TLS 1.2 connections.
+
+This function can be called in any context where downstream https is used.
 
 [Back to TOC](#table-of-contents)
 
