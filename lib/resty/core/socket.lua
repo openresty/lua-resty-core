@@ -85,6 +85,10 @@ int
 ngx_http_lua_ffi_socket_tcp_get_ssl_ctx(ngx_http_request_t *r,
     ngx_http_lua_socket_tcp_upstream_t *u, void **pctx,
     char **errmsg);
+
+int
+ngx_http_lua_ffi_socket_tcp_settrustedstore(ngx_http_request_t *r,
+    ngx_http_lua_socket_tcp_upstream_t *u, void *store, char **errmsg);
 ]]
 
 ngx_lua_ffi_socket_tcp_getoption = C.ngx_http_lua_ffi_socket_tcp_getoption
@@ -155,6 +159,7 @@ local SOCKET_CTX_INDEX          = 1
 local SOCKET_CLIENT_CERT_INDEX  = 6
 local SOCKET_CLIENT_PKEY_INDEX  = 7
 local SOCKET_IP_TRANSPARENT_INDEX = 9
+local SOCKET_TRUSTED_STORE_INDEX  = 10
 
 
 local function get_tcp_socket(cosocket)
@@ -327,6 +332,48 @@ local function setclientcert(cosocket, cert, pkey)
 end
 
 
+local ngx_lua_ffi_socket_tcp_settrustedstore
+if pcall(function()
+    return C.ngx_http_lua_ffi_socket_tcp_settrustedstore
+end) then
+    ngx_lua_ffi_socket_tcp_settrustedstore =
+        C.ngx_http_lua_ffi_socket_tcp_settrustedstore
+end
+
+
+local NULL_STORE = ffi_new("void *", nil)
+
+
+local function settrustedstore(cosocket, store)
+    if not ngx_lua_ffi_socket_tcp_settrustedstore then
+        return nil, "tcpsock:settrustedstore is not supported by " ..
+                    "the current lua-nginx-module"
+    end
+
+    if store ~= nil and type(store) ~= "cdata" then
+        return nil, "bad store arg: cdata expected, got " .. type(store)
+    end
+
+    local r = get_request()
+    if not r then
+        error("no request found", 2)
+    end
+
+    local u = get_tcp_socket(cosocket)
+
+    local rc = ngx_lua_ffi_socket_tcp_settrustedstore(r, u,
+                                                     store or NULL_STORE,
+                                                     errmsg)
+    if rc ~= FFI_OK then
+        return nil, ffi_str(errmsg[0])
+    end
+
+    cosocket[SOCKET_TRUSTED_STORE_INDEX] = store
+
+    return true
+end
+
+
 local function sslhandshake(cosocket, reused_session, server_name, ssl_verify,
     send_status_req, ...)
 
@@ -443,6 +490,9 @@ do
     method_table.getoption = getoption
     method_table.setoption = setoption
     method_table.setclientcert = setclientcert
+    if ngx_lua_ffi_socket_tcp_settrustedstore then
+        method_table.settrustedstore = settrustedstore
+    end
     method_table.sslhandshake  = sslhandshake
     method_table.getfd = getfd
     method_table.getoption = getoption
