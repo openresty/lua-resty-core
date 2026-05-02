@@ -155,7 +155,7 @@ __DATA__
 --- request
 GET /t
 --- response_body_like
-^received: HTTP/1\.0 200 OK
+^received: HTTP/1\.[01] 200 OK
 --- no_error_log
 [error]
 [alert]
@@ -201,7 +201,7 @@ GET /t
 --- request
 GET /t
 --- response_body_like
-^handshake failed: .*certificate verify
+handshake failed: .*: unable to get local issuer certificate
 --- error_log
 lua ssl certificate verify error
 --- no_error_log
