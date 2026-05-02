@@ -309,6 +309,7 @@ in the current request before you reusing the `ctx` table in some other place.
 
 * [socket.setoption](https://github.com/openresty/lua-nginx-module#tcpsocksetoption)
 * [socket.setclientcert](https://github.com/openresty/lua-nginx-module#tcpsocksetclientcert)
+* [socket.settrustedstore](https://github.com/openresty/lua-nginx-module#tcpsocksettrustedstore)
 * [socket.sslhandshake](https://github.com/openresty/lua-nginx-module#tcpsocksslhandshake)
 
 [Back to TOC](#table-of-contents)
