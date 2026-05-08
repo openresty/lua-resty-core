@@ -139,6 +139,7 @@ SNI=one
 --- http_upstream
     upstream test_upstream {
         server 0.0.0.1;
+        keepalive 0;
 
         balancer_by_lua_block {
             local b = require "ngx.balancer"
@@ -192,6 +193,7 @@ lua balancer: keepalive saving connection \S+, host: 127.0.0.2:$ENV{TEST_NGINX_S
 === TEST 3: enable_keepalive: sanity(same ip port with different sni)
 --- http_upstream
     upstream test_upstream {
+        keepalive 0;
         server 0.0.0.1;
 
         balancer_by_lua_block {
@@ -238,6 +240,7 @@ lua balancer: keepalive saving connection \S+, host: 127.0.0.1:$ENV{TEST_NGINX_S
 --- http_upstream
     upstream test_upstream {
         server 0.0.0.1;
+        keepalive 0;
 
         balancer_by_lua_block {
             local b = require "ngx.balancer"
@@ -292,6 +295,7 @@ lua balancer: keepalive saving connection \S+, host: 127.0.0.2:$ENV{TEST_NGINX_S
 --- http_upstream
     upstream test_upstream {
         server 0.0.0.1;
+        keepalive 0;
 
         balancer_by_lua_block {
             local b = require "ngx.balancer"
@@ -390,6 +394,7 @@ ssl_client_s_dn=.*?CN=test\.com.*? ssl_protocol=TLSv1\.3
 --- http_upstream
     upstream test_upstream {
         server 0.0.0.1;
+        keepalive 0;
 
         balancer_by_lua_block {
             local b = require "ngx.balancer"
@@ -550,6 +555,7 @@ no upstream found
 === TEST 11: enable_keepalive: bad usage (bad context)
 --- http_upstream
     upstream test_upstream {
+        keepalive 0;
         server 127.0.0.1:$TEST_NGINX_SERVER_SSL_PORT;
     }
 --- config
@@ -576,6 +582,7 @@ API disabled in the current context
 --- http_upstream
     upstream test_upstream {
         server 0.0.0.1;
+        keepalive 0;
 
         balancer_by_lua_block {
             local b = require "ngx.balancer"
@@ -654,6 +661,7 @@ bad argument #2 to 'enable_keepalive' (expected >= 0)
 --- http_upstream
     upstream test_upstream {
         server 0.0.0.1;
+        keepalive 0;
 
         balancer_by_lua_block {
             local b = require "ngx.balancer"
@@ -697,6 +705,7 @@ lua balancer: keepalive saving connection \S+, host: 127.0.0.1:$ENV{TEST_NGINX_S
 --- http_upstream
     upstream test_upstream {
         server 0.0.0.1;
+        keepalive 0;
 
         balancer_by_lua_block {
             local b = require "ngx.balancer"
@@ -738,6 +747,7 @@ lua balancer: keepalive not saving connection \S+
 --- http_upstream
     upstream test_upstream {
         server 0.0.0.1;
+        keepalive 0;
 
         balancer_by_lua_block {
             local b = require "ngx.balancer"
@@ -773,6 +783,7 @@ lua balancer: keepalive not saving connection \S+
 --- http_upstream
     upstream test_upstream {
         server 0.0.0.1;
+        keepalive 0;
 
         balancer_by_lua_block {
             local b = require "ngx.balancer"
@@ -812,6 +823,7 @@ lua balancer: keepalive closing connection \S+$/
 --- http_upstream
     upstream test_upstream {
         server 0.0.0.1;
+        keepalive 0;
         balancer_keepalive 2;
         balancer_by_lua_block {
             local b = require "ngx.balancer"
@@ -862,6 +874,7 @@ lua balancer: keepalive saving connection \S+, host: 127.0.0.1:$ENV{TEST_NGINX_S
 --- http_upstream
     upstream test_upstream {
         server 0.0.0.1;
+        keepalive 0;
 
         balancer_by_lua_block {
             local b = require "ngx.balancer"
@@ -901,6 +914,7 @@ $/
 --- http_upstream
     upstream test_upstream {
         server 0.0.0.1;
+        keepalive 0;
 
         balancer_by_lua_block {
             local b = require "ngx.balancer"
@@ -937,6 +951,7 @@ $/
 --- http_upstream
     upstream test_upstream {
         server 0.0.0.1;
+        keepalive 0;
 
         balancer_by_lua_block {
             local b = require "ngx.balancer"
@@ -972,6 +987,7 @@ lua balancer: keepalive not saving connection \S+$/
 --- http_upstream
     upstream test_upstream {
         server 0.0.0.1;
+        keepalive 0;
 
         balancer_by_lua_block {
             local b = require "ngx.balancer"
@@ -1013,6 +1029,7 @@ lua balancer: keepalive not saving connection \S+$/
 --- http_upstream
     upstream test_upstream {
         server 0.0.0.1;
+        keepalive 0;
 
         balancer_by_lua_block {
             local b = require "ngx.balancer"
@@ -1072,6 +1089,7 @@ lua balancer: keepalive saving connection \S+, host: 127.0.0.1:$ENV{TEST_NGINX_S
 --- http_upstream
     upstream test_upstream {
         server 0.0.0.1;
+        keepalive 0;
 
         balancer_by_lua_block {
             local b = require "ngx.balancer"
@@ -1180,7 +1198,6 @@ empty, as peers always get saved by the Lua pooling.
 --- http_upstream
     upstream test_upstream {
         server 0.0.0.1;
-
         balancer_by_lua_block {
             local b = require "ngx.balancer"
 
@@ -1227,6 +1244,7 @@ lua balancer: keepalive not saving connection \S+$/
 --- http_upstream
     upstream test_upstream {
         server 0.0.0.1;
+        keepalive 0;
 
         balancer_by_lua_block {
             local b = require "ngx.balancer"
