@@ -96,6 +96,7 @@ __DATA__
 --- http_upstream
     upstream test_upstream {
         server 0.0.0.1;
+        keepalive 0;
 
         balancer_by_lua_block {
             local b = require "ngx.balancer"
@@ -145,6 +146,7 @@ $/
 --- http_upstream
     upstream test_upstream {
         server 0.0.0.1;
+        keepalive 0;
 
         balancer_by_lua_block {
             local b = require "ngx.balancer"
@@ -198,6 +200,7 @@ $/
 --- http_upstream
     upstream test_upstream {
         server 0.0.0.1;
+        keepalive 0;
 
         balancer_by_lua_block {
             local b = require "ngx.balancer"
@@ -248,6 +251,7 @@ $/
 --- http_upstream
     upstream test_upstream {
         server 0.0.0.1;
+        keepalive 0;
 
         balancer_by_lua_block {
             local b = require "ngx.balancer"
@@ -306,6 +310,7 @@ $/
 --- http_upstream
     upstream test_upstream {
         server 0.0.0.1;
+        keepalive 0;
 
         balancer_by_lua_block {
             local b = require "ngx.balancer"
@@ -355,6 +360,7 @@ $/
 --- http_upstream
     upstream test_upstream {
         server 0.0.0.1;
+        keepalive 0;
 
         balancer_by_lua_block {
             local b = require "ngx.balancer"
@@ -404,6 +410,7 @@ $/
 --- http_upstream
     upstream test_upstream {
         server 0.0.0.1;
+        keepalive 0;
 
         balancer_by_lua_block {
             local b = require "ngx.balancer"
