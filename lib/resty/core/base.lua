@@ -222,6 +222,16 @@ function _M.ref_in_table(tb, key)
 end
 
 
+-- Release a slot acquired via ref_in_table() back to the free list.
+-- Mirrors the layout used by luaL_ref / luaL_unref on the C side (both
+-- use the slot at FREE_LIST_REF as the free-list head), so tables shared
+-- with luaL_ref/unref (e.g. ngx_lua_ctx_tables) stay consistent.
+function _M.unref_in_table(tb, ref)
+    tb[ref] = tb[FREE_LIST_REF]
+    tb[FREE_LIST_REF] = ref
+end
+
+
 function _M.allows_subsystem(...)
     local total = select("#", ...)
 
