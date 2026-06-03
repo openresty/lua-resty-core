@@ -424,52 +424,68 @@ local function sslhandshake(cosocket, reused_session, server_name, ssl_verify,
         error("no request ctx found", 2)
     end
 
+    local res
+
+    if rc == FFI_ERROR then
+        res = C.ngx_http_lua_ffi_socket_tcp_get_sslhandshake_result(r, u,
+                  session_ptr, errmsg, openssl_error_code)
+
+        assert(res == FFI_ERROR)
+
+        if openssl_error_code[0] ~= 0 then
+            return nil, openssl_error_code[0] .. ": " .. ffi_str(errmsg[0])
+        end
+
+        return nil, ffi_str(errmsg[0])
+    end
+
+    if rc == FFI_DONE then
+        return reused_session
+    end
+
     if rc == FFI_OK then
         if reused_session == false then
             return true
         end
 
-        rc = C.ngx_http_lua_ffi_socket_tcp_get_sslhandshake_result(r, u,
-                 session_ptr, errmsg, openssl_error_code)
+        res = C.ngx_http_lua_ffi_socket_tcp_get_sslhandshake_result(r, u,
+                  session_ptr, errmsg, openssl_error_code)
+
+        assert(res == FFI_OK)
+
+        if session_ptr[0] == nil then
+            return session_ptr[0]
+        end
+
+        return ffi_gc(session_ptr[0], C.ngx_http_lua_ffi_ssl_free_session)
     end
 
-    while true do
-        if rc == FFI_ERROR then
-            if openssl_error_code[0] ~= 0 then
-                return nil, openssl_error_code[0] .. ": " .. ffi_str(errmsg[0])
-            end
+    assert(rc == FFI_AGAIN)
 
-            return nil, ffi_str(errmsg[0])
+    co_yield()
+
+    res = C.ngx_http_lua_ffi_socket_tcp_get_sslhandshake_result(r, u,
+              session_ptr, errmsg, openssl_error_code)
+
+    if res == FFI_ERROR then
+        if openssl_error_code[0] ~= 0 then
+            return nil, openssl_error_code[0] .. ": " .. ffi_str(errmsg[0])
         end
 
-        if rc == FFI_DONE then
-            return reused_session
-        end
-
-        if rc == FFI_OK then
-            if reused_session == false then
-                return true
-            end
-
-            rc = C.ngx_http_lua_ffi_socket_tcp_get_sslhandshake_result(r, u,
-                     session_ptr, errmsg, openssl_error_code)
-
-            assert(rc == FFI_OK)
-
-            if session_ptr[0] == nil then
-                return session_ptr[0]
-            end
-
-            return ffi_gc(session_ptr[0], C.ngx_http_lua_ffi_ssl_free_session)
-        end
-
-        assert(rc == FFI_AGAIN)
-
-        co_yield()
-
-        rc = C.ngx_http_lua_ffi_socket_tcp_get_sslhandshake_result(r, u,
-                 session_ptr, errmsg, openssl_error_code)
+        return nil, ffi_str(errmsg[0])
     end
+
+    assert(res == FFI_OK)
+
+    if reused_session == false then
+        return true
+    end
+
+    if session_ptr[0] == nil then
+        return session_ptr[0]
+    end
+
+    return ffi_gc(session_ptr[0], C.ngx_http_lua_ffi_ssl_free_session)
 end
 
 
