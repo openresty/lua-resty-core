@@ -150,9 +150,9 @@ then
 ngx_lua_ffi_socket_getsslpointer =
     C.ngx_stream_lua_ffi_socket_tcp_get_ssl_pointer
 end
-if pcall(function() return C.ngx_stream_lua_ffi_socket_tcp_get_ssl_pointer end)
+if pcall(function() return C.ngx_stream_lua_ffi_socket_tcp_get_ssl_ctx end)
 then
-ngx_lua_ffi_socket_getsslctx = C.ngx_stream_lua_ffi_socket_tcp_get_ssl_pointer
+ngx_lua_ffi_socket_getsslctx = C.ngx_stream_lua_ffi_socket_tcp_get_ssl_ctx
 end
 
 if pcall(function()
