@@ -1,6 +1,7 @@
 local ffi = require 'ffi'
 local base = require "resty.core.base"
 
+local ffi_str = ffi.string
 local C = ffi.C
 local FFI_ERROR = base.FFI_ERROR
 local get_request = base.get_request
@@ -47,7 +48,8 @@ function ngx.get_phase()
 
     local context = C.ngx_http_lua_ffi_get_phase(r, errmsg)
     if context == FFI_ERROR then -- NGX_ERROR
-        error(errmsg, 2)
+        local err = ffi_str(errmsg[0])
+        error(err, 2)
     end
 
     local phase = context_names[context]
@@ -62,7 +64,8 @@ end
 function ngx.get_raw_phase(r)
     local context = C.ngx_http_lua_ffi_get_phase(r, errmsg)
     if context == FFI_ERROR then -- NGX_ERROR
-        error(errmsg, 2)
+        local err = ffi_str(errmsg[0])
+        error(err, 2)
     end
 
     return context

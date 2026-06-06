@@ -30,15 +30,18 @@ function _M.set_status(status, reason)
     local r = get_request()
 
     if not r then
-        error("no request found")
+        error("no request found", 2)
     end
 
     if type(status) ~= 'number' then
         status = tonumber(status)
+        if not status then
+            error("status must be a number", 2)
+        end
     end
 
     local rc = C.ngx_http_lua_ffi_set_resp_status_and_reason(r, status,
-                                                             reason, #reason)
+        reason, reason and #reason or 0)
     if rc == FFI_BAD_CONTEXT then
         error("API disabled in the current context", 2)
     end

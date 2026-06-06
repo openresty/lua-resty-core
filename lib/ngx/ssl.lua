@@ -651,7 +651,7 @@ function _M.get_upstream_ssl_pointer()
     end
 
     local ssl = ngx_lua_ffi_get_upstream_ssl_pointer(r, errmsg)
-    if not ssl then
+    if ssl == nil then
         return nil, ffi_str(errmsg[0])
     end
 

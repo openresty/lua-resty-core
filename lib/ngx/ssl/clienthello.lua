@@ -195,21 +195,21 @@ function _M.get_client_hello_ciphers()
     local ciphers = ffi_cast(ffi_ushort_pointer_type, buf)
     local cipher_cnt = ngx_lua_ffi_ssl_get_client_hello_ciphers(r, ciphers,
                                                                 128, errmsg)
-    if cipher_cnt > 0 then
-        local ciphers_table = table_new(16, 0)
-        local y = 1
-        for i = 0, cipher_cnt - 1 do
-            local cipher = tonumber(ciphers[i])
-            if not TLS_GREASE[cipher] then
-                ciphers_table[y] = cipher
-                y = y + 1
-            end
-        end
-
-        return ciphers_table
+    if cipher_cnt < 0 then
+        return nil, ffi_str(errmsg[0])
     end
 
-    return nil, ffi_str(errmsg[0])
+    local ciphers_table = table_new(cipher_cnt, 0)
+    local y = 1
+    for i = 0, cipher_cnt - 1 do
+        local cipher = tonumber(ciphers[i])
+        if not TLS_GREASE[cipher] then
+            ciphers_table[y] = cipher
+            y = y + 1
+        end
+    end
+
+    return ciphers_table
 end
 
 -- return ext, err
