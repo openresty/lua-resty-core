@@ -1,0 +1,165 @@
+name: Test
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    branches:
+      - master
+
+jobs:
+  test:
+    name: "nginx ${{ matrix.nginx }}"
+    runs-on: ubuntu-22.04
+
+    strategy:
+      fail-fast: false
+      matrix:
+        # OPENSSL_VER/OPENSSL_PATCH_VER were only used by the (commented out)
+        # OpenSSL-from-source build; the active CI uses the openresty-openssl3
+        # package, so only the nginx version varies here.
+        nginx:
+          - 1.31.0
+
+    services:
+      # Replaces Travis' `services: memcache`.
+      memcached:
+        image: memcached:1.6-alpine
+        ports:
+          - 11211:11211
+
+    env:
+      JOBS: 2
+      NGX_BUILD_JOBS: 2
+      CC: gcc
+      NGX_BUILD_CC: gcc
+      LUAJIT_PREFIX: /opt/luajit21
+      LUAJIT_LIB: /opt/luajit21/lib
+      LUAJIT_INC: /opt/luajit21/include/luajit-2.1
+      LUA_INCLUDE_DIR: /opt/luajit21/include/luajit-2.1
+      LUA_CMODULE_DIR: /lib
+      PCRE2_PREFIX: /usr/local/openresty/pcre2
+      PCRE2_LIB: /usr/local/openresty/pcre2/lib
+      PCRE2_INC: /usr/local/openresty/pcre2/include
+      OPENSSL_PREFIX: /usr/local/openresty/openssl3
+      OPENSSL_LIB: /usr/local/openresty/openssl3/lib
+      OPENSSL_INC: /usr/local/openresty/openssl3/include
+      LD_LIBRARY_PATH: /opt/luajit21/lib
+      TEST_NGINX_SLEEP: 0.005
+      TEST_NGINX_RANDOMIZE: 1
+      TEST_NGINX_RESOLVER: 8.8.4.4
+      LUACHECK_VER: 0.21.1
+      NGINX_VERSION: ${{ matrix.nginx }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+
+      - name: Cache downloads
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
+        with:
+          path: download-cache
+          key: download-cache-${{ runner.os }}
+
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            axel luarocks daemonize lsb-release wget gnupg ca-certificates \
+            cpanminus
+
+      # --- before_install --------------------------------------------------
+      - name: Lint Lua sources
+        run: |
+          sudo luarocks install luacheck $LUACHECK_VER
+          luacheck --globals coroutine -q .
+          ! grep -n -P '(?<=.{80}).+' --color `find . -name '*.lua'` \
+            || (echo "ERROR: Found Lua source lines exceeding 80 columns." > /dev/stderr; exit 1)
+          ! grep -n -P '\t+' --color `find . -name '*.lua'` \
+            || (echo "ERROR: Cannot use tabs." > /dev/stderr; exit 1)
+
+      - name: Install Test::Nginx
+        run: |
+          sudo cpanm --notest Test::Nginx IPC::Run > build.log 2>&1 \
+            || (cat build.log && exit 1)
+
+      - name: Install openresty PCRE2 and OpenSSL
+        run: |
+          wget -O - https://openresty.org/package/pubkey.gpg \
+            | sudo gpg --dearmor -o /usr/share/keyrings/openresty.gpg
+          echo "deb [signed-by=/usr/share/keyrings/openresty.gpg] http://openresty.org/package/ubuntu $(lsb_release -sc) main" \
+            | sudo tee /etc/apt/sources.list.d/openresty.list
+          sudo apt-get update
+          sudo DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
+            openresty-pcre2 openresty-openssl3 openresty-pcre2-dev openresty-openssl3-dev
+
+      # --- install ---------------------------------------------------------
+      - name: Clone dependencies
+        run: |
+          if [ ! -d download-cache ]; then mkdir download-cache; fi
+          git clone https://github.com/openresty/openresty.git ../openresty
+          git clone https://github.com/openresty/openresty-devel-utils.git
+          git clone https://github.com/simpl/ngx_devel_kit.git ../ndk-nginx-module
+          git clone https://github.com/openresty/lua-nginx-module.git ../lua-nginx-module
+          git clone https://github.com/openresty/no-pool-nginx.git ../no-pool-nginx
+          git clone https://github.com/openresty/echo-nginx-module.git ../echo-nginx-module
+          git clone https://github.com/openresty/lua-resty-lrucache.git
+          git clone https://github.com/openresty/headers-more-nginx-module.git ../headers-more-nginx-module
+          git clone -b v2.1-agentzh https://github.com/openresty/luajit2.git luajit2
+          git clone https://github.com/openresty/set-misc-nginx-module.git ../set-misc-nginx-module
+          git clone https://github.com/openresty/mockeagain.git
+          git clone https://github.com/openresty/test-nginx.git
+          git clone https://github.com/openresty/stream-lua-nginx-module.git ../stream-lua-nginx-module
+
+      # --- script ----------------------------------------------------------
+      - name: Build LuaJIT
+        run: |
+          cd luajit2
+          make -j$JOBS CCDEBUG=-g Q= PREFIX=$LUAJIT_PREFIX CC=$CC \
+            XCFLAGS='-DLUA_USE_APICHECK -DLUA_USE_ASSERT -msse4.2 -O1 -DLUAJIT_SECURITY_STRID=0 -DLUAJIT_SECURITY_STRHASH=0 -DLUAJIT_SECURITY_PRNG=0 -DLUAJIT_SECURITY_MCODE=0 -DLUAJIT_TEST_FIXED_ORDER' \
+            > build.log 2>&1 || (cat build.log && exit 1)
+          sudo make install PREFIX=$LUAJIT_PREFIX > build.log 2>&1 || (cat build.log && exit 1)
+
+      - name: Install lua-resty-lrucache
+        run: |
+          cd lua-resty-lrucache
+          sudo make DESTDIR=$LUAJIT_PREFIX LUA_LIB_DIR=/share/lua/5.1 install
+
+      - name: Build mockeagain
+        run: |
+          cd mockeagain
+          make CC=$CC -j$JOBS
+
+      - name: Build nginx
+        run: |
+          export PATH=$PWD/work/nginx/sbin:$PWD/openresty-devel-utils:$PATH
+          ngx-build $NGINX_VERSION \
+            --with-http_v3_module \
+            --with-http_v2_module \
+            --with-http_realip_module \
+            --with-http_ssl_module \
+            --with-pcre-jit \
+            --with-cc-opt="-I$OPENSSL_INC -I$PCRE2_INC" \
+            --with-ld-opt="-L$OPENSSL_LIB -Wl,-rpath,$OPENSSL_LIB -L$PCRE2_LIB -Wl,-rpath,$PCRE2_LIB" \
+            --add-module=../ndk-nginx-module \
+            --add-module=../echo-nginx-module \
+            --add-module=../set-misc-nginx-module \
+            --add-module=../headers-more-nginx-module \
+            --add-module=../lua-nginx-module \
+            --with-debug \
+            --with-stream_ssl_module \
+            --with-stream \
+            --with-ipv6 \
+            --add-module=../stream-lua-nginx-module \
+            > build.log 2>&1 || (cat build.log && exit 1)
+          nginx -V
+          ldd `which nginx` | grep -E 'luajit|ssl|pcre'
+
+      - name: Run tests
+        env:
+          LD_PRELOAD: ${{ github.workspace }}/mockeagain/mockeagain.so
+        run: |
+          export PATH=$PWD/work/nginx/sbin:$PWD/openresty-devel-utils:$PATH
+          export LD_LIBRARY_PATH=$PWD/mockeagain:$LD_LIBRARY_PATH
+          prove -I. -Itest-nginx/lib -j$JOBS -r t
