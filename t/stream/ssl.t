@@ -2517,9 +2517,11 @@ qr/ssl pointer: cdata<void \*>: 0x[0-9a-f]+,/
 
 
 
-=== TEST 31: get upstream SSL pointer
+=== TEST 31: get upstream SSL pointer (released in the log phase)
 Just for test api.
-The ssl_session_reuesed is always false in log_by_lua phase.
+In the stream subsystem the upstream connection is already released by the
+time log_by_lua runs, so get_upstream_ssl_pointer() reports "not upstream"
+instead of returning a stale/NULL pointer.
 --- stream_config
     lua_package_path "$TEST_NGINX_LUA_PACKAGE_PATH";
 
@@ -2537,8 +2539,8 @@ The ssl_session_reuesed is always false in log_by_lua phase.
     log_by_lua_block {
         local ssl = require "ngx.ssl"
         local ssl_conn, err = ssl.get_upstream_ssl_pointer()
-        if err ~= nil then
-            ngx.log(ngx.ERR, "failed to get ssl pointer: ", err)
+        if not ssl_conn then
+            ngx.log(ngx.WARN, "failed to get upstream ssl pointer: ", err)
             return
         end
         ngx.log(ngx.INFO, "session reused: ", ssl.ssl_session_reused(ssl_conn))
@@ -2546,8 +2548,8 @@ The ssl_session_reuesed is always false in log_by_lua phase.
 
 --- stream_response
 it works!
---- error_log eval
-qr/session reused: false/
+--- error_log
+failed to get upstream ssl pointer: not upstream
 --- no_error_log
 [alert]
 [crit]
