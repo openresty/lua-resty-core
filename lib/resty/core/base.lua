@@ -19,24 +19,24 @@ local FREE_LIST_REF = 0
 if subsystem == 'http' then
     if not ngx.config
        or not ngx.config.ngx_lua_version
-       or ngx.config.ngx_lua_version ~= 10031
+       or ngx.config.ngx_lua_version ~= 10032
     then
         local ver = ngx.config and tostring(ngx.config.ngx_lua_version) or 'nil'
-        error("ngx_http_lua_module 0.10.31 required but got " .. ver)
+        error("ngx_http_lua_module 0.10.32 required but got " .. ver)
     end
 
 elseif subsystem == 'stream' then
     if not ngx.config
        or not ngx.config.ngx_lua_version
-       or ngx.config.ngx_lua_version ~= 19
+       or ngx.config.ngx_lua_version ~= 20
     then
         local ver = ngx.config and tostring(ngx.config.ngx_lua_version) or 'nil'
-        error("ngx_stream_lua_module 0.0.19 required but got " .. ver)
+        error("ngx_stream_lua_module 0.0.20 required but got " .. ver)
     end
 
 else
-    error("ngx_http_lua_module 0.10.31 or "
-          .. "ngx_stream_lua_module 0.0.19 required")
+    error("ngx_http_lua_module 0.10.32 or "
+          .. "ngx_stream_lua_module 0.0.20 required")
 end
 
 
@@ -143,7 +143,7 @@ local c_buf_type = ffi.typeof("char[?]")
 local _M = new_tab(0, 18)
 
 
-_M.version = "0.1.34"
+_M.version = "0.1.35"
 _M.new_tab = new_tab
 _M.clear_tab = clear_tab
 
