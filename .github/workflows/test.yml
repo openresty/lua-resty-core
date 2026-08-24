@@ -20,7 +20,7 @@ jobs:
         # OpenSSL-from-source build; the active CI uses the openresty-openssl3
         # package, so only the nginx version varies here.
         nginx:
-          - 1.31.3
+          - 1.31.4
 
     services:
       # Replaces Travis' `services: memcache`.
