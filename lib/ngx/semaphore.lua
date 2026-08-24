@@ -45,7 +45,8 @@ if subsystem == 'http' then
         int ngx_http_lua_ffi_sema_new(ngx_http_lua_sema_t **psem,
             int n, char **errmsg);
 
-        int ngx_http_lua_ffi_sema_post(ngx_http_lua_sema_t *sem, int n);
+        int ngx_http_lua_ffi_sema_post(ngx_http_request_t *r,
+            ngx_http_lua_sema_t *sem, int n);
 
         int ngx_http_lua_ffi_sema_count(ngx_http_lua_sema_t *sem);
 
@@ -72,7 +73,8 @@ elseif subsystem == 'stream' then
         int ngx_stream_lua_ffi_sema_new(ngx_stream_lua_sema_t **psem,
             int n, char **errmsg);
 
-        int ngx_stream_lua_ffi_sema_post(ngx_stream_lua_sema_t *sem, int n);
+        int ngx_stream_lua_ffi_sema_post(ngx_stream_lua_request_t *r,
+            ngx_stream_lua_sema_t *sem, int n);
 
         int ngx_stream_lua_ffi_sema_count(ngx_stream_lua_sema_t *sem);
 
@@ -167,6 +169,11 @@ function _M.post(self, n)
         error("not a semaphore instance", 2)
     end
 
+    local r = get_request()
+    if not r then
+        error("no request found")
+    end
+
     local cdata_sem = self.sem
 
     local num = n and tonumber(n) or 1
@@ -175,7 +182,7 @@ function _M.post(self, n)
     end
 
     -- always return NGX_OK
-    ngx_lua_ffi_sema_post(cdata_sem, num)
+    ngx_lua_ffi_sema_post(r, cdata_sem, num)
 
     return true
 end
