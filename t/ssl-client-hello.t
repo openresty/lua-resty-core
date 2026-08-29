@@ -1141,3 +1141,410 @@ qr/1: CIPHER \d+, context: ssl_client_hello_by_lua/
 [alert]
 [crit]
 [error]
+
+
+
+=== TEST 12: set_ciphers sets the cipher used by the connection
+--- http_config
+    lua_package_path "$TEST_NGINX_LUA_PACKAGE_PATH";
+
+    server {
+        listen 127.0.0.2:$TEST_NGINX_RAND_PORT_1 ssl;
+        server_name   test.com;
+        ssl_client_hello_by_lua_block {
+            local ssl_clt = require "ngx.ssl.clienthello"
+            local ok, err = ssl_clt.set_ciphers("ECDHE-RSA-AES128-GCM-SHA256")
+            if ok then
+                ngx.log(ngx.INFO, "set_ciphers: ok")
+            else
+                ngx.log(ngx.WARN, "failed to set ciphers: ", err)
+            end
+        }
+
+        ssl_protocols TLSv1.2;
+        ssl_certificate ../../cert/test.crt;
+        ssl_certificate_key ../../cert/test.key;
+
+        server_tokens off;
+        location /foo {
+            default_type 'text/plain';
+            content_by_lua_block {
+                ngx.status = 201
+                ngx.say(ngx.var.ssl_cipher)
+                ngx.exit(201)
+            }
+            more_clear_headers Date;
+        }
+    }
+--- config
+    server_tokens off;
+    lua_ssl_trusted_certificate ../../cert/test.crt;
+    lua_ssl_protocols TLSv1.2;
+
+    location /t {
+        content_by_lua_block {
+            do
+                local sock = ngx.socket.tcp()
+
+                sock:settimeout(3000)
+
+                local ok, err = sock:connect("127.0.0.2", $TEST_NGINX_RAND_PORT_1)
+                if not ok then
+                    ngx.say("failed to connect: ", err)
+                    return
+                end
+
+                ngx.say("connected: ", ok)
+
+                local sess, err = sock:sslhandshake(nil, nil, true)
+                if not sess then
+                    ngx.say("failed to do SSL handshake: ", err)
+                    return
+                end
+
+                ngx.say("ssl handshake: ", type(sess))
+
+                local req = "GET /foo HTTP/1.0\r\nHost: test.com\r\nConnection: close\r\n\r\n"
+                local bytes, err = sock:send(req)
+                if not bytes then
+                    ngx.say("failed to send http request: ", err)
+                    return
+                end
+
+                local line, err = sock:receive()
+                if not line then
+                    ngx.say("failed to receive response status line: ", err)
+                    return
+                end
+
+                ngx.say("received: ", line)
+
+                while true do
+                    local line, err = sock:receive()
+                    if not line then
+                        break
+                    end
+
+                    if line == "" then
+                        local body, err = sock:receive()
+                        if body then
+                            ngx.say("cipher: ", body)
+                        end
+                        break
+                    end
+                end
+
+                sock:close()
+            end  -- do
+            -- collectgarbage()
+        }
+    }
+
+--- request
+GET /t
+--- response_body
+connected: 1
+ssl handshake: cdata
+received: HTTP/1.1 201 Created
+cipher: ECDHE-RSA-AES128-GCM-SHA256
+--- error_log
+set_ciphers: ok
+--- no_error_log
+[alert]
+[crit]
+[error]
+
+
+
+=== TEST 13: set_ciphers with an invalid cipher list fails without breaking the handshake
+--- http_config
+    lua_package_path "$TEST_NGINX_LUA_PACKAGE_PATH";
+
+    server {
+        listen 127.0.0.2:$TEST_NGINX_RAND_PORT_1 ssl;
+        server_name   test.com;
+        ssl_client_hello_by_lua_block {
+            local ssl_clt = require "ngx.ssl.clienthello"
+            local ok, err = ssl_clt.set_ciphers("NOT-A-CIPHER")
+            if not ok then
+                ngx.log(ngx.WARN, "failed to set ciphers: ", err)
+            end
+        }
+
+        ssl_protocols TLSv1.2;
+        ssl_certificate ../../cert/test.crt;
+        ssl_certificate_key ../../cert/test.key;
+
+        server_tokens off;
+        location /foo {
+            default_type 'text/plain';
+            content_by_lua_block {ngx.status = 201 ngx.say("foo") ngx.exit(201)}
+            more_clear_headers Date;
+        }
+    }
+--- config
+    server_tokens off;
+    lua_ssl_trusted_certificate ../../cert/test.crt;
+    lua_ssl_protocols TLSv1.2;
+
+    location /t {
+        content_by_lua_block {
+            do
+                local sock = ngx.socket.tcp()
+
+                sock:settimeout(3000)
+
+                local ok, err = sock:connect("127.0.0.2", $TEST_NGINX_RAND_PORT_1)
+                if not ok then
+                    ngx.say("failed to connect: ", err)
+                    return
+                end
+
+                ngx.say("connected: ", ok)
+
+                local sess, err = sock:sslhandshake(nil, nil, true)
+                if not sess then
+                    ngx.say("failed to do SSL handshake: ", err)
+                    return
+                end
+
+                ngx.say("ssl handshake: ", type(sess))
+
+                local req = "GET /foo HTTP/1.0\r\nHost: test.com\r\nConnection: close\r\n\r\n"
+                local bytes, err = sock:send(req)
+                if not bytes then
+                    ngx.say("failed to send http request: ", err)
+                    return
+                end
+
+                local line, err = sock:receive()
+                if not line then
+                    ngx.say("failed to receive response status line: ", err)
+                    return
+                end
+
+                ngx.say("received: ", line)
+
+                sock:close()
+            end  -- do
+            -- collectgarbage()
+        }
+    }
+
+--- request
+GET /t
+--- response_body
+connected: 1
+ssl handshake: cdata
+received: HTTP/1.1 201 Created
+--- error_log eval
+qr/failed to set ciphers: SSL_set_cipher_list\(\) failed/
+--- no_error_log
+[alert]
+[crit]
+[error]
+
+
+
+=== TEST 14: set_ciphers with invalid TLSv1.3 ciphersuites fails without breaking the handshake
+--- http_config
+    lua_package_path "$TEST_NGINX_LUA_PACKAGE_PATH";
+
+    server {
+        listen 127.0.0.2:$TEST_NGINX_RAND_PORT_1 ssl;
+        server_name   test.com;
+        ssl_client_hello_by_lua_block {
+            local ssl_clt = require "ngx.ssl.clienthello"
+            local ok, err = ssl_clt.set_ciphers(nil, "TLS_NOT_A_SUITE")
+            if not ok then
+                ngx.log(ngx.WARN, "failed to set ciphers: ", err)
+            end
+        }
+
+        ssl_protocols TLSv1.3;
+        ssl_certificate ../../cert/test.crt;
+        ssl_certificate_key ../../cert/test.key;
+
+        server_tokens off;
+        location /foo {
+            default_type 'text/plain';
+            content_by_lua_block {ngx.status = 201 ngx.say("foo") ngx.exit(201)}
+            more_clear_headers Date;
+        }
+    }
+--- config
+    server_tokens off;
+    lua_ssl_trusted_certificate ../../cert/test.crt;
+    lua_ssl_protocols TLSv1.3;
+
+    location /t {
+        content_by_lua_block {
+            do
+                local sock = ngx.socket.tcp()
+
+                sock:settimeout(3000)
+
+                local ok, err = sock:connect("127.0.0.2", $TEST_NGINX_RAND_PORT_1)
+                if not ok then
+                    ngx.say("failed to connect: ", err)
+                    return
+                end
+
+                ngx.say("connected: ", ok)
+
+                local sess, err = sock:sslhandshake(nil, nil, true)
+                if not sess then
+                    ngx.say("failed to do SSL handshake: ", err)
+                    return
+                end
+
+                ngx.say("ssl handshake: ", type(sess))
+
+                local req = "GET /foo HTTP/1.0\r\nHost: test.com\r\nConnection: close\r\n\r\n"
+                local bytes, err = sock:send(req)
+                if not bytes then
+                    ngx.say("failed to send http request: ", err)
+                    return
+                end
+
+                local line, err = sock:receive()
+                if not line then
+                    ngx.say("failed to receive response status line: ", err)
+                    return
+                end
+
+                ngx.say("received: ", line)
+
+                sock:close()
+            end  -- do
+            -- collectgarbage()
+        }
+    }
+
+--- request
+GET /t
+--- response_body
+connected: 1
+ssl handshake: cdata
+received: HTTP/1.1 201 Created
+--- error_log eval
+qr/failed to set ciphers: SSL_set_ciphersuites\(\) failed/
+--- no_error_log
+[alert]
+[crit]
+[error]
+
+
+
+=== TEST 15: set_ciphers with a partially invalid cipher list applies the valid subset
+OpenSSL's cipher list parser is lenient: unknown tokens are silently dropped
+and the call succeeds as long as at least one token matches, so the surviving
+subset is applied with no fallback to the default list.
+--- http_config
+    lua_package_path "$TEST_NGINX_LUA_PACKAGE_PATH";
+
+    server {
+        listen 127.0.0.2:$TEST_NGINX_RAND_PORT_1 ssl;
+        server_name   test.com;
+        ssl_client_hello_by_lua_block {
+            local ssl_clt = require "ngx.ssl.clienthello"
+            local ok, err = ssl_clt.set_ciphers("TRASH:ECDHE-RSA-AES128-GCM-SHA256:GARBAGE")
+            if ok then
+                ngx.log(ngx.INFO, "set_ciphers: ok")
+            else
+                ngx.log(ngx.WARN, "failed to set ciphers: ", err)
+            end
+        }
+
+        ssl_protocols TLSv1.2;
+        ssl_certificate ../../cert/test.crt;
+        ssl_certificate_key ../../cert/test.key;
+
+        server_tokens off;
+        location /foo {
+            default_type 'text/plain';
+            content_by_lua_block {
+                ngx.status = 201
+                ngx.say(ngx.var.ssl_cipher)
+                ngx.exit(201)
+            }
+            more_clear_headers Date;
+        }
+    }
+--- config
+    server_tokens off;
+    lua_ssl_trusted_certificate ../../cert/test.crt;
+    lua_ssl_protocols TLSv1.2;
+
+    location /t {
+        content_by_lua_block {
+            do
+                local sock = ngx.socket.tcp()
+
+                sock:settimeout(3000)
+
+                local ok, err = sock:connect("127.0.0.2", $TEST_NGINX_RAND_PORT_1)
+                if not ok then
+                    ngx.say("failed to connect: ", err)
+                    return
+                end
+
+                ngx.say("connected: ", ok)
+
+                local sess, err = sock:sslhandshake(nil, nil, true)
+                if not sess then
+                    ngx.say("failed to do SSL handshake: ", err)
+                    return
+                end
+
+                ngx.say("ssl handshake: ", type(sess))
+
+                local req = "GET /foo HTTP/1.0\r\nHost: test.com\r\nConnection: close\r\n\r\n"
+                local bytes, err = sock:send(req)
+                if not bytes then
+                    ngx.say("failed to send http request: ", err)
+                    return
+                end
+
+                local line, err = sock:receive()
+                if not line then
+                    ngx.say("failed to receive response status line: ", err)
+                    return
+                end
+
+                ngx.say("received: ", line)
+
+                while true do
+                    local line, err = sock:receive()
+                    if not line then
+                        break
+                    end
+
+                    if line == "" then
+                        local body, err = sock:receive()
+                        if body then
+                            ngx.say("cipher: ", body)
+                        end
+                        break
+                    end
+                end
+
+                sock:close()
+            end  -- do
+            -- collectgarbage()
+        }
+    }
+
+--- request
+GET /t
+--- response_body
+connected: 1
+ssl handshake: cdata
+received: HTTP/1.1 201 Created
+cipher: ECDHE-RSA-AES128-GCM-SHA256
+--- error_log
+set_ciphers: ok
+--- no_error_log
+[alert]
+[crit]
+[error]
