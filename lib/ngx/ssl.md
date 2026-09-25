@@ -12,6 +12,7 @@ Table of Contents
 * [Description](#description)
 * [Methods](#methods)
     * [clear_certs](#clear_certs)
+    * [compress_certs](#compress_certs)
     * [cert_pem_to_der](#cert_pem_to_der)
     * [set_der_cert](#set_der_cert)
     * [priv_key_pem_to_der](#priv_key_pem_to_der)
@@ -154,6 +155,61 @@ clear_certs
 Clears any existing SSL certificates and/or private keys set on the current SSL connection.
 
 Returns `true` on success, or a `nil` value and a string describing the error otherwise.
+
+[Back to TOC](#table-of-contents)
+
+compress_certs
+--------------
+**syntax:** *ok, err = ssl.compress_certs(algorithm?)*
+
+**context:** *ssl_certificate_by_lua&#42;*
+
+Compresses the certificate chain currently set on the SSL connection, so that
+TLS 1.3 sends it as a `CompressedCertificate` message (RFC 8879) instead of a
+plain `Certificate` one.
+
+The optional `algorithm` is `"zlib"`, `"brotli"` or `"zstd"`, or the RFC 8879
+number for one of them. When it is omitted, the chain is compressed with every
+algorithm the OpenSSL library has, which is also what nginx does for its
+statically configured certificates.
+
+Returns `true` on success, or a `nil` value and a string describing the error
+otherwise.
+
+This call is what makes certificate compression work for a certificate
+installed from Lua. nginx pre-compresses the certificates given to
+[ssl_certificate](https://nginx.org/en/docs/http/ngx_http_ssl_module.html#ssl_certificate)
+when `ssl_certificate_compression on;` is in effect, and OpenSSL only ever
+sends a compressed certificate that has been pre-compressed that way.
+[clear_certs](#clear_certs) drops those pre-compressed copies along with the
+certificates they belong to, and [set_cert](#set_cert) does not produce new
+ones, so without this call the dynamic chain always goes out uncompressed.
+
+The compression is per connection and is not cached anywhere, so the chain is
+compressed again on every handshake that calls this function.
+
+Requirements:
+
+* OpenSSL 3.2.0 or later, which is where the RFC 8879 API arrived. BoringSSL
+  and LibreSSL are not supported, and the call then fails with `at least
+  OpenSSL 3.2.0 required ...`.
+* An OpenSSL built with the compression algorithm in question. Most
+  distribution builds enable none of zlib, brotli and zstd, and the call then
+  fails with `SSL_get1_compressed_cert() failed`.
+* `ssl_certificate_compression on;` (nginx 1.29.1+) on the server, which is
+  what allows nginx to put a compressed certificate on the wire at all. The
+  call itself succeeds without it, but the certificate is still sent
+  uncompressed.
+
+A certificate must already be set on the connection, so call this after
+[set_cert](#set_cert) or [set_der_cert](#set_der_cert); otherwise the call
+fails with `no certificate set on this connection`.
+
+Note that, like nginx's own pre-compression, the compressed certificate is
+built outside the connection, so per-connection certificate extensions such as
+a stapled OCSP response are not part of it.
+
+This function was first added in version `0.1.35`.
 
 [Back to TOC](#table-of-contents)
 

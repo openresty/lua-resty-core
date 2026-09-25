@@ -13,6 +13,8 @@ local ffi_new = ffi.new
 local get_request = base.get_request
 local error = error
 local tonumber = tonumber
+local tostring = tostring
+local type = type
 local errmsg = base.get_errmsg_ptr()
 local get_string_buf = base.get_string_buf
 local get_size_ptr = base.get_size_ptr
@@ -23,6 +25,7 @@ local subsystem = ngx.config.subsystem
 
 local ngx_lua_ffi_ssl_set_der_certificate
 local ngx_lua_ffi_ssl_clear_certs
+local ngx_lua_ffi_ssl_compress_certs
 local ngx_lua_ffi_ssl_set_der_private_key
 local ngx_lua_ffi_ssl_raw_server_addr
 local ngx_lua_ffi_ssl_server_port
@@ -61,6 +64,9 @@ if subsystem == 'http' then
         const char *data, size_t len, char **err);
 
     int ngx_http_lua_ffi_ssl_clear_certs(ngx_http_request_t *r, char **err);
+
+    int ngx_http_lua_ffi_ssl_compress_certs(ngx_http_request_t *r, int alg,
+        char **err);
 
     int ngx_http_lua_ffi_ssl_set_der_private_key(ngx_http_request_t *r,
         const char *data, size_t len, char **err);
@@ -143,6 +149,16 @@ if subsystem == 'http' then
     ngx_lua_ffi_ssl_set_der_certificate =
         C.ngx_http_lua_ffi_ssl_set_der_certificate
     ngx_lua_ffi_ssl_clear_certs = C.ngx_http_lua_ffi_ssl_clear_certs
+
+    -- ngx_http_lua_ffi_ssl_compress_certs() is newer than the rest of this
+    -- API, so keep ngx.ssl loadable against an ngx_lua that lacks it
+    if pcall(function ()
+                 return C.ngx_http_lua_ffi_ssl_compress_certs
+             end)
+    then
+        ngx_lua_ffi_ssl_compress_certs = C.ngx_http_lua_ffi_ssl_compress_certs
+    end
+
     ngx_lua_ffi_ssl_set_der_private_key =
         C.ngx_http_lua_ffi_ssl_set_der_private_key
     ngx_lua_ffi_ssl_raw_server_addr = C.ngx_http_lua_ffi_ssl_raw_server_addr
@@ -322,6 +338,51 @@ function _M.clear_certs()
     end
 
     local rc = ngx_lua_ffi_ssl_clear_certs(r, errmsg)
+    if rc == FFI_OK then
+        return true
+    end
+
+    return nil, ffi_str(errmsg[0])
+end
+
+
+-- the algorithm numbers are the ones assigned by RFC 8879; 0 is OpenSSL's
+-- "every algorithm enabled in the library"
+local cert_comp_algs = {
+    none = 0,
+    zlib = 1,
+    brotli = 2,
+    zstd = 3,
+}
+
+
+function _M.compress_certs(alg)
+    local alg_id
+
+    if alg == nil then
+        alg_id = cert_comp_algs.none
+
+    elseif type(alg) == "number" then
+        alg_id = alg
+
+    else
+        alg_id = cert_comp_algs[alg]
+        if alg_id == nil then
+            return nil, "unknown certificate compression algorithm: "
+                        .. tostring(alg)
+        end
+    end
+
+    if ngx_lua_ffi_ssl_compress_certs == nil then
+        return nil, "no certificate compression support"
+    end
+
+    local r = get_request()
+    if not r then
+        error("no request found")
+    end
+
+    local rc = ngx_lua_ffi_ssl_compress_certs(r, alg_id, errmsg)
     if rc == FFI_OK then
         return true
     end
