@@ -191,7 +191,7 @@ In case of an error, this function returns `nil` and a string describing the err
 
 enable_keepalive
 ----------------
-**syntax:** `ok, err = balancer.enable_keepalive(idle_timeout?, max_requests?)`
+**syntax:** `ok, err = balancer.enable_keepalive(idle_timeout?, max_requests?, pool_size?)`
 
 **context:** *balancer_by_lua&#42;*
 
@@ -228,6 +228,20 @@ This argument is identical to the
 [keepalive_requests](http://nginx.org/en/docs/http/ngx_http_upstream_module.html#keepalive_requests)
 directive of the ngx_http_upstream_module, but can be set dynamically for each
 upstream connection.
+
+The third optional argument `pool_size` may be a number used to specify the
+maximum amount of idle connections cached for the pool of the current
+connection. A pool is identified by the peer address, the `host` argument of
+[set_current_peer](#set_current_peer) and the local address (if any, e.g. set
+by [bind_to_local_addr](#bind_to_local_addr)). When the connection is about to
+be inserted into a pool which already holds `pool_size` idle connections, the
+least recently used idle connection of that same pool is closed first, so that
+one busy pool cannot evict the idle connections of the other pools. If omitted
+or `0`, no per-pool limit is applied and all pools share the total capacity set
+by the
+[balancer_keepalive](https://github.com/openresty/lua-nginx-module#balancer_keepalive)
+directive of the upstream block. Note that `pool_size` never raises that total
+capacity.
 
 This function returns `true` upon success, or `nil` and a string describing the
 error otherwise.
