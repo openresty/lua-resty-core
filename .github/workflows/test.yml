@@ -101,7 +101,9 @@ jobs:
           git clone https://github.com/openresty/openresty.git ../openresty
           git clone https://github.com/openresty/openresty-devel-utils.git
           git clone https://github.com/openresty/ngx_devel_kit.git ../ndk-nginx-module
-          git clone https://github.com/openresty/lua-nginx-module.git ../lua-nginx-module
+          # TEMPORARY, drop before merging: build against the C side of this
+          # change (openresty/lua-nginx-module#2536) until it is merged.
+          git clone -b feat/balancer-keepalive-pool-size https://github.com/oowl/lua-nginx-module.git ../lua-nginx-module
           git clone https://github.com/openresty/no-pool-nginx.git ../no-pool-nginx
           git clone https://github.com/openresty/echo-nginx-module.git ../echo-nginx-module
           git clone https://github.com/openresty/lua-resty-lrucache.git
