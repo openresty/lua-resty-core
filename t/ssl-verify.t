@@ -147,3 +147,61 @@ hello world
 --- no_error_log
 ssl verify get_verify_cert failed
 [alert]
+
+
+
+=== TEST 3: ssl.sslverify.set_verify_result & using $ssl_client_verify variable to get the verify result
+--- http_config
+    lua_package_path "$TEST_NGINX_LUA_PACKAGE_PATH";
+
+    server {
+        listen unix:$TEST_NGINX_HTML_DIR/nginx.sock ssl;
+        server_name   test.com;
+        ssl_verify_client on;
+        ssl_certificate        ../../cert/mtls_server.crt;
+        ssl_certificate_key    ../../cert/mtls_server.key;
+        ssl_client_certificate ../../cert/mtls_ca.crt;
+
+        ssl_verify_by_lua_block {
+            local ssl_vfy = require "ngx.ssl.sslverify"
+
+            -- according to openssl/include/openssl/x509_vfy.h
+            -- #define X509_V_ERR_CERT_REVOKED  23
+            local ok, err = ssl_vfy.set_verify_result(23)
+            if not ok then
+                ngx.log(ngx.ERR, "ssl verify set_verify_result failed: ", err)
+                ngx.exit(ngx.ERROR)
+            end
+        }
+
+        location / {
+            default_type 'text/plain';
+
+            content_by_lua_block {
+                ngx.say("hello world")
+            }
+
+            more_clear_headers Date;
+        }
+
+	log_by_lua_block {
+            ngx.log(ngx.ERR, "ssl verify result: ", ngx.var.ssl_client_verify)
+	}
+    }
+--- config
+    location /t {
+        proxy_pass                    https://unix:$TEST_NGINX_HTML_DIR/nginx.sock;
+        proxy_ssl_name                example.com;
+        proxy_ssl_certificate         ../../cert/mtls_client.crt;
+        proxy_ssl_certificate_key     ../../cert/mtls_client.key;
+        proxy_ssl_trusted_certificate ../../cert/mtls_ca.crt;
+        proxy_ssl_session_reuse       off;
+    }
+--- request
+GET /t
+--- error_code: 400
+--- response_body_like: 400 The SSL certificate error
+--- error_log
+ssl verify result: FAILED:certificate revoked
+--- no_error_log
+[alert]
