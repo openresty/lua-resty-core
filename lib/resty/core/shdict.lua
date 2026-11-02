@@ -6,7 +6,8 @@ local base = require "resty.core.base"
 
 
 local _M = {
-    version = base.version
+    version = base.version,
+    has_atomic_ownership = false,
 }
 
 local ngx_shared = ngx.shared
@@ -29,6 +30,7 @@ local error = error
 local getmetatable = getmetatable
 local FFI_DECLINED = base.FFI_DECLINED
 local subsystem = ngx.config.subsystem
+local max_exptime = 2 ^ (ffi.sizeof("long") * 8 - 1)
 
 
 local ngx_lua_ffi_shdict_get
@@ -37,6 +39,7 @@ local ngx_lua_ffi_shdict_store
 local ngx_lua_ffi_shdict_flush_all
 local ngx_lua_ffi_shdict_get_ttl
 local ngx_lua_ffi_shdict_set_expire
+local ngx_lua_ffi_shdict_compare_expire
 local ngx_lua_ffi_shdict_capacity
 local ngx_lua_ffi_shdict_free_space
 local ngx_lua_ffi_shdict_udata_to_zone
@@ -66,6 +69,10 @@ long ngx_http_lua_ffi_shdict_get_ttl(void *zone,
 
 int ngx_http_lua_ffi_shdict_set_expire(void *zone,
     const unsigned char *key, size_t key_len, long exptime);
+
+int ngx_http_lua_ffi_shdict_compare_expire(void *zone,
+    const unsigned char *key, size_t key_len, const unsigned char *value,
+    size_t value_len, long exptime);
 
 size_t ngx_http_lua_ffi_shdict_capacity(void *zone);
 
@@ -112,6 +119,11 @@ void *ngx_http_lua_ffi_shdict_udata_to_zone(void *zone_udata);
     ngx_lua_ffi_shdict_udata_to_zone =
         C.ngx_http_lua_ffi_shdict_udata_to_zone
 
+    pcall(function ()
+        ngx_lua_ffi_shdict_compare_expire =
+            C.ngx_http_lua_ffi_shdict_compare_expire
+    end)
+
     if not pcall(function ()
         return C.ngx_http_lua_ffi_shdict_free_space
     end)
@@ -150,6 +162,10 @@ long ngx_stream_lua_ffi_shdict_get_ttl(void *zone,
 
 int ngx_stream_lua_ffi_shdict_set_expire(void *zone,
     const unsigned char *key, size_t key_len, long exptime);
+
+int ngx_stream_lua_ffi_shdict_compare_expire(void *zone,
+    const unsigned char *key, size_t key_len, const unsigned char *value,
+    size_t value_len, long exptime);
 
 size_t ngx_stream_lua_ffi_shdict_capacity(void *zone);
 
@@ -196,6 +212,11 @@ void *ngx_stream_lua_ffi_shdict_udata_to_zone(void *zone_udata);
     ngx_lua_ffi_shdict_udata_to_zone =
         C.ngx_stream_lua_ffi_shdict_udata_to_zone
 
+    pcall(function ()
+        ngx_lua_ffi_shdict_compare_expire =
+            C.ngx_stream_lua_ffi_shdict_compare_expire
+    end)
+
     if not pcall(function ()
         return C.ngx_stream_lua_ffi_shdict_free_space
     end)
@@ -212,6 +233,9 @@ size_t ngx_stream_lua_ffi_shdict_free_space(void *zone);
 else
     error("unknown subsystem: " .. subsystem)
 end
+
+
+_M.has_atomic_ownership = ngx_lua_ffi_shdict_compare_expire ~= nil
 
 
 local MACOS = jit and jit.os == "OSX"
@@ -882,6 +906,62 @@ local function shdict_expire(zone, key, exptime)
 end
 
 
+local function shdict_compare_expire(zone, key, value, exptime)
+    zone = check_zone(zone)
+
+    if not ngx_lua_ffi_shdict_compare_expire then
+        return nil, "atomic ownership operations require an updated nginx"
+    end
+
+    if key == nil then
+        return nil, "nil key"
+    end
+
+    if type(key) ~= "string" then
+        key = tostring(key)
+    end
+
+    local key_len = #key
+    if key_len == 0 then
+        return nil, "empty key"
+    end
+
+    if key_len > 65535 then
+        return nil, "key too long"
+    end
+
+    if type(value) ~= "string" then
+        return nil, "bad value type"
+    end
+
+    if exptime == nil then
+        exptime = -1
+
+    else
+        if type(exptime) ~= "number" or exptime < 0 then
+            return nil, 'bad "exptime" argument'
+        end
+
+        exptime = exptime * 1000
+        if exptime ~= exptime or exptime >= max_exptime then
+            return nil, 'bad "exptime" argument'
+        end
+    end
+
+    local rc = ngx_lua_ffi_shdict_compare_expire(zone, key, key_len,
+                                               value, #value, exptime)
+    if rc == 0 then  -- NGX_OK
+        return true
+    end
+
+    if rc == FFI_DECLINED then
+        return nil, "lock ownership lost"
+    end
+
+    return nil, "failed to compare expiry"
+end
+
+
 local function shdict_capacity(zone)
     zone = check_zone(zone)
 
@@ -922,6 +1002,7 @@ if dict then
             mt.flush_all = shdict_flush_all
             mt.ttl = shdict_ttl
             mt.expire = shdict_expire
+            mt.compare_expire = shdict_compare_expire
             mt.capacity = shdict_capacity
             mt.free_space = shdict_free_space
         end

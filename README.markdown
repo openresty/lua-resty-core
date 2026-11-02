@@ -213,6 +213,29 @@ API Implemented
 * [ngx.shared.DICT.free_space](https://github.com/openresty/lua-nginx-module#ngxshareddictfree_space)
 * [ngx.shared.DICT.capacity](https://github.com/openresty/lua-nginx-module#ngxshareddictcapacity)
 
+**syntax:** *ok, err = ngx.shared.DICT:compare_expire(key, token, exptime?)*
+
+Atomically compare an unexpired string entry with the supplied string `token`
+and delete it when `exptime` is omitted or `nil`. When `exptime` is supplied,
+update its expiry without changing the value or user flags. A zero expiry
+means no expiration; positive expiries are in seconds with millisecond
+resolution, as with `DICT:expire`. Expiries must be finite, nonnegative numbers
+whose millisecond value fits in a signed C `long`.
+
+Returns `true` on success. Missing or expired entries, non-string entries, and
+token mismatches return `nil, "lock ownership lost"` without changing the
+entry's value or expiry. Invalid keys, tokens, or expiries return `nil` and an
+error message. This prevents an expired lock owner from deleting or renewing
+a successor's lock; a separate `get` followed by `delete` or `expire` does not
+provide the same guarantee.
+
+`require("resty.core.shdict").has_atomic_ownership` reports whether the current
+subsystem's nginx Lua module provides the native operation. HTTP and stream
+support are detected independently. On older modules, the capability is
+`false` and `compare_expire` returns
+`nil, "atomic ownership operations require an updated nginx"`; the other shared
+dictionary APIs remain available.
+
 [Back to TOC](#table-of-contents)
 
 ## resty.core.var
