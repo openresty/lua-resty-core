@@ -1,7 +1,7 @@
 Name
 ====
 
-ngx.ssl.sslverify - Lua API for post-processing SSL client certificate message for NGINX downstream SSL connections.
+ngx.ssl.verify - Lua API for post-processing SSL client certificate message for NGINX downstream SSL connections.
 
 Table of Contents
 =================
@@ -42,7 +42,7 @@ server {
     ssl_certificate_key /path/to/key.key;
 
     ssl_verify_by_lua_block {
-        local ssl_vfy = require "ngx.ssl.sslverify"
+        local ssl_vfy = require "ngx.ssl.verify"
 
         local cert, err = ssl_vfy.get_verify_cert()
 
@@ -72,10 +72,10 @@ This directive runs user Lua code when Nginx is about to post-process the SSL cl
 
 It is particularly useful to parse downstream client certificate and do some custom operations in pure lua.
 
-To load the `ngx.ssl.sslverify` module in Lua, just write
+To load the `ngx.ssl.verify` module in Lua, just write
 
 ```lua
-local ssl_vfy = require "ngx.ssl.sslverify"
+local ssl_vfy = require "ngx.ssl.verify"
 ```
 
 [Back to TOC](#table-of-contents)

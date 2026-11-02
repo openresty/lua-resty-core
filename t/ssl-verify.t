@@ -38,7 +38,7 @@ run_tests();
 
 __DATA__
 
-=== TEST 1: ssl.sslverify.set_verify_result & ssl.sslverify.get_verify_result
+=== TEST 1: ssl.verify.set_verify_result & ssl.verify.get_verify_result
 --- http_config
     lua_package_path "$TEST_NGINX_LUA_PACKAGE_PATH";
 
@@ -51,7 +51,7 @@ __DATA__
         ssl_client_certificate ../../cert/mtls_ca.crt;
 
         ssl_verify_by_lua_block {
-            local ssl_vfy = require "ngx.ssl.sslverify"
+            local ssl_vfy = require "ngx.ssl.verify"
 
             local ok, err = ssl_vfy.set_verify_result(23)
             if not ok then
@@ -97,7 +97,7 @@ ssl verify result: 23
 
 
 
-=== TEST 2: ssl.sslverify.get_verify_cert
+=== TEST 2: ssl.verify.get_verify_cert
 --- http_config
     lua_package_path "$TEST_NGINX_LUA_PACKAGE_PATH";
 
@@ -110,7 +110,7 @@ ssl verify result: 23
         ssl_client_certificate ../../cert/mtls_ca.crt;
 
         ssl_verify_by_lua_block {
-            local ssl_vfy = require "ngx.ssl.sslverify"
+            local ssl_vfy = require "ngx.ssl.verify"
 
             local cert, err = ssl_vfy.get_verify_cert()
             if not cert then
@@ -150,7 +150,7 @@ ssl verify get_verify_cert failed
 
 
 
-=== TEST 3: ssl.sslverify.set_verify_result & using $ssl_client_verify variable to get the verify result
+=== TEST 3: ssl.verify.set_verify_result & using $ssl_client_verify variable to get the verify result
 --- http_config
     lua_package_path "$TEST_NGINX_LUA_PACKAGE_PATH";
 
@@ -163,7 +163,7 @@ ssl verify get_verify_cert failed
         ssl_client_certificate ../../cert/mtls_ca.crt;
 
         ssl_verify_by_lua_block {
-            local ssl_vfy = require "ngx.ssl.sslverify"
+            local ssl_vfy = require "ngx.ssl.verify"
 
             -- according to openssl/include/openssl/x509_vfy.h
             -- #define X509_V_ERR_CERT_REVOKED  23

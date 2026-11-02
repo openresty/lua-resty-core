@@ -36,7 +36,7 @@ Table of Contents
     * [ngx.ssl](#ngxssl)
     * [ngx.ssl.clienthello](#ngxsslclienthello)
     * [ngx.ssl.session](#ngxsslsession)
-    * [ngx.ssl.sslverify](#ngxsslsslverify)
+    * [ngx.ssl.verify](#ngxsslverify)
     * [ngx.re](#ngxre)
     * [ngx.resp](#ngxresp)
     * [ngx.pipe](#ngxpipe)
@@ -365,12 +365,12 @@ See the [documentation](./lib/ngx/ssl/session.md) for this Lua module for more d
 
 [Back to TOC](#table-of-contents)
 
-## ngx.ssl.sslverify
+## ngx.ssl.verify
 
 This Lua module provides a Lua API for post-processing SSL client certificate message
 for NGINX downstream SSL connections.
 
-See the [documentation](./lib/ngx/ssl/sslverify.md) for this Lua module for more details.
+See the [documentation](./lib/ngx/ssl/verify.md) for this Lua module for more details.
 
 [Back to TOC](#table-of-contents)
 
