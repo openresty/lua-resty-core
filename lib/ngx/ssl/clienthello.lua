@@ -32,6 +32,7 @@ local ngx_lua_ffi_ssl_get_client_hello_ext
 local ngx_lua_ffi_ssl_set_protocols
 local ngx_lua_ffi_ssl_get_client_hello_ext_present
 local ngx_lua_ffi_ssl_get_client_hello_ciphers
+local ngx_lua_ffi_ssl_set_ciphers
 
 
 if subsystem == 'http' then
@@ -52,6 +53,9 @@ if subsystem == 'http' then
     int ngx_http_lua_ffi_ssl_get_client_hello_ciphers(ngx_http_request_t *r,
         unsigned short *ciphers,  size_t ciphers_len, char **err);
         /* Undefined for the stream subsystem */
+    int ngx_http_lua_ffi_ssl_set_ciphers(ngx_http_request_t *r,
+        const char *ciphers, const char *ciphersuites, char **err);
+        /* Undefined for the stream subsystem */
     ]]
 
     ngx_lua_ffi_ssl_get_client_hello_server_name =
@@ -63,6 +67,7 @@ if subsystem == 'http' then
         C.ngx_http_lua_ffi_ssl_get_client_hello_ext_present
     ngx_lua_ffi_ssl_get_client_hello_ciphers =
         C.ngx_http_lua_ffi_ssl_get_client_hello_ciphers
+    ngx_lua_ffi_ssl_set_ciphers = C.ngx_http_lua_ffi_ssl_set_ciphers
 
 
 
@@ -331,6 +336,36 @@ function _M.set_protocols(protocols)
     end
 
     local rc = ngx_lua_ffi_ssl_set_protocols(r, prots, errmsg)
+    if rc == FFI_OK then
+        return true
+    end
+
+    return nil, ffi_str(errmsg[0])
+end
+
+
+-- return ok, err
+-- on failure the connection's cipher list, ciphersuites and error queue
+-- are left untouched, so the handshake proceeds on the server defaults
+function _M.set_ciphers(ciphers, ciphersuites)
+    local r = get_request()
+    if not r then
+        error("no request found")
+    end
+
+    if ngx_phase() ~= "ssl_client_hello" then
+        error("API disabled in the current context")
+    end
+
+    if ciphers ~= nil and type(ciphers) ~= "string" then
+        error("ciphers must be a string")
+    end
+
+    if ciphersuites ~= nil and type(ciphersuites) ~= "string" then
+        error("ciphersuites must be a string")
+    end
+
+    local rc = ngx_lua_ffi_ssl_set_ciphers(r, ciphers, ciphersuites, errmsg)
     if rc == FFI_OK then
         return true
     end

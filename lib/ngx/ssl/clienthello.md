@@ -17,6 +17,7 @@ Table of Contents
     * [get_client_hello_ext_present](#get_client_hello_ext_present)
     * [get_client_hello_ext](#get_client_hello_ext)
     * [set_protocols](#set_protocols)
+    * [set_ciphers](#set_ciphers)
 * [Community](#community)
     * [English Mailing List](#english-mailing-list)
     * [Chinese Mailing List](#chinese-mailing-list)
@@ -291,6 +292,52 @@ Considering it is meaningless to set ssl protocols after the protocol is determi
 so this function may only be called in the context of [ssl_client_hello_by_lua*](https://github.com/openresty/lua-nginx-module/#ssl_client_hello_by_lua_block).
 
 Example: `ssl_clt.set_protocols({"TLSv1.1", "TLSv1.2", "TLSv1.3"})`
+
+[Back to TOC](#table-of-contents)
+
+set_ciphers
+----------------------
+**syntax:** *ok, err = ssl_clt.set_ciphers(ciphers, ciphersuites?)*
+
+**context:** *ssl_client_hello_by_lua&#42;*
+
+Sets the cipher list used by the current downstream SSL connection, e.g. keyed on the client hello server name.
+
+The `ciphers` string configures the TLS &lt;= 1.2 cipher list in the OpenSSL cipher list format (see [ciphers(1)](https://docs.openssl.org/master/man1/openssl-ciphers/)), like the `ssl_ciphers` nginx directive. The optional `ciphersuites` string configures the TLS 1.3 ciphersuites, a colon-separated list like `TLS_AES_256_GCM_SHA384:TLS_CHACHA20_POLY1305_SHA256`, like the `ssl_conf_command Ciphersuites` nginx directive. Either argument may be `nil` to leave that part of the configuration unchanged.
+
+Returns `true` on success, or a `nil` value and a string describing the error otherwise.
+
+On failure the connection's SSL object is left exactly as it was -- cipher list, ciphersuites, and error queue all untouched -- so the handshake proceeds with whatever the connection already had, which is the default list inherited from the server block (`ssl_ciphers`/`ssl_conf_command`). Both strings are validated before either is applied, because a failed `SSL_set_cipher_list()` would otherwise still install the parsed list on the connection and leave the error queue dirty, aborting the handshake.
+
+Note that a partially invalid string is not an error: OpenSSL's parsers are lenient, unknown tokens in either string are silently dropped and the call succeeds as long as at least one token matches, in which case the surviving subset is applied with no fallback to the default list. The failure path above only covers strings OpenSSL rejects outright.
+
+Considering it is meaningless to set the cipher list after the cipher is negotiated,
+so this function may only be called in the context of [ssl_client_hello_by_lua*](https://github.com/openresty/lua-nginx-module/#ssl_client_hello_by_lua_block).
+
+This function requires OpenSSL 1.1.1 or later.
+
+Example:
+
+```nginx
+# nginx.conf
+server {
+    listen 443 ssl;
+    server_name   test.com;
+    ssl_client_hello_by_lua_block {
+        local ssl_clt = require "ngx.ssl.clienthello"
+        local name = ssl_clt.get_client_hello_server_name()
+        if name == "legacy.test.com" then
+            local ok, err = ssl_clt.set_ciphers("HIGH:!aNULL:!MD5")
+            if not ok then
+                ngx.log(ngx.ERR, "failed to set ciphers: ", err)
+                -- the handshake continues on the default ssl_ciphers
+            end
+        end
+    }
+    ssl_certificate test.crt;
+    ssl_certificate_key test.key;
+}
+```
 
 [Back to TOC](#table-of-contents)
 
