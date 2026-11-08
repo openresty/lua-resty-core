@@ -35,6 +35,7 @@ local context_names = {
     [0x00010000] = "proxy_ssl_verify",
     [0x00020000] = "precontent",
     [0x00040000] = "proxy_ssl_cert",
+    [0x00080000] = "ssl_verify",
 }
 
 
