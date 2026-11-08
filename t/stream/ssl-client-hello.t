@@ -381,7 +381,7 @@ failed to do SSL handshake: handshake failed
         }
         ssl_certificate ../../cert/test.crt;
         ssl_certificate_key ../../cert/test.key;
-        ssl_protocols TLSv1 TLSv1.1;
+        ssl_protocols TLSv1 TLSv1.1 TLSv1.2;
         ssl_certificate ../../cert/test.crt;
         ssl_certificate_key ../../cert/test.key;
 
@@ -458,7 +458,7 @@ close: 1 nil
         }
         ssl_certificate ../../cert/test.crt;
         ssl_certificate_key ../../cert/test.key;
-        ssl_protocols TLSv1 TLSv1.1;
+        ssl_protocols TLSv1 TLSv1.1 TLSv1.2;
         ssl_certificate ../../cert/test.crt;
         ssl_certificate_key ../../cert/test.key;
 
@@ -677,14 +677,14 @@ failed to do SSL handshake: handshake failed
         listen unix:$TEST_NGINX_HTML_DIR/nginx.sock ssl;
         ssl_client_hello_by_lua_block {
             local ssl_clt = require "ngx.ssl.clienthello"
-            local ok = ssl_clt.set_protocols({"TLSv1.1"})
+            local ok = ssl_clt.set_protocols({"TLSv1.2"})
             if not ok then
                 print("failed to set_protocols")
                 ngx.exit(ngx.ERROR)
             end
-            -- all 1.1 ciphers
-            -- ECDHE-ECDSA-AES256-SHA:ECDHE-RSA-AES256-SHA:DHE-RSA-AES256-SHA:ECDHE-ECDSA-AES128-SHA:ECDHE-RSA-AES128-SHA:DHE-RSA-AES128-SHA:AES256-SHA:AES128-SHA:TLS_EMPTY_RENEGOTIATION_INFO_SCSV
-            local ciphers = [[DHE-RSA-AES256-SHA:ECDHE-ECDSA-AES128-SHA:ECDHE-RSA-AES128-SHA]]
+            -- 1.2 ciphers
+            -- ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384:DHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-CHACHA20-POLY1305:ECDHE-RSA-CHACHA20-POLY1305:DHE-RSA-CHACHA20-POLY1305:ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256:DHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES256-SHA384:ECDHE-RSA-AES256-SHA384:DHE-RSA-AES256-SHA256:ECDHE-ECDSA-AES128-SHA256:ECDHE-RSA-AES128-SHA256:DHE-RSA-AES128-SHA256
+            local ciphers = [[ECDHE-RSA-AES128-GCM-SHA256:DHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES256-SHA384:ECDHE-RSA-AES256-SHA384:DHE-RSA-AES256-SHA256:ECDHE-ECDSA-AES128-SHA256:ECDHE-RSA-AES128-SHA256:DHE-RSA-AES128-SHA256]]
             local ok = ssl_clt.set_ciphers(ciphers, true)
             if not ok then
                 print("failed to set_ciphers")
@@ -701,7 +701,7 @@ failed to do SSL handshake: handshake failed
     }
 --- stream_server_config
     lua_ssl_trusted_certificate ../../cert/test.crt;
-    lua_ssl_protocols TLSv1.1;
+    lua_ssl_protocols TLSv1.2;
 
     content_by_lua_block {
         do
@@ -775,7 +775,7 @@ close: 1 nil
         }
         ssl_certificate ../../cert/test.crt;
         ssl_certificate_key ../../cert/test.key;
-        ssl_protocols TLSv1 TLSv1.1;
+        ssl_protocols TLSv1 TLSv1.1 TLSv1.2;
         ssl_certificate ../../cert/test.crt;
         ssl_certificate_key ../../cert/test.key;
 
