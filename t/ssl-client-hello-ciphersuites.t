@@ -121,8 +121,8 @@ __DATA__
 
 --- request
 GET /t
---- response_body
-connected: 1
+--- response_body eval
+qq{connected: 1
 ssl handshake: cdata
 sent http request: 56 bytes.
 received: HTTP/1.1 201 Created
@@ -130,10 +130,10 @@ received: Server: nginx
 received: Content-Type: text/plain
 received: Content-Length: 4
 received: Connection: close
-received: 
+received:\x20
 received: foo
 close: 1 nil
-
+}
 --- error_log eval
 [qr/SSL: TLSv1.3, cipher: "TLS_AES_128_GCM_SHA256/]
 --- no_error_log

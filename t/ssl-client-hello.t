@@ -1236,8 +1236,8 @@ qr/1: CIPHER \d+, context: ssl_client_hello_by_lua/
 
 --- request
 GET /t
---- response_body
-connected: 1
+--- response_body eval
+qq{connected: 1
 ssl handshake: cdata
 sent http request: 56 bytes.
 received: HTTP/1.1 201 Created
@@ -1245,10 +1245,10 @@ received: Server: nginx
 received: Content-Type: text/plain
 received: Content-Length: 4
 received: Connection: close
-received: 
+received:\x20
 received: foo
 close: 1 nil
-
+}
 --- error_log eval
 [qr/SSL: TLSv1.2, cipher: "ECDHE-RSA-AES128-SHA/]
 --- no_error_log
@@ -1346,8 +1346,8 @@ close: 1 nil
 
 --- request
 GET /t
---- response_body
-connected: 1
+--- response_body eval
+qq{connected: 1
 ssl handshake: cdata
 sent http request: 56 bytes.
 received: HTTP/1.1 201 Created
@@ -1355,10 +1355,10 @@ received: Server: nginx
 received: Content-Type: text/plain
 received: Content-Length: 4
 received: Connection: close
-received: 
+received:\x20
 received: foo
 close: 1 nil
-
+}
 --- error_log eval
 [qr/SSL: TLSv1.2, cipher: "ECDHE-RSA-AES128-GCM-SHA256/]
 --- no_error_log

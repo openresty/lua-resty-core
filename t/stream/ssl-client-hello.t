@@ -187,7 +187,7 @@ close: 1 nil
                 ngx.exit(ngx.ERROR)
             end
             local len = byte(ext, 1) * 256 + byte(ext, 2)
-            if len + 2 ~= total_len then 
+            if len + 2 ~= total_len then
                 print("bad SSL Client Hello Extension")
                 ngx.exit(ngx.ERROR)
             end
@@ -287,7 +287,7 @@ close: 1 nil
                 ngx.exit(ngx.ERROR)
             end
             local len = byte(ext, 1) * 256 + byte(ext, 2)
-            if len + 2 ~= total_len then 
+            if len + 2 ~= total_len then
                 print("bad SSL Client Hello Extension")
                 ngx.exit(ngx.ERROR)
             end
