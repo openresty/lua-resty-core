@@ -12,6 +12,7 @@ local C = ffi.C
 local ffi_str = ffi.string
 local get_request = base.get_request
 local error = error
+local type = type
 local errmsg = base.get_errmsg_ptr()
 local get_size_ptr = base.get_size_ptr
 local FFI_OK = base.FFI_OK
@@ -360,14 +361,19 @@ function _M.set_protocols(protocols)
     return nil, ffi_str(errmsg[0])
 end
 
+
 function _M.set_ciphers(ciphers, prefer_server_ciphers)
     local r = get_request()
     if not r then
-        error("no request found")
+        error("no request found", 2)
     end
 
     if ngx_phase() ~= "ssl_client_hello" then
-        error("API disabled in the current context" .. ngx_phase(), 2)
+        error("API disabled in the current context", 2)
+    end
+
+    if type(ciphers) ~= "string" then
+        error("ciphers must be a string", 2)
     end
 
     prefer_server_ciphers = prefer_server_ciphers and 1 or 0
@@ -380,19 +386,24 @@ function _M.set_ciphers(ciphers, prefer_server_ciphers)
     return nil, ffi_str(errmsg[0])
 end
 
+
 function _M.set_ciphersuites(ciphersuites, prefer_server_ciphers)
     local r = get_request()
     if not r then
-        error("no request found")
+        error("no request found", 2)
     end
 
     if ngx_phase() ~= "ssl_client_hello" then
-        error("API disabled in the current context" .. ngx_phase(), 2)
+        error("API disabled in the current context", 2)
+    end
+
+    if type(ciphersuites) ~= "string" then
+        error("ciphersuites must be a string", 2)
     end
 
     prefer_server_ciphers = prefer_server_ciphers and 1 or 0
     local rc = ngx_lua_ffi_ssl_set_ciphersuites(r, ciphersuites,
-                                                prefer_server_ciphers, errmsg)
+                                             prefer_server_ciphers, errmsg)
     if rc == FFI_OK then
         return true
     end

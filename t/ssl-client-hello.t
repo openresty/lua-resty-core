@@ -1154,7 +1154,7 @@ qr/1: CIPHER \d+, context: ssl_client_hello_by_lua/
         server_name   test.com;
         ssl_client_hello_by_lua_block {
             local ssl_clt = require "ngx.ssl.clienthello"
-            local ok = ssl_clt.set_protocols({"TLSv1.1"})
+            local ok = ssl_clt.set_protocols({"TLSv1.2"})
             if not ok then
                 print("failed to set_protocols")
                 ngx.exit(ngx.ERROR)
@@ -1168,7 +1168,7 @@ qr/1: CIPHER \d+, context: ssl_client_hello_by_lua/
                 ngx.exit(ngx.ERROR)
             end
         }
-        ssl_protocols TLSv1.1 TLSv1.2;
+        ssl_protocols TLSv1.2;
         ssl_certificate ../../cert/test.crt;
         ssl_certificate_key ../../cert/test.key;
 
@@ -1183,7 +1183,7 @@ qr/1: CIPHER \d+, context: ssl_client_hello_by_lua/
 --- config
     server_tokens off;
     lua_ssl_trusted_certificate ../../cert/test.crt;
-    lua_ssl_protocols TLSv1.1;
+    lua_ssl_protocols TLSv1.2;
 
     location /t {
         content_by_lua_block {
@@ -1238,7 +1238,7 @@ qr/1: CIPHER \d+, context: ssl_client_hello_by_lua/
 GET /t
 --- response_body
 connected: 1
-ssl handshake: userdata
+ssl handshake: cdata
 sent http request: 56 bytes.
 received: HTTP/1.1 201 Created
 received: Server: nginx
@@ -1250,7 +1250,7 @@ received: foo
 close: 1 nil
 
 --- error_log eval
-[qr/SSL: TLSv1.1, cipher: "ECDHE-RSA-AES128-SHA/]
+[qr/SSL: TLSv1.2, cipher: "ECDHE-RSA-AES128-SHA/]
 --- no_error_log
 [error]
 [alert]
@@ -1279,7 +1279,7 @@ close: 1 nil
                 ngx.exit(ngx.ERROR)
             end
         }
-        ssl_protocols TLSv1 TLSv1.1;
+        ssl_protocols TLSv1 TLSv1.2;
         ssl_certificate ../../cert/test.crt;
         ssl_certificate_key ../../cert/test.key;
 
@@ -1348,7 +1348,7 @@ close: 1 nil
 GET /t
 --- response_body
 connected: 1
-ssl handshake: userdata
+ssl handshake: cdata
 sent http request: 56 bytes.
 received: HTTP/1.1 201 Created
 received: Server: nginx
