@@ -150,7 +150,7 @@ Some more examples:
 ```lua
 local proc, err = ngx_pipe.spawn({"ls", "-l"})
 
-local proc, err = ngx_pipe.spawn({"perl", "-e", "print 'hello, wolrd'"})
+local proc, err = ngx_pipe.spawn({"perl", "-e", "print 'hello, world'"})
 ```
 
 If `args` is specified as a string, it will be executed by the operating system

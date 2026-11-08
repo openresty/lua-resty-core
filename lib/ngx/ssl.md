@@ -12,6 +12,7 @@ Table of Contents
 * [Description](#description)
 * [Methods](#methods)
     * [clear_certs](#clear_certs)
+    * [compress_certs](#compress_certs)
     * [cert_pem_to_der](#cert_pem_to_der)
     * [set_der_cert](#set_der_cert)
     * [priv_key_pem_to_der](#priv_key_pem_to_der)
@@ -32,8 +33,12 @@ Table of Contents
     * [set_priv_key](#set_priv_key)
     * [verify_client](#verify_client)
     * [get_client_random](#get_client_random)
+    * [get_server_random](#get_server_random)
+    * [get_session_master_key](#get_session_master_key)
     * [get_shared_ssl_ciphers](#get_shared_ssl_ciphers)
     * [get_req_ssl_pointer](#get_req_ssl_pointer)
+    * [get_req_ssl_ctx](#get_req_ssl_ctx)
+    * [get_upstream_ssl_pointer](#get_upstream_ssl_pointer)
 * [Community](#community)
     * [English Mailing List](#english-mailing-list)
     * [Chinese Mailing List](#chinese-mailing-list)
@@ -154,6 +159,61 @@ Returns `true` on success, or a `nil` value and a string describing the error ot
 
 [Back to TOC](#table-of-contents)
 
+compress_certs
+--------------
+**syntax:** *ok, err = ssl.compress_certs(algorithm?)*
+
+**context:** *ssl_certificate_by_lua&#42;*
+
+Compresses the certificate chain currently set on the SSL connection, so that
+TLS 1.3 sends it as a `CompressedCertificate` message (RFC 8879) instead of a
+plain `Certificate` one.
+
+The optional `algorithm` is `"zlib"`, `"brotli"` or `"zstd"`, or the RFC 8879
+number for one of them. When it is omitted, the chain is compressed with every
+algorithm the OpenSSL library has, which is also what nginx does for its
+statically configured certificates.
+
+Returns `true` on success, or a `nil` value and a string describing the error
+otherwise.
+
+This call is what makes certificate compression work for a certificate
+installed from Lua. nginx pre-compresses the certificates given to
+[ssl_certificate](https://nginx.org/en/docs/http/ngx_http_ssl_module.html#ssl_certificate)
+when `ssl_certificate_compression on;` is in effect, and OpenSSL only ever
+sends a compressed certificate that has been pre-compressed that way.
+[clear_certs](#clear_certs) drops those pre-compressed copies along with the
+certificates they belong to, and [set_cert](#set_cert) does not produce new
+ones, so without this call the dynamic chain always goes out uncompressed.
+
+The compression is per connection and is not cached anywhere, so the chain is
+compressed again on every handshake that calls this function.
+
+Requirements:
+
+* OpenSSL 3.2.0 or later, which is where the RFC 8879 API arrived. BoringSSL
+  and LibreSSL are not supported, and the call then fails with `at least
+  OpenSSL 3.2.0 required ...`.
+* An OpenSSL built with the compression algorithm in question. Most
+  distribution builds enable none of zlib, brotli and zstd, and the call then
+  fails with `SSL_get1_compressed_cert() failed`.
+* `ssl_certificate_compression on;` (nginx 1.29.1+) on the server, which is
+  what allows nginx to put a compressed certificate on the wire at all. The
+  call itself succeeds without it, but the certificate is still sent
+  uncompressed.
+
+A certificate must already be set on the connection, so call this after
+[set_cert](#set_cert) or [set_der_cert](#set_der_cert); otherwise the call
+fails with `no certificate set on this connection`.
+
+Note that, like nginx's own pre-compression, the compressed certificate is
+built outside the connection, so per-connection certificate extensions such as
+a stapled OCSP response are not part of it.
+
+This function was first added in version `0.1.35`.
+
+[Back to TOC](#table-of-contents)
+
 cert_pem_to_der
 ---------------
 **syntax:** *der_cert_chain, err = ssl.cert_pem_to_der(pem_cert_chain)*
@@ -224,7 +284,7 @@ set_der_priv_key
 
 **context:** *ssl_certificate_by_lua&#42;*
 
-Sets the DER-formatted prviate key for the current SSL connection.
+Sets the DER-formatted private key for the current SSL connection.
 
 Returns `true` on success, or a `nil` value and a string describing the error otherwise.
 
@@ -501,7 +561,7 @@ parse_pem_cert
 
 **context:** *any*
 
-Converts the PEM-formated SSL certificate chain data into an opaque cdata pointer (for later uses
+Converts the PEM-formatted SSL certificate chain data into an opaque cdata pointer (for later uses
 in the [set_cert](#set_cert)
 function, for example).
 
@@ -540,7 +600,7 @@ parse_der_cert
 
 **context:** *any*
 
-Converts the DER-formated SSL certificate chain data into an opaque cdata pointer (for later uses
+Converts the DER-formatted SSL certificate chain data into an opaque cdata pointer (for later uses
 in the [set_cert](#set_cert)
 function, for example).
 
@@ -651,6 +711,40 @@ This function can be called in any context where downstream https is used, but i
 
 [Back to TOC](#table-of-contents)
 
+get_server_random
+-----------
+**syntax:** *server_random = ssl.get_server_random(outlen?)*
+
+**context:** *any*
+
+Returns the random value sent from the server to the client during the initial SSL/TLS handshake. This wraps OpenSSL's `SSL_get_server_random()`.
+
+The `outlen` parameter indicates the maximum length of the server_random value returned.
+If the `outlen` is zero, this function returns the total length of the server_random value.
+If omitted, will use the value 32.
+
+This function can be called in any context where downstream https is used.
+
+[Back to TOC](#table-of-contents)
+
+get_session_master_key
+-----------
+**syntax:** *master_key = ssl.get_session_master_key(outlen?)*
+
+**context:** *any*
+
+Returns the master secret from the current SSL session. This wraps OpenSSL's `SSL_SESSION_get_master_key()`.
+
+The `outlen` parameter indicates the maximum length of the master key value returned.
+If the `outlen` is zero, this function returns the total length of the master key value.
+If omitted, will use the value 48 (i.e. `SSL_MAX_MASTER_KEY_LENGTH`).
+
+Note that in TLS 1.3, the master secret is not used in the same way as in TLS 1.2, so this function is primarily useful for TLS 1.2 connections.
+
+This function can be called in any context where downstream https is used.
+
+[Back to TOC](#table-of-contents)
+
 get_req_ssl_pointer
 ------------
 **syntax:** *ssl_ptr, err = ssl.get_req_ssl_pointer()*
@@ -665,6 +759,59 @@ If you need to retain the pointer beyond the current phase then you will need to
 If you do, ensure that your reference is released with `SSL_free`.
 
 This function was first added in version `0.1.16`.
+
+[Back to TOC](#table-of-contents)
+
+get_req_ssl_ctx
+---------------
+**syntax:** *ctx_ptr, err = ssl.get_req_ssl_ctx()*
+
+**context:** *any context with a downstream TLS connection*
+
+Retrieves the OpenSSL `SSL_CTX*` stored in Nginx's downstream `session_ctx`,
+in both HTTP and stream subsystems. This is the original session context,
+which can differ from `SSL_get_SSL_CTX()` after SNI selects another server.
+
+Returns a `void *` FFI pointer on success, or `nil` and an error string when
+SSL state or the session context is unavailable. Raises `no request found`
+when called without a request.
+
+The pointer is borrowed from Nginx. Do not free it or attach a garbage
+collector to it. If retaining it beyond the connection lifetime, obtain
+and release a separate reference using the appropriate OpenSSL APIs.
+
+This function requires lua-nginx-module or stream-lua-nginx-module with
+the corresponding `get_req_ssl_ctx` FFI export.
+
+[Back to TOC](#table-of-contents)
+
+get_upstream_ssl_pointer
+------------
+**syntax:** *ssl_ptr, err = ssl.get_upstream_ssl_pointer()*
+
+**context:** *any*
+
+Retrieves the OpenSSL `SSL*` object for the current upstream connection.
+
+Returns an FFI pointer on success, or a `nil` value and a string describing the error otherwise.
+
+If you need to retain the pointer beyond the current phase then you will need to use OpenSSL's `SSL_up_ref` to increase the reference count.
+If you do, ensure that your reference is released with `SSL_free`.
+
+This function was first added in version `0.1.33`.
+
+[Back to TOC](#table-of-contents)
+
+ssl_session_reused
+------------
+**syntax:** *reused, err = ssl.ssl_session_reused(ssl)*
+
+**context:** *any*
+
+Get the session reused state of the SSL object return by `get_req_ssl_pointer` or `get_upstream_ssl_pointer`.
+Returns true if the session is reused, false otherwise.
+
+This function was first added in version `0.1.33`.
 
 [Back to TOC](#table-of-contents)
 

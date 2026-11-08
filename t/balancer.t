@@ -29,6 +29,7 @@ __DATA__
 
     upstream backend {
         server 0.0.0.1;
+        keepalive 0;
         balancer_by_lua_block {
             print("hello from balancer by lua!")
             local b = require "ngx.balancer"
@@ -45,7 +46,7 @@ __DATA__
 --- error_code: 502
 --- error_log eval
 [
-'[lua] balancer_by_lua(nginx.conf:29):2: hello from balancer by lua! while connecting to upstream,',
+qr/\[lua\] balancer_by_lua\(nginx.conf:\d+\):2: hello from balancer by lua! while connecting to upstream,/,
 qr{connect\(\) failed .*?, upstream: "http://127\.0\.0\.3:12345/t"},
 ]
 --- no_error_log
@@ -63,6 +64,7 @@ qr{connect\(\) failed .*?, upstream: "http://127\.0\.0\.3:12345/t"},
 
     upstream backend {
         server 0.0.0.1;
+        keepalive 0;
         balancer_by_lua_block {
             print("hello from balancer by lua!")
             local b = require "ngx.balancer"
@@ -107,6 +109,7 @@ qr#^(?:connect\(\) failed .*?, upstream: "http://127.0.0.3:12345/t"\n){3}$#
 
     upstream backend {
         server 0.0.0.1;
+        keepalive 0;
         balancer_by_lua_block {
             print("hello from balancer by lua!")
             local b = require "ngx.balancer"
@@ -144,6 +147,7 @@ qr#^(?:connect\(\) failed .*?, upstream: "http://127.0.0.3:12345/t"\n){1}$#
 
     upstream backend {
         server 0.0.0.1;
+        keepalive 0;
         balancer_by_lua_block {
             local b = require "ngx.balancer"
 
@@ -189,6 +193,7 @@ set more tries: reduced tries due to limit
 
     upstream backend {
         server 0.0.0.1;
+        keepalive 0;
         balancer_by_lua_block {
             local b = require "ngx.balancer"
 
@@ -244,6 +249,7 @@ last peer failure: next 404
 
     upstream backend {
         server 0.0.0.1;
+        keepalive 0;
         balancer_by_lua_block {
             local b = require "ngx.balancer"
 
@@ -299,6 +305,7 @@ last peer failure: failed 500
 
     upstream backend {
         server 0.0.0.1;
+        keepalive 0;
         balancer_by_lua_block {
             local b = require "ngx.balancer"
 
@@ -355,6 +362,7 @@ last peer failure: failed 50[23]
 
     upstream backend {
         server 0.0.0.1;
+        keepalive 0;
         balancer_by_lua_block {
             local b = require "ngx.balancer"
 
@@ -406,6 +414,7 @@ last peer failure: failed 502
 
     upstream backend {
         server 0.0.0.1;
+        keepalive 0;
         balancer_by_lua_block {
             print("hello from balancer by lua!")
             local b = require "ngx.balancer"
@@ -422,7 +431,7 @@ last peer failure: failed 502
 --- error_code: 502
 --- error_log eval
 [
-'[lua] balancer_by_lua(nginx.conf:29):2: hello from balancer by lua! while connecting to upstream,',
+qr/\[lua\] balancer_by_lua\(nginx.conf:\d+\):2: hello from balancer by lua! while connecting to upstream,/,
 qr{connect\(\) failed .*?, upstream: "http://127\.0\.0\.3:12345/t"},
 ]
 --- no_error_log
@@ -431,6 +440,7 @@ qr{connect\(\) failed .*?, upstream: "http://127\.0\.0\.3:12345/t"},
 
 
 === TEST 10: keepalive before balancer
+--- skip_nginx: 6: > 1.29.6
 --- http_config
     lua_package_path "$TEST_NGINX_LUA_PACKAGE_PATH";
 
@@ -460,7 +470,7 @@ qr{connect\(\) failed .*?, upstream: "http://127\.0\.0\.3:12345/t"},
 --- error_code: 502
 --- error_log eval
 [
-'[lua] balancer_by_lua(nginx.conf:30):2: hello from balancer by lua! while connecting to upstream,',
+qr/\[lua\] balancer_by_lua\(nginx.conf:\d+\):2: hello from balancer by lua! while connecting to upstream,/,
 qr{connect\(\) failed .*?, upstream: "http://127\.0\.0\.3:12345/t"},
 ]
 --- no_error_log
@@ -535,6 +545,7 @@ free keepalive peer: saving connection
 
     upstream backend {
         server 127.0.0.1:$TEST_NGINX_SERVER_PORT;
+        keepalive 0;
         balancer_by_lua_block {
             print("hello from balancer by lua!")
         }
@@ -578,6 +589,7 @@ qr/\[error\] .*? log_by_lua.*? failed to call: API disabled in the current conte
 
     upstream backend {
         server 127.0.0.1:$TEST_NGINX_SERVER_PORT;
+        keepalive 0;
         balancer_by_lua_block {
             print("hello from balancer by lua!")
         }
@@ -621,6 +633,7 @@ qr/\[error\] .*? log_by_lua.*? failed to call: API disabled in the current conte
 
     upstream backend {
         server 127.0.0.1:$TEST_NGINX_SERVER_PORT;
+        keepalive 0;
         balancer_by_lua_block {
             print("hello from balancer by lua!")
         }
@@ -761,6 +774,7 @@ hello from balancer by lua!
 
     upstream backend {
         server 0.0.0.1;
+        keepalive 0;
         balancer_by_lua_block {
             local b = require "ngx.balancer"
             print("hello from balancer by lua!")
@@ -807,6 +821,7 @@ hello from balancer by lua!
 
     upstream backend {
         server 127.0.0.1:$TEST_NGINX_SERVER_PORT;
+        keepalive 0;
         balancer_by_lua_block {
             local balancer = require "ngx.balancer"
             if ngx.ctx.tries == nil then
@@ -842,6 +857,7 @@ qr/log_by_lua\(nginx.conf:\d+\):\d+: ngx.var.upstream_addr is 127.0.0.3:12345, 1
 === TEST 19: no 'server' directive
 --- http_config
     upstream backend {
+        keepalive 0;
         balancer_by_lua_block {
             print("hello from balancer by lua!")
         }
@@ -856,7 +872,7 @@ GET /t
 --- ignore_response_body
 --- error_log eval
 [
-'[lua] balancer_by_lua(nginx.conf:26):2: hello from balancer by lua! while connecting to upstream,',
+qr/\[lua\] balancer_by_lua\(nginx.conf:\d+\):2: hello from balancer by lua! while connecting to upstream,/,
 qr/\[error\] .*? lua balancer: no peer set/,
 ]
 --- no_error_log
@@ -867,6 +883,7 @@ qr/\[error\] .*? lua balancer: no peer set/,
 === TEST 20: set current peer: no 'server' directive
 --- http_config
     upstream backend {
+        keepalive 0;
         balancer_by_lua_block {
             print("hello from balancer by lua!")
             local b = require "ngx.balancer"
@@ -883,7 +900,7 @@ GET /t
 --- ignore_response_body
 --- error_log eval
 [
-'[lua] balancer_by_lua(nginx.conf:26):2: hello from balancer by lua! while connecting to upstream,',
+qr/\[lua\] balancer_by_lua\(nginx.conf:\d+\):2: hello from balancer by lua! while connecting to upstream,/,
 qr{connect\(\) failed .*?, upstream: "http://127\.0\.0\.3:12345/t"},
 ]
 --- no_error_log

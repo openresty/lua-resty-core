@@ -47,6 +47,7 @@ __DATA__
 
     upstream backend {
         server 0.0.0.1;
+        keepalive 0;
         balancer_by_lua_block {
             local b = require "ngx.balancer"
             assert(b.set_timeouts(1.234, 5.678, 7.689))
@@ -82,6 +83,7 @@ event timer add: \d+: 7689:
 
     upstream backend {
         server 0.0.0.1;
+        keepalive 0;
         balancer_by_lua_block {
             local b = require "ngx.balancer"
             assert(b.set_timeouts(nil, 5.678, 7.689))
@@ -117,6 +119,7 @@ event timer add: \d+: 7689:
 
     upstream backend {
         server 0.0.0.1;
+        keepalive 0;
         balancer_by_lua_block {
             local b = require "ngx.balancer"
             assert(b.set_timeouts(1.234, nil, 7.689))
@@ -152,6 +155,7 @@ event timer add: \d+: 7689:
 
     upstream backend {
         server 0.0.0.1;
+        keepalive 0;
         balancer_by_lua_block {
             local b = require "ngx.balancer"
             assert(b.set_timeouts(1.234, 5.678, nil))
@@ -186,6 +190,7 @@ event timer add: \d+: 7689:
 
     upstream backend {
         server 0.0.0.1;
+        keepalive 0;
         balancer_by_lua_block {
             print("hello from balancer by lua!")
             local b = require "ngx.balancer"
@@ -217,6 +222,7 @@ qr/\[error\] .*? balancer_by_lua\(nginx.conf:\d+\):4: bad connect timeout/
 
     upstream backend {
         server 0.0.0.1;
+        keepalive 0;
         balancer_by_lua_block {
             print("hello from balancer by lua!")
             local b = require "ngx.balancer"
@@ -248,6 +254,7 @@ qr/\[error\] .*? balancer_by_lua\(nginx.conf:\d+\):4: bad connect timeout/
 
     upstream backend {
         server 0.0.0.1;
+        keepalive 0;
         balancer_by_lua_block {
             print("hello from balancer by lua!")
             local b = require "ngx.balancer"
@@ -279,6 +286,7 @@ qr/\[error\] .*? balancer_by_lua\(nginx.conf:\d+\):4: bad send timeout/
 
     upstream backend {
         server 0.0.0.1;
+        keepalive 0;
         balancer_by_lua_block {
             print("hello from balancer by lua!")
             local b = require "ngx.balancer"
@@ -310,6 +318,7 @@ qr/\[error\] .*? balancer_by_lua\(nginx.conf:\d+\):4: bad send timeout/
 
     upstream backend {
         server 0.0.0.1;
+        keepalive 0;
         balancer_by_lua_block {
             print("hello from balancer by lua!")
             local b = require "ngx.balancer"
@@ -369,6 +378,7 @@ failed to call: no upstream found
 
     upstream backend {
         server 0.0.0.1;
+        keepalive 0;
         balancer_by_lua_block {
             local balancer = require "ngx.balancer"
             local ok, err = balancer.set_timeouts("1.234", 1, 1)

@@ -144,7 +144,7 @@ cd lua-resty-core
 sudo make install LUA_LIB_DIR=/opt/nginx/lualib
 ```
 
-After that, you need to add the above directory to the LuaJIT search direcotries with `lua_package_path` nginx directive in the http context and stream context.
+After that, you need to add the above directory to the LuaJIT search directories with `lua_package_path` nginx directive in the http context and stream context.
 
 ```
 lua_package_path "/opt/nginx/lualib/?.lua;;";
@@ -212,6 +212,29 @@ API Implemented
 * [ngx.shared.DICT.flush_all](https://github.com/openresty/lua-nginx-module#ngxshareddictflush_all)
 * [ngx.shared.DICT.free_space](https://github.com/openresty/lua-nginx-module#ngxshareddictfree_space)
 * [ngx.shared.DICT.capacity](https://github.com/openresty/lua-nginx-module#ngxshareddictcapacity)
+
+**syntax:** *ok, err = ngx.shared.DICT:compare_expire(key, token, exptime?)*
+
+Atomically compare an unexpired string entry with the supplied string `token`
+and delete it when `exptime` is omitted or `nil`. When `exptime` is supplied,
+update its expiry without changing the value or user flags. A zero expiry
+means no expiration; positive expiries are in seconds with millisecond
+resolution, as with `DICT:expire`. Expiries must be finite, nonnegative numbers
+whose millisecond value fits in a signed C `long`.
+
+Returns `true` on success. Missing or expired entries, non-string entries, and
+token mismatches return `nil, "lock ownership lost"` without changing the
+entry's value or expiry. Invalid keys, tokens, or expiries return `nil` and an
+error message. This prevents an expired lock owner from deleting or renewing
+a successor's lock; a separate `get` followed by `delete` or `expire` does not
+provide the same guarantee.
+
+`require("resty.core.shdict").has_atomic_ownership` reports whether the current
+subsystem's nginx Lua module provides the native operation. HTTP and stream
+support are detected independently. On older modules, the capability is
+`false` and `compare_expire` returns
+`nil, "atomic ownership operations require an updated nginx"`; the other shared
+dictionary APIs remain available.
 
 [Back to TOC](#table-of-contents)
 
@@ -309,6 +332,7 @@ in the current request before you reusing the `ctx` table in some other place.
 
 * [socket.setoption](https://github.com/openresty/lua-nginx-module#tcpsocksetoption)
 * [socket.setclientcert](https://github.com/openresty/lua-nginx-module#tcpsocksetclientcert)
+* [socket.settrustedstore](https://github.com/openresty/lua-nginx-module#tcpsocksettrustedstore)
 * [socket.sslhandshake](https://github.com/openresty/lua-nginx-module#tcpsocksslhandshake)
 
 [Back to TOC](#table-of-contents)
@@ -451,7 +475,7 @@ Copyright and License
 
 This module is licensed under the BSD license.
 
-Copyright (C) 2013-2019, by Yichun "agentzh" Zhang, OpenResty Inc.
+Copyright (C) 2013-2025, by Yichun "agentzh" Zhang, OpenResty Inc.
 
 All rights reserved.
 

@@ -66,7 +66,7 @@ decode\_base64url
 
 Decode `input` using base64url rules. Returns the decoded string.
 
-If the `input` is not a valid base64url encoded string, `decoded `will be `nil`
+If the `input` is not a valid base64url encoded string, `decoded` will be `nil`
 and `err` will be a string describing the error.
 
 [Back to TOC](#table-of-contents)

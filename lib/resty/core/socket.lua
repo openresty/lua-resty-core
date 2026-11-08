@@ -21,6 +21,7 @@ local ffi_gc  = ffi.gc
 local get_string_buf = base.get_string_buf
 local get_size_ptr   = base.get_size_ptr
 local get_request    = base.get_request
+local errmsg         = base.get_errmsg_ptr()
 
 local co_yield = coroutine._yield
 
@@ -31,12 +32,18 @@ local option_index = {
     ["tcp-nodelay"] = 3,
     ["sndbuf"]      = 4,
     ["rcvbuf"]      = 5,
-    ["ip-transparent"] = 6,
+    ["keepintvl"]   = 6,
+    ["keepcnt"]     = 7,
 }
 
 
 local ngx_lua_ffi_socket_tcp_getoption
 local ngx_lua_ffi_socket_tcp_setoption
+local ngx_lua_ffi_socket_getfd
+local ngx_lua_ffi_socket_getsslpointer
+local ngx_lua_ffi_socket_getsslctx
+local ngx_lua_ffi_socket_tcp_settrustedstore
+
 if subsystem == 'http' then
 ffi.cdef[[
 typedef struct ngx_http_lua_socket_tcp_upstream_s
@@ -67,10 +74,43 @@ ngx_http_lua_ffi_ssl_free_session(void *sess);
 int
 ngx_http_lua_ffi_socket_tcp_getfd(ngx_http_request_t *r,
     ngx_http_lua_socket_tcp_upstream_t *u, char **errmsg);
+int
+ngx_http_lua_socket_tcp_get_ssl_session(ngx_http_request_t *r,
+    ngx_http_lua_socket_tcp_upstream_t *u, void **sess,
+    char **errmsg);
+int
+ngx_http_lua_ffi_socket_tcp_get_ssl_pointer(ngx_http_request_t *r,
+    ngx_http_lua_socket_tcp_upstream_t *u, void **pssl,
+    char **errmsg);
+int
+ngx_http_lua_ffi_socket_tcp_get_ssl_ctx(ngx_http_request_t *r,
+    ngx_http_lua_socket_tcp_upstream_t *u, void **pctx,
+    char **errmsg);
+
+int
+ngx_http_lua_ffi_socket_tcp_settrustedstore(ngx_http_request_t *r,
+    ngx_http_lua_socket_tcp_upstream_t *u, void *store, char **errmsg);
 ]]
 
 ngx_lua_ffi_socket_tcp_getoption = C.ngx_http_lua_ffi_socket_tcp_getoption
 ngx_lua_ffi_socket_tcp_setoption = C.ngx_http_lua_ffi_socket_tcp_setoption
+ngx_lua_ffi_socket_getfd = C.ngx_http_lua_ffi_socket_tcp_getfd
+if pcall(function() return C.ngx_http_lua_ffi_socket_tcp_get_ssl_pointer end)
+then
+ngx_lua_ffi_socket_getsslpointer = C.ngx_http_lua_ffi_socket_tcp_get_ssl_pointer
+end
+
+if pcall(function() return C.ngx_http_lua_ffi_socket_tcp_get_ssl_ctx end) then
+ngx_lua_ffi_socket_getsslctx = C.ngx_http_lua_ffi_socket_tcp_get_ssl_ctx
+end
+
+if pcall(function()
+    return C.ngx_http_lua_ffi_socket_tcp_settrustedstore
+end) then
+ngx_lua_ffi_socket_tcp_settrustedstore =
+    C.ngx_http_lua_ffi_socket_tcp_settrustedstore
+end
+
 
 elseif subsystem == 'stream' then
 
@@ -84,14 +124,48 @@ ngx_stream_lua_ffi_socket_tcp_getoption(ngx_stream_lua_socket_tcp_upstream_t *u,
 int
 ngx_stream_lua_ffi_socket_tcp_setoption(ngx_stream_lua_socket_tcp_upstream_t *u,
     int opt, int val, unsigned char *err, size_t *errlen);
+int
+ngx_stream_lua_ffi_socket_tcp_getfd(ngx_stream_lua_request_t *r,
+   ngx_stream_lua_socket_tcp_upstream_t *u,
+   char **errmsg);
+int
+ngx_stream_lua_ffi_socket_tcp_get_ssl_pointer(ngx_stream_lua_request_t *r,
+    ngx_stream_lua_socket_tcp_upstream_t *u, void **pssl,
+    char **errmsg);
+int
+ngx_stream_lua_ffi_socket_tcp_get_ssl_ctx(ngx_stream_lua_request_t *r,
+    ngx_stream_lua_socket_tcp_upstream_t *u, void **pctx,
+    char **errmsg);
+
+int
+ngx_stream_lua_ffi_socket_tcp_settrustedstore(ngx_stream_lua_request_t *r,
+    ngx_stream_lua_socket_tcp_upstream_t *u, void *store, char **errmsg);
 ]]
 
 ngx_lua_ffi_socket_tcp_getoption = C.ngx_stream_lua_ffi_socket_tcp_getoption
 ngx_lua_ffi_socket_tcp_setoption = C.ngx_stream_lua_ffi_socket_tcp_setoption
+ngx_lua_ffi_socket_getfd = C.ngx_stream_lua_ffi_socket_tcp_getfd
+if pcall(function() return C.ngx_stream_lua_ffi_socket_tcp_get_ssl_pointer end)
+then
+ngx_lua_ffi_socket_getsslpointer =
+    C.ngx_stream_lua_ffi_socket_tcp_get_ssl_pointer
+end
+if pcall(function() return C.ngx_stream_lua_ffi_socket_tcp_get_ssl_ctx end)
+then
+ngx_lua_ffi_socket_getsslctx = C.ngx_stream_lua_ffi_socket_tcp_get_ssl_ctx
+end
+
+if pcall(function()
+    return C.ngx_stream_lua_ffi_socket_tcp_settrustedstore
+end) then
+ngx_lua_ffi_socket_tcp_settrustedstore =
+    C.ngx_stream_lua_ffi_socket_tcp_settrustedstore
+end
 end
 
 
 local output_value_buf = ffi_new("int[1]")
+local session_ptr      = ffi_new("void *[1]")
 local ERR_BUF_SIZE = 4096
 
 local FFI_OK         = base.FFI_OK
@@ -104,6 +178,7 @@ local SOCKET_CTX_INDEX          = 1
 local SOCKET_CLIENT_CERT_INDEX  = 6
 local SOCKET_CLIENT_PKEY_INDEX  = 7
 local SOCKET_IP_TRANSPARENT_INDEX = 9
+local SOCKET_TRUSTED_STORE_INDEX  = 10
 
 
 local function get_tcp_socket(cosocket)
@@ -143,9 +218,7 @@ local function getoption(cosocket, option)
 end
 
 
-
 local function setoption(cosocket, option, value)
-
     if option == nil then
         return nil, 'missing the "option" argument'
     end
@@ -181,9 +254,103 @@ local function setoption(cosocket, option, value)
 end
 
 
+local function getfd(cosocket)
+    if not cosocket then
+        error("ngx.socket getfd: expecting the cosocket object, but seen none")
+    end
+
+    local r = get_request()
+    if not r then
+        error("no request found")
+    end
+
+    local u = get_tcp_socket(cosocket)
+
+    local fd = ngx_lua_ffi_socket_getfd(r, u, errmsg)
+    if (fd < 0) then
+        return nil, ffi_str(errmsg[0])
+    end
+
+    return fd;
+end
+
+
+local function getsslpointer(cosocket)
+    if not cosocket then
+        error("ngx.socket getfd: expecting the cosocket object, but seen none")
+    end
+
+    local r = get_request()
+    if not r then
+        error("no request found")
+    end
+
+    local u = get_tcp_socket(cosocket)
+    local rc = ngx_lua_ffi_socket_getsslpointer(r, u,
+                                                session_ptr, errmsg)
+    if rc == FFI_ERROR then
+        return nil, ffi_str(errmsg[0])
+    end
+
+    return session_ptr[0]
+end
+
+
+local function getsslctx(cosocket)
+    if not cosocket then
+        error("ngx.socket getfd: expecting the cosocket object, but seen none")
+    end
+
+    local r = get_request()
+    if not r then
+        error("no request found")
+    end
+
+    local u = get_tcp_socket(cosocket)
+    local rc = ngx_lua_ffi_socket_getsslctx(r, u,
+                                            session_ptr, errmsg)
+    if rc == FFI_ERROR then
+        return nil, ffi_str(errmsg[0])
+    end
+
+    return session_ptr[0]
+end
+
+
+local NULL_STORE = ffi_new("void *", nil)
+
+
+local function settrustedstore(cosocket, store)
+    if not ngx_lua_ffi_socket_tcp_settrustedstore then
+        return nil, "tcpsock:settrustedstore is not supported by "
+                    .. "the current nginx module"
+    end
+
+    if store ~= nil and type(store) ~= "cdata" then
+        return nil, "bad store arg: cdata expected, got " .. type(store)
+    end
+
+    local r = get_request()
+    if not r then
+        error("no request found", 2)
+    end
+
+    local u = get_tcp_socket(cosocket)
+
+    local rc = ngx_lua_ffi_socket_tcp_settrustedstore(r, u,
+                                                     store or NULL_STORE,
+                                                     errmsg)
+    if rc ~= FFI_OK then
+        return nil, ffi_str(errmsg[0])
+    end
+
+    cosocket[SOCKET_TRUSTED_STORE_INDEX] = store
+
+    return true
+end
+
+
 if subsystem == 'http' then
-local errmsg             = base.get_errmsg_ptr()
-local session_ptr        = ffi_new("void *[1]")
 local server_name_str    = ffi_new("ngx_str_t[1]")
 local openssl_error_code = ffi_new("int[1]")
 
@@ -257,56 +424,70 @@ local function sslhandshake(cosocket, reused_session, server_name, ssl_verify,
         error("no request ctx found", 2)
     end
 
+    if rc == FFI_ERROR then
+        C.ngx_http_lua_ffi_socket_tcp_get_sslhandshake_result(r, u,
+                  session_ptr, errmsg, openssl_error_code)
+
+        if openssl_error_code[0] ~= 0 then
+            return nil, openssl_error_code[0] .. ": " .. ffi_str(errmsg[0])
+        end
+
+        return nil, ffi_str(errmsg[0])
+    end
+
+    if rc == FFI_DONE then
+        return reused_session
+    end
+
+    local res
+
     if rc == FFI_OK then
         if reused_session == false then
             return true
         end
 
-        rc = C.ngx_http_lua_ffi_socket_tcp_get_sslhandshake_result(r, u,
-                 session_ptr, errmsg, openssl_error_code)
+        res = C.ngx_http_lua_ffi_socket_tcp_get_sslhandshake_result(r, u,
+                  session_ptr, errmsg, openssl_error_code)
+
+        assert(res == FFI_OK)
+
+        if session_ptr[0] == nil then
+            return session_ptr[0]
+        end
+
+        return ffi_gc(session_ptr[0], C.ngx_http_lua_ffi_ssl_free_session)
     end
 
-    while true do
-        if rc == FFI_ERROR then
-            if openssl_error_code[0] ~= 0 then
-                return nil, openssl_error_code[0] .. ": " .. ffi_str(errmsg[0])
-            end
+    assert(rc == FFI_AGAIN)
 
-            return nil, ffi_str(errmsg[0])
+    co_yield()
+
+    res = C.ngx_http_lua_ffi_socket_tcp_get_sslhandshake_result(r, u,
+              session_ptr, errmsg, openssl_error_code)
+
+    if res == FFI_ERROR then
+        if openssl_error_code[0] ~= 0 then
+            return nil, openssl_error_code[0] .. ": " .. ffi_str(errmsg[0])
         end
 
-        if rc == FFI_DONE then
-            return reused_session
-        end
-
-        if rc == FFI_OK then
-            if reused_session == false then
-                return true
-            end
-
-            rc = C.ngx_http_lua_ffi_socket_tcp_get_sslhandshake_result(r, u,
-                     session_ptr, errmsg, openssl_error_code)
-
-            assert(rc == FFI_OK)
-
-            if session_ptr[0] == nil then
-                return session_ptr[0]
-            end
-
-            return ffi_gc(session_ptr[0], C.ngx_http_lua_ffi_ssl_free_session)
-        end
-
-        assert(rc == FFI_AGAIN)
-
-        co_yield()
-
-        rc = C.ngx_http_lua_ffi_socket_tcp_get_sslhandshake_result(r, u,
-                 session_ptr, errmsg, openssl_error_code)
+        return nil, ffi_str(errmsg[0])
     end
+
+    assert(res == FFI_OK)
+
+    if reused_session == false then
+        return true
+    end
+
+    if session_ptr[0] == nil then
+        return session_ptr[0]
+    end
+
+    return ffi_gc(session_ptr[0], C.ngx_http_lua_ffi_ssl_free_session)
 end
 
 
-local function getfd(cosocket)
+local function getsslsession(cosocket)
     if not cosocket then
         error("ngx.socket getfd: expecting the cosocket object, but seen none")
     end
@@ -317,13 +498,13 @@ local function getfd(cosocket)
     end
 
     local u = get_tcp_socket(cosocket)
-
-    local fd = C.ngx_http_lua_ffi_socket_tcp_getfd(r, u, errmsg)
-    if (fd < 0) then
+    local rc = C.ngx_http_lua_socket_tcp_get_ssl_session(r, u,
+                                                         session_ptr, errmsg)
+    if rc == FFI_ERROR then
         return nil, ffi_str(errmsg[0])
     end
 
-    return fd;
+    return ffi_gc(session_ptr[0], C.ngx_http_lua_ffi_ssl_free_session)
 end
 
 
@@ -332,19 +513,42 @@ do
     method_table.getoption = getoption
     method_table.setoption = setoption
     method_table.setclientcert = setclientcert
+    if ngx_lua_ffi_socket_tcp_settrustedstore then
+        method_table.settrustedstore = settrustedstore
+    end
     method_table.sslhandshake  = sslhandshake
     method_table.getfd = getfd
+    method_table.getoption = getoption
+    method_table.setoption = setoption
+    method_table.getsslsession = getsslsession
+    method_table.getsslpointer = getsslpointer
+    method_table.getsslctx = getsslctx
 
     method_table = registry.__tcp_req_cosocket_mt
     method_table.getfd = getfd
+    method_table.getoption = getoption
+    method_table.setoption = setoption
 
     method_table = registry.__tcp_raw_req_cosocket_mt
     method_table.getfd = getfd
+    method_table.getoption = getoption
+    method_table.setoption = setoption
 end
 
 elseif subsystem == 'stream' then
 do
     local method_table = registry.__tcp_cosocket_mt
+    method_table.getoption = getoption
+    method_table.setoption = setoption
+    method_table.getfd = getfd
+    method_table.getsslpointer = getsslpointer
+    method_table.getsslctx = getsslctx
+    if ngx_lua_ffi_socket_tcp_settrustedstore then
+        method_table.settrustedstore = settrustedstore
+    end
+
+    method_table = registry.__tcp_raw_req_cosocket_mt
+    method_table.getfd = getfd
     method_table.getoption = getoption
     method_table.setoption = setoption
 end

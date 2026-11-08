@@ -39,7 +39,8 @@ if subsystem == 'http' then
         char **err);
 
     int ngx_http_lua_ffi_balancer_enable_keepalive(ngx_http_request_t *r,
-        unsigned long timeout, unsigned int max_requests, char **err);
+        unsigned long timeout, unsigned int max_requests,
+        unsigned int pool_size, char **err);
 
     int ngx_http_lua_ffi_balancer_set_more_tries(ngx_http_request_t *r,
         int count, char **err);
@@ -201,7 +202,7 @@ else
 end
 
 if subsystem == "http" then
-    function _M.enable_keepalive(idle_timeout, max_requests)
+    function _M.enable_keepalive(idle_timeout, max_requests, pool_size)
         local r = get_request()
         if not r then
             error("no request found")
@@ -232,8 +233,20 @@ if subsystem == "http" then
             error("bad argument #2 to 'enable_keepalive' (expected >= 0)", 2)
         end
 
+        if not pool_size then
+            pool_size = 0
+
+        elseif type(pool_size) ~= "number" then
+            error("bad argument #3 to 'enable_keepalive' " ..
+                  "(number expected, got " .. type(pool_size) .. ")", 2)
+
+        elseif pool_size < 0 then
+            error("bad argument #3 to 'enable_keepalive' (expected >= 0)", 2)
+        end
+
         local rc = ngx_lua_ffi_balancer_enable_keepalive(r, idle_timeout,
-                                                         max_requests, errmsg)
+                                                         max_requests,
+                                                         pool_size, errmsg)
         if rc == FFI_OK then
             return true
         end

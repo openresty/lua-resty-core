@@ -191,14 +191,20 @@ In case of an error, this function returns `nil` and a string describing the err
 
 enable_keepalive
 ----------------
-**syntax:** `ok, err = balancer.enable_keepalive(idle_timeout?, max_requests?)`
+**syntax:** `ok, err = balancer.enable_keepalive(idle_timeout?, max_requests?, pool_size?)`
 
 **context:** *balancer_by_lua&#42;*
 
 Instructs the current upstream connection to be kept-alive once the current
-request succeeds. The connection will be inserted in the pool specified by the
-`pool` option of the [set_current_peer](#set_current_peer) function (if
-unspecified, the default pool name will be `"<host>:<port>"`).
+request succeeds. The connection will be inserted in the pool of the current
+peer, which is identified by the peer address, the `host` argument of
+[set_current_peer](#set_current_peer) (for HTTPS upstreams, the name set by
+`proxy_ssl_name` when `host` is `nil`) and the local address, if any (e.g.
+bound by [bind_to_local_addr](#bind_to_local_addr) or `proxy_bind`). All the
+pools of an upstream block share the capacity set by the
+[balancer_keepalive](https://github.com/openresty/lua-nginx-module#balancer_keepalive)
+directive (`32` by default): once it is reached, the least recently used idle
+connection, whichever pool it belongs to, is closed to make room.
 
 The keepalive capabilities offered via this function are similar to that of the
 [keepalive](http://nginx.org/en/docs/http/ngx_http_upstream_module.html#keepalive)
@@ -228,6 +234,18 @@ This argument is identical to the
 [keepalive_requests](http://nginx.org/en/docs/http/ngx_http_upstream_module.html#keepalive_requests)
 directive of the ngx_http_upstream_module, but can be set dynamically for each
 upstream connection.
+
+The third optional argument `pool_size` may be a number used to specify the
+maximum amount of idle connections cached for the pool of the current
+connection. When the connection is about to be inserted into a pool which
+already holds `pool_size` idle connections, the least recently used idle
+connection of that same pool is closed first, so that one busy pool cannot
+evict the idle connections of the other pools. If omitted or `0`, no per-pool
+limit is applied. `pool_size` never raises the total capacity set by
+`balancer_keepalive`, so it only takes effect when it is smaller than that
+capacity. The limit is checked against the value passed by the request whose
+connection is being inserted, so all the requests using the same pool should
+pass the same `pool_size`.
 
 This function returns `true` upon success, or `nil` and a string describing the
 error otherwise.

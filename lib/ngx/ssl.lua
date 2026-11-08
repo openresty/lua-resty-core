@@ -13,6 +13,8 @@ local ffi_new = ffi.new
 local get_request = base.get_request
 local error = error
 local tonumber = tonumber
+local tostring = tostring
+local type = type
 local errmsg = base.get_errmsg_ptr()
 local get_string_buf = base.get_string_buf
 local get_size_ptr = base.get_size_ptr
@@ -23,6 +25,7 @@ local subsystem = ngx.config.subsystem
 
 local ngx_lua_ffi_ssl_set_der_certificate
 local ngx_lua_ffi_ssl_clear_certs
+local ngx_lua_ffi_ssl_compress_certs
 local ngx_lua_ffi_ssl_set_der_private_key
 local ngx_lua_ffi_ssl_raw_server_addr
 local ngx_lua_ffi_ssl_server_port
@@ -41,11 +44,20 @@ local ngx_lua_ffi_free_cert
 local ngx_lua_ffi_free_priv_key
 local ngx_lua_ffi_ssl_verify_client
 local ngx_lua_ffi_ssl_client_random
+local ngx_lua_ffi_ssl_server_random
+local ngx_lua_ffi_ssl_session_master_key
 local ngx_lua_ffi_ssl_export_keying_material
 local ngx_lua_ffi_ssl_export_keying_material_early
 local ngx_lua_ffi_get_req_ssl_pointer
+local ngx_lua_ffi_get_req_ssl_ctx
+local ngx_lua_ffi_get_upstream_ssl_pointer
 local ngx_lua_ffi_req_shared_ssl_ciphers
 
+
+ffi.cdef[[
+typedef struct SSL SSL;
+int SSL_session_reused(const SSL *ssl);
+]]
 
 if subsystem == 'http' then
     ffi.cdef[[
@@ -53,6 +65,9 @@ if subsystem == 'http' then
         const char *data, size_t len, char **err);
 
     int ngx_http_lua_ffi_ssl_clear_certs(ngx_http_request_t *r, char **err);
+
+    int ngx_http_lua_ffi_ssl_compress_certs(ngx_http_request_t *r, int alg,
+        char **err);
 
     int ngx_http_lua_ffi_ssl_set_der_private_key(ngx_http_request_t *r,
         const char *data, size_t len, char **err);
@@ -94,6 +109,12 @@ if subsystem == 'http' then
     void *ngx_http_lua_ffi_get_req_ssl_pointer(ngx_http_request_t *r,
         char **err);
 
+    void *ngx_http_lua_ffi_get_req_ssl_ctx(ngx_http_request_t *r,
+        char **err);
+
+    void *ngx_http_lua_ffi_get_upstream_ssl_pointer(
+        ngx_http_request_t *r, char **err);
+
     int ngx_http_lua_ffi_set_cert(ngx_http_request_t *r, void *cdata,
         char **err);
 
@@ -108,6 +129,12 @@ if subsystem == 'http' then
         void *client_certs, void *trusted_certs, int depth, char **err);
 
     int ngx_http_lua_ffi_ssl_client_random(ngx_http_request_t *r,
+        const unsigned char *out, size_t *outlen, char **err);
+
+    int ngx_http_lua_ffi_ssl_server_random(ngx_http_request_t *r,
+        const unsigned char *out, size_t *outlen, char **err);
+
+    int ngx_http_lua_ffi_ssl_session_master_key(ngx_http_request_t *r,
         const unsigned char *out, size_t *outlen, char **err);
 
     int ngx_http_lua_ffi_ssl_export_keying_material(ngx_http_request_t *r,
@@ -128,6 +155,16 @@ if subsystem == 'http' then
     ngx_lua_ffi_ssl_set_der_certificate =
         C.ngx_http_lua_ffi_ssl_set_der_certificate
     ngx_lua_ffi_ssl_clear_certs = C.ngx_http_lua_ffi_ssl_clear_certs
+
+    -- ngx_http_lua_ffi_ssl_compress_certs() is newer than the rest of this
+    -- API, so keep ngx.ssl loadable against an ngx_lua that lacks it
+    if pcall(function ()
+                 return C.ngx_http_lua_ffi_ssl_compress_certs
+             end)
+    then
+        ngx_lua_ffi_ssl_compress_certs = C.ngx_http_lua_ffi_ssl_compress_certs
+    end
+
     ngx_lua_ffi_ssl_set_der_private_key =
         C.ngx_http_lua_ffi_ssl_set_der_private_key
     ngx_lua_ffi_ssl_raw_server_addr = C.ngx_http_lua_ffi_ssl_raw_server_addr
@@ -147,11 +184,17 @@ if subsystem == 'http' then
     ngx_lua_ffi_free_priv_key = C.ngx_http_lua_ffi_free_priv_key
     ngx_lua_ffi_ssl_verify_client = C.ngx_http_lua_ffi_ssl_verify_client
     ngx_lua_ffi_ssl_client_random = C.ngx_http_lua_ffi_ssl_client_random
+    ngx_lua_ffi_ssl_server_random = C.ngx_http_lua_ffi_ssl_server_random
+    ngx_lua_ffi_ssl_session_master_key =
+        C.ngx_http_lua_ffi_ssl_session_master_key
     ngx_lua_ffi_ssl_export_keying_material =
         C.ngx_http_lua_ffi_ssl_export_keying_material
     ngx_lua_ffi_ssl_export_keying_material_early =
         C.ngx_http_lua_ffi_ssl_export_keying_material_early
     ngx_lua_ffi_get_req_ssl_pointer = C.ngx_http_lua_ffi_get_req_ssl_pointer
+    ngx_lua_ffi_get_req_ssl_ctx = C.ngx_http_lua_ffi_get_req_ssl_ctx
+    ngx_lua_ffi_get_upstream_ssl_pointer
+        = C.ngx_http_lua_ffi_get_upstream_ssl_pointer
     ngx_lua_ffi_req_shared_ssl_ciphers =
         C.ngx_http_lua_ffi_req_shared_ssl_ciphers
 
@@ -203,6 +246,12 @@ elseif subsystem == 'stream' then
     void *ngx_stream_lua_ffi_get_req_ssl_pointer(ngx_stream_lua_request_t *r,
         char **err);
 
+    void *ngx_stream_lua_ffi_get_req_ssl_ctx(ngx_stream_lua_request_t *r,
+        char **err);
+
+    void *ngx_stream_lua_ffi_get_upstream_ssl_pointer(
+        ngx_stream_lua_request_t *r, char **err);
+
     int ngx_stream_lua_ffi_set_cert(ngx_stream_lua_request_t *r, void *cdata,
         char **err);
 
@@ -248,6 +297,9 @@ elseif subsystem == 'stream' then
     ngx_lua_ffi_ssl_verify_client = C.ngx_stream_lua_ffi_ssl_verify_client
     ngx_lua_ffi_ssl_client_random = C.ngx_stream_lua_ffi_ssl_client_random
     ngx_lua_ffi_get_req_ssl_pointer = C.ngx_stream_lua_ffi_get_req_ssl_pointer
+    ngx_lua_ffi_get_req_ssl_ctx = C.ngx_stream_lua_ffi_get_req_ssl_ctx
+    ngx_lua_ffi_get_upstream_ssl_pointer
+        = C.ngx_stream_lua_ffi_get_upstream_ssl_pointer
     ngx_lua_ffi_req_shared_ssl_ciphers =
         C.ngx_stream_lua_ffi_req_shared_ssl_ciphers
 end
@@ -299,6 +351,51 @@ function _M.clear_certs()
     end
 
     local rc = ngx_lua_ffi_ssl_clear_certs(r, errmsg)
+    if rc == FFI_OK then
+        return true
+    end
+
+    return nil, ffi_str(errmsg[0])
+end
+
+
+-- the algorithm numbers are the ones assigned by RFC 8879; 0 is OpenSSL's
+-- "every algorithm enabled in the library"
+local cert_comp_algs = {
+    none = 0,
+    zlib = 1,
+    brotli = 2,
+    zstd = 3,
+}
+
+
+function _M.compress_certs(alg)
+    local alg_id
+
+    if alg == nil then
+        alg_id = cert_comp_algs.none
+
+    elseif type(alg) == "number" then
+        alg_id = alg
+
+    else
+        alg_id = cert_comp_algs[alg]
+        if alg_id == nil then
+            return nil, "unknown certificate compression algorithm: "
+                        .. tostring(alg)
+        end
+    end
+
+    if ngx_lua_ffi_ssl_compress_certs == nil then
+        return nil, "no certificate compression support"
+    end
+
+    local r = get_request()
+    if not r then
+        error("no request found")
+    end
+
+    local rc = ngx_lua_ffi_ssl_compress_certs(r, alg_id, errmsg)
     if rc == FFI_OK then
         return true
     end
@@ -620,6 +717,50 @@ function _M.get_req_ssl_pointer()
     return ssl
 end
 
+
+local function get_req_ssl_ctx()
+    local r = get_request()
+    if not r then
+        error("no request found")
+    end
+
+    local ctx = ngx_lua_ffi_get_req_ssl_ctx(r, errmsg)
+    if ctx == nil then
+        return nil, ffi_str(errmsg[0])
+    end
+
+    return ctx
+end
+
+
+_M.get_req_ssl_ctx = get_req_ssl_ctx
+
+
+function _M.get_upstream_ssl_pointer()
+    local r = get_request()
+    if not r then
+        error("no request found")
+    end
+
+    local ssl = ngx_lua_ffi_get_upstream_ssl_pointer(r, errmsg)
+    if ssl == nil then
+        return nil, ffi_str(errmsg[0])
+    end
+
+    return ssl
+end
+
+
+function _M.ssl_session_reused(ssl)
+    if not ssl or type(ssl) ~= "cdata"  then
+        return nil, "bad ssl"
+    end
+
+    local reused = C.SSL_session_reused(ssl)
+    return tonumber(reused) == 1 and true or false
+end
+
+
 do
     _M.SSL3_VERSION = 0x0300
     _M.TLS1_VERSION = 0x0301
@@ -666,6 +807,60 @@ function _M.get_client_random(outlen)
     sizep[0] = outlen
 
     local rc = ngx_lua_ffi_ssl_client_random(r, out, sizep, errmsg)
+    if rc == FFI_OK then
+        if outlen == 0 then
+            return tonumber(sizep[0])
+        end
+
+        return ffi_str(out, sizep[0])
+    end
+
+    return nil, ffi_str(errmsg[0])
+end
+
+
+function _M.get_server_random(outlen)
+    local r = get_request()
+    if not r then
+        error("no request found")
+    end
+
+    if outlen == nil then
+        outlen = 32
+    end
+
+    local out = get_string_buf(outlen)
+    local sizep = get_size_ptr()
+    sizep[0] = outlen
+
+    local rc = ngx_lua_ffi_ssl_server_random(r, out, sizep, errmsg)
+    if rc == FFI_OK then
+        if outlen == 0 then
+            return tonumber(sizep[0])
+        end
+
+        return ffi_str(out, sizep[0])
+    end
+
+    return nil, ffi_str(errmsg[0])
+end
+
+
+function _M.get_session_master_key(outlen)
+    local r = get_request()
+    if not r then
+        error("no request found")
+    end
+
+    if outlen == nil then
+        outlen = 48
+    end
+
+    local out = get_string_buf(outlen)
+    local sizep = get_size_ptr()
+    sizep[0] = outlen
+
+    local rc = ngx_lua_ffi_ssl_session_master_key(r, out, sizep, errmsg)
     if rc == FFI_OK then
         if outlen == 0 then
             return tonumber(sizep[0])

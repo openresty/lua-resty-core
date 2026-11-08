@@ -17,6 +17,8 @@ Table of Contents
     * [get_client_hello_ext_present](#get_client_hello_ext_present)
     * [get_client_hello_ext](#get_client_hello_ext)
     * [set_protocols](#set_protocols)
+    * [set_ciphers](#set_ciphers)
+    * [set_ciphersuites](#set_ciphersuites)
 * [Community](#community)
     * [English Mailing List](#english-mailing-list)
     * [Chinese Mailing List](#chinese-mailing-list)
@@ -46,6 +48,7 @@ server {
         local host, err = ssl_clt.get_client_hello_server_name()
         if host == "test.com" then
             ssl_clt.set_protocols({"TLSv1", "TLSv1.1"})
+            ssl_clt.set_ciphers("DHE-RSA-AES256-SHA:ECDHE-ECDSA-AES128-SHA:ECDHE-RSA-AES128-SHA", true)
         elseif host == "test2.com" then
             ssl_clt.set_protocols({"TLSv1.2", "TLSv1.3"})
         elseif not host then
@@ -99,7 +102,7 @@ get_client_hello_server_name
 
 Returns the TLS SNI (Server Name Indication) name set by the client.
 
-Return `nil` when then the extension does not exist.
+Return `nil` when the extension does not exist.
 
 In case of errors, it returns `nil` and a string describing the error.
 
@@ -117,7 +120,7 @@ get_supported_versions
 
 Returns the table of ssl hello supported versions set by the client.
 
-Return `nil` when then the extension does not exist.
+Return `nil` when the extension does not exist.
 
 In case of errors, it returns `nil` and a string describing the error.
 
@@ -291,6 +294,70 @@ Considering it is meaningless to set ssl protocols after the protocol is determi
 so this function may only be called in the context of [ssl_client_hello_by_lua*](https://github.com/openresty/lua-nginx-module/#ssl_client_hello_by_lua_block).
 
 Example: `ssl_clt.set_protocols({"TLSv1.1", "TLSv1.2", "TLSv1.3"})`
+
+[Back to TOC](#table-of-contents)
+
+set_ciphers
+----------------------
+**syntax:** *ok, err = ssl_clt.set_ciphers(ciphers, prefer_server_ciphers?)*
+
+**context:** *ssl_client_hello_by_lua&#42;*
+
+Sets the list of ciphers (TLSv1.2 and below) supported by the current downstream SSL connection.
+
+Use `prefer_server_ciphers` parameter to control the choosing process of the cipher.
+When choosing a cipher, use the server's preferences instead of the client preferences.
+When `false` or omitted, client preference order is used. When `true`,
+server preference order is used. Either setter updates the same preference
+flag, and a later call can clear it again.
+
+Returns `true` on success, or a `nil` value and a string describing the error otherwise.
+
+This API is available in both HTTP and stream and requires OpenSSL 1.1.1 or
+later. Rejected cipher strings leave the connection's previous settings,
+cipher preference, and OpenSSL error queue unchanged. Unknown tokens are
+silently dropped if OpenSSL recognizes at least one cipher in the list.
+
+Cipher selection must finish before the TLS handshake negotiates a cipher,
+so this function may only be called in the context of [ssl_client_hello_by_lua*](https://github.com/openresty/lua-nginx-module/#ssl_client_hello_by_lua_block).
+
+Example: `ssl_clt.set_ciphers("DHE-RSA-AES256-SHA:ECDHE-ECDSA-AES128-SHA:ECDHE-RSA-AES128-SHA", true)`
+
+[Back to TOC](#table-of-contents)
+
+set_ciphersuites
+----------------------
+**syntax:** *ok, err = ssl_clt.set_ciphersuites(ciphersuites, prefer_server_ciphers?)*
+
+**context:** *ssl_client_hello_by_lua&#42;*
+
+set_ciphersuites() is used to configure the available TLSv1.3 ciphersuites.
+An empty string disables TLSv1.3 ciphersuites for the connection. Neither
+setter changes the cipher list configured by the other setter.
+
+Use `prefer_server_ciphers` parameter to control the choosing process of the cipher.
+When choosing a cipher, use the server's preferences instead of the client preferences.
+When `false` or omitted, client preference order is used. When `true`,
+server preference order is used.
+
+Returns `true` on success, or a `nil` value and a string describing the error otherwise.
+
+This API is available in both HTTP and stream and requires OpenSSL 1.1.1 or
+later. Rejected cipher strings leave the connection's previous settings,
+cipher preference, and OpenSSL error queue unchanged. Unknown tokens are
+silently dropped if OpenSSL recognizes at least one cipher in the list.
+
+Cipher selection must finish before the TLS handshake negotiates a cipher,
+so this function may only be called in the context of [ssl_client_hello_by_lua*](https://github.com/openresty/lua-nginx-module/#ssl_client_hello_by_lua_block).
+
+Example: `ssl_clt.set_ciphersuites("TLS_AES_128_GCM_SHA256:TLS_AES_128_CCM_SHA256", true)`
+
+Available TLS 1.3 ciphersuites:
+
+- TLS_AES_256_GCM_SHA384
+- TLS_CHACHA20_POLY1305_SHA256
+- TLS_AES_128_GCM_SHA256
+- TLS_AES_128_CCM_SHA256
 
 [Back to TOC](#table-of-contents)
 

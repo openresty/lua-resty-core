@@ -621,7 +621,7 @@ table,table
 --- request
 CONNECT /t
 hello
---- error_code: 405
+--- error_code: 400
 --- no_error_log
 [error]
 --- skip_nginx

@@ -13,6 +13,7 @@ local register_setter = misc.register_ngx_magic_key_setter
 local registry = debug.getregistry()
 local new_tab = base.new_tab
 local ref_in_table = base.ref_in_table
+local unref_in_table = base.unref_in_table
 local get_request = base.get_request
 local FFI_NO_REQ_CTX = base.FFI_NO_REQ_CTX
 local FFI_OK = base.FFI_OK
@@ -106,6 +107,7 @@ do
 
             ctx_ref = ref_in_table(ctxs, ctx)
             if ngx_lua_ffi_set_ctx_ref(r, ctx_ref) ~= FFI_OK then
+                unref_in_table(ctxs, ctx_ref)
                 return nil
             end
             return ctx
@@ -136,7 +138,10 @@ local function set_ctx_table(ctx)
 
     if ctx_ref < 0 then
         ctx_ref = ref_in_table(ctxs, ctx)
-        ngx_lua_ffi_set_ctx_ref(r, ctx_ref)
+        if ngx_lua_ffi_set_ctx_ref(r, ctx_ref) ~= FFI_OK then
+            unref_in_table(ctxs, ctx_ref)
+            error("no memory")
+        end
         return
     end
     ctxs[ctx_ref] = ctx

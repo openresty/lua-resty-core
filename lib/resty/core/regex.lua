@@ -155,7 +155,7 @@ if jit.os == "OSX" then
 end
 
 -- pcre2
-if pcre_ver_num > 845 then
+if pcre_ver_num and pcre_ver_num > 845 then
     -- option
     PCRE_CASELESS          = 0x00000008
     PCRE_MULTILINE         = 0x00000400

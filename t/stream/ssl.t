@@ -815,7 +815,7 @@ lua ssl server name: "test.com"
         ssl_certificate_by_lua_block {
             local ssl = require "ngx.ssl"
 
-            local ver, err = ssl.get_tls1_version_str(resp)
+            local ver, err = ssl.get_tls1_version_str()
             if not ver then
                 ngx.log(ngx.ERR, "failed to get TLS1 version: ", err)
                 return
@@ -882,7 +882,7 @@ got TLS1 version: SSLv3,
         ssl_certificate_by_lua_block {
             local ssl = require "ngx.ssl"
 
-            local ver, err = ssl.get_tls1_version_str(resp)
+            local ver, err = ssl.get_tls1_version_str()
             if not ver then
                 ngx.log(ngx.ERR, "failed to get TLS1 version: ", err)
                 return
@@ -948,7 +948,7 @@ got TLS1 version: TLSv1,
         ssl_certificate_by_lua_block {
             local ssl = require "ngx.ssl"
 
-            local ver, err = ssl.get_tls1_version_str(resp)
+            local ver, err = ssl.get_tls1_version_str()
             if not ver then
                 ngx.log(ngx.ERR, "failed to get TLS1 version: ", err)
                 return
@@ -1014,7 +1014,7 @@ got TLS1 version: TLSv1.1,
         ssl_certificate_by_lua_block {
             local ssl = require "ngx.ssl"
 
-            local ver, err = ssl.get_tls1_version_str(resp)
+            local ver, err = ssl.get_tls1_version_str()
             if not ver then
                 ngx.log(ngx.ERR, "failed to get TLS1 version: ", err)
                 return
@@ -1853,7 +1853,7 @@ qr/subject=\/?C(?<eq>\s?=\s?)US(?<sep>\/|,\s)ST\k<eq>California\k<sep>L\k<eq>San
         ssl_certificate_by_lua_block {
             local ssl = require "ngx.ssl"
 
-            local ver, err = ssl.get_tls1_version_str(resp)
+            local ver, err = ssl.get_tls1_version_str()
             if not ver then
                 ngx.log(ngx.ERR, "failed to get TLS1 version: ", err)
                 return
@@ -2506,6 +2506,121 @@ qr/1: SHARED_CIPHER 0x/]
 --- stream_response
 connected: 1
 ssl handshake: userdata
+received: it works!
+close: 1 nil
+--- error_log eval
+qr/ssl pointer: cdata<void \*>: 0x[0-9a-f]+,/
+--- no_error_log
+[alert]
+[crit]
+[error]
+
+
+
+=== TEST 31: get upstream SSL pointer (released in the log phase)
+Just for test api.
+In the stream subsystem the upstream connection is already released by the
+time log_by_lua runs, so get_upstream_ssl_pointer() reports "not upstream"
+instead of returning a stale/NULL pointer.
+--- stream_config
+    lua_package_path "$TEST_NGINX_LUA_PACKAGE_PATH";
+
+    server {
+        listen 127.0.0.1:$TEST_NGINX_RAND_PORT_1 ssl;
+        ssl_certificate ../../cert/test.crt;
+        ssl_certificate_key ../../cert/test.key;
+
+        return 'it works!\n';
+    }
+--- stream_server_config
+    lua_ssl_trusted_certificate ../../cert/test.crt;
+    proxy_pass 127.0.0.1:$TEST_NGINX_RAND_PORT_1;
+    proxy_ssl on;
+    log_by_lua_block {
+        local ssl = require "ngx.ssl"
+        local ssl_conn, err = ssl.get_upstream_ssl_pointer()
+        if not ssl_conn then
+            ngx.log(ngx.WARN, "failed to get upstream ssl pointer: ", err)
+            return
+        end
+        ngx.log(ngx.INFO, "session reused: ", ssl.ssl_session_reused(ssl_conn))
+    }
+
+--- stream_response
+it works!
+--- error_log
+failed to get upstream ssl pointer: not upstream
+--- no_error_log
+[alert]
+[crit]
+[error]
+
+
+
+=== TEST 32: get cosocet SSL pointer
+--- stream_config
+    lua_package_path "$TEST_NGINX_LUA_PACKAGE_PATH";
+
+    server {
+        listen 127.0.0.1:$TEST_NGINX_RAND_PORT_1 ssl;
+        ssl_protocols TLSv1.2;
+        ssl_ciphers ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES256-GCM-SHA384;
+        ssl_certificate ../../cert/test.crt;
+        ssl_certificate_key ../../cert/test.key;
+
+        return 'it works!\n';
+    }
+--- stream_server_config
+    lua_ssl_trusted_certificate ../../cert/test.crt;
+    lua_ssl_protocols TLSv1.2;
+    lua_ssl_ciphers ECDHE-RSA-AES128-GCM-SHA256;
+
+    content_by_lua_block {
+        do
+            local sock = ngx.socket.tcp()
+
+            sock:settimeout(3000)
+
+            local ok, err = sock:connect("127.0.0.1", $TEST_NGINX_RAND_PORT_1)
+            if not ok then
+                ngx.say("failed to connect: ", err)
+                return
+            end
+
+            ngx.say("connected: ", ok)
+
+            local sess, err = sock:sslhandshake(nil, nil, true)
+            if not sess then
+                ngx.say("failed to do SSL handshake: ", err)
+                return
+            end
+
+            ngx.say("ssl session: ", type(sess))
+            ngx.say("ssl pointer: ", type(sock:getsslpointer()))
+            ngx.say("ssl ctx: ", type(sock:getsslctx()))
+            ngx.log(ngx.INFO, "ssl pointer: ", tostring(sock:getsslpointer()))
+
+            while true do
+                local line, err = sock:receive()
+                if not line then
+                    -- ngx.say("failed to receive response status line: ", err)
+                    break
+                end
+
+                ngx.say("received: ", line)
+            end
+
+            local ok, err = sock:close()
+            ngx.say("close: ", ok, " ", err)
+        end  -- do
+        -- collectgarbage()
+    }
+
+--- stream_response
+connected: 1
+ssl session: userdata
+ssl pointer: cdata
+ssl ctx: cdata
 received: it works!
 close: 1 nil
 --- error_log eval

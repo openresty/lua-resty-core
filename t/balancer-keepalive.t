@@ -139,6 +139,7 @@ SNI=one
 --- http_upstream
     upstream test_upstream {
         server 0.0.0.1;
+        keepalive 0;
 
         balancer_by_lua_block {
             local b = require "ngx.balancer"
@@ -192,6 +193,7 @@ lua balancer: keepalive saving connection \S+, host: 127.0.0.2:$ENV{TEST_NGINX_S
 === TEST 3: enable_keepalive: sanity(same ip port with different sni)
 --- http_upstream
     upstream test_upstream {
+        keepalive 0;
         server 0.0.0.1;
 
         balancer_by_lua_block {
@@ -238,6 +240,7 @@ lua balancer: keepalive saving connection \S+, host: 127.0.0.1:$ENV{TEST_NGINX_S
 --- http_upstream
     upstream test_upstream {
         server 0.0.0.1;
+        keepalive 0;
 
         balancer_by_lua_block {
             local b = require "ngx.balancer"
@@ -292,6 +295,7 @@ lua balancer: keepalive saving connection \S+, host: 127.0.0.2:$ENV{TEST_NGINX_S
 --- http_upstream
     upstream test_upstream {
         server 0.0.0.1;
+        keepalive 0;
 
         balancer_by_lua_block {
             local b = require "ngx.balancer"
@@ -390,6 +394,7 @@ ssl_client_s_dn=.*?CN=test\.com.*? ssl_protocol=TLSv1\.3
 --- http_upstream
     upstream test_upstream {
         server 0.0.0.1;
+        keepalive 0;
 
         balancer_by_lua_block {
             local b = require "ngx.balancer"
@@ -550,6 +555,7 @@ no upstream found
 === TEST 11: enable_keepalive: bad usage (bad context)
 --- http_upstream
     upstream test_upstream {
+        keepalive 0;
         server 127.0.0.1:$TEST_NGINX_SERVER_SSL_PORT;
     }
 --- config
@@ -576,6 +582,7 @@ API disabled in the current context
 --- http_upstream
     upstream test_upstream {
         server 0.0.0.1;
+        keepalive 0;
 
         balancer_by_lua_block {
             local b = require "ngx.balancer"
@@ -654,6 +661,7 @@ bad argument #2 to 'enable_keepalive' (expected >= 0)
 --- http_upstream
     upstream test_upstream {
         server 0.0.0.1;
+        keepalive 0;
 
         balancer_by_lua_block {
             local b = require "ngx.balancer"
@@ -697,6 +705,7 @@ lua balancer: keepalive saving connection \S+, host: 127.0.0.1:$ENV{TEST_NGINX_S
 --- http_upstream
     upstream test_upstream {
         server 0.0.0.1;
+        keepalive 0;
 
         balancer_by_lua_block {
             local b = require "ngx.balancer"
@@ -738,6 +747,7 @@ lua balancer: keepalive not saving connection \S+
 --- http_upstream
     upstream test_upstream {
         server 0.0.0.1;
+        keepalive 0;
 
         balancer_by_lua_block {
             local b = require "ngx.balancer"
@@ -773,6 +783,7 @@ lua balancer: keepalive not saving connection \S+
 --- http_upstream
     upstream test_upstream {
         server 0.0.0.1;
+        keepalive 0;
 
         balancer_by_lua_block {
             local b = require "ngx.balancer"
@@ -812,6 +823,7 @@ lua balancer: keepalive closing connection \S+$/
 --- http_upstream
     upstream test_upstream {
         server 0.0.0.1;
+        keepalive 0;
         balancer_keepalive 2;
         balancer_by_lua_block {
             local b = require "ngx.balancer"
@@ -862,6 +874,7 @@ lua balancer: keepalive saving connection \S+, host: 127.0.0.1:$ENV{TEST_NGINX_S
 --- http_upstream
     upstream test_upstream {
         server 0.0.0.1;
+        keepalive 0;
 
         balancer_by_lua_block {
             local b = require "ngx.balancer"
@@ -901,6 +914,7 @@ $/
 --- http_upstream
     upstream test_upstream {
         server 0.0.0.1;
+        keepalive 0;
 
         balancer_by_lua_block {
             local b = require "ngx.balancer"
@@ -937,6 +951,7 @@ $/
 --- http_upstream
     upstream test_upstream {
         server 0.0.0.1;
+        keepalive 0;
 
         balancer_by_lua_block {
             local b = require "ngx.balancer"
@@ -972,6 +987,7 @@ lua balancer: keepalive not saving connection \S+$/
 --- http_upstream
     upstream test_upstream {
         server 0.0.0.1;
+        keepalive 0;
 
         balancer_by_lua_block {
             local b = require "ngx.balancer"
@@ -1013,6 +1029,7 @@ lua balancer: keepalive not saving connection \S+$/
 --- http_upstream
     upstream test_upstream {
         server 0.0.0.1;
+        keepalive 0;
 
         balancer_by_lua_block {
             local b = require "ngx.balancer"
@@ -1072,6 +1089,7 @@ lua balancer: keepalive saving connection \S+, host: 127.0.0.1:$ENV{TEST_NGINX_S
 --- http_upstream
     upstream test_upstream {
         server 0.0.0.1;
+        keepalive 0;
 
         balancer_by_lua_block {
             local b = require "ngx.balancer"
@@ -1180,7 +1198,6 @@ empty, as peers always get saved by the Lua pooling.
 --- http_upstream
     upstream test_upstream {
         server 0.0.0.1;
-
         balancer_by_lua_block {
             local b = require "ngx.balancer"
 
@@ -1227,6 +1244,7 @@ lua balancer: keepalive not saving connection \S+$/
 --- http_upstream
     upstream test_upstream {
         server 0.0.0.1;
+        keepalive 0;
 
         balancer_by_lua_block {
             local b = require "ngx.balancer"
@@ -1270,3 +1288,222 @@ qr/keepalive reusing connection[^\n]*/
 qr/keepalive reusing connection [0-9A-F]+, host: 127.0.0.1:\d+, name: keepalive1.longname.test.host.com
 keepalive reusing connection [0-9A-F]+, host: 127.0.0.2:\d+, name: keepalive2.longname.test.host.com
 /
+
+
+
+=== TEST 29: enable_keepalive: bad argument #3 'pool_size'
+--- config
+    location = /t {
+        content_by_lua_block {
+            local b = require "ngx.balancer"
+
+            local values = { true, "1", -1 }
+
+            for _, val in ipairs(values) do
+                local pok, perr = pcall(b.enable_keepalive, nil, nil, val)
+                if not pok then
+                    ngx.say(perr)
+                end
+            end
+        }
+    }
+--- response_body
+bad argument #3 to 'enable_keepalive' (number expected, got boolean)
+bad argument #3 to 'enable_keepalive' (number expected, got string)
+bad argument #3 to 'enable_keepalive' (expected >= 0)
+--- grep_error_log_out
+
+
+
+=== TEST 30: enable_keepalive: 'pool_size' caps idle connections of a pool
+--- http_upstream
+    upstream test_upstream {
+        server 0.0.0.1;
+        keepalive 0;
+
+        balancer_by_lua_block {
+            local b = require "ngx.balancer"
+
+            local ok, err = b.set_current_peer("127.0.0.1",
+                                               $TEST_NGINX_SERVER_SSL_PORT,
+                                               "one")
+            if not ok then
+                ngx.log(ngx.ERR, "failed to set current peer: ", err)
+                return
+            end
+
+            local ok, err = b.enable_keepalive(nil, nil, 1)
+            if not ok then
+                ngx.log(ngx.ERR, "failed to set keepalive: ", err)
+                return
+            end
+        }
+    }
+--- config
+    location = /t {
+        echo_subrequest_async GET '/proxy/';
+        echo_subrequest_async GET '/proxy/';
+        echo_subrequest_async GET '/proxy/';
+        echo_sleep 0.3;
+        echo_subrequest_async GET '/proxy/';
+        echo_subrequest_async GET '/proxy/';
+    }
+--- response_body
+--- grep_error_log eval
+qr/lua balancer: keepalive (?:no free|reusing|saving|pool full)[^\n]*name: \w+/
+--- grep_error_log_out eval
+qr/^lua balancer: keepalive no free connection, host: 127.0.0.1:$ENV{TEST_NGINX_SERVER_SSL_PORT}, name: one
+lua balancer: keepalive no free connection, host: 127.0.0.1:$ENV{TEST_NGINX_SERVER_SSL_PORT}, name: one
+lua balancer: keepalive no free connection, host: 127.0.0.1:$ENV{TEST_NGINX_SERVER_SSL_PORT}, name: one
+lua balancer: keepalive saving connection \S+, host: 127.0.0.1:$ENV{TEST_NGINX_SERVER_SSL_PORT}, name: one
+lua balancer: keepalive pool full, evicting connection \S+, pool size: 1, host: 127.0.0.1:$ENV{TEST_NGINX_SERVER_SSL_PORT}, name: one
+lua balancer: keepalive saving connection \S+, host: 127.0.0.1:$ENV{TEST_NGINX_SERVER_SSL_PORT}, name: one
+lua balancer: keepalive pool full, evicting connection \S+, pool size: 1, host: 127.0.0.1:$ENV{TEST_NGINX_SERVER_SSL_PORT}, name: one
+lua balancer: keepalive saving connection \S+, host: 127.0.0.1:$ENV{TEST_NGINX_SERVER_SSL_PORT}, name: one
+lua balancer: keepalive reusing connection \S+, host: 127.0.0.1:$ENV{TEST_NGINX_SERVER_SSL_PORT}, name: one
+lua balancer: keepalive no free connection, host: 127.0.0.1:$ENV{TEST_NGINX_SERVER_SSL_PORT}, name: one
+lua balancer: keepalive saving connection \S+, host: 127.0.0.1:$ENV{TEST_NGINX_SERVER_SSL_PORT}, name: one
+lua balancer: keepalive pool full, evicting connection \S+, pool size: 1, host: 127.0.0.1:$ENV{TEST_NGINX_SERVER_SSL_PORT}, name: one
+lua balancer: keepalive saving connection \S+, host: 127.0.0.1:$ENV{TEST_NGINX_SERVER_SSL_PORT}, name: one
+$/
+
+
+
+=== TEST 31: enable_keepalive: a full pool does not evict idle connections of other pools
+--- http_upstream
+    upstream test_upstream {
+        server 0.0.0.1;
+        keepalive 0;
+        balancer_keepalive 2;
+
+        balancer_by_lua_block {
+            local b = require "ngx.balancer"
+
+            local ok, err = b.set_current_peer("127.0.0.1",
+                                               $TEST_NGINX_SERVER_SSL_PORT,
+                                               ngx.var.arg_pool)
+            if not ok then
+                ngx.log(ngx.ERR, "failed to set current peer: ", err)
+                return
+            end
+
+            local ok, err = b.enable_keepalive(nil, nil, 1)
+            if not ok then
+                ngx.log(ngx.ERR, "failed to set keepalive: ", err)
+                return
+            end
+        }
+    }
+--- config
+    location = /t {
+        echo_subrequest GET '/proxy/' -q 'pool=b';
+        echo_subrequest_async GET '/proxy/' -q 'pool=a';
+        echo_subrequest_async GET '/proxy/' -q 'pool=a';
+        echo_sleep 0.3;
+        echo_subrequest GET '/proxy/' -q 'pool=b';
+    }
+--- response_body
+--- grep_error_log eval
+qr/lua balancer: keepalive (?:no free|reusing|pool full)[^\n]*name: \w+/
+--- grep_error_log_out eval
+qr/^lua balancer: keepalive no free connection, host: 127.0.0.1:$ENV{TEST_NGINX_SERVER_SSL_PORT}, name: b
+lua balancer: keepalive no free connection, host: 127.0.0.1:$ENV{TEST_NGINX_SERVER_SSL_PORT}, name: a
+lua balancer: keepalive no free connection, host: 127.0.0.1:$ENV{TEST_NGINX_SERVER_SSL_PORT}, name: a
+lua balancer: keepalive pool full, evicting connection \S+, pool size: 1, host: 127.0.0.1:$ENV{TEST_NGINX_SERVER_SSL_PORT}, name: a
+lua balancer: keepalive reusing connection \S+, host: 127.0.0.1:$ENV{TEST_NGINX_SERVER_SSL_PORT}, name: b
+$/
+
+
+
+=== TEST 32: enable_keepalive: 'pool_size' 0 behaves like no pool_size
+--- http_upstream
+    upstream test_upstream {
+        server 0.0.0.1;
+        keepalive 0;
+        balancer_keepalive 2;
+
+        balancer_by_lua_block {
+            local b = require "ngx.balancer"
+
+            local ok, err = b.set_current_peer("127.0.0.1",
+                                               $TEST_NGINX_SERVER_SSL_PORT,
+                                               ngx.var.arg_pool)
+            if not ok then
+                ngx.log(ngx.ERR, "failed to set current peer: ", err)
+                return
+            end
+
+            local ok, err = b.enable_keepalive(nil, nil, 0)
+            if not ok then
+                ngx.log(ngx.ERR, "failed to set keepalive: ", err)
+                return
+            end
+        }
+    }
+--- config
+    location = /t {
+        echo_subrequest GET '/proxy/' -q 'pool=b';
+        echo_subrequest_async GET '/proxy/' -q 'pool=a';
+        echo_subrequest_async GET '/proxy/' -q 'pool=a';
+        echo_sleep 0.3;
+        echo_subrequest GET '/proxy/' -q 'pool=b';
+    }
+--- response_body
+--- grep_error_log eval
+qr/lua balancer: keepalive (?:no free|reusing|pool full)[^\n]*name: \w+/
+--- grep_error_log_out eval
+qr/^lua balancer: keepalive no free connection, host: 127.0.0.1:$ENV{TEST_NGINX_SERVER_SSL_PORT}, name: b
+lua balancer: keepalive no free connection, host: 127.0.0.1:$ENV{TEST_NGINX_SERVER_SSL_PORT}, name: a
+lua balancer: keepalive no free connection, host: 127.0.0.1:$ENV{TEST_NGINX_SERVER_SSL_PORT}, name: a
+lua balancer: keepalive no free connection, host: 127.0.0.1:$ENV{TEST_NGINX_SERVER_SSL_PORT}, name: b
+$/
+
+
+
+=== TEST 33: enable_keepalive: 'pool_size' applies to pools split by SNI
+--- http_upstream
+    upstream test_upstream {
+        server 0.0.0.1;
+        keepalive 0;
+        balancer_keepalive 2;
+
+        balancer_by_lua_block {
+            local b = require "ngx.balancer"
+
+            -- no host: the pool is named after proxy_ssl_name
+            local ok, err = b.set_current_peer("127.0.0.1",
+                                               $TEST_NGINX_SERVER_SSL_PORT)
+            if not ok then
+                ngx.log(ngx.ERR, "failed to set current peer: ", err)
+                return
+            end
+
+            local ok, err = b.enable_keepalive(nil, nil, 1)
+            if not ok then
+                ngx.log(ngx.ERR, "failed to set keepalive: ", err)
+                return
+            end
+        }
+    }
+--- config
+    location = /t {
+        echo_subrequest GET '/proxy/echo_sni' -q 'sni=two';
+        echo_subrequest_async GET '/proxy/echo_sni' -q 'sni=one';
+        echo_subrequest_async GET '/proxy/echo_sni' -q 'sni=one';
+        echo_sleep 0.3;
+        echo_subrequest GET '/proxy/echo_sni' -q 'sni=two';
+    }
+--- response_body
+SNI=two
+SNI=one
+SNI=one
+SNI=two
+--- grep_error_log eval
+qr/lua balancer: keepalive (?:no free|reusing|pool full)[^\n]*name: \w+/
+--- grep_error_log_out eval
+qr/^lua balancer: keepalive no free connection, host: 127.0.0.1:$ENV{TEST_NGINX_SERVER_SSL_PORT}, name: two
+lua balancer: keepalive no free connection, host: 127.0.0.1:$ENV{TEST_NGINX_SERVER_SSL_PORT}, name: one
+lua balancer: keepalive no free connection, host: 127.0.0.1:$ENV{TEST_NGINX_SERVER_SSL_PORT}, name: one
+lua balancer: keepalive pool full, evicting connection \S+, pool size: 1, host: 127.0.0.1:$ENV{TEST_NGINX_SERVER_SSL_PORT}, name: one
+lua balancer: keepalive reusing connection \S+, host: 127.0.0.1:$ENV{TEST_NGINX_SERVER_SSL_PORT}, name: two
+$/
