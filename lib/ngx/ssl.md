@@ -37,6 +37,7 @@ Table of Contents
     * [get_session_master_key](#get_session_master_key)
     * [get_shared_ssl_ciphers](#get_shared_ssl_ciphers)
     * [get_req_ssl_pointer](#get_req_ssl_pointer)
+    * [get_req_ssl_ctx](#get_req_ssl_ctx)
     * [get_upstream_ssl_pointer](#get_upstream_ssl_pointer)
 * [Community](#community)
     * [English Mailing List](#english-mailing-list)
@@ -758,6 +759,29 @@ If you need to retain the pointer beyond the current phase then you will need to
 If you do, ensure that your reference is released with `SSL_free`.
 
 This function was first added in version `0.1.16`.
+
+[Back to TOC](#table-of-contents)
+
+get_req_ssl_ctx
+---------------
+**syntax:** *ctx_ptr, err = ssl.get_req_ssl_ctx()*
+
+**context:** *any context with a downstream TLS connection*
+
+Retrieves the OpenSSL `SSL_CTX*` stored in Nginx's downstream `session_ctx`,
+in both HTTP and stream subsystems. This is the original session context,
+which can differ from `SSL_get_SSL_CTX()` after SNI selects another server.
+
+Returns a `void *` FFI pointer on success, or `nil` and an error string when
+SSL state or the session context is unavailable. Raises `no request found`
+when called without a request.
+
+The pointer is borrowed from Nginx. Do not free it or attach a garbage
+collector to it. If retaining it beyond the connection lifetime, obtain
+and release a separate reference using the appropriate OpenSSL APIs.
+
+This function requires lua-nginx-module or stream-lua-nginx-module with
+the corresponding `get_req_ssl_ctx` FFI export.
 
 [Back to TOC](#table-of-contents)
 

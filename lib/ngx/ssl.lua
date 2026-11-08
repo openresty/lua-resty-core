@@ -49,6 +49,7 @@ local ngx_lua_ffi_ssl_session_master_key
 local ngx_lua_ffi_ssl_export_keying_material
 local ngx_lua_ffi_ssl_export_keying_material_early
 local ngx_lua_ffi_get_req_ssl_pointer
+local ngx_lua_ffi_get_req_ssl_ctx
 local ngx_lua_ffi_get_upstream_ssl_pointer
 local ngx_lua_ffi_req_shared_ssl_ciphers
 
@@ -106,6 +107,9 @@ if subsystem == 'http' then
         char **err) ;
 
     void *ngx_http_lua_ffi_get_req_ssl_pointer(ngx_http_request_t *r,
+        char **err);
+
+    void *ngx_http_lua_ffi_get_req_ssl_ctx(ngx_http_request_t *r,
         char **err);
 
     void *ngx_http_lua_ffi_get_upstream_ssl_pointer(
@@ -186,6 +190,7 @@ if subsystem == 'http' then
     ngx_lua_ffi_ssl_export_keying_material_early =
         C.ngx_http_lua_ffi_ssl_export_keying_material_early
     ngx_lua_ffi_get_req_ssl_pointer = C.ngx_http_lua_ffi_get_req_ssl_pointer
+    ngx_lua_ffi_get_req_ssl_ctx = C.ngx_http_lua_ffi_get_req_ssl_ctx
     ngx_lua_ffi_get_upstream_ssl_pointer
         = C.ngx_http_lua_ffi_get_upstream_ssl_pointer
     ngx_lua_ffi_req_shared_ssl_ciphers =
@@ -239,6 +244,9 @@ elseif subsystem == 'stream' then
     void *ngx_stream_lua_ffi_get_req_ssl_pointer(ngx_stream_lua_request_t *r,
        char **err);
 
+    void *ngx_stream_lua_ffi_get_req_ssl_ctx(ngx_stream_lua_request_t *r,
+        char **err);
+
     void *ngx_stream_lua_ffi_get_upstream_ssl_pointer(
         ngx_stream_lua_request_t *r, char **err);
 
@@ -285,6 +293,7 @@ elseif subsystem == 'stream' then
     ngx_lua_ffi_ssl_verify_client = C.ngx_stream_lua_ffi_ssl_verify_client
     ngx_lua_ffi_ssl_client_random = C.ngx_stream_lua_ffi_ssl_client_random
     ngx_lua_ffi_get_req_ssl_pointer = C.ngx_stream_lua_ffi_get_req_ssl_pointer
+    ngx_lua_ffi_get_req_ssl_ctx = C.ngx_stream_lua_ffi_get_req_ssl_ctx
     ngx_lua_ffi_get_upstream_ssl_pointer
         = C.ngx_stream_lua_ffi_get_upstream_ssl_pointer
     ngx_lua_ffi_req_shared_ssl_ciphers =
@@ -703,6 +712,24 @@ function _M.get_req_ssl_pointer()
 
     return ssl
 end
+
+
+local function get_req_ssl_ctx()
+    local r = get_request()
+    if not r then
+        error("no request found")
+    end
+
+    local ctx = ngx_lua_ffi_get_req_ssl_ctx(r, errmsg)
+    if ctx == nil then
+        return nil, ffi_str(errmsg[0])
+    end
+
+    return ctx
+end
+
+
+_M.get_req_ssl_ctx = get_req_ssl_ctx
 
 
 function _M.get_upstream_ssl_pointer()
