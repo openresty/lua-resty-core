@@ -780,10 +780,8 @@ The pointer is borrowed from Nginx. Do not free it or attach a garbage
 collector to it. If retaining it beyond the connection lifetime, obtain
 and release a separate reference using the appropriate OpenSSL APIs.
 
-This function is only exported when the running lua-nginx-module or
-stream-lua-nginx-module provides the corresponding `get_req_ssl_ctx` FFI
-symbol. On older binaries, `ssl.get_req_ssl_ctx` is `nil`; the other
-`ngx.ssl` APIs remain available.
+This function requires lua-nginx-module or stream-lua-nginx-module with
+the corresponding `get_req_ssl_ctx` FFI export.
 
 [Back to TOC](#table-of-contents)
 

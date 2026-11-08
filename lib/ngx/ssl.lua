@@ -190,13 +190,7 @@ if subsystem == 'http' then
     ngx_lua_ffi_ssl_export_keying_material_early =
         C.ngx_http_lua_ffi_ssl_export_keying_material_early
     ngx_lua_ffi_get_req_ssl_pointer = C.ngx_http_lua_ffi_get_req_ssl_pointer
-    if pcall(function ()
-                 return C.ngx_http_lua_ffi_get_req_ssl_ctx
-             end)
-    then
-        ngx_lua_ffi_get_req_ssl_ctx = C.ngx_http_lua_ffi_get_req_ssl_ctx
-    end
-
+    ngx_lua_ffi_get_req_ssl_ctx = C.ngx_http_lua_ffi_get_req_ssl_ctx
     ngx_lua_ffi_get_upstream_ssl_pointer
         = C.ngx_http_lua_ffi_get_upstream_ssl_pointer
     ngx_lua_ffi_req_shared_ssl_ciphers =
@@ -299,13 +293,7 @@ elseif subsystem == 'stream' then
     ngx_lua_ffi_ssl_verify_client = C.ngx_stream_lua_ffi_ssl_verify_client
     ngx_lua_ffi_ssl_client_random = C.ngx_stream_lua_ffi_ssl_client_random
     ngx_lua_ffi_get_req_ssl_pointer = C.ngx_stream_lua_ffi_get_req_ssl_pointer
-    if pcall(function ()
-                 return C.ngx_stream_lua_ffi_get_req_ssl_ctx
-             end)
-    then
-        ngx_lua_ffi_get_req_ssl_ctx = C.ngx_stream_lua_ffi_get_req_ssl_ctx
-    end
-
+    ngx_lua_ffi_get_req_ssl_ctx = C.ngx_stream_lua_ffi_get_req_ssl_ctx
     ngx_lua_ffi_get_upstream_ssl_pointer
         = C.ngx_stream_lua_ffi_get_upstream_ssl_pointer
     ngx_lua_ffi_req_shared_ssl_ciphers =
@@ -741,9 +729,7 @@ local function get_req_ssl_ctx()
 end
 
 
-if ngx_lua_ffi_get_req_ssl_ctx then
-    _M.get_req_ssl_ctx = get_req_ssl_ctx
-end
+_M.get_req_ssl_ctx = get_req_ssl_ctx
 
 
 function _M.get_upstream_ssl_pointer()
