@@ -89,7 +89,7 @@ status with an optional reason. The `reason` should be a string.
 [Back to TOC](#table-of-contents)
 
 bypass_if_checks
-------------------
+----------------
 **syntax:** *ngx_resp.bypass_if_checks()*
 
 Bypasses the conditional header checks as defined in RFC 9110 for the current request.
