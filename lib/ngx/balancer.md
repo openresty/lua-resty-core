@@ -176,7 +176,7 @@ In case of an error, this function returns `nil` and a string describing the err
 [Back to TOC](#table-of-contents)
 
 bind_to_local_addr
---------------
+------------------
 **syntax:** *ok, err = balancer.bind_to_local_addr(addr)*
 
 **context:** *balancer_by_lua&#42;*
@@ -463,7 +463,7 @@ This function was first added in the `0.1.20` version of this library.
 [Back to TOC](#table-of-contents)
 
 set_upstream_tls
-------------
+----------------
 **syntax:** `ok, err = balancer.set_upstream_tls(on)`
 
 **context:** *balancer_by_lua&#42;*

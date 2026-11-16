@@ -95,7 +95,7 @@ Methods
 =======
 
 get_client_hello_server_name
---------------
+----------------------------
 **syntax:** *host, err = ssl_clt.get_client_hello_server_name()*
 
 **context:** *ssl_client_hello_by_lua&#42;*
@@ -113,7 +113,7 @@ So this function can only be called in the context of [ssl_client_hello_by_lua*]
 [Back to TOC](#table-of-contents)
 
 get_supported_versions
---------------
+----------------------
 **syntax:** *types, err = ssl_clt.get_supported_versions()*
 
 **context:** *ssl_client_hello_by_lua&#42;*
@@ -131,7 +131,7 @@ So this function can only be called in the context of [ssl_client_hello_by_lua*]
 [Back to TOC](#table-of-contents)
 
 get_client_hello_ciphers
-----------------------------
+------------------------
 **syntax:** *ciphers, err = ssl_clt.get_client_hello_ciphers()*
 
 **context:** *ssl_client_hello_by_lua&#42;*
@@ -281,7 +281,7 @@ server {
 [Back to TOC](#table-of-contents)
 
 set_protocols
-----------------------
+-------------
 **syntax:** *ok, err = ssl_clt.set_protocols(protocols)*
 
 **context:** *ssl_client_hello_by_lua&#42;*
@@ -298,7 +298,7 @@ Example: `ssl_clt.set_protocols({"TLSv1.1", "TLSv1.2", "TLSv1.3"})`
 [Back to TOC](#table-of-contents)
 
 set_ciphers
-----------------------
+-----------
 **syntax:** *ok, err = ssl_clt.set_ciphers(ciphers, prefer_server_ciphers?)*
 
 **context:** *ssl_client_hello_by_lua&#42;*
@@ -326,7 +326,7 @@ Example: `ssl_clt.set_ciphers("DHE-RSA-AES256-SHA:ECDHE-ECDSA-AES128-SHA:ECDHE-R
 [Back to TOC](#table-of-contents)
 
 set_ciphersuites
-----------------------
+----------------
 **syntax:** *ok, err = ssl_clt.set_ciphersuites(ciphersuites, prefer_server_ciphers?)*
 
 **context:** *ssl_client_hello_by_lua&#42;*

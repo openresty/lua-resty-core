@@ -94,7 +94,7 @@ Methods
 =======
 
 set_filter_level
------------------
+----------------
 **syntax:** *status, err = log_module.set_filter_level(log_level)*
 
 **context:** *init_by_lua&#42;*

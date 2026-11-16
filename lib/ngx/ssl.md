@@ -696,7 +696,7 @@ This function was first added in version `0.1.20`.
 [Back to TOC](#table-of-contents)
 
 get_client_random
------------
+-----------------
 **syntax:** *client_random = ssl.get_client_random(outlen?)*
 
 **context:** *any*
@@ -712,7 +712,7 @@ This function can be called in any context where downstream https is used, but i
 [Back to TOC](#table-of-contents)
 
 get_server_random
------------
+-----------------
 **syntax:** *server_random = ssl.get_server_random(outlen?)*
 
 **context:** *any*
@@ -728,7 +728,7 @@ This function can be called in any context where downstream https is used.
 [Back to TOC](#table-of-contents)
 
 get_session_master_key
------------
+----------------------
 **syntax:** *master_key = ssl.get_session_master_key(outlen?)*
 
 **context:** *any*
@@ -746,7 +746,7 @@ This function can be called in any context where downstream https is used.
 [Back to TOC](#table-of-contents)
 
 get_req_ssl_pointer
-------------
+-------------------
 **syntax:** *ssl_ptr, err = ssl.get_req_ssl_pointer()*
 
 **context:** *any*
@@ -786,7 +786,7 @@ the corresponding `get_req_ssl_ctx` FFI export.
 [Back to TOC](#table-of-contents)
 
 get_upstream_ssl_pointer
-------------
+------------------------
 **syntax:** *ssl_ptr, err = ssl.get_upstream_ssl_pointer()*
 
 **context:** *any*
@@ -803,7 +803,7 @@ This function was first added in version `0.1.33`.
 [Back to TOC](#table-of-contents)
 
 ssl_session_reused
-------------
+------------------
 **syntax:** *reused, err = ssl.ssl_session_reused(ssl)*
 
 **context:** *any*
@@ -816,7 +816,7 @@ This function was first added in version `0.1.33`.
 [Back to TOC](#table-of-contents)
 
 get_req_shared_ssl_ciphers
------------
+--------------------------
 **syntax:** *ciphers = ssl.get_req_shared_ssl_ciphers(filter_grease?)*
 
 **context:** *any*

@@ -194,7 +194,7 @@ https://github.com/openresty/lua-nginx-module#data-sharing-within-an-nginx-worke
 [Back to TOC](#table-of-contents)
 
 post
---------
+----
 **syntax:** *sema:post(n?)*
 
 **context:** *init_by_lua&#42;, init_worker_by_lua&#42;, set_by_lua&#42;, rewrite_by_lua&#42;, access_by_lua&#42;, content_by_lua&#42;, header_filter_by_lua&#42;, body_filter_by_lua&#42;, log_by_lua&#42;, ngx.timer.&#42;*
@@ -247,7 +247,7 @@ See [Synopsis](#synopsis) for code examples.
 [Back to TOC](#table-of-contents)
 
 count
---------
+-----
 **syntax:** *count = sema:count()*
 
 **context:** *init_by_lua&#42;, init_worker_by_lua&#42;, set_by_lua&#42;, rewrite_by_lua&#42;, access_by_lua&#42;,

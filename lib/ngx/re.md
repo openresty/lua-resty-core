@@ -149,7 +149,7 @@ clear the table yourself before feeding it into the `split` function.
 [Back to TOC](#table-of-contents)
 
 opt
------
+---
 **syntax:** *ngx_re.opt(option, value)*
 
 Allows changing of regex settings. Currently, it can only change the
